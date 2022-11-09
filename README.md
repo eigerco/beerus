@@ -1,6 +1,5 @@
-
 <div align="center">
-  Beerus
+  <h1>Beerus</h1>
   <br />
   <a href="#about"><strong>Explore the screenshots »</strong></a>
   <br />
@@ -14,8 +13,8 @@
 <div align="center">
 <br />
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abdelhamidbakhta/beerus/test?style=flat-square&logo=github)
 [![Project license](https://img.shields.io/github/license/abdelhamidbakhta/beerus.svg?style=flat-square)](LICENSE)
-
 [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/abdelhamidbakhta/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![code with love by abdelhamidbakhta](https://img.shields.io/badge/%3C%2F%3E%20with%20%E2%99%A5%20by-abdelhamidbakhta-ff1414.svg?style=flat-square)](https://github.com/abdelhamidbakhta)
 
@@ -45,21 +44,14 @@
 
 ## About
 
-> **[?]**
-> Provide general information about your project here.
-> What problem does it (intend to) solve?
-> What is the purpose of your project?
-> Why did you undertake it?
-> You don't have to answer all the questions -- just the ones relevant to your project.
+> Beerus is a StarkNet Light Client inspired by and using [helios](https://github.com/a16z/helios/).
+> The goal is to provide a simple and easy to use client to query StarkNet state and interact with contracts.
 
 <details>
 <summary>Screenshots</summary>
 <br>
 
-> **[?]**
-> Please provide your screenshots here.
-
-|                               Home Page                               |                               Login Page                               |
+|                             Screenshot 1                              |                           Screenshot 2 Page                            |
 | :-------------------------------------------------------------------: | :--------------------------------------------------------------------: |
 | <img src="docs/images/screenshot.png" title="Home Page" width="100%"> | <img src="docs/images/screenshot.png" title="Login Page" width="100%"> |
 
@@ -67,26 +59,36 @@
 
 ### Built With
 
-> **[?]**
-> Please provide the technologies that are used in the project.
+- [Rust](https://www.rust-lang.org/)
+- [helios](https://github.com/a16z/helios)
+- [ethers-rs](https://github.com/gakonst/ethers-rs)
 
 ## Getting Started
 
 ### Prerequisites
 
-> **[?]**
-> What are the project requirements/dependencies?
+- [Rust](https://www.rust-lang.org/tools/install)
 
 ### Installation
 
-> **[?]**
-> Describe how to install and get started with the project.
+```bash
+cargo build
+```
+
+### Configuration
+
+Beerus is configurable through environment variables.
+
+Here is the list of all the available environment variables:
+
+| Name                       | Default value | Description                                                                                               |
+| -------------------------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| ETHEREUM_EXECUTION_RPC_URL | No            | Ethereum execution layer RPC URL (must be an Ethereum provider that supports the eth_getProof endpoint)   |
+| ETHEREUM_CONSENSUS_RPC_URL | No            | Ethereum consensus layer RPC URL (must be a consenus node that supports the light client beaconchain api) |
 
 ## Usage
 
-> **[?]**
-> How does one go about using it?
-> Provide various use cases and code examples here.
+> **[TODO]**
 
 ## Roadmap
 
@@ -119,7 +121,6 @@ Together, we can make Beerus **better**!
 ## Contributing
 
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
-
 
 Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you for being involved!
 
