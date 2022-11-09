@@ -71,9 +71,7 @@
 
 ### Installation
 
-```bash
-cargo build
-```
+> **[TODO]**
 
 ### Configuration
 
@@ -83,10 +81,40 @@ Here is the list of all the available environment variables:
 
 | Name                       | Default value | Description                                                                                               |
 | -------------------------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| ETHEREUM_NETWORK           | goerli        | The Ethereum network to use. Can be one of `mainnet`, `goerli`.                                           |
 | ETHEREUM_EXECUTION_RPC_URL | No            | Ethereum execution layer RPC URL (must be an Ethereum provider that supports the eth_getProof endpoint)   |
 | ETHEREUM_CONSENSUS_RPC_URL | No            | Ethereum consensus layer RPC URL (must be a consenus node that supports the light client beaconchain api) |
+| STARKNET_RPC_URL           | No            | StarkNet RPC URL                                                                                          |
 
 ## Usage
+
+### CLI
+
+```bash
+Usage: beerus-cli [OPTIONS] <COMMAND>
+
+Commands:
+  ethereum  Ethereum related subcommands
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -c, --config <FILE>  Sets a custom config file
+  -h, --help           Print help information
+  -V, --version        Print version information
+```
+
+#### Ethereum
+
+##### Query balance
+
+```bash
+beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
+# 2011.286832686010020640 ETH
+```
+
+#### StarkNet
+
+### API
 
 > **[TODO]**
 
@@ -99,9 +127,6 @@ See the [open issues](https://github.com/abdelhamidbakhta/beerus/issues) for a l
 - [Newest Bugs](https://github.com/abdelhamidbakhta/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
-
-> **[?]**
-> Provide additional ways to contact the project maintainer/maintainers.
 
 Reach out to the maintainer at one of the following places:
 

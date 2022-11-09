@@ -221,6 +221,8 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs)",
  "eyre",
  "helios",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

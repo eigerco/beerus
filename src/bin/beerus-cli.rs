@@ -1,8 +1,9 @@
-use beerus::cli::runner;
+use beerus::{cli::runner, config::Config};
 
 use eyre::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    runner::run().await
+    let config = Config::new_from_env()?;
+    runner::run(&config).await
 }
