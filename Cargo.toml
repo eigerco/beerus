@@ -2,6 +2,7 @@
 name = "beerus"
 version = "0.1.0"
 edition = "2021"
+default-run = "beerus-cli"
 
 [dependencies]
 helios = { git = "https://github.com/a16z/helios" }
