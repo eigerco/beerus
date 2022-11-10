@@ -1,11 +1,11 @@
-use crate::{build_and_sync_helios_client, config::Config};
+use crate::{config::Config, sync_ethereum_light_client};
 use ethers::{types::Address, utils};
 use eyre::Result;
 use helios::types::BlockTag;
 use std::str::FromStr;
 
 pub async fn query_balance(config: &Config, address: String) -> Result<()> {
-    let client = build_and_sync_helios_client(config).await?;
+    let client = sync_ethereum_light_client(config).await?;
     let addr = Address::from_str(&address)?;
     let block = BlockTag::Latest;
     let balance = client.get_balance(&addr, block).await?;
