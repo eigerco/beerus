@@ -5,9 +5,10 @@
   <br />
   <br />
   <a href="https://github.com/abdelhamidbakhta/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
-  ·
+  -
   <a href="https://github.com/abdelhamidbakhta/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
-  .<a href="https://github.com/abdelhamidbakhta/beerus/discussions">Ask a Question</a>
+  -
+  <a href="https://github.com/abdelhamidbakhta/beerus/discussions">Ask a Question</a>
 </div>
 
 <div align="center">
@@ -50,7 +51,7 @@
 <summary>Screenshots</summary>
 <br>
 
-|                             Screenshot 1                              |                           Screenshot 2 Page                            |
+|                             Screenshot 1                              |                              Screenshot 2                              |
 | :-------------------------------------------------------------------: | :--------------------------------------------------------------------: |
 | <img src="docs/images/screenshot.png" title="Home Page" width="100%"> | <img src="docs/images/screenshot.png" title="Login Page" width="100%"> |
 
