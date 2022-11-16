@@ -1,5 +1,6 @@
 <div align="center">
   <h1>Beerus</h1>
+    <img src="docs/images/beerus.png" height="200">
   <br />
   <a href="#about"><strong>Explore the screenshots »</strong></a>
   <br />
