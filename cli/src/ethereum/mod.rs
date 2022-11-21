@@ -11,6 +11,6 @@ pub async fn query_balance(config: &Config, address: String) -> Result<()> {
     let block = BlockTag::Latest;
     let balance = client.get_balance(&addr, block).await?;
     let balance_in_eth = utils::format_units(balance, "ether")?;
-    println!("{} ETH", balance_in_eth);
+    println!("{} eth", balance_in_eth);
     Ok(())
 }

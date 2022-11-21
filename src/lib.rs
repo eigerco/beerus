@@ -1,4 +1,4 @@
 pub mod core {
-    pub use config::Config;
-    pub use sync_ethereum_light_client;
+    pub use core::config::Config;
+    pub use core::sync_ethereum_light_client;
 }
