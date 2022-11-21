@@ -1,4 +1,5 @@
-use crate::{config::Config, sync_ethereum_light_client};
+use core::config::Config;
+use core::sync_ethereum_light_client;
 use ethers::{types::Address, utils};
 use eyre::Result;
 use helios::types::BlockTag;

@@ -1,4 +1,4 @@
-use crate::config::Config;
+use core::config::Config;
 
 use super::{
     ethereum,

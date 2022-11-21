@@ -1,0 +1,13 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+homepage.workspace = true
+
+[dependencies]
+helios = { git = "https://github.com/a16z/helios"}
+ethers = "1.0.0"
+revm = "2.1.0"
+eyre = "0.6.8"
+tokio = { version = "1.21.2", features = ["full"] }
