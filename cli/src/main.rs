@@ -1,5 +1,3 @@
-use beerus::{cli::runner, config::Config};
-
 use eyre::Result;
 
 #[tokio::main]
