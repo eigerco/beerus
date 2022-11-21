@@ -1,11 +1,12 @@
+pub mod ethereum;
+pub mod model;
+pub mod runner;
+
 use core::config::Config;
 
 use clap::Parser;
 use eyre::Result;
-use {
-    ethereum,
-    model::{Cli, Commands, EthereumSubCommands},
-};
+use model::{Cli, Commands, EthereumSubCommands};
 
 pub async fn run(config: &Config) -> Result<()> {
     let cli = Cli::parse();

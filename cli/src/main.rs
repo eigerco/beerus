@@ -1,3 +1,5 @@
+use cli::runner;
+use core::config::Config;
 use eyre::Result;
 
 #[tokio::main]
