@@ -5,36 +5,44 @@
   <a href="#about"><strong>Explore the screenshots »</strong></a>
   <br />
   <br />
-  <a href="https://github.com/abdelhamidbakhta/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
+  <a href="https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
   -
-  <a href="https://github.com/abdelhamidbakhta/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
+  <a href="https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
   -
-  <a href="https://github.com/abdelhamidbakhta/beerus/discussions">Ask a Question</a>
+  <a href="https://github.com/starknet-exploration/beerus/discussions">Ask a Question</a>
 </div>
 
 <div align="center">
 <br />
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abdelhamidbakhta/beerus/test?style=flat-square&logo=github)
-[![Project license](https://img.shields.io/github/license/abdelhamidbakhta/beerus.svg?style=flat-square)](LICENSE)
-[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/abdelhamidbakhta/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/starknet-exploration/beerus/test?style=flat-square&logo=github)
+[![Project license](https://img.shields.io/github/license/starknet-exploration/beerus.svg?style=flat-square)](LICENSE)
+[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/starknet-exploration/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 </div>
 
 <details open="open">
 <summary>Table of Contents</summary>
 
+- [Report a Bug](#report-a-bug)
+- [Request a Feature](#request-a-feature)
 - [About](#about)
   - [Built With](#built-with)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+  - [Configuration](#configuration)
 - [Usage](#usage)
+  - [CLI](#cli)
+    - [Ethereum](#ethereum)
+      - [Query balance](#query-balance)
+    - [StarkNet](#starknet)
+  - [API](#api)
 - [Roadmap](#roadmap)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
-- [Authors & contributors](#authors--contributors)
+- [Authors \& contributors](#authors--contributors)
 - [Security](#security)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -121,24 +129,24 @@ beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d
 
 ## Roadmap
 
-See the [open issues](https://github.com/abdelhamidbakhta/beerus/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/starknet-exploration/beerus/issues) for a list of proposed features (and known issues).
 
-- [Top Feature Requests](https://github.com/abdelhamidbakhta/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Top Bugs](https://github.com/abdelhamidbakhta/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Newest Bugs](https://github.com/abdelhamidbakhta/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+- [Top Feature Requests](https://github.com/starknet-exploration/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Top Bugs](https://github.com/starknet-exploration/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Newest Bugs](https://github.com/starknet-exploration/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
 
 Reach out to the maintainer at one of the following places:
 
-- [GitHub Discussions](https://github.com/abdelhamidbakhta/beerus/discussions)
-- Contact options listed on [this GitHub profile](https://github.com/abdelhamidbakhta)
+- [GitHub Discussions](https://github.com/starknet-exploration/beerus/discussions)
+- Contact options listed on [this GitHub profile](https://github.com/starknet-exploration)
 
 ## Project assistance
 
 If you want to say **thank you** or/and support active development of Beerus:
 
-- Add a [GitHub Star](https://github.com/abdelhamidbakhta/beerus) to the project.
+- Add a [GitHub Star](https://github.com/starknet-exploration/beerus) to the project.
 - Tweet about the Beerus.
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
@@ -152,7 +160,7 @@ Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you f
 
 ## Authors & contributors
 
-For a full list of all authors and contributors, see [the contributors page](https://github.com/abdelhamidbakhta/beerus/contributors).
+For a full list of all authors and contributors, see [the contributors page](https://github.com/starknet-exploration/beerus/contributors).
 
 ## Security
 
