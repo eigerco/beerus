@@ -214,6 +214,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "beerus"
+version = "0.1.0"
+dependencies = [
+ "core",
+]
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -480,7 +487,7 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
- "helios 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "helios",
  "primitive-types 0.11.1",
  "revm",
  "serde",
@@ -658,7 +665,7 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
- "helios 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "helios",
  "primitive-types 0.11.1",
  "revm",
  "serde",
@@ -1829,13 +1836,6 @@ name = "heck"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
-
-[[package]]
-name = "helios"
-version = "0.1.0"
-dependencies = [
- "core",
-]
 
 [[package]]
 name = "helios"
