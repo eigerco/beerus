@@ -1,11 +1,12 @@
-use crate::config::Config;
+pub mod ethereum;
+pub mod model;
+pub mod runner;
 
-use super::{
-    ethereum,
-    model::{Cli, Commands, EthereumSubCommands},
-};
+use core::config::Config;
+
 use clap::Parser;
 use eyre::Result;
+use model::{Cli, Commands, EthereumSubCommands};
 
 pub async fn run(config: &Config) -> Result<()> {
     let cli = Cli::parse();

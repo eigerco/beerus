@@ -2,13 +2,19 @@
 name = "beerus"
 version = "0.1.0"
 edition = "2021"
-default-run = "beerus-cli"
+
+[workspace]
+members = ["core", "cli", "rest_api"]
+
+[workspace.package]
+edition = "2021"
+authors = ["Abdelhamid Bakhta <@abdelhamidbakhta>", "Lucas Levy <@lucaslvy>"]
+description = "A fast, secure and portable light client for StarkNet"
+homepage = "https://github.com/starknet-exploration/beerus"
+repository = "https://github.com/starknet-exploration/beerus"
+readme = "./README.md"
+license = "MIT"
+
 
 [dependencies]
-helios = { git = "https://github.com/a16z/helios" }
-ethers = { git = "https://github.com/gakonst/ethers-rs" }
-eyre = "0.6.8"
-tokio = { version = "1.21.2", features = ["full"] }
-clap = { version = "4.0.22", features = ["derive"] }
-serde = { version = "1.0.147", features = ["derive"] }
-serde_json = "1.0"
+core = { path = "./core" }

@@ -1,4 +1,5 @@
-use crate::{config::Config, sync_ethereum_light_client};
+use core::config::Config;
+use core::sync_ethereum_light_client;
 use ethers::{types::Address, utils};
 use eyre::Result;
 use helios::types::BlockTag;
@@ -10,6 +11,6 @@ pub async fn query_balance(config: &Config, address: String) -> Result<()> {
     let block = BlockTag::Latest;
     let balance = client.get_balance(&addr, block).await?;
     let balance_in_eth = utils::format_units(balance, "ether")?;
-    println!("{} ETH", balance_in_eth);
+    println!("{} eth", balance_in_eth);
     Ok(())
 }
