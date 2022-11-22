@@ -44,6 +44,7 @@ impl BeerusLightClient {
     }
 }
 
+#[async_trait]
 impl Beerus for BeerusLightClient {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     async fn start(&mut self) -> Result<()> {
