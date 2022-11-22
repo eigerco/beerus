@@ -1,9 +1,8 @@
-use core::config::Config;
-
 use super::{
     ethereum,
     model::{Cli, Commands, EthereumSubCommands},
 };
+use beerus_core::config::Config;
 use clap::Parser;
 use eyre::Result;
 
