@@ -1,12 +1,12 @@
 [package]
-name = "cli"
+name = "beerus_cli"
 version = "0.1.0"
 edition.workspace = true
 description.workspace = true
 homepage.workspace = true
 
 [dependencies]
-core = { path = "../core" }
+beerus_core = { path = "../beerus_core" }
 helios = { git = "https://github.com/a16z/helios", rev = "2dbe057e"}
 ethers ={ git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f"}
 ethers-etherscan = "1.0.0"

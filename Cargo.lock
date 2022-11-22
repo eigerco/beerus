@@ -217,8 +217,44 @@ dependencies = [
 name = "beerus"
 version = "0.1.0"
 dependencies = [
- "core",
+ "beerus_core",
 ]
+
+[[package]]
+name = "beerus_cli"
+version = "0.1.0"
+dependencies = [
+ "beerus_core",
+ "clap",
+ "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+ "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "helios",
+ "primitive-types 0.11.1",
+ "revm",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "beerus_core"
+version = "0.1.0"
+dependencies = [
+ "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+ "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "helios",
+ "primitive-types 0.11.1",
+ "revm",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "beerus_rest_api"
+version = "0.1.0"
 
 [[package]]
 name = "bincode"
@@ -479,23 +515,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "core",
- "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "eyre",
- "helios",
- "primitive-types 0.11.1",
- "revm",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "client"
 version = "0.1.0"
 source = "git+https://github.com/a16z/helios?rev=2dbe057e#2dbe057e3a5a1008b294f1087c5b58a7da7499d3"
@@ -656,21 +675,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
 dependencies = [
  "unicode-segmentation",
-]
-
-[[package]]
-name = "core"
-version = "0.1.0"
-dependencies = [
- "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "eyre",
- "helios",
- "primitive-types 0.11.1",
- "revm",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
@@ -3148,10 +3152,6 @@ dependencies = [
  "tokio",
  "tracing",
 ]
-
-[[package]]
-name = "rest_api"
-version = "0.1.0"
 
 [[package]]
 name = "retry-policies"
