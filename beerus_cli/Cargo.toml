@@ -7,8 +7,8 @@ homepage.workspace = true
 
 [dependencies]
 beerus_core = { path = "../beerus_core" }
-helios = { git = "https://github.com/a16z/helios", rev = "2dbe057e"}
-ethers ={ git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f"}
+helios = { git = "https://github.com/a16z/helios", rev = "2dbe057e" }
+ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f" }
 ethers-etherscan = "1.0.0"
 primitive-types = "0.11.1"
 revm = "2.1.0"

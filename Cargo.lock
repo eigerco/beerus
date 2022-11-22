@@ -241,6 +241,7 @@ dependencies = [
 name = "beerus_core"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
