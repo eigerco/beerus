@@ -1,22 +1,33 @@
 use crate::config::Config;
+use async_trait::async_trait;
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
 
 use super::starknet::StarkNetLightClient;
 
+pub enum SyncStatus {
+    NotSynced,
+    Syncing,
+    Synced,
+}
+
+#[async_trait]
+pub trait Beerus {
+    async fn start(&mut self) -> Result<()>;
+    fn sync_status(&self) -> SyncStatus;
+}
+
 /// Beerus Light Client service.
-pub struct BeerusLightClient<'cfg> {
-    /// Global configuration.
-    pub config: &'cfg Config,
+pub struct BeerusLightClient {
     /// Ethereum light client.
     pub ethereum_lightclient: Client<FileDB>,
     /// StarkNet light client.
     pub starknet_lightclient: StarkNetLightClient,
 }
 
-impl<'cfg> BeerusLightClient<'cfg> {
+impl BeerusLightClient {
     /// Create a new Beerus Light Client service.
-    pub fn new(config: &'cfg Config) -> Result<Self> {
+    pub fn new(config: &Config) -> Result<Self> {
         let ethereum_network = config.ethereum_network()?;
         // Build the Ethereum light client.
         let ethereum_lightclient = ClientBuilder::new()
@@ -27,18 +38,24 @@ impl<'cfg> BeerusLightClient<'cfg> {
         // Build the StarkNet light client.
         let starknet_lightclient = StarkNetLightClient::new(config)?;
         Ok(Self {
-            config,
             ethereum_lightclient,
             starknet_lightclient,
         })
     }
+}
 
+#[async_trait]
+impl Beerus for BeerusLightClient {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
-    pub async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> Result<()> {
         // Start the Ethereum light client.
         self.ethereum_lightclient.start().await?;
         // Start the StarkNet light client.
         self.starknet_lightclient.start().await?;
         Ok(())
+    }
+
+    fn sync_status(&self) -> SyncStatus {
+        todo!()
     }
 }
