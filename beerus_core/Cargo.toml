@@ -6,8 +6,9 @@ description.workspace = true
 homepage.workspace = true
 
 [dependencies]
-helios = { git = "https://github.com/a16z/helios", rev = "2dbe057e"}
-ethers ={ git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f"}
+async-trait = "0.1.58"
+helios = { git = "https://github.com/a16z/helios", rev = "2dbe057e" }
+ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f" }
 ethers-etherscan = "1.0.0"
 primitive-types = "0.11.1"
 revm = "2.1.0"
