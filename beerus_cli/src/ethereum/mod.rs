@@ -1,4 +1,7 @@
-use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
+use beerus_core::{
+    config::Config,
+    lightclient::beerus::{Beerus, BeerusLightClient},
+};
 use ethers::{types::Address, utils};
 use eyre::Result;
 use helios::types::BlockTag;
