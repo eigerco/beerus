@@ -4,15 +4,21 @@ use serde::{Deserialize, Serialize};
 
 const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 
+/// Global configuration.
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    /// Ethereum network.
     pub ethereum_network: String,
+    /// Ethereum consensus RPC endpoint.
     pub ethereum_consensus_rpc: String,
+    /// Ethereum execution RPC endpoint.
     pub ethereum_execution_rpc: String,
+    /// StarkNet RPC endpoint.
     pub starknet_rpc: String,
 }
 
 impl Config {
+    /// Create a new global configuration from environment variables.
     pub fn new_from_env() -> Result<Self> {
         let ethereum_network = std::env::var("ETHEREUM_NETWORK")
             .unwrap_or_else(|_| DEFAULT_ETHEREUM_NETWORK.to_string());
@@ -27,6 +33,7 @@ impl Config {
         })
     }
 
+    /// Return the Ethereum network.
     pub fn ethereum_network(&self) -> Result<Network> {
         match self.ethereum_network.to_lowercase().as_str() {
             "goerli" => Ok(Network::GOERLI),
