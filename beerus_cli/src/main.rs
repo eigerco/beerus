@@ -1,5 +1,5 @@
-use cli::runner;
-use core::config::Config;
+use beerus_cli::runner;
+use beerus_core::config::Config;
 use eyre::Result;
 
 #[tokio::main]

@@ -2,8 +2,7 @@ pub mod ethereum;
 pub mod model;
 pub mod runner;
 
-use core::config::Config;
-
+use beerus_core::config::Config;
 use clap::Parser;
 use eyre::Result;
 use model::{Cli, Commands, EthereumSubCommands};
