@@ -23,7 +23,7 @@ pub enum Commands {
 /// Ethereum related commands.
 #[derive(Parser, Debug)]
 pub struct EthereumCommands {
-    /// Ethereum related subcommands
+    /// Ethereum related subcommands.
     #[command(subcommand)]
     pub command: EthereumSubCommands,
 }
