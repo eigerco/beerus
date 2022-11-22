@@ -4,7 +4,7 @@ use eyre::Result;
 use helios::types::BlockTag;
 use std::str::FromStr;
 
-/// Query balance of an Ethereum address.
+/// Query the balance of an Ethereum address.
 pub async fn query_balance(config: &Config, address: String) -> Result<()> {
     // Create a new Beerus light client.
     let mut beerus = BeerusLightClient::new(config)?;
