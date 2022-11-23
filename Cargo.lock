@@ -311,6 +311,7 @@ dependencies = [
  "revm",
  "rocket",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
