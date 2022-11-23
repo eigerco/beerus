@@ -2,7 +2,6 @@ use crate::api::ethereum::resp::QueryBalanceResponse;
 use beerus_core::config::Config;
 
 use eyre::Result;
-
 use rocket::get;
 
 use super::ethereum_api::EthereumAPI;
