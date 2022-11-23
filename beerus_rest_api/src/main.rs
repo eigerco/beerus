@@ -10,5 +10,5 @@ fn index() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, ethereum::query_balance])
+    rocket::build().mount("/", routes![index, ethereum::endpoints::query_balance,])
 }
