@@ -42,11 +42,11 @@ impl EthereumAPI {
 
         // Parse the Ethereum address.
         let addr = Address::from_str(&address)?;
+        let beerus = self.beerus.clone();
         // TODO: Make the block tag configurable.
         let block = BlockTag::Latest;
         // Query the balance of the Ethereum address.
-        let balance = self
-            .beerus
+        let balance = beerus
             .ethereum_lightclient
             .get_balance(&addr, block)
             .await?;
