@@ -1,9 +1,9 @@
-use std::{str::FromStr, sync::Arc};
-
 use beerus_core::{
     config::Config,
     lightclient::beerus::{Beerus, BeerusLightClient},
 };
+use log::debug;
+use std::{str::FromStr, sync::Arc};
 
 use ethers::{types::Address, utils};
 use eyre::Result;
@@ -38,6 +38,8 @@ impl EthereumAPI {
     /// If the Ethereum address is invalid or the block tag is invalid.
     /// # Examples
     pub async fn query_balance(&self, address: &str) -> Result<QueryBalanceResponse> {
+        debug!("Querying balance of address: {}", address);
+
         // Parse the Ethereum address.
         let addr = Address::from_str(&address)?;
         // TODO: Make the block tag configurable.
