@@ -77,7 +77,7 @@
 
 Here is a high level overview of the architecture of Beerus.
 
-[![Beerus architecture](docs/images/beerus-architecture.svg)](docs/images/beerus-architecture.svg)
+[![Beerus architecture](docs/images/beerus-architecture-v1.0.png)](docs/images/beerus-architecture-v1.0.png)
 
 
 ## Getting Started
