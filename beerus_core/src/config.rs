@@ -1,9 +1,13 @@
+use std::str::FromStr;
+
+use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::networks::Network;
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
-
+// By default, we use the Ethereum Mainnet value.
+const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 /// Global configuration.
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -15,6 +19,8 @@ pub struct Config {
     pub ethereum_execution_rpc: String,
     /// StarkNet RPC endpoint.
     pub starknet_rpc: String,
+    // StarkNet core contract address.
+    pub starknet_core_contract_address: Address,
 }
 
 impl Config {
@@ -25,11 +31,16 @@ impl Config {
         let ethereum_consensus_rpc = std::env::var("ETHEREUM_CONSENSUS_RPC_URL")?;
         let ethereum_execution_rpc = std::env::var("ETHEREUM_EXECUTION_RPC_URL")?;
         let starknet_rpc = std::env::var("STARKNET_RPC_URL")?;
+        let starknet_core_contract_address = std::env::var("STARKNET_CORE_CONTRACT_ADDRESS")
+            .unwrap_or_else(|_| DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS.to_string());
+        let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
+
         Ok(Self {
             ethereum_network,
             ethereum_consensus_rpc,
             ethereum_execution_rpc,
             starknet_rpc,
+            starknet_core_contract_address,
         })
     }
 
