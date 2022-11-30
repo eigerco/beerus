@@ -18,7 +18,7 @@ async fn rocket() -> _ {
     let config = Config::new_from_env().unwrap();
     // Create a new Ethereum API handler and start syncing.
     info!("ethereum sync started...");
-    let ethereum_api = EthereumAPI::new(&config).await.unwrap();
+    let ethereum_api = EthereumAPI::new(config).await.unwrap();
     info!("ethereum sync completed.");
     rocket::build()
         .manage(ethereum_api)

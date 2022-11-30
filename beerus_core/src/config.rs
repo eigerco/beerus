@@ -7,7 +7,9 @@ use serde::{Deserialize, Serialize};
 
 const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.
-const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+//const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
+
 /// Global configuration.
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -51,5 +53,11 @@ impl Config {
             "mainnet" => Ok(Network::MAINNET),
             _ => Err(eyre!("Invalid network")),
         }
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::new_from_env().unwrap()
     }
 }

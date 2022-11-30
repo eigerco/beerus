@@ -274,7 +274,7 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
- "helios",
+ "helios 0.1.0",
  "primitive-types 0.11.1",
  "revm",
  "serde",
@@ -290,7 +290,7 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
- "helios",
+ "helios 0.1.1",
  "primitive-types 0.11.1",
  "revm",
  "serde",
@@ -307,7 +307,7 @@ dependencies = [
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
- "helios",
+ "helios 0.1.0",
  "log",
  "primitive-types 0.11.1",
  "revm",
@@ -587,11 +587,11 @@ source = "git+https://github.com/a16z/helios?rev=2dbe057e#2dbe057e3a5a1008b294f1
 dependencies = [
  "blst",
  "bytes",
- "common",
- "config",
- "consensus",
+ "common 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "config 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "consensus 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
  "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "execution",
+ "execution 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
  "eyre",
  "futures",
  "hex",
@@ -604,6 +604,27 @@ dependencies = [
  "ssz-rs",
  "tokio",
  "toml",
+]
+
+[[package]]
+name = "client"
+version = "0.1.1"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "common 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "config 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "consensus 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "execution 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "eyre",
+ "futures",
+ "hex",
+ "jsonrpsee",
+ "log",
+ "serde",
+ "ssz-rs",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -687,11 +708,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "hex",
+ "serde",
+ "ssz-rs",
+ "thiserror",
+]
+
+[[package]]
 name = "config"
 version = "0.1.0"
 source = "git+https://github.com/a16z/helios?rev=2dbe057e#2dbe057e3a5a1008b294f1087c5b58a7da7499d3"
 dependencies = [
- "common",
+ "common 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "figment",
+ "hex",
+ "serde",
+ "ssz-rs",
+ "thiserror",
+]
+
+[[package]]
+name = "config"
+version = "0.1.0"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "common 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
  "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "figment",
@@ -710,8 +759,35 @@ dependencies = [
  "blst",
  "bytes",
  "chrono",
- "common",
- "config",
+ "common 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "config 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "hex",
+ "log",
+ "openssl",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-retry",
+ "serde",
+ "serde_json",
+ "ssz-rs",
+ "thiserror",
+ "tokio",
+ "toml",
+]
+
+[[package]]
+name = "consensus"
+version = "0.1.0"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "async-trait",
+ "blst",
+ "bytes",
+ "chrono",
+ "common 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "config 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
  "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "hex",
@@ -1543,8 +1619,34 @@ dependencies = [
  "async-trait",
  "blst",
  "bytes",
- "common",
- "consensus",
+ "common 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "consensus 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eyre",
+ "futures",
+ "hex",
+ "log",
+ "openssl",
+ "reqwest",
+ "revm",
+ "serde",
+ "serde_json",
+ "ssz-rs",
+ "thiserror",
+ "tokio",
+ "toml",
+ "triehash-ethereum",
+]
+
+[[package]]
+name = "execution"
+version = "0.1.0"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "common 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "consensus 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
  "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "futures",
@@ -2000,11 +2102,23 @@ name = "helios"
 version = "0.1.0"
 source = "git+https://github.com/a16z/helios?rev=2dbe057e#2dbe057e3a5a1008b294f1087c5b58a7da7499d3"
 dependencies = [
- "client",
- "common",
- "config",
- "consensus",
- "execution",
+ "client 0.1.0",
+ "common 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "config 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "consensus 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+ "execution 0.1.0 (git+https://github.com/a16z/helios?rev=2dbe057e)",
+]
+
+[[package]]
+name = "helios"
+version = "0.1.1"
+source = "git+https://github.com/abdelhamidbakhta/helios?rev=592264d#592264d4ab6f912e99daca37694d9ba5fab696b6"
+dependencies = [
+ "client 0.1.1",
+ "common 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "config 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "consensus 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
+ "execution 0.1.0 (git+https://github.com/abdelhamidbakhta/helios?rev=592264d)",
 ]
 
 [[package]]
