@@ -28,6 +28,8 @@
 - [Request a Feature](#request-a-feature)
 - [About](#about)
   - [Built With](#built-with)
+- [Architecture](#architecture)
+- [Simple usage overview](#simple-usage-overview)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -72,6 +74,17 @@
 - [helios](https://github.com/a16z/helios)
 - [ethers-rs](https://github.com/gakonst/ethers-rs)
 
+## Architecture
+
+Here is a high level overview of the architecture of Beerus.
+
+[![Beerus architecture](docs/images/beerus-architecture-v1.0.png)](docs/images/beerus-architecture-v1.0.png)
+
+## Simple usage overview
+
+Here is a simple overview of how Beerus work. The example is for querying a storage value of a StarkNet contract.
+
+[![Beerus Query Contract Storage ](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
 ## Getting Started
 
 ### Prerequisites
