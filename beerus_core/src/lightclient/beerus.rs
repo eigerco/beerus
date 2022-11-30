@@ -6,7 +6,11 @@ use ethers::{
 };
 
 use eyre::Result;
-use helios::client::{Client, ClientBuilder, FileDB};
+use helios::types::CallOpts;
+use helios::{
+    client::{Client, ClientBuilder, FileDB},
+    types::BlockTag,
+};
 
 use super::starknet::StarkNetLightClient;
 
@@ -20,7 +24,7 @@ pub enum SyncStatus {
 pub trait Beerus {
     async fn start(&mut self) -> Result<()>;
     fn sync_status(&self) -> SyncStatus;
-    fn starknet_state_root(&self) -> Result<U256>;
+    async fn starknet_state_root(&self) -> Result<U256>;
 }
 
 /// Beerus Light Client service.
@@ -42,6 +46,7 @@ impl BeerusLightClient {
             .network(ethereum_network)
             .consensus_rpc(&config.ethereum_consensus_rpc)
             .execution_rpc(&config.ethereum_execution_rpc)
+            .checkpoint("c93123ff83f8bd1fdbe3a0dbd8cfa3b491a3eda66ecd49fa21c4fd82985ed73b")
             .build()?;
         // Build the StarkNet light client.
         let starknet_lightclient = StarkNetLightClient::new(&config)?;
@@ -75,28 +80,36 @@ impl Beerus for BeerusLightClient {
     }
 
     /// Get the StarkNet state root.
-    fn starknet_state_root(&self) -> Result<U256> {
+    async fn starknet_state_root(&self) -> Result<U256> {
         // Get the StarkNet core contract address.
-        let _starknet_core_contract_address = &self.config.starknet_core_contract_address;
+        let starknet_core_contract_address = &self.config.starknet_core_contract_address;
 
         let abi: Abi = serde_json::from_str(
-            r#"[{"inputs":[],"name":"stateRoot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]]"#,
+            r#"[{"inputs":[],"name":"stateRoot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]"#,
         )?;
-        let _data = encode_function_data((), abi, "stateRoot")?;
+        let data = encode_function_data((), abi, "stateRoot")?;
+        let data = data.to_vec();
         // TODO: Make it work
-        // let data = ethers::contract::encode_with
         // Get the StarkNet state root.
-        // let call_opts = CallOpts {
-        //     from: None,
-        //     to: _starknet_core_contract_address,
-        //     gas: None,
-        //     gas_price: None,
-        //     value: None,
-        //     data,
-        // };
-        // self.ethereum_lightclient.call(call_opts, BlockTag::Latest);
+        let call_opts = CallOpts {
+            from: None,
+            to: *starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        println!("Invoking StarkNet state root");
+        let starknet_root = self
+            .ethereum_lightclient
+            .call(&call_opts, BlockTag::Latest)
+            .await?;
+
+        println!("StarkNet state root: {:?}", starknet_root);
 
         // TODO: call Helios to get the StarkNet state root from the StarkNet core contract.
+
         todo!()
     }
 }
