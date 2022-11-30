@@ -1,6 +1,10 @@
 use crate::config::Config;
 use async_trait::async_trait;
-use ethers::types::U256;
+use ethers::{
+    abi::{Abi, AbiError, Tokenize},
+    types::{Bytes, U256},
+};
+
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
 
@@ -48,6 +52,12 @@ impl BeerusLightClient {
         })
     }
 }
+/// Helper for ABI encoding arguments for a specific function
+fn encode_function_data<T: Tokenize>(args: T, abi: Abi, name: &str) -> Result<Bytes, AbiError> {
+    let function = abi.function(name)?;
+    let tokens = args.into_tokens();
+    Ok(function.encode_input(&tokens).map(Into::into)?)
+}
 
 #[async_trait]
 impl Beerus for BeerusLightClient {
@@ -68,6 +78,24 @@ impl Beerus for BeerusLightClient {
     fn starknet_state_root(&self) -> Result<U256> {
         // Get the StarkNet core contract address.
         let _starknet_core_contract_address = &self.config.starknet_core_contract_address;
+
+        let abi: Abi = serde_json::from_str(
+            r#"[{"inputs":[],"name":"stateRoot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]]"#,
+        )?;
+        let _data = encode_function_data((), abi, "stateRoot")?;
+        // TODO: Make it work
+        // let data = ethers::contract::encode_with
+        // Get the StarkNet state root.
+        // let call_opts = CallOpts {
+        //     from: None,
+        //     to: _starknet_core_contract_address,
+        //     gas: None,
+        //     gas_price: None,
+        //     value: None,
+        //     data,
+        // };
+        // self.ethereum_lightclient.call(call_opts, BlockTag::Latest);
+
         // TODO: call Helios to get the StarkNet state root from the StarkNet core contract.
         todo!()
     }
