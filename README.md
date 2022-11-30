@@ -28,6 +28,7 @@
 - [Request a Feature](#request-a-feature)
 - [About](#about)
   - [Built With](#built-with)
+- [Architecture](#architecture)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -71,6 +72,13 @@
 - [Rust](https://www.rust-lang.org/)
 - [helios](https://github.com/a16z/helios)
 - [ethers-rs](https://github.com/gakonst/ethers-rs)
+
+## Architecture
+
+Here is a high level overview of the architecture of Beerus.
+
+[![Beerus architecture](docs/images/beerus-architecture.svg)](docs/images/beerus-architecture.svg)
+
 
 ## Getting Started
 
