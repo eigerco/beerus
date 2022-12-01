@@ -25,6 +25,14 @@ impl EthereumLightClient for HeliosLightClient {
         // Wrap the Helios call.
         self.helios_light_client.call(opts, block).await
     }
+
+    async fn get_balance(
+        &self,
+        address: &ethers::types::Address,
+        block: helios::types::BlockTag,
+    ) -> eyre::Result<primitive_types::U256> {
+        self.helios_light_client.get_balance(address, block).await
+    }
 }
 
 /// HeliosLightClient non-trait functions.

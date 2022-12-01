@@ -1,6 +1,9 @@
 use beerus_core::{
     config::Config,
-    lightclient::beerus::{Beerus, BeerusLightClient},
+    lightclient::{
+        beerus::{Beerus, BeerusLightClient},
+        ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
+    },
 };
 use log::debug;
 use std::{str::FromStr, sync::Arc};
@@ -13,7 +16,7 @@ use super::resp::QueryBalanceResponse;
 /// Ethereum API endpoints handler.
 pub struct EthereumAPI {
     /// The Beerus light client.
-    beerus: Arc<BeerusLightClient>,
+    beerus: Arc<BeerusLightClient<HeliosLightClient>>,
 }
 
 impl EthereumAPI {

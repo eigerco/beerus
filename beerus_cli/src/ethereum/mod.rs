@@ -1,6 +1,9 @@
 use beerus_core::{
     config::Config,
-    lightclient::beerus::{Beerus, BeerusLightClient},
+    lightclient::{
+        beerus::{Beerus, BeerusLightClient},
+        ethereum::ethereum::EthereumLightClient,
+    },
 };
 use ethers::{types::Address, utils};
 use eyre::Result;

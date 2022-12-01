@@ -1,5 +1,7 @@
+use ethers::types::Address;
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
+use primitive_types::U256;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.
@@ -26,4 +28,17 @@ pub trait EthereumLightClient {
     /// # TODO
     /// Add examples.
     async fn call(&self, opts: &CallOpts, block: BlockTag) -> Result<Vec<u8>>;
+
+    /// Get the balance of an account.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `address` - Address of the account.
+    /// * `block` - Block tag.
+    /// # Returns
+    /// The balance of the account.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256>;
 }
