@@ -291,6 +291,7 @@ dependencies = [
  "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "helios",
+ "hex",
  "primitive-types 0.11.1",
  "revm",
  "serde",
