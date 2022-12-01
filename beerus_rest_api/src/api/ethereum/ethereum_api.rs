@@ -46,20 +46,15 @@ impl EthereumAPI {
         // TODO: Make the block tag configurable.
         let block = BlockTag::Latest;
         // Query the balance of the Ethereum address.
-        /*let balance = beerus
-        .ethereum_lightclient
-        .get_balance(&addr, block)
-        .await?;*/
+        let balance = beerus
+            .ethereum_lightclient
+            .get_balance(&addr, block)
+            .await?;
         // Format the balance in Ether.
-        /*let balance_in_eth = utils::format_units(balance, "ether")?;
+        let balance_in_eth = utils::format_units(balance, "ether")?;
         Ok(QueryBalanceResponse {
             address: address.to_string(),
             balance: balance_in_eth,
-            unit: "ETH".to_string(),
-        })*/
-        Ok(QueryBalanceResponse {
-            address: address.to_string(),
-            balance: "0".to_string(),
             unit: "ETH".to_string(),
         })
     }
