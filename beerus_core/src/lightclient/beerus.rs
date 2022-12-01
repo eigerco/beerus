@@ -6,13 +6,13 @@ use ethers::{
 };
 
 use eyre::Result;
+use helios::types::BlockTag;
 use helios::types::CallOpts;
-use helios::{
-    client::{Client, ClientBuilder, FileDB},
-    types::BlockTag,
-};
 
-use super::starknet::StarkNetLightClient;
+use super::{
+    ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
+    starknet::StarkNetLightClient,
+};
 
 pub enum SyncStatus {
     NotSynced,
@@ -28,26 +28,20 @@ pub trait Beerus {
 }
 
 /// Beerus Light Client service.
-pub struct BeerusLightClient {
+pub struct BeerusLightClient<T: EthereumLightClient> {
     /// Global configuration.
     pub config: Config,
     /// Ethereum light client.
-    pub ethereum_lightclient: Client<FileDB>,
+    pub ethereum_lightclient: T,
     /// StarkNet light client.
     pub starknet_lightclient: StarkNetLightClient,
 }
 
-impl BeerusLightClient {
+impl BeerusLightClient<HeliosLightClient> {
     /// Create a new Beerus Light Client service.
     pub fn new(config: Config) -> Result<Self> {
-        let ethereum_network = config.ethereum_network()?;
         // Build the Ethereum light client.
-        let ethereum_lightclient = ClientBuilder::new()
-            .network(ethereum_network)
-            .consensus_rpc(&config.ethereum_consensus_rpc)
-            .execution_rpc(&config.ethereum_execution_rpc)
-            .checkpoint("c93123ff83f8bd1fdbe3a0dbd8cfa3b491a3eda66ecd49fa21c4fd82985ed73b")
-            .build()?;
+        let ethereum_lightclient = HeliosLightClient::new(&config)?;
         // Build the StarkNet light client.
         let starknet_lightclient = StarkNetLightClient::new(&config)?;
         Ok(Self {
@@ -65,7 +59,7 @@ fn encode_function_data<T: Tokenize>(args: T, abi: Abi, name: &str) -> Result<By
 }
 
 #[async_trait]
-impl Beerus for BeerusLightClient {
+impl Beerus for BeerusLightClient<HeliosLightClient> {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     async fn start(&mut self) -> Result<()> {
         // Start the Ethereum light client.
