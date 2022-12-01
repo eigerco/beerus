@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: my-artifact
-          path: path/to/artifact/
+          path: report.json
           if-no-files-found: error
 
   fmt:
