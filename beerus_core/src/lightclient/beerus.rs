@@ -89,6 +89,8 @@ impl Beerus for BeerusLightClient {
         )?;
         let data = encode_function_data((), abi, "stateRoot")?;
         let data = data.to_vec();
+
+        println!("data: {:?}", data);
         // TODO: Make it work
         // Get the StarkNet state root.
         let call_opts = CallOpts {
