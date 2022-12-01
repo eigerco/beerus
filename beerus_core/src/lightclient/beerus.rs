@@ -90,9 +90,7 @@ impl Beerus for BeerusLightClient {
         let data = encode_function_data((), abi, "stateRoot")?;
         let data = data.to_vec();
 
-        println!("data: {:?}", data);
-        // TODO: Make it work
-        // Get the StarkNet state root.
+        // Build the call options.
         let call_opts = CallOpts {
             from: None,
             to: *starknet_core_contract_address,
@@ -102,16 +100,15 @@ impl Beerus for BeerusLightClient {
             data: Some(data),
         };
 
-        println!("Invoking StarkNet state root");
+        // Call the StarkNet core contract.
         let starknet_root = self
             .ethereum_lightclient
             .call(&call_opts, BlockTag::Latest)
             .await?;
 
-        println!("StarkNet state root: {:?}", starknet_root);
+        // Convert the response bytes to a U256.
+        let starknet_root = U256::from_big_endian(&starknet_root);
 
-        // TODO: call Helios to get the StarkNet state root from the StarkNet core contract.
-
-        todo!()
+        Ok(starknet_root)
     }
 }
