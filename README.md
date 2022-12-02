@@ -21,6 +21,8 @@
 
 </div>
 
+![](docs/images/beerus.gif)
+
 <details open="open">
 <summary>Table of Contents</summary>
 
