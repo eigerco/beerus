@@ -1,4 +1,6 @@
 pub mod ethereum;
+pub mod starknet;
+
 use rocket::{
     http::{ContentType, Status},
     response::{self, Responder},
