@@ -1,9 +1,6 @@
-use beerus_core::{
-    config::Config,
-    lightclient::{
-        beerus::{Beerus, BeerusLightClient},
-        ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
-    },
+use beerus_core::lightclient::{
+    beerus::BeerusLightClient,
+    ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
 };
 use log::debug;
 use std::{str::FromStr, sync::Arc};
@@ -21,14 +18,10 @@ pub struct EthereumAPI {
 
 impl EthereumAPI {
     /// Create a new Ethereum API handler.
-    pub async fn new(config: Config) -> Result<Self> {
-        // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(config)?;
-        // Start the Beerus light client.
-        beerus.start().await?;
-        Ok(Self {
-            beerus: Arc::from(beerus),
-        })
+    pub fn new(beerus: Arc<BeerusLightClient<HeliosLightClient>>) -> Self {
+        Self {
+            beerus: beerus.clone(),
+        }
     }
 
     /// Query the balance of an Ethereum address.
