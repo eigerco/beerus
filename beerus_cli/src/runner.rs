@@ -1,3 +1,5 @@
+use crate::{model::StarkNetSubCommands, starknet};
+
 use super::{
     ethereum,
     model::{Cli, Commands, EthereumSubCommands},
@@ -15,6 +17,11 @@ pub async fn run(config: Config) -> Result<()> {
         Commands::Ethereum(ethereum_commands) => match &ethereum_commands.command {
             EthereumSubCommands::QueryBalance { address } => {
                 ethereum::query_balance(config, address.to_string()).await
+            }
+        },
+        Commands::StarkNet(starknet_commands) => match &starknet_commands.command {
+            StarkNetSubCommands::QueryStateRoot {} => {
+                starknet::query_starknet_state_root(config).await
             }
         },
     }
