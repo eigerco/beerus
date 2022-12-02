@@ -17,7 +17,11 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Ethereum related subcommands
+    #[command(about = "Ethereum related subcommands")]
     Ethereum(EthereumCommands),
+    /// StarkNet related subcommands
+    #[command(name = "starknet", about = "StarkNet related subcommands")]
+    StarkNet(StarkNetCommands),
 }
 
 /// Ethereum related commands.
@@ -37,4 +41,19 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+}
+
+/// StarkNet related commands.
+#[derive(Parser, Debug)]
+pub struct StarkNetCommands {
+    /// StarkNet related subcommands.
+    #[command(subcommand)]
+    pub command: StarkNetSubCommands,
+}
+
+/// StarkNet related subcommands.
+#[derive(Subcommand, Debug)]
+pub enum StarkNetSubCommands {
+    /// Query the state root of StarkNet.
+    QueryStateRoot {},
 }
