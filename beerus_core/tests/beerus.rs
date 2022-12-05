@@ -1,9 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use beerus_core::{
-        config::Config,
-        lightclient::beerus::{Beerus, BeerusLightClient},
-    };
+    use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
 
     // TODO: Disabled because of Helios instability.
     // TODO: We need to think how we want to handle integrations tests
