@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use helios::client::{Client, ClientBuilder, FileDB};
 
 use crate::config::Config;
@@ -11,6 +12,7 @@ pub struct HeliosLightClient {
 }
 
 /// Implementation of `EthereumLightClient` for Helios.
+#[async_trait]
 impl EthereumLightClient for HeliosLightClient {
     async fn start(&mut self) -> eyre::Result<()> {
         // Start the Helios light client.

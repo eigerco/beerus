@@ -1,6 +1,5 @@
 use beerus_core::lightclient::{
-    beerus::BeerusLightClient,
-    ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
+    beerus::BeerusLightClient, ethereum::ethereum::EthereumLightClient,
 };
 use log::debug;
 use std::{str::FromStr, sync::Arc};
@@ -11,14 +10,14 @@ use helios::types::BlockTag;
 
 use super::resp::QueryBalanceResponse;
 /// Ethereum API endpoints handler.
-pub struct EthereumAPI {
+pub struct EthereumAPI<'a> {
     /// The Beerus light client.
-    beerus: Arc<BeerusLightClient<HeliosLightClient>>,
+    beerus: Arc<BeerusLightClient<'a>>,
 }
 
-impl EthereumAPI {
+impl<'a> EthereumAPI<'a> {
     /// Create a new Ethereum API handler.
-    pub fn new(beerus: Arc<BeerusLightClient<HeliosLightClient>>) -> Self {
+    pub fn new(beerus: Arc<BeerusLightClient<'a>>) -> Self {
         Self {
             beerus: beerus.clone(),
         }
@@ -55,3 +54,6 @@ impl EthereumAPI {
         })
     }
 }
+
+unsafe impl Send for EthereumAPI<'_> {}
+unsafe impl Sync for EthereumAPI<'_> {}

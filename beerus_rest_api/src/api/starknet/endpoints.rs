@@ -6,7 +6,7 @@ use crate::api::ApiResponse;
 
 #[get("/starknet/state/root")]
 pub async fn query_starknet_state_root(
-    starknet_api: &State<StarkNetAPI>,
+    starknet_api: &State<StarkNetAPI<'static>>,
 ) -> ApiResponse<QueryStateRootResponse> {
     ApiResponse::from_result(starknet_api.query_state_root().await)
 }

@@ -5,10 +5,7 @@ use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
 
-use super::{
-    ethereum::{ethereum::EthereumLightClient, helios::HeliosLightClient},
-    starknet::StarkNetLightClient,
-};
+use super::{ethereum::ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 
 /// Enum representing the different synchrnization status of the light client.
 pub enum SyncStatus {
@@ -18,27 +15,27 @@ pub enum SyncStatus {
 }
 
 /// Beerus Light Client service.
-pub struct BeerusLightClient<T: EthereumLightClient> {
+pub struct BeerusLightClient<'a> {
     /// Global configuration.
-    pub config: Config,
+    pub config: &'a Config,
     /// Ethereum light client.
-    pub ethereum_lightclient: T,
+    pub ethereum_lightclient: Box<&'a mut dyn EthereumLightClient>,
     /// StarkNet light client.
     pub starknet_lightclient: StarkNetLightClient,
     /// Sync status.
     pub sync_status: SyncStatus,
 }
 
-impl BeerusLightClient<HeliosLightClient> {
+impl<'a> BeerusLightClient<'a> {
     /// Create a new Beerus Light Client service.
-    pub fn new(config: Config) -> Result<Self> {
-        // Build the Ethereum light client.
-        let ethereum_lightclient = HeliosLightClient::new(&config)?;
-        // Build the StarkNet light client.
-        let starknet_lightclient = StarkNetLightClient::new(&config)?;
+    pub fn new(
+        config: &'a Config,
+        ethereum_lightclient: &'a mut dyn EthereumLightClient,
+        starknet_lightclient: StarkNetLightClient,
+    ) -> Result<Self> {
         Ok(Self {
             config,
-            ethereum_lightclient,
+            ethereum_lightclient: Box::new(ethereum_lightclient),
             starknet_lightclient,
             sync_status: SyncStatus::NotSynced,
         })

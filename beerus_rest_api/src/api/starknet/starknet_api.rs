@@ -8,14 +8,14 @@ use eyre::Result;
 use super::resp::QueryStateRootResponse;
 
 /// StarkNet API endpoints handler.
-pub struct StarkNetAPI {
+pub struct StarkNetAPI<'a> {
     /// The Beerus light client.
-    beerus: Arc<BeerusLightClient<HeliosLightClient>>,
+    beerus: Arc<BeerusLightClient<'a>>,
 }
 
-impl StarkNetAPI {
+impl<'a> StarkNetAPI<'a> {
     /// Create a new StarkNet API handler.
-    pub fn new(beerus: Arc<BeerusLightClient<HeliosLightClient>>) -> Self {
+    pub fn new(beerus: Arc<BeerusLightClient<'a>>) -> Self {
         Self {
             beerus: beerus.clone(),
         }
@@ -32,3 +32,6 @@ impl StarkNetAPI {
         })
     }
 }
+
+unsafe impl Send for StarkNetAPI<'_> {}
+unsafe impl Sync for StarkNetAPI<'_> {}
