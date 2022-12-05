@@ -1,5 +1,4 @@
 use crate::config::Config;
-use async_trait::async_trait;
 use ethers::{
     abi::{Abi, AbiError, Tokenize},
     types::{Bytes, U256},
@@ -18,13 +17,6 @@ pub enum SyncStatus {
     NotSynced,
     Syncing,
     Synced,
-}
-
-#[async_trait]
-pub trait Beerus {
-    async fn start(&mut self) -> Result<()>;
-    fn sync_status(&self) -> SyncStatus;
-    async fn starknet_state_root(&self) -> Result<U256>;
 }
 
 /// Beerus Light Client service.
@@ -58,10 +50,9 @@ fn encode_function_data<T: Tokenize>(args: T, abi: Abi, name: &str) -> Result<By
     Ok(function.encode_input(&tokens).map(Into::into)?)
 }
 
-#[async_trait]
-impl Beerus for BeerusLightClient<HeliosLightClient> {
+impl BeerusLightClient<HeliosLightClient> {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
-    async fn start(&mut self) -> Result<()> {
+    pub async fn start(&mut self) -> Result<()> {
         // Start the Ethereum light client.
         self.ethereum_lightclient.start().await?;
         // Start the StarkNet light client.
@@ -69,12 +60,12 @@ impl Beerus for BeerusLightClient<HeliosLightClient> {
         Ok(())
     }
 
-    fn sync_status(&self) -> SyncStatus {
+    pub fn sync_status(&self) -> SyncStatus {
         todo!()
     }
 
     /// Get the StarkNet state root.
-    async fn starknet_state_root(&self) -> Result<U256> {
+    pub async fn starknet_state_root(&self) -> Result<U256> {
         // Get the StarkNet core contract address.
         let starknet_core_contract_address = &self.config.starknet_core_contract_address;
 

@@ -1,7 +1,4 @@
-use beerus_core::{
-    config::Config,
-    lightclient::beerus::{Beerus, BeerusLightClient},
-};
+use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
 use eyre::Result;
 use log::debug;
 

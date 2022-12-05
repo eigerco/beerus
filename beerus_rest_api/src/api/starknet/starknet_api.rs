@@ -1,9 +1,6 @@
 use std::sync::Arc;
 
-use beerus_core::lightclient::{
-    beerus::{Beerus, BeerusLightClient},
-    ethereum::helios::HeliosLightClient,
-};
+use beerus_core::lightclient::{beerus::BeerusLightClient, ethereum::helios::HeliosLightClient};
 use log::debug;
 
 use eyre::Result;
