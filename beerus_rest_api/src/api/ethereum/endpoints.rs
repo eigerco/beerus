@@ -8,7 +8,7 @@ use crate::api::ApiResponse;
 #[get("/ethereum/balance/<address>")]
 pub async fn query_balance(
     address: &str,
-    ethereum_api: &State<EthereumAPI>,
+    ethereum_api: &State<EthereumAPI<'static>>,
 ) -> ApiResponse<QueryBalanceResponse> {
     ApiResponse::from_result(ethereum_api.query_balance(address).await)
 }
