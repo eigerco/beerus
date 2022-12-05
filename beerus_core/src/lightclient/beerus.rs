@@ -1,8 +1,5 @@
-use crate::config::Config;
-use ethers::{
-    abi::{Abi, AbiError, Tokenize},
-    types::{Bytes, U256},
-};
+use crate::{config::Config, ethers_helper};
+use ethers::{abi::Abi, types::U256};
 
 use eyre::Result;
 use helios::types::BlockTag;
@@ -13,6 +10,7 @@ use super::{
     starknet::StarkNetLightClient,
 };
 
+/// Enum representing the different synchrnization status of the light client.
 pub enum SyncStatus {
     NotSynced,
     Syncing,
@@ -27,6 +25,8 @@ pub struct BeerusLightClient<T: EthereumLightClient> {
     pub ethereum_lightclient: T,
     /// StarkNet light client.
     pub starknet_lightclient: StarkNetLightClient,
+    /// Sync status.
+    pub sync_status: SyncStatus,
 }
 
 impl BeerusLightClient<HeliosLightClient> {
@@ -40,28 +40,30 @@ impl BeerusLightClient<HeliosLightClient> {
             config,
             ethereum_lightclient,
             starknet_lightclient,
+            sync_status: SyncStatus::NotSynced,
         })
     }
-}
-/// Helper for ABI encoding arguments for a specific function
-fn encode_function_data<T: Tokenize>(args: T, abi: Abi, name: &str) -> Result<Bytes, AbiError> {
-    let function = abi.function(name)?;
-    let tokens = args.into_tokens();
-    Ok(function.encode_input(&tokens).map(Into::into)?)
-}
 
-impl BeerusLightClient<HeliosLightClient> {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     pub async fn start(&mut self) -> Result<()> {
-        // Start the Ethereum light client.
-        self.ethereum_lightclient.start().await?;
-        // Start the StarkNet light client.
-        self.starknet_lightclient.start().await?;
+        match self.sync_status {
+            // If the light client is not synced, start the synchronization.
+            SyncStatus::NotSynced => {
+                // Start the Ethereum light client.
+                self.ethereum_lightclient.start().await?;
+                // Start the StarkNet light client.
+                self.starknet_lightclient.start().await?;
+                self.sync_status = SyncStatus::Synced;
+            }
+            // If the light client is already syncing or not synced, do nothing.
+            _ => (),
+        }
         Ok(())
     }
 
-    pub fn sync_status(&self) -> SyncStatus {
-        todo!()
+    /// Return the current syncrhonization status.
+    pub fn sync_status(&self) -> &SyncStatus {
+        &self.sync_status
     }
 
     /// Get the StarkNet state root.
@@ -72,7 +74,7 @@ impl BeerusLightClient<HeliosLightClient> {
         let abi: Abi = serde_json::from_str(
             r#"[{"inputs":[],"name":"stateRoot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]"#,
         )?;
-        let data = encode_function_data((), abi, "stateRoot")?;
+        let data = ethers_helper::encode_function_data((), abi, "stateRoot")?;
         let data = data.to_vec();
 
         // Build the call options.
