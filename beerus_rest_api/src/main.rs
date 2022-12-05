@@ -1,9 +1,6 @@
 use std::sync::Arc;
 
-use beerus_core::{
-    config::Config,
-    lightclient::beerus::{Beerus, BeerusLightClient},
-};
+use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
 use beerus_rest_api::api::{
     ethereum::{self, ethereum_api::EthereumAPI},
     starknet::{self, starknet_api::StarkNetAPI},
