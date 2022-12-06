@@ -10,6 +10,7 @@ use starknet::providers::jsonrpc::models::FunctionCall;
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 
 /// Enum representing the different synchrnization status of the light client.
+#[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
     NotSynced,
     Syncing,
