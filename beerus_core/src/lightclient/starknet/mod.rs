@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use eyre::Result;
+use mockall::automock;
 
 use crate::config::Config;
+#[automock]
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&mut self) -> Result<()>;
