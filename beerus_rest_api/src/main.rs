@@ -7,6 +7,7 @@ use beerus_core::{
 };
 use beerus_rest_api::api::{ethereum, starknet};
 use log::info;
+use rocket::{Build, Rocket};
 
 #[macro_use]
 extern crate rocket;
@@ -17,7 +18,7 @@ fn index() -> &'static str {
 }
 
 #[launch]
-async fn rocket() -> _ {
+async fn rocket() -> Rocket<Build> {
     env_logger::init();
     info!("starting Beerus Rest API...");
     // Create config.
@@ -50,4 +51,26 @@ async fn rocket() -> _ {
             starknet::endpoints::query_starknet_get_storage_at,
         ],
     )
+}
+
+#[cfg(test)]
+mod test {
+    use super::rocket;
+    use rocket::{http::Status, local::asynchronous::Client};
+    /// Test the `query_balance` endpoint.
+    /// `/ethereum/balance/<address>`
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_balance_then_ok() {
+        let client = Client::tracked(rocket().await)
+            .await
+            .expect("valid rocket instance");
+        let response = client
+            .get(uri!(
+                "/ethereum/balance/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "Hello, world!");
+    }
 }
