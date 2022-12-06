@@ -390,6 +390,7 @@ dependencies = [
  "rocket",
  "serde",
  "serde_json",
+ "starknet",
 ]
 
 [[package]]
