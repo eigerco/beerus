@@ -4,12 +4,14 @@ use async_trait::async_trait;
 use ethers::types::Address;
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
+use mockall::automock;
 use primitive_types::U256;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.
 // TODO: For now there is a dependency on Helios types, we should abstract this away eventually.
 // TODO: Maybe we can let the possibility to get access to the underlying light client anyway.
+#[automock]
 #[async_trait]
 pub trait EthereumLightClient: Send + Sync {
     /// Start and synchronise the Ethereum light client.
