@@ -34,13 +34,13 @@ impl BeerusLightClient {
         config: Config,
         ethereum_lightclient: Box<dyn EthereumLightClient>,
         starknet_lightclient: Box<dyn StarkNetLightClient>,
-    ) -> Result<Self> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             config,
             ethereum_lightclient,
             starknet_lightclient,
             sync_status: SyncStatus::NotSynced,
-        })
+        }
     }
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
