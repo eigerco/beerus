@@ -13,6 +13,7 @@ mod tests {
     use ethers::types::Address;
     use eyre::eyre;
     use primitive_types::U256;
+    use starknet::{core::types::FieldElement, macros::selector};
 
     // TODO: Disabled because of Helios instability.
     // TODO: We need to think how we want to handle integrations tests
@@ -24,7 +25,7 @@ mod tests {
         // Create a new Ethereum light client.
         let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
         // Create a new StarkNet light client.
-        let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
+        let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
         // Create a new Beerus light client.
         let mut beerus = BeerusLightClient::new(
             config,
@@ -41,12 +42,8 @@ mod tests {
     /// Test that starknet state root is returned when the Ethereum light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_state_root_then_should_work() {
-        // Create a new Ethereum light client mock.
-        let mut ethereum_lightclient_mock = MockEthereumLightClient::new();
-        // Create a new StarkNet light client mock.
-        let starknet_lightclient_mock = MockStarkNetLightClient::new();
-        // Create a new Config mock.
-        let config = mock_config();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Expected state root.
         let expected_starknet_state_root =
@@ -81,15 +78,11 @@ mod tests {
     #[tokio::test]
     async fn given_ethereum_light_client_returns_error_when_starknet_state_root_then_should_fail_with_same_error(
     ) {
-        // Create a new Ethereum light client mock.
-        let mut ethereum_lightclient_mock = MockEthereumLightClient::new();
-        // Create a new StarkNet light client mock.
-        let starknet_lightclient_mock = MockStarkNetLightClient::new();
-        // Create a new Config mock.
-        let config = mock_config();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "Ethereum client out of sync";
         // Set the expected return value for the Ethereum light client mock.
+        let expected_error = "Ethereum client out of sync";
         ethereum_lightclient_mock
             .expect_call()
             .times(1)
@@ -114,8 +107,96 @@ mod tests {
         );
     }
 
-    fn mock_config() -> Config {
-        Config {
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_call_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_result = vec![
+            FieldElement::from_hex_be("0x4e28f97185e801").unwrap(),
+            FieldElement::from_hex_be("0x0").unwrap(),
+        ];
+        // Because FieldElement doesn't have the copy trait
+        let expected_result2 = expected_result.clone();
+
+        // Set the expected return value for the Ethereum light client mock.
+        starknet_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_req| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        )
+        .unwrap();
+
+        // Perform the test call.
+        let res = beerus
+            .starknet_call_contract(
+                FieldElement::from_hex_be(
+                    "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                )
+                .unwrap(),
+                selector!("balanceOf"),
+                vec![FieldElement::from_hex_be(
+                    "0x0000000000000000000000000000000000000000000000000000000000000001",
+                )
+                .unwrap()],
+            )
+            .await
+            .unwrap();
+
+        // Assert that the result is correct.
+        assert!(!res.is_empty());
+        assert!(res == expected_result2);
+    }
+
+    #[tokio::test]
+    async fn given_starknet_light_client_returns_error_when_starknet_call_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = "Wrong url";
+        starknet_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_req| Err(eyre!(expected_error)));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        )
+        .unwrap();
+
+        // Perform the test call.
+        let res = beerus
+            .starknet_call_contract(
+                FieldElement::from_hex_be(
+                    "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                )
+                .unwrap(),
+                selector!("balanceOf"),
+                vec![FieldElement::from_hex_be(
+                    "0x0000000000000000000000000000000000000000000000000000000000000001",
+                )
+                .unwrap()],
+            )
+            .await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error);
+    }
+
+    fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
+        let config = Config {
             ethereum_network: "mainnet".to_string(),
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
@@ -124,6 +205,11 @@ mod tests {
                 "0x0000000000000000000000000000000000000000",
             )
             .unwrap(),
-        }
+        };
+        (
+            config,
+            MockEthereumLightClient::new(),
+            MockStarkNetLightClient::new(),
+        )
     }
 }

@@ -26,7 +26,7 @@ async fn rocket() -> _ {
     // Create a new Ethereum light client.
     let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
     // Create a new StarkNet light client.
-    let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
+    let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
     // Create a new Beerus light client.
     let mut beerus = BeerusLightClient::new(
         config,

@@ -4,6 +4,8 @@ use ethers::{abi::Abi, types::U256};
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
+use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::FunctionCall;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 
@@ -89,5 +91,22 @@ impl BeerusLightClient {
         let starknet_root = U256::from_big_endian(&starknet_root);
 
         Ok(starknet_root)
+    }
+
+    pub async fn starknet_call_contract(
+        &self,
+        contract_address: FieldElement,
+        entry_point_selector: FieldElement,
+        calldata: Vec<FieldElement>,
+    ) -> Result<Vec<FieldElement>> {
+        let opts = FunctionCall {
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+        // Call the StarkNet light client.
+        let result = self.starknet_lightclient.call(opts).await?;
+
+        Ok(result)
     }
 }
