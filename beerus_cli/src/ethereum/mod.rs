@@ -21,7 +21,7 @@ pub async fn query_balance(config: Config, address: String) -> Result<()> {
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
-    )?;
+    );
     // Start the Beerus light client.
     beerus.start().await?;
     // Parse the Ethereum address.

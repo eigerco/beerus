@@ -31,8 +31,7 @@ mod tests {
             config,
             Box::new(ethereum_lightclient),
             Box::new(starknet_lightclient),
-        )
-        .unwrap();
+        );
         // Start the Beerus light client.
         beerus.start().await.unwrap();
         let starknet_state_root = beerus.starknet_state_root().await.unwrap();
@@ -64,8 +63,7 @@ mod tests {
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
-        )
-        .unwrap();
+        );
 
         // Perform the test call.
         let starknet_state_root = beerus.starknet_state_root().await.unwrap();
@@ -93,8 +91,7 @@ mod tests {
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
-        )
-        .unwrap();
+        );
 
         // Perform the test call.
         let starknet_state_root_result = beerus.starknet_state_root().await;

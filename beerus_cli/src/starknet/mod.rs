@@ -20,7 +20,7 @@ pub async fn query_starknet_state_root(config: Config) -> Result<()> {
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
-    )?;
+    );
     // Start the Beerus light client.
     debug!("Starting the Beerus light client...");
     beerus.start().await?;

@@ -32,8 +32,7 @@ async fn rocket() -> _ {
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
-    )
-    .unwrap();
+    );
 
     // Start the Beerus light client.
     info!("starting the Beerus light client...");
