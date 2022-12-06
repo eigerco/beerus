@@ -45,7 +45,8 @@ async fn rocket() -> _ {
         routes![
             index,
             ethereum::endpoints::query_balance,
-            starknet::endpoints::query_starknet_state_root
+            starknet::endpoints::query_starknet_state_root,
+            starknet::endpoints::query_starknet_contract_view
         ],
     )
 }

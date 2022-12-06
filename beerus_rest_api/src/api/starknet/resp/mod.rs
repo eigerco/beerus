@@ -5,3 +5,9 @@ use rocket::serde::Serialize;
 pub struct QueryStateRootResponse {
     pub state_root: String,
 }
+
+#[derive(Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryContractViewResponse {
+    pub result: Vec<String>,
+}
