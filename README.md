@@ -41,6 +41,7 @@
     - [Ethereum](#ethereum)
       - [Query balance](#query-balance)
     - [StarkNet](#starknet)
+      - [Query contract view](#query-contract-view)
   - [API](#api)
 - [Roadmap](#roadmap)
 - [Support](#support)
@@ -86,7 +87,8 @@ Here is a high level overview of the architecture of Beerus.
 
 Here is a simple overview of how Beerus work. The example is for querying a storage value of a StarkNet contract.
 
-[![Beerus Query Contract Storage ](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
+[Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
+
 ## Getting Started
 
 ### Prerequisites
@@ -137,6 +139,13 @@ beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d
 ```
 
 #### StarkNet
+
+##### Query contract view
+
+```bash
+beerus-cli starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
+[FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }, FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }]
+```
 
 ### API
 
