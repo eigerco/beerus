@@ -93,6 +93,18 @@ impl BeerusLightClient {
         Ok(starknet_root)
     }
 
+    /// Call starknet contract view.
+    /// This function is used to call a view function of a StarkNet contract.
+    ///
+    /// # Arguments
+    /// * `contract_address` - The StarkNet contract address.
+    /// * `entry_point_selector` - The entry point selector.
+    /// * `calldata` - The calldata.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(Vec<FieldElement>)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
     pub async fn starknet_call_contract(
         &self,
         contract_address: FieldElement,
@@ -105,8 +117,6 @@ impl BeerusLightClient {
             calldata,
         };
         // Call the StarkNet light client.
-        let result = self.starknet_lightclient.call(opts).await?;
-
-        Ok(result)
+        self.starknet_lightclient.call(opts).await
     }
 }

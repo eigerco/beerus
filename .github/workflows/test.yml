@@ -46,7 +46,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: lcov.info
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v3
         with:
