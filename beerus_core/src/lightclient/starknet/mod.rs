@@ -48,13 +48,12 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// `Ok(Vec<FieldElement>)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
     async fn call(&self, request: FunctionCall) -> Result<Vec<FieldElement>> {
-        let response = self
-            .client
+        self.client
             .call(
                 request,
                 &starknet::providers::jsonrpc::models::BlockId::Number(485441),
             )
-            .await?;
-        Ok(response)
+            .await
+            .map_err(|e| eyre::eyre!(e))
     }
 }
