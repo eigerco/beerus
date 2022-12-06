@@ -18,15 +18,14 @@ mod tests {
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
         // Given
-        let config = Config::default();
-        let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
-        let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // When
         let beerus = BeerusLightClient::new(
             config.clone(),
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
         );
 
         // Then
@@ -40,18 +39,17 @@ mod tests {
     #[tokio::test]
     async fn given_normal_conditions_when_call_start_then_should_return_ok() {
         // Given
-        let config = Config::default();
-        let mut ethereum_lightclient = MockEthereumLightClient::new();
-        let mut starknet_lightclient = MockStarkNetLightClient::new();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Mock the `start` method of the Ethereum light client.
-        ethereum_lightclient
+        ethereum_lightclient_mock
             .expect_start()
             .times(1)
             .return_once(move || Ok(()));
 
         // Mock the `start` method of the StarkNet light client.
-        starknet_lightclient
+        starknet_lightclient_mock
             .expect_start()
             .times(1)
             .return_once(move || Ok(()));
@@ -59,8 +57,8 @@ mod tests {
         // When
         let mut beerus = BeerusLightClient::new(
             config.clone(),
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
         );
 
         let result = beerus.start().await;
@@ -80,16 +78,13 @@ mod tests {
     #[tokio::test]
     async fn given_ethereum_lightclient_error_when_call_start_then_should_return_error() {
         // Given
-        let config = Config::default();
-        let mut ethereum_lightclient = MockEthereumLightClient::new();
-        // StarkNet light client is not mocked because it is not used in this test.
-        // Hence it does not need to be mutable.
-        let starknet_lightclient = MockStarkNetLightClient::new();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let expected_error = "Ethereum light client error";
 
         // Mock the `start` method of the Ethereum light client.
-        ethereum_lightclient
+        ethereum_lightclient_mock
             .expect_start()
             .times(1)
             .return_once(move || Err(eyre!(expected_error)));
@@ -97,8 +92,8 @@ mod tests {
         // When
         let mut beerus = BeerusLightClient::new(
             config.clone(),
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
         );
 
         let result = beerus.start().await;
@@ -120,21 +115,20 @@ mod tests {
     #[tokio::test]
     async fn given_starknet_lightclient_error_when_call_start_then_should_return_error() {
         // Given
-        let config = Config::default();
-        let mut ethereum_lightclient = MockEthereumLightClient::new();
-        let mut starknet_lightclient = MockStarkNetLightClient::new();
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let expected_error = "StarkNet light client error";
 
         // Mock the `start` method of the Ethereum light client.
         // We need to mock the `start` method of the Ethereum light client because it is called before the `start` method of the StarkNet light client.
-        ethereum_lightclient
+        ethereum_lightclient_mock
             .expect_start()
             .times(1)
             .return_once(move || Ok(()));
 
         // Mock the `start` method of the StarkNet light client.
-        starknet_lightclient
+        starknet_lightclient_mock
             .expect_start()
             .times(1)
             .return_once(move || Err(eyre!(expected_error)));
@@ -142,8 +136,8 @@ mod tests {
         // When
         let mut beerus = BeerusLightClient::new(
             config.clone(),
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
         );
 
         let result = beerus.start().await;
@@ -246,8 +240,7 @@ mod tests {
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
-        )
-        .unwrap();
+        );
 
         // Perform the test call.
         let res = beerus
@@ -288,8 +281,7 @@ mod tests {
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
-        )
-        .unwrap();
+        );
 
         // Perform the test call.
         let res = beerus
