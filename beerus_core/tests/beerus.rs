@@ -4,8 +4,8 @@ mod tests {
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
-            starknet::{MockStarkNetLightClient, StarkNetLightClientImpl},
+            ethereum::MockEthereumLightClient,
+            starknet::MockStarkNetLightClient,
         },
     };
     use ethers::types::Address;
@@ -18,7 +18,7 @@ mod tests {
     fn when_call_new_then_should_return_beerus_lightclient() {
         // Given
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // When
         let beerus = BeerusLightClient::new(
@@ -39,7 +39,7 @@ mod tests {
     async fn given_normal_conditions_when_call_start_then_should_return_ok() {
         // Given
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // Mock the `start` method of the Ethereum light client.
         ethereum_lightclient_mock
@@ -115,7 +115,7 @@ mod tests {
     async fn given_starknet_lightclient_error_when_call_start_then_should_return_error() {
         // Given
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         let expected_error = "StarkNet light client error";
 
