@@ -7,7 +7,7 @@ homepage.workspace = true
 
 [dependencies]
 async-trait = "0.1.58"
-helios = { git = "https://github.com/a16z/helios"}
+helios = { git = "https://github.com/a16z/helios" }
 ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f" }
 ethers-etherscan = "1.0.0"
 primitive-types = "0.11.1"
@@ -20,3 +20,5 @@ hex = "0.4.3"
 log = "0.4.17"
 env_logger = "0.10.0"
 mockall = "0.11.3"
+url = "2.3.1"
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
