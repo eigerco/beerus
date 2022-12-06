@@ -5,7 +5,7 @@ use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
 
-use super::{ethereum::ethereum::EthereumLightClient, starknet::StarkNetLightClient};
+use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 
 /// Enum representing the different synchrnization status of the light client.
 pub enum SyncStatus {
@@ -15,27 +15,27 @@ pub enum SyncStatus {
 }
 
 /// Beerus Light Client service.
-pub struct BeerusLightClient<'a> {
+pub struct BeerusLightClient {
     /// Global configuration.
-    pub config: &'a Config,
+    pub config: Config,
     /// Ethereum light client.
-    pub ethereum_lightclient: Box<&'a mut dyn EthereumLightClient>,
+    pub ethereum_lightclient: Box<dyn EthereumLightClient>,
     /// StarkNet light client.
-    pub starknet_lightclient: StarkNetLightClient,
+    pub starknet_lightclient: Box<dyn StarkNetLightClient>,
     /// Sync status.
     pub sync_status: SyncStatus,
 }
 
-impl<'a> BeerusLightClient<'a> {
+impl BeerusLightClient {
     /// Create a new Beerus Light Client service.
     pub fn new(
-        config: &'a Config,
-        ethereum_lightclient: &'a mut dyn EthereumLightClient,
-        starknet_lightclient: StarkNetLightClient,
+        config: Config,
+        ethereum_lightclient: Box<dyn EthereumLightClient>,
+        starknet_lightclient: Box<dyn StarkNetLightClient>,
     ) -> Result<Self> {
         Ok(Self {
             config,
-            ethereum_lightclient: Box::new(ethereum_lightclient),
+            ethereum_lightclient,
             starknet_lightclient,
             sync_status: SyncStatus::NotSynced,
         })
@@ -43,17 +43,12 @@ impl<'a> BeerusLightClient<'a> {
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     pub async fn start(&mut self) -> Result<()> {
-        match self.sync_status {
-            // If the light client is not synced, start the synchronization.
-            SyncStatus::NotSynced => {
-                // Start the Ethereum light client.
-                self.ethereum_lightclient.start().await?;
-                // Start the StarkNet light client.
-                self.starknet_lightclient.start().await?;
-                self.sync_status = SyncStatus::Synced;
-            }
-            // If the light client is already syncing or not synced, do nothing.
-            _ => (),
+        if let SyncStatus::NotSynced = self.sync_status {
+            // Start the Ethereum light client.
+            self.ethereum_lightclient.start().await?;
+            // Start the StarkNet light client.
+            self.starknet_lightclient.start().await?;
+            self.sync_status = SyncStatus::Synced;
         }
         Ok(())
     }

@@ -1,15 +1,23 @@
+use async_trait::async_trait;
 use eyre::Result;
 
 use crate::config::Config;
+#[async_trait]
+pub trait StarkNetLightClient: Send + Sync {
+    async fn start(&mut self) -> Result<()>;
+}
 
-pub struct StarkNetLightClient {}
+pub struct StarkNetLightClientImpl {}
 
-impl StarkNetLightClient {
-    pub fn new(_config: &Config) -> Result<Self> {
+impl StarkNetLightClientImpl {
+    pub fn new(_config: Config) -> Result<Self> {
         Ok(Self {})
     }
+}
 
-    pub async fn start(&mut self) -> Result<()> {
+#[async_trait]
+impl StarkNetLightClient for StarkNetLightClientImpl {
+    async fn start(&mut self) -> Result<()> {
         Ok(())
     }
 }

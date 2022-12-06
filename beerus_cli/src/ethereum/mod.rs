@@ -1,8 +1,8 @@
 use beerus_core::{
     config::Config,
     lightclient::{
-        beerus::BeerusLightClient, ethereum::helios::HeliosLightClient,
-        starknet::StarkNetLightClient,
+        beerus::BeerusLightClient, ethereum::helios_lightclient::HeliosLightClient,
+        starknet::StarkNetLightClientImpl,
     },
 };
 use ethers::{types::Address, utils};
@@ -13,12 +13,15 @@ use std::str::FromStr;
 /// Query the balance of an Ethereum address.
 pub async fn query_balance(config: Config, address: String) -> Result<()> {
     // Create a new Ethereum light client.
-    let mut ethereum_lightclient = HeliosLightClient::new(&config)?;
+    let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
     // Create a new StarkNet light client.
-    let starknet_lightclient = StarkNetLightClient::new(&config)?;
+    let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
     // Create a new Beerus light client.
-    let mut beerus =
-        BeerusLightClient::new(&config, &mut ethereum_lightclient, starknet_lightclient)?;
+    let mut beerus = BeerusLightClient::new(
+        config,
+        Box::new(ethereum_lightclient),
+        Box::new(starknet_lightclient),
+    )?;
     // Start the Beerus light client.
     beerus.start().await?;
     // Parse the Ethereum address.
