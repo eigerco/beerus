@@ -3,8 +3,8 @@ mod tests {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient, ethereum::helios::HeliosLightClient,
-            starknet::StarkNetLightClient,
+            beerus::BeerusLightClient, ethereum::helios_lightclient::HeliosLightClient,
+            starknet::StarkNetLightClientImpl,
         },
     };
 
@@ -16,13 +16,17 @@ mod tests {
         // Create config.
         let config = Config::default();
         // Create a new Ethereum light client.
-        let mut ethereum_lightclient = HeliosLightClient::new(&config).unwrap();
+        let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
         // Create a new StarkNet light client.
-        let starknet_lightclient = StarkNetLightClient::new(&config).unwrap();
+        let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
         // Create a new Beerus light client.
-        let mut beerus =
-            BeerusLightClient::new(&config, &mut ethereum_lightclient, starknet_lightclient)
-                .unwrap();
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        )
+        .unwrap();
+        // Start the Beerus light client.
         beerus.start().await.unwrap();
         let starknet_state_root = beerus.starknet_state_root().await.unwrap();
         assert!(!starknet_state_root.is_zero());
