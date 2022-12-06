@@ -16,7 +16,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
-          command: check --all
+          command: check
 
   test:
     name: test
