@@ -56,4 +56,16 @@ pub struct StarkNetCommands {
 pub enum StarkNetSubCommands {
     /// Query the state root of StarkNet.
     QueryStateRoot {},
+    /// Query a StarkNet contract view.
+    QueryContract {
+        /// The address of the contract to query
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+        /// The selector of the function to call
+        #[arg(short, long, value_name = "SELECTOR")]
+        selector: String,
+        /// The calldata of the function to call
+        #[arg(long, value_name = "CALLDATA", use_value_delimiter = true)]
+        calldata: Vec<String>,
+    },
 }
