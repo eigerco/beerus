@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use beerus_core::{
         config::Config,
         lightclient::{
@@ -14,6 +12,7 @@ mod tests {
     use eyre::eyre;
     use primitive_types::U256;
     use starknet::{core::types::FieldElement, macros::selector};
+    use std::str::FromStr;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -29,7 +28,7 @@ mod tests {
         );
 
         // Then
-        assert_eq!(beerus.config, config);
+        assert!(beerus.config.eq(&config));
     }
 
     /// Test the `start` method when everything is fine.

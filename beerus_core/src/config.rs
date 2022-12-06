@@ -3,16 +3,16 @@ use std::str::FromStr;
 use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::networks::Network;
-use serde::{Deserialize, Serialize};
 
-const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
+pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.
 //const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 // For testing purpose use Goerli address until we make it configurable
-const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
+pub const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str =
+    "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
 
 /// Global configuration.
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq)]
 pub struct Config {
     /// Ethereum network.
     pub ethereum_network: String,
@@ -31,9 +31,14 @@ impl Config {
     pub fn new_from_env() -> Result<Self> {
         let ethereum_network = std::env::var("ETHEREUM_NETWORK")
             .unwrap_or_else(|_| DEFAULT_ETHEREUM_NETWORK.to_string());
-        let ethereum_consensus_rpc = std::env::var("ETHEREUM_CONSENSUS_RPC_URL")?;
-        let ethereum_execution_rpc = std::env::var("ETHEREUM_EXECUTION_RPC_URL")?;
-        let starknet_rpc = std::env::var("STARKNET_RPC_URL")?;
+        let ethereum_consensus_rpc = std::env::var("ETHEREUM_CONSENSUS_RPC_URL").map_err(|_| {
+            eyre!("Missing mandatory environment variable: ETHEREUM_CONSENSUS_RPC_URL")
+        })?;
+        let ethereum_execution_rpc = std::env::var("ETHEREUM_EXECUTION_RPC_URL").map_err(|_| {
+            eyre!("Missing mandatory environment variable: ETHEREUM_EXECUTION_RPC_URL")
+        })?;
+        let starknet_rpc = std::env::var("STARKNET_RPC_URL")
+            .map_err(|_| eyre!("Missing mandatory environment variable: STARKNET_RPC_URL"))?;
         let starknet_core_contract_address = std::env::var("STARKNET_CORE_CONTRACT_ADDRESS")
             .unwrap_or_else(|_| DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS.to_string());
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
