@@ -216,6 +216,7 @@ mod tests {
         );
     }
 
+    /// Test that starknet view value is returned when the Starknet light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_call_should_work() {
         // Mock config, ethereum light client and starknet light client.

@@ -7,7 +7,7 @@ homepage.workspace = true
 
 [dependencies]
 beerus_core = { path = "../beerus_core" }
-helios = { git = "https://github.com/a16z/helios"}
+helios = { git = "https://github.com/a16z/helios" }
 ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f" }
 ethers-etherscan = "1.0.0"
 primitive-types = "0.11.1"
@@ -19,3 +19,4 @@ serde_json = "1.0"
 tokio = { version = "1.21.2", features = ["full"] }
 log = "0.4.17"
 env_logger = "0.10.0"
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }

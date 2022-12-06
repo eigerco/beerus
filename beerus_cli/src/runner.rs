@@ -23,6 +23,19 @@ pub async fn run(config: Config) -> Result<()> {
             StarkNetSubCommands::QueryStateRoot {} => {
                 starknet::query_starknet_state_root(config).await
             }
+            StarkNetSubCommands::QueryContract {
+                address,
+                selector,
+                calldata,
+            } => {
+                starknet::query_starknet_contract_view(
+                    config,
+                    address.to_string(),
+                    selector.to_string(),
+                    calldata.clone(),
+                )
+                .await
+            }
         },
     }
 }
