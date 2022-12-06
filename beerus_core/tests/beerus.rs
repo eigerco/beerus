@@ -5,7 +5,7 @@ mod tests {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient,
+            beerus::{BeerusLightClient, SyncStatus},
             ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
             starknet::{MockStarkNetLightClient, StarkNetLightClientImpl},
         },
@@ -15,27 +15,146 @@ mod tests {
     use primitive_types::U256;
     use starknet::{core::types::FieldElement, macros::selector};
 
-    // TODO: Disabled because of Helios instability.
-    // TODO: We need to think how we want to handle integrations tests
-    #[ignore]
-    #[tokio::test]
-    async fn starknet_state_root_works() {
-        // Create config.
+    #[test]
+    fn when_call_new_then_should_return_beerus_lightclient() {
+        // Given
         let config = Config::default();
-        // Create a new Ethereum light client.
         let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
-        // Create a new StarkNet light client.
-        let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
-        // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(
-            config,
+        let starknet_lightclient = StarkNetLightClientImpl::new(config.clone()).unwrap();
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
             Box::new(ethereum_lightclient),
             Box::new(starknet_lightclient),
         );
-        // Start the Beerus light client.
-        beerus.start().await.unwrap();
-        let starknet_state_root = beerus.starknet_state_root().await.unwrap();
-        assert!(!starknet_state_root.is_zero());
+
+        // Then
+        assert_eq!(beerus.config, config);
+    }
+
+    /// Test the `start` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `start` method of the external dependencies.
+    /// It tests the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_start_then_should_return_ok() {
+        // Given
+        let config = Config::default();
+        let mut ethereum_lightclient = MockEthereumLightClient::new();
+        let mut starknet_lightclient = MockStarkNetLightClient::new();
+
+        // Mock the `start` method of the Ethereum light client.
+        ethereum_lightclient
+            .expect_start()
+            .times(1)
+            .return_once(move || Ok(()));
+
+        // Mock the `start` method of the StarkNet light client.
+        starknet_lightclient
+            .expect_start()
+            .times(1)
+            .return_once(move || Ok(()));
+
+        // When
+        let mut beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let result = beerus.start().await;
+
+        // Then
+        // Assert that the `start` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::Synced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::Synced);
+    }
+
+    /// Test the `start` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `start` method of the external dependencies.
+    /// It tests the `start` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_error_when_call_start_then_should_return_error() {
+        // Given
+        let config = Config::default();
+        let mut ethereum_lightclient = MockEthereumLightClient::new();
+        // StarkNet light client is not mocked because it is not used in this test.
+        // Hence it does not need to be mutable.
+        let starknet_lightclient = MockStarkNetLightClient::new();
+
+        let expected_error = "Ethereum light client error";
+
+        // Mock the `start` method of the Ethereum light client.
+        ethereum_lightclient
+            .expect_start()
+            .times(1)
+            .return_once(move || Err(eyre!(expected_error)));
+
+        // When
+        let mut beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let result = beerus.start().await;
+
+        // Then
+        // Assert that the `start` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `start` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `start` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `start` method of the external dependencies.
+    /// It tests the `start` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_start_then_should_return_error() {
+        // Given
+        let config = Config::default();
+        let mut ethereum_lightclient = MockEthereumLightClient::new();
+        let mut starknet_lightclient = MockStarkNetLightClient::new();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `start` method of the Ethereum light client.
+        // We need to mock the `start` method of the Ethereum light client because it is called before the `start` method of the StarkNet light client.
+        ethereum_lightclient
+            .expect_start()
+            .times(1)
+            .return_once(move || Ok(()));
+
+        // Mock the `start` method of the StarkNet light client.
+        starknet_lightclient
+            .expect_start()
+            .times(1)
+            .return_once(move || Err(eyre!(expected_error)));
+
+        // When
+        let mut beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let result = beerus.start().await;
+
+        // Then
+        // Assert that the `start` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `start` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
     /// Test that starknet state root is returned when the Ethereum light client returns a value.
@@ -72,7 +191,7 @@ mod tests {
         assert_eq!(starknet_state_root, expected_starknet_state_root);
     }
 
-    /// Test that starknet state root is returned when the Ethereum light client returns a value.
+    /// Test that starknet state root return an error when the Ethereum Light client returns an error.
     #[tokio::test]
     async fn given_ethereum_light_client_returns_error_when_starknet_state_root_then_should_fail_with_same_error(
     ) {
