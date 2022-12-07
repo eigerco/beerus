@@ -11,3 +11,8 @@ pub struct QueryStateRootResponse {
 pub struct QueryContractViewResponse {
     pub result: Vec<String>,
 }
+#[derive(Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGetStorageAtResponse {
+    pub result: String,
+}
