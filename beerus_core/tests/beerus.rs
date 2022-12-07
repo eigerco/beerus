@@ -263,6 +263,7 @@ mod tests {
         assert!(res == expected_result2);
     }
 
+    /// Test that starknet call return an error when the StarkNet Light client returns an error.
     #[tokio::test]
     async fn given_starknet_light_client_returns_error_when_starknet_call_should_fail_with_same_error(
     ) {
@@ -303,16 +304,22 @@ mod tests {
         assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
+    /// Test that with a correct url we can create StarkNet light client.
     #[test]
-    fn test_create_sn_lightclient_with_url_should_work() {
+    fn given_normal_conditions_when_create_sn_lightclient_should_work() {
+        // Mock config.
         let (config, _, _) = mock_clients();
+        // Create a new StarkNet light client.
         let sn_light_client = StarkNetLightClientImpl::new(&config);
         assert!(sn_light_client.is_ok());
     }
 
+    /// Test that starknet light client starts.
     #[tokio::test]
-    async fn test_start_sn_lightclient_should_work() {
+    async fn given_normal_conditions_when_start_sn_lightclient_should_work() {
+        // Mock config.
         let (config, _, _) = mock_clients();
+        // Create a new StarkNet light client.
         let sn_light_client = StarkNetLightClientImpl::new(&config).unwrap();
         assert!(sn_light_client.start().await.is_ok());
     }
