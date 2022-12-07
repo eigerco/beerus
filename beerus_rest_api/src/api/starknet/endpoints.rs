@@ -1,8 +1,6 @@
 use std::str::FromStr;
 
-use crate::api::starknet::resp::QueryStateRootResponse;
-
-use super::resp::QueryContractViewResponse;
+use super::resp::{QueryContractViewResponse, QueryGetStorageAtResponse, QueryStateRootResponse};
 use crate::api::ApiResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
@@ -29,7 +27,8 @@ pub async fn query_starknet_state_root_inner(
     })
 }
 
-#[get("/starknet/<contract>/<selector>?<calldata>")]
+/// Query a contract view.
+#[get("/starknet/view/<contract>/<selector>?<calldata>")]
 pub async fn query_starknet_contract_view(
     beerus: &State<BeerusLightClient>,
     contract: String,
@@ -41,6 +40,44 @@ pub async fn query_starknet_contract_view(
     )
 }
 
+/// Query get_storage_at.
+#[get("/starknet/storage/<contract>/<key>")]
+pub async fn query_starknet_get_storage_at(
+    beerus: &State<BeerusLightClient>,
+    contract: String,
+    key: String,
+) -> ApiResponse<QueryGetStorageAtResponse> {
+    ApiResponse::from_result(query_starknet_get_storage_at_inner(beerus, contract, key).await)
+}
+
+/// Query get_storage_at.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `contract_address` - The contract address.
+/// * `key` - The key.
+///
+/// # Returns
+///
+/// * `QueryGetStorageAtResponse` - The contract view response.
+pub async fn query_starknet_get_storage_at_inner(
+    beerus: &State<BeerusLightClient>,
+    contract_address: String,
+    key: String,
+) -> Result<QueryGetStorageAtResponse> {
+    debug!("Querying StarkNet get_storage_at");
+    let contract_address = FieldElement::from_str(&contract_address)?;
+    let key = FieldElement::from_str(&key)?;
+
+    // Call the StarkNet contract to get the state root.
+    Ok(QueryGetStorageAtResponse {
+        result: beerus
+            .starknet_get_storage_at(contract_address, key)
+            .await?
+            .to_string(),
+    })
+}
 /// Query a contract view.
 ///
 /// # Arguments
