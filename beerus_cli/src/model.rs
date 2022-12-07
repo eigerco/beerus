@@ -68,4 +68,12 @@ pub enum StarkNetSubCommands {
         #[arg(long, value_name = "CALLDATA", use_value_delimiter = true)]
         calldata: Vec<String>,
     },
+    QueryGetStorageAt {
+        /// The address of the contract to query
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+        /// The slot of the storage to query
+        #[arg(short, long, value_name = "KEY")]
+        key: String,
+    },
 }

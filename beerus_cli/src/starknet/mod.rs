@@ -41,7 +41,28 @@ pub async fn query_starknet_state_root(config: Config) -> Result<()> {
     Ok(())
 }
 
+/// Query starknet_storageAt
+pub async fn query_starknet_get_storage_at(
+    config: Config,
+    address: String,
+    slot: String,
+) -> Result<()> {
+    debug!("Querying the StarkNet storage at...");
+    // Create a new Ethereum light client.
+    let beerus = load_beerus(config).await?;
+    // Convert address to FieldElement.
+    let address = FieldElement::from_str(&address)?;
+    // Convert slot to FieldElement.
+    let slot = FieldElement::from_str(&slot)?;
+
+    // Call the StarkNet contract to get the state root.
+    let storage_at = beerus.starknet_get_storage_at(address, slot).await?;
+    println!("{}", storage_at);
+    Ok(())
+}
+
 /// Query a StarkNet contract view.
+/// WARNING: This is a very unsafe function. It is not recommended to use it.
 pub async fn query_starknet_contract_view(
     config: Config,
     address: String,

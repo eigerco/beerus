@@ -36,6 +36,14 @@ pub async fn run(config: Config) -> Result<()> {
                 )
                 .await
             }
+            StarkNetSubCommands::QueryGetStorageAt { address, key } => {
+                starknet::query_starknet_get_storage_at(
+                    config,
+                    address.to_string(),
+                    key.to_string(),
+                )
+                .await
+            }
         },
     }
 }

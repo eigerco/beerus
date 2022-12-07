@@ -42,6 +42,7 @@
       - [Query balance](#query-balance)
     - [StarkNet](#starknet)
       - [Query contract view](#query-contract-view)
+      - [Query get storage at](#query-get-storage-at)
   - [API](#api)
 - [Roadmap](#roadmap)
 - [Support](#support)
@@ -145,6 +146,13 @@ beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d
 ```bash
 beerus-cli starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
 [FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }, FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }]
+```
+
+##### Query get storage at
+
+```bash
+beerus-cli starknet query-get-storage-at --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --key 0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1
+298305742194
 ```
 
 ### API
