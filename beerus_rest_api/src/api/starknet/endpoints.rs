@@ -42,6 +42,17 @@ pub async fn query_starknet_contract_view(
 }
 
 /// Query a contract view.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `contract_address` - The contract address.
+/// * `selector` - The selector.
+/// * `calldata` - The calldata.
+///
+/// # Returns
+///
+/// * `QueryContractViewResponse` - The contract view response.
 pub async fn query_starknet_contract_view_inner(
     beerus: &State<BeerusLightClient>,
     contract_address: String,
