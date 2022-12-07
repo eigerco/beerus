@@ -7,7 +7,6 @@ use rocket::{Build, Rocket};
 extern crate rocket;
 
 pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
-    env_logger::init();
     // Create the Rocket instance.
     rocket::build().manage(beerus).mount(
         "/",
@@ -39,11 +38,11 @@ mod test {
     };
     use ethers::types::Address;
     use rocket::{http::Status, local::asynchronous::Client};
+
     /// Test the `query_balance` endpoint.
     /// `/ethereum/balance/<address>`
+    /// Given normal conditions, when query balance, then ok.
     #[tokio::test]
-    // For now we ignore this test because it requires to mock the Beerus light client.
-    #[ignore]
     async fn given_normal_conditions_when_query_balance_then_ok() {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
@@ -76,6 +75,48 @@ mod test {
         // Then
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().await.unwrap(), "{\"address\":\"0xc24215226336d22238a20a72f8e489c005b44c4a\",\"balance\":\"0.000000000000000123\",\"unit\":\"ETH\"}");
+    }
+
+    /// Test the `query_balance` endpoint.
+    /// `/ethereum/balance/<address>`
+    /// Given Ethereum light client returns error when query balance, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_balance_then_error_is_propagated()
+    {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_balance()
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query balance")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/balance/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query balance\"}"
+        );
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

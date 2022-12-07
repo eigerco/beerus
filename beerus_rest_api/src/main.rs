@@ -12,6 +12,8 @@ extern crate rocket;
 
 #[launch]
 async fn rocket() -> Rocket<Build> {
+    env_logger::init();
+
     info!("starting Beerus Rest API...");
     // Create config.
     let config = Config::default();
