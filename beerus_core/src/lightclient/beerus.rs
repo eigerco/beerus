@@ -94,8 +94,31 @@ impl BeerusLightClient {
         Ok(starknet_root)
     }
 
+    /// Get the storage at a given address/key.
+    /// This function is used to get the storage at a given address and key.
+    ///
+    /// # Arguments
+    ///
+    /// * `contract_address` - The StarkNet contract address.
+    /// * `storage_key` - The storage key.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_get_storage_at(
+        &self,
+        contract_address: FieldElement,
+        storage_key: FieldElement,
+    ) -> Result<FieldElement> {
+        self.starknet_lightclient
+            .get_storage_at(contract_address, storage_key)
+            .await
+    }
+
     /// Call starknet contract view.
     /// This function is used to call a view function of a StarkNet contract.
+    /// WARNING: This function is untrusted as there's no access list on StarkNet (yet @Avihu).
     ///
     /// # Arguments
     /// * `contract_address` - The StarkNet contract address.

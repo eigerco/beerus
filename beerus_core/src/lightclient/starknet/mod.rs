@@ -13,6 +13,11 @@ use url::Url;
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall) -> Result<Vec<FieldElement>>;
+    async fn get_storage_at(
+        &self,
+        address: FieldElement,
+        key: FieldElement,
+    ) -> Result<FieldElement>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -34,8 +39,36 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         Ok(())
     }
 
+    /// Get the value at a specific key in a contract's storage.
+    /// Returns the value at the key.
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - Address of the contract.
+    /// * `key` - Key of the storage.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_storage_at(
+        &self,
+        address: FieldElement,
+        key: FieldElement,
+    ) -> Result<FieldElement> {
+        self.client
+            .get_storage_at(
+                address,
+                key,
+                &starknet::providers::jsonrpc::models::BlockId::Number(485441),
+            )
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
     /// Call a contract on StarkNet.
     /// Returns the result of the call.
+    /// WARNING: This function is untrusted as there's no access list on StarkNet (yet @Avihu).
     ///
     /// # Arguments
     ///
