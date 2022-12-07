@@ -5,14 +5,19 @@ mod tests {
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
             ethereum::MockEthereumLightClient,
-            starknet::MockStarkNetLightClient,
+            starknet::{MockStarkNetLightClient, StarkNetLightClientImpl},
         },
     };
     use ethers::types::Address;
     use eyre::eyre;
     use primitive_types::U256;
-    use starknet::{core::types::FieldElement, macros::selector};
+    use starknet::{
+        core::types::FieldElement,
+        macros::selector,
+        providers::jsonrpc::{HttpTransport, JsonRpcClient},
+    };
     use std::str::FromStr;
+    use url::Url;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -301,6 +306,13 @@ mod tests {
         // Assert that the result is correct.
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error);
+    }
+
+    #[test]
+    fn test_create_sn_lightclient_with_url_should_work() {
+        let (config, _, _) = mock_clients();
+        let sn_light_client = StarkNetLightClientImpl::new(&config);
+        assert!(sn_light_client.is_ok());
     }
 
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
