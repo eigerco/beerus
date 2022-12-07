@@ -324,6 +324,30 @@ mod tests {
         assert!(sn_light_client.start().await.is_ok());
     }
 
+    /// Test that with a wrong url we can't create StarkNet light client.
+    #[test]
+    fn given_wrong_url_when_create_sn_lightclient_should_fail() {
+        // Mock config.
+        let config = Config {
+            ethereum_network: "mainnet".to_string(),
+            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
+            ethereum_execution_rpc: "http://localhost:8545".to_string(),
+            starknet_rpc: "mainnet".to_string(),
+            starknet_core_contract_address: Address::from_str(
+                "0x0000000000000000000000000000000000000000",
+            )
+            .unwrap(),
+        };
+        // Create a new StarkNet light client.
+        let sn_light_client = StarkNetLightClientImpl::new(&config);
+        assert!(sn_light_client.is_err());
+        assert!(sn_light_client
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("relative URL without a base"));
+    }
+
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
