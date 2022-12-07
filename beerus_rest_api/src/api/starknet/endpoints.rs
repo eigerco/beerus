@@ -51,22 +51,21 @@ pub async fn query_starknet_contract_view_inner(
     debug!("Querying StarkNet contract view");
     let contract_address = FieldElement::from_str(&contract_address)?;
     let selector = FieldElement::from_str(&selector)?;
-    println!("here");
-    let calldata = match calldata {
-        Some(calldata) => calldata
-            .split(',')
-            .map(|s| FieldElement::from_str(s).unwrap())
-            .collect::<Vec<FieldElement>>(),
-
-        None => vec![],
-    };
-    println!("there");
+    let mut felt_calldata = vec![];
+    match calldata {
+        Some(calldata) => {
+            let calldata: Vec<&str> = calldata.split(',').into_iter().collect();
+            for i in 0..calldata.len() {
+                felt_calldata.push(FieldElement::from_str(calldata[i])?);
+            }
+        }
+        None => {}
+    }
 
     // Call the StarkNet contract to get the state root.
     let view = beerus
-        .starknet_call_contract(contract_address, selector, calldata)
+        .starknet_call_contract(contract_address, selector, felt_calldata)
         .await?;
-    println!("over");
 
     Ok(QueryContractViewResponse {
         result: view.into_iter().map(|x| x.to_string()).collect(),
