@@ -4,7 +4,7 @@ mod tests {
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::MockEthereumLightClient,
+            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
             starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
         },
     };
@@ -346,6 +346,16 @@ mod tests {
             .unwrap()
             .to_string()
             .contains("relative URL without a base"));
+    }
+
+    /// Test that we can create a Helios light client.
+    #[test]
+    fn given_normal_conditions_when_create_helios_lightclient_should_work() {
+        // Mock config.
+        let (config, _, _) = mock_clients();
+        // Create a new Helios light client.
+        let helios_light_client = HeliosLightClient::new(config);
+        assert!(helios_light_client.is_ok());
     }
 
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
