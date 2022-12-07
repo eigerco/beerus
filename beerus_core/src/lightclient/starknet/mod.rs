@@ -11,7 +11,7 @@ use url::Url;
 #[automock]
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {
-    async fn start(&mut self) -> Result<()>;
+    async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall) -> Result<Vec<FieldElement>>;
 }
 
@@ -30,7 +30,7 @@ impl StarkNetLightClientImpl {
 
 #[async_trait]
 impl StarkNetLightClient for StarkNetLightClientImpl {
-    async fn start(&mut self) -> Result<()> {
+    async fn start(&self) -> Result<()> {
         Ok(())
     }
 
