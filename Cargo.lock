@@ -391,6 +391,7 @@ dependencies = [
  "serde",
  "serde_json",
  "starknet",
+ "tokio",
 ]
 
 [[package]]
