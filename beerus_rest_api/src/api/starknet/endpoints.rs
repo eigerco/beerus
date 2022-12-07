@@ -52,14 +52,11 @@ pub async fn query_starknet_contract_view_inner(
     let contract_address = FieldElement::from_str(&contract_address)?;
     let selector = FieldElement::from_str(&selector)?;
     let mut felt_calldata = vec![];
-    match calldata {
-        Some(calldata) => {
-            let calldata: Vec<&str> = calldata.split(',').into_iter().collect();
-            for i in 0..calldata.len() {
-                felt_calldata.push(FieldElement::from_str(calldata[i])?);
-            }
+    if let Some(calldata) = calldata {
+        let calldata: Vec<&str> = calldata.split(',').into_iter().collect();
+        for item in calldata {
+            felt_calldata.push(FieldElement::from_str(item)?);
         }
-        None => {}
     }
 
     // Call the StarkNet contract to get the state root.
