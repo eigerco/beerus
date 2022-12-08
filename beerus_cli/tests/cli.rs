@@ -309,7 +309,7 @@ mod test {
         // When
         let result = runner::run(beerus, cli).await.unwrap();
         // Then
-        assert_eq!("[123], [456]", result.to_string());
+        assert_eq!("[123, 456]", result.to_string());
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
