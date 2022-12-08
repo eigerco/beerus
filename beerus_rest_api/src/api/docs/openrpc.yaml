@@ -1,0 +1,114 @@
+openapi: 3.0.0
+info:
+  title: StarkNet API
+  version: 1.0.0
+  description: |
+    This is the OpenRPC API specification for StarkNet.
+    The API is served over HTTP at the following base
+servers:
+  - url: http://127.0.0.1:8080
+    description: Mainnet (Stable)
+
+
+paths:
+  /starknet/state/root:
+    get:
+      summary: Get the current state root of StarkNet
+      operationId: queryStarkNetStateRoot
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stateRoot:
+                    $ref: '#/components/schemas/felt'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /starknet/storage/{contract}/{key}:
+    get:
+      summary: Get the value of a storage slot in a contract
+      operationId: queryStarkNetGetStorageAt
+      parameters:
+        - name: contract
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/felt'
+        - name: key
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/felt'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/felt'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /starknet/view/{contract}/{selector}:
+    get:
+      summary: Call a view function in a contract
+      operationId: queryStarkNetContractView
+      parameters:
+        - name: contract
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/felt'
+        - name: selector
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/felt'
+        - name: calldata
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/felt'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+components:
+  schemas:
+    felt:
+      type: string
+      pattern: '^0x0[a-fA-F0-9]{63}$'
