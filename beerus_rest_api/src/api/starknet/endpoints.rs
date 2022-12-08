@@ -1,13 +1,15 @@
-use std::str::FromStr;
-
 use super::resp::{QueryContractViewResponse, QueryGetStorageAtResponse, QueryStateRootResponse};
 use crate::api::ApiResponse;
+
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use log::debug;
 use rocket::{get, State};
+use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
+use std::str::FromStr;
 
+#[openapi]
 #[get("/starknet/state/root")]
 pub async fn query_starknet_state_root(
     beerus: &State<BeerusLightClient>,
@@ -28,6 +30,7 @@ pub async fn query_starknet_state_root_inner(
 }
 
 /// Query a contract view.
+#[openapi]
 #[get("/starknet/view/<contract>/<selector>?<calldata>")]
 pub async fn query_starknet_contract_view(
     beerus: &State<BeerusLightClient>,
@@ -41,6 +44,7 @@ pub async fn query_starknet_contract_view(
 }
 
 /// Query get_storage_at.
+#[openapi]
 #[get("/starknet/storage/<contract>/<key>")]
 pub async fn query_starknet_get_storage_at(
     beerus: &State<BeerusLightClient>,
