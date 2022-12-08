@@ -101,15 +101,15 @@ impl Display for CommandResponse {
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{}", state_root),
             // Print the contract view responsee .
-            // Result looks like: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            // Result looks like: [123], [456]
             CommandResponse::StarkNetQueryContract(response) => {
                 let formatted_str = response
                     .iter()
                     .by_ref()
-                    .map(|s| format!("[{}]", s))
+                    .map(|s| format!("{}", s))
                     .collect::<Vec<String>>()
                     .join(", ");
-                write!(f, "{}", formatted_str)
+                write!(f, "[{}]", formatted_str)
             }
             // Print the storage value.
             // Result looks like: 15527784
@@ -117,39 +117,5 @@ impl Display for CommandResponse {
                 write!(f, "{}", response)
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use starknet::core::types::FieldElement;
-
-    #[test]
-    fn test_display_ethereum_query_balance() {
-        let response = super::CommandResponse::EthereumQueryBalance("1".to_string());
-        assert_eq!(response.to_string(), "1 ETH");
-    }
-
-    #[test]
-    fn test_display_starknet_query_state_root() {
-        let response = super::CommandResponse::StarkNetQueryStateRoot(1.into());
-        assert_eq!(response.to_string(), "1");
-    }
-
-    #[test]
-    fn test_display_starknet_query_contract() {
-        let response = super::CommandResponse::StarkNetQueryContract(vec![
-            FieldElement::from_dec_str("123").unwrap(),
-            FieldElement::from_dec_str("456").unwrap(),
-        ]);
-        assert_eq!(response.to_string(), "[123], [456]");
-    }
-
-    #[test]
-    fn test_display_starknet_query_get_storage_at() {
-        let response = super::CommandResponse::StarkNetQueryGetStorageAt(
-            FieldElement::from_dec_str("123").unwrap(),
-        );
-        assert_eq!(response.to_string(), "123");
     }
 }
