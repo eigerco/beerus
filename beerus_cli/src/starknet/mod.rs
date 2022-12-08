@@ -1,77 +1,72 @@
 use std::str::FromStr;
 
-use beerus_core::{
-    config::Config,
-    lightclient::{
-        beerus::BeerusLightClient, ethereum::helios_lightclient::HeliosLightClient,
-        starknet::StarkNetLightClientImpl,
-    },
-};
+use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
-use log::debug;
 use starknet::core::types::FieldElement;
 
-/// Creates and starts beerus light client.
-pub async fn load_beerus(config: Config) -> Result<BeerusLightClient> {
-    let ethereum_lightclient = HeliosLightClient::new(config.clone())?;
-    // Create a new StarkNet light client.
-    let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
-    // Create a new Beerus light client.
-    let mut beerus = BeerusLightClient::new(
-        config,
-        Box::new(ethereum_lightclient),
-        Box::new(starknet_lightclient),
-    );
-    // Start the Beerus light client.b46961 (feat(cli): add starknet call contract)
-    debug!("Starting the Beerus light client...");
-    beerus.start().await?;
-    debug!("Beerus light client started and synced.");
-    Ok(beerus)
-}
-/// Query the StarkNet state root.
-pub async fn query_starknet_state_root(config: Config) -> Result<()> {
-    debug!("Querying the StarkNet state root...");
-    // Create a new Ethereum light client.
-    let beerus = load_beerus(config).await?;
-    // Start the Beerus light client.
+use crate::model::CommandResponse;
 
+/// Query the StarkNet state root.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The result of the query.
+/// # Errors
+/// * If the StarkNet state root query fails.
+pub async fn query_starknet_state_root(beerus: BeerusLightClient) -> Result<CommandResponse> {
     // Call the StarkNet contract to get the state root.
-    let state_root = beerus.starknet_state_root().await?;
-    println!("{}", state_root);
-    Ok(())
+    Ok(CommandResponse::StarkNetQueryStateRoot(
+        beerus.starknet_state_root().await?,
+    ))
 }
 
 /// Query starknet_storageAt
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `address` - The StarkNet address.
+/// * `slot` - The StarkNet slot.
+/// # Returns
+/// * `Result<()>` - The result of the query.
+/// # Errors
+/// * If the StarkNet storageAt query fails.
+/// * If the StarkNet address is invalid.
+/// * If the StarkNet slot is invalid.
 pub async fn query_starknet_get_storage_at(
-    config: Config,
+    beerus: BeerusLightClient,
     address: String,
     slot: String,
-) -> Result<()> {
-    debug!("Querying the StarkNet storage at...");
-    // Create a new Ethereum light client.
-    let beerus = load_beerus(config).await?;
+) -> Result<CommandResponse> {
     // Convert address to FieldElement.
     let address = FieldElement::from_str(&address)?;
     // Convert slot to FieldElement.
     let slot = FieldElement::from_str(&slot)?;
 
     // Call the StarkNet contract to get the state root.
-    let storage_at = beerus.starknet_get_storage_at(address, slot).await?;
-    println!("{}", storage_at);
-    Ok(())
+    Ok(CommandResponse::StarkNetQueryGetStorageAt(
+        beerus.starknet_get_storage_at(address, slot).await?,
+    ))
 }
 
 /// Query a StarkNet contract view.
 /// WARNING: This is a very unsafe function. It is not recommended to use it.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `address` - The StarkNet address.
+/// * `selector` - The StarkNet selector.
+/// * `calldata` - The StarkNet calldata.
+/// # Returns
+/// * `Result<()>` - The result of the query.
+/// # Errors
+/// * If the StarkNet contract view query fails.
+/// * If the StarkNet address is invalid.
+/// * If the StarkNet selector is invalid.
+/// * If the StarkNet calldata is invalid.
 pub async fn query_starknet_contract_view(
-    config: Config,
+    beerus: BeerusLightClient,
     address: String,
     selector: String,
     calldata: Vec<String>,
-) -> Result<()> {
-    debug!("Querying the StarkNet contract view...");
-    // Create a new Ethereum light client.
-    let beerus = load_beerus(config).await?;
+) -> Result<CommandResponse> {
     // Convert address to FieldElement.
     let address = FieldElement::from_str(&address)?;
     // Convert selector to FieldElement.
@@ -83,9 +78,9 @@ pub async fn query_starknet_contract_view(
         .collect();
 
     // Call the StarkNet contract to get the state root.
-    let view_result = beerus
-        .starknet_call_contract(address, selector, calldata)
-        .await?;
-    println!("{:?}", view_result);
-    Ok(())
+    Ok(CommandResponse::StarkNetQueryContract(
+        beerus
+            .starknet_call_contract(address, selector, calldata)
+            .await?,
+    ))
 }

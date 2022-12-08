@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
+use primitive_types::U256;
+use starknet::core::types::FieldElement;
+use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
 #[derive(Parser)]
@@ -76,4 +78,78 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "KEY")]
         key: String,
     },
+}
+
+/// The response from a CLI command.
+pub enum CommandResponse {
+    EthereumQueryBalance(String),
+    StarkNetQueryStateRoot(U256),
+    StarkNetQueryContract(Vec<FieldElement>),
+    StarkNetQueryGetStorageAt(FieldElement),
+}
+
+/// Display implementation for the CLI command response.
+/// This is used to print the response to the user.
+impl Display for CommandResponse {
+    /// See the documentation for `std::fmt::Display`.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            // Print the balance in Ether.
+            // Result looks like: 0.000000000000000001 ETH
+            CommandResponse::EthereumQueryBalance(balance) => write!(f, "{} ETH", balance),
+            // Print the state root.
+            // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
+            CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{}", state_root),
+            // Print the contract view responsee .
+            // Result looks like: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            CommandResponse::StarkNetQueryContract(response) => {
+                let formatted_str = response
+                    .iter()
+                    .by_ref()
+                    .map(|s| format!("[{}]", s))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                write!(f, "{}", formatted_str)
+            }
+            // Print the storage value.
+            // Result looks like: 15527784
+            CommandResponse::StarkNetQueryGetStorageAt(response) => {
+                write!(f, "{}", response)
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use starknet::core::types::FieldElement;
+
+    #[test]
+    fn test_display_ethereum_query_balance() {
+        let response = super::CommandResponse::EthereumQueryBalance("1".to_string());
+        assert_eq!(response.to_string(), "1 ETH");
+    }
+
+    #[test]
+    fn test_display_starknet_query_state_root() {
+        let response = super::CommandResponse::StarkNetQueryStateRoot(1.into());
+        assert_eq!(response.to_string(), "1");
+    }
+
+    #[test]
+    fn test_display_starknet_query_contract() {
+        let response = super::CommandResponse::StarkNetQueryContract(vec![
+            FieldElement::from_dec_str("123").unwrap(),
+            FieldElement::from_dec_str("456").unwrap(),
+        ]);
+        assert_eq!(response.to_string(), "[123], [456]");
+    }
+
+    #[test]
+    fn test_display_starknet_query_get_storage_at() {
+        let response = super::CommandResponse::StarkNetQueryGetStorageAt(
+            FieldElement::from_dec_str("123").unwrap(),
+        );
+        assert_eq!(response.to_string(), "123");
+    }
 }
