@@ -1,7 +1,4 @@
 <div align="center">
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
   <h1>Beerus</h1>
     <img src="docs/images/beerus.png" height="200">
   <br />
@@ -21,7 +18,6 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/starknet-exploration/beerus/test?style=flat-square&logo=github)
 [![Project license](https://img.shields.io/github/license/starknet-exploration/beerus.svg?style=flat-square)](LICENSE)
 [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/starknet-exploration/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-
 </div>
 
 ![](docs/images/beerus.gif)
