@@ -7,7 +7,6 @@ info:
     The API is served over HTTP at the following base
 servers:
   - url: http://127.0.0.1:8080
-    description: Mainnet (Stable)
 
 
 paths:
@@ -23,7 +22,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  stateRoot:
+                  state_root:
                     $ref: '#/components/schemas/felt'
         '500':
           description: Internal Server Error
@@ -69,6 +68,7 @@ paths:
                 properties:
                   error:
                     type: string
+
   /starknet/view/{contract}/{selector}:
     get:
       summary: Call a view function in a contract
@@ -97,7 +97,44 @@ paths:
                 type: object
                 properties:
                   result:
-                    $ref: '#/components/schemas/felt'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/felt'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /ethereum/balance/{address}:
+    get:
+      summary: Get the balance of an Ethereum address
+      operationId: queryBalance
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/address'
+
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    $ref: '#/components/schemas/address'
+                  balance:
+                    type: string
+                  unit:
+                    type: string
         '500':
           description: Internal Server Error
           content:
@@ -112,3 +149,6 @@ components:
     felt:
       type: string
       pattern: '^0x0[a-fA-F0-9]{63}$'
+    address:
+      type: string
+      pattern: '^0x[a-fA-F0-9]{40}$'
