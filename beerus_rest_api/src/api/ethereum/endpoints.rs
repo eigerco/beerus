@@ -1,16 +1,16 @@
 use crate::api::ethereum::resp::QueryBalanceResponse;
+use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use log::debug;
-use rocket::{get, State};
-use std::str::FromStr;
-
 use ethers::{types::Address, utils};
 use eyre::Result;
 use helios::types::BlockTag;
+use log::debug;
+use rocket::{get, State};
+use rocket_okapi::openapi;
+use std::str::FromStr;
 
-use crate::api::ApiResponse;
-
+#[openapi]
 #[get("/ethereum/balance/<address>")]
 pub async fn query_balance(
     address: &str,

@@ -1,17 +1,18 @@
 use rocket::serde::Serialize;
+use schemars::JsonSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryStateRootResponse {
     pub state_root: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryContractViewResponse {
     pub result: Vec<String>,
 }
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryGetStorageAtResponse {
     pub result: String,

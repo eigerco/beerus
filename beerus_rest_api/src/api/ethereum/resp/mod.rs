@@ -1,6 +1,7 @@
 use rocket::serde::Serialize;
+use schemars::JsonSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryBalanceResponse {
     pub address: String,

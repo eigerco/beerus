@@ -3,6 +3,8 @@ pub mod api;
 use crate::api::{ethereum, starknet};
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use rocket::{Build, Rocket};
+use rocket_okapi::{openapi, openapi_get_routes};
+
 #[macro_use]
 extern crate rocket;
 
@@ -10,7 +12,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
     // Create the Rocket instance.
     rocket::build().manage(beerus).mount(
         "/",
-        routes![
+        openapi_get_routes![
             index,
             ethereum::endpoints::query_balance,
             starknet::endpoints::query_starknet_state_root,
@@ -20,6 +22,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
     )
 }
 
+#[openapi]
 #[get("/")]
 pub fn index() -> &'static str {
     "Hakai!"
