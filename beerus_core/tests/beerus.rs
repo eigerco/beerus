@@ -216,6 +216,70 @@ mod tests {
         );
     }
 
+    /// Test that starknet state root is returned when the Ethereum light client returns a value.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_last_proven_block_then_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Expected block number.
+        let expected_starknet_block_number = U256::from(10);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_starknet_block_number_bytes: Vec<u8> = vec![0; 32];
+        expected_starknet_block_number.to_big_endian(&mut expected_starknet_block_number_bytes);
+
+        // Set the expected return value for the Ethereum light client mock.
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Ok(expected_starknet_block_number_bytes));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Perform the test call.
+        let starknet_block_number = beerus.starknet_last_proven_block().await.unwrap();
+
+        // Assert that the result is correct.
+        assert_eq!(starknet_block_number, expected_starknet_block_number);
+    }
+
+    /// Test that starknet state root return an error when the Ethereum Light client returns an error.
+    #[tokio::test]
+    async fn given_ethereum_light_client_returns_error_when_starknet_last_proven_block_then_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Ethereum light client mock.
+        let expected_error = "Ethereum client out of sync";
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Perform the test call.
+        let starknet_state_root_result = beerus.starknet_state_root().await;
+
+        // Assert that the result is correct.
+        assert!(starknet_state_root_result.is_err());
+        assert_eq!(
+            starknet_state_root_result.unwrap_err().to_string(),
+            expected_error
+        );
+    }
+
     /// Test that starknet view value is returned when the Starknet light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_call_should_work() {
@@ -233,7 +297,7 @@ mod tests {
         starknet_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_req| Ok(expected_result));
+            .return_once(move |_req, _block_nb| Ok(expected_result));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -275,7 +339,7 @@ mod tests {
         starknet_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_req| Err(eyre!(expected_error)));
+            .return_once(move |_req, _block_nb| Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -314,7 +378,7 @@ mod tests {
         starknet_lightclient_mock
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| Ok(expected_result));
+            .return_once(move |_address, _key, _block_nb| Ok(expected_result));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -346,7 +410,7 @@ mod tests {
         starknet_lightclient_mock
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| Err(eyre!(expected_error)));
+            .return_once(move |_address, _key, _block_nb| Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(

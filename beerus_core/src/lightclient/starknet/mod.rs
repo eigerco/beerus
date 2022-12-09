@@ -12,11 +12,12 @@ use url::Url;
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
-    async fn call(&self, opts: FunctionCall) -> Result<Vec<FieldElement>>;
+    async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
     async fn get_storage_at(
         &self,
         address: FieldElement,
         key: FieldElement,
+        block_number: u64,
     ) -> Result<FieldElement>;
 }
 
@@ -55,6 +56,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         address: FieldElement,
         key: FieldElement,
+        _block_number: u64,
     ) -> Result<FieldElement> {
         self.client
             .get_storage_at(
@@ -80,7 +82,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(Vec<FieldElement>)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn call(&self, request: FunctionCall) -> Result<Vec<FieldElement>> {
+    async fn call(&self, request: FunctionCall, _block_number: u64) -> Result<Vec<FieldElement>> {
         self.client
             .call(
                 request,
