@@ -183,7 +183,7 @@ mod test {
     #[tokio::test]
     async fn given_normal_conditions_when_query_storage_then_ok() {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
         let expected_result = FieldElement::from_dec_str("298305742194").unwrap();
@@ -192,6 +192,10 @@ mod test {
             .expect_get_storage_at()
             .times(1)
             .return_once(move |_address, _key, _block_nb| Ok(expected_result));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -225,7 +229,7 @@ mod test {
     async fn given_starknet_lightclient_returns_error_when_query_storage_then_error_is_propagated()
     {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
         // Set the expected return value for the StarkNet light client mock.
@@ -235,7 +239,10 @@ mod test {
             .return_once(move |_address, _key, _block_nb| {
                 Err(eyre::eyre!("starknet_lightclient_error"))
             });
-
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
         let beerus = BeerusLightClient::new(
             config,
             Box::new(ethereum_lightclient),
@@ -270,7 +277,7 @@ mod test {
     #[tokio::test]
     async fn given_normal_conditions_when_query_contract_then_ok() {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
         let expected_result = vec![
@@ -283,6 +290,11 @@ mod test {
             .expect_call()
             .times(1)
             .return_once(move |_req, _block_nb| Ok(expected_result));
+
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
