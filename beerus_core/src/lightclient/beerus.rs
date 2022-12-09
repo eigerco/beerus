@@ -101,7 +101,6 @@ impl BeerusLightClient {
         let starknet_core_contract_address = &self.config.starknet_core_contract_address;
 
         let data = vec![53, 190, 250, 93];
-        println!("data: {:?}", data);
 
         // Build the call options.
         let call_opts = CallOpts {

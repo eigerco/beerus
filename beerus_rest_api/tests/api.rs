@@ -178,7 +178,7 @@ mod test {
     #[tokio::test]
     async fn given_normal_conditions_when_query_starknet_get_storage_at_then_ok() {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
         let expected_result = FieldElement::from_hex_be("298305742194").unwrap();
@@ -187,6 +187,10 @@ mod test {
             .expect_get_storage_at()
             .times(1)
             .return_once(move |_address, _key, _block_nb| Ok(expected_result));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -217,7 +221,7 @@ mod test {
     async fn given_starknet_ligthclient_returns_error_when_query_starknet_get_storage_at_then_error_is_propagated(
     ) {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
 
@@ -228,6 +232,10 @@ mod test {
             .return_once(move |_address, _key, _block_nb| {
                 Err(eyre::eyre!("cannot query starknet get storage at"))
             });
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -257,7 +265,7 @@ mod test {
     #[tokio::test]
     async fn given_normal_conditions_when_query_starknet_contract_view_then_ok() {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
         let expected_result = vec![
@@ -269,6 +277,10 @@ mod test {
             .expect_call()
             .times(1)
             .return_once(move |_req, _block_nb| Ok(expected_result));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -299,7 +311,7 @@ mod test {
     async fn given_starknet_ligthclient_returns_error_when_query_starknet_contract_view_then_error_is_propagated(
     ) {
         // Build mocks.
-        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
         // Given
 
@@ -308,6 +320,10 @@ mod test {
             .expect_call()
             .times(1)
             .return_once(move |_req, _block_nb| Err(eyre::eyre!("cannot query starknet call")));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
 
         let beerus = BeerusLightClient::new(
             config,
