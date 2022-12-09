@@ -1,5 +1,5 @@
-use crate::{config::Config, ethers_helper};
-use ethers::{abi::Abi, types::U256};
+use crate::config::Config;
+use ethers::types::U256;
 
 use eyre::Result;
 use helios::types::BlockTag;
@@ -66,11 +66,42 @@ impl BeerusLightClient {
         // Get the StarkNet core contract address.
         let starknet_core_contract_address = &self.config.starknet_core_contract_address;
 
-        let abi: Abi = serde_json::from_str(
-            r#"[{"inputs":[],"name":"stateRoot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]"#,
-        )?;
-        let data = ethers_helper::encode_function_data((), abi, "stateRoot")?;
-        let data = data.to_vec();
+        let data = vec![149, 136, 236, 162];
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: *starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let starknet_root = self
+            .ethereum_lightclient
+            .call(&call_opts, BlockTag::Latest)
+            .await?;
+
+        // Convert the response bytes to a U256.
+        let starknet_root = U256::from_big_endian(&starknet_root);
+
+        Ok(starknet_root)
+    }
+
+    /// Get the StarkNet last proven block number.
+    /// This function is used to get the last proven block number of the StarkNet network.
+    ///
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_last_proven_block(&self) -> Result<U256> {
+        // Get the StarkNet core contract address.
+        let starknet_core_contract_address = &self.config.starknet_core_contract_address;
+
+        let data = vec![53, 190, 250, 93];
+        println!("data: {:?}", data);
 
         // Build the call options.
         let call_opts = CallOpts {
@@ -111,8 +142,9 @@ impl BeerusLightClient {
         contract_address: FieldElement,
         storage_key: FieldElement,
     ) -> Result<FieldElement> {
+        let last_block = self.starknet_last_proven_block().await?.as_u64();
         self.starknet_lightclient
-            .get_storage_at(contract_address, storage_key)
+            .get_storage_at(contract_address, storage_key, last_block)
             .await
     }
 
@@ -140,7 +172,9 @@ impl BeerusLightClient {
             entry_point_selector,
             calldata,
         };
+
+        let last_block = self.starknet_last_proven_block().await?.as_u64();
         // Call the StarkNet light client.
-        self.starknet_lightclient.call(opts).await
+        self.starknet_lightclient.call(opts, last_block).await
     }
 }

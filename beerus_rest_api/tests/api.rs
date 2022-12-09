@@ -186,7 +186,7 @@ mod test {
         starknet_lightclient
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| Ok(expected_result));
+            .return_once(move |_address, _key, _block_nb| Ok(expected_result));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -225,7 +225,7 @@ mod test {
         starknet_lightclient
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| {
+            .return_once(move |_address, _key, _block_nb| {
                 Err(eyre::eyre!("cannot query starknet get storage at"))
             });
 
@@ -268,7 +268,7 @@ mod test {
         starknet_lightclient
             .expect_call()
             .times(1)
-            .return_once(move |_req| Ok(expected_result));
+            .return_once(move |_req, _block_nb| Ok(expected_result));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -307,7 +307,7 @@ mod test {
         starknet_lightclient
             .expect_call()
             .times(1)
-            .return_once(move |_req| Err(eyre::eyre!("cannot query starknet call")));
+            .return_once(move |_req, _block_nb| Err(eyre::eyre!("cannot query starknet call")));
 
         let beerus = BeerusLightClient::new(
             config,

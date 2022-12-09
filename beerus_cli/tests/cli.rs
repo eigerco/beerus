@@ -191,7 +191,7 @@ mod test {
         starknet_lightclient
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| Ok(expected_result));
+            .return_once(move |_address, _key, _block_nb| Ok(expected_result));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -232,7 +232,9 @@ mod test {
         starknet_lightclient
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key| Err(eyre::eyre!("starknet_lightclient_error")));
+            .return_once(move |_address, _key, _block_nb| {
+                Err(eyre::eyre!("starknet_lightclient_error"))
+            });
 
         let beerus = BeerusLightClient::new(
             config,
@@ -280,7 +282,7 @@ mod test {
         starknet_lightclient
             .expect_call()
             .times(1)
-            .return_once(move |_req| Ok(expected_result));
+            .return_once(move |_req, _block_nb| Ok(expected_result));
 
         let beerus = BeerusLightClient::new(
             config,
