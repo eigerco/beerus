@@ -9,24 +9,13 @@ use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use std::str::FromStr;
 
+/// Query the state root of StarkNet.
 #[openapi]
 #[get("/starknet/state/root")]
 pub async fn query_starknet_state_root(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryStateRootResponse> {
     ApiResponse::from_result(query_starknet_state_root_inner(beerus).await)
-}
-
-/// Query the state root of StarkNet.
-pub async fn query_starknet_state_root_inner(
-    beerus: &State<BeerusLightClient>,
-) -> Result<QueryStateRootResponse> {
-    debug!("Querying StarkNet state root");
-    // Call the StarkNet contract to get the state root.
-    let state_root = beerus.starknet_state_root().await?;
-    Ok(QueryStateRootResponse {
-        state_root: state_root.to_string(),
-    })
 }
 
 /// Query a contract view.
@@ -52,6 +41,26 @@ pub async fn query_starknet_get_storage_at(
     key: String,
 ) -> ApiResponse<QueryGetStorageAtResponse> {
     ApiResponse::from_result(query_starknet_get_storage_at_inner(beerus, contract, key).await)
+}
+
+/// Query the state root of StarkNet.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+///
+/// # Returns
+///
+/// * `QueryStateRootResponse` - The state root response.
+pub async fn query_starknet_state_root_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryStateRootResponse> {
+    debug!("Querying StarkNet state root");
+    // Call the StarkNet contract to get the state root.
+    let state_root = beerus.starknet_state_root().await?;
+    Ok(QueryStateRootResponse {
+        state_root: state_root.to_string(),
+    })
 }
 
 /// Query get_storage_at.
