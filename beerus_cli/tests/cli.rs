@@ -56,6 +56,43 @@ mod test {
         assert_eq!("0.000000000000000123 ETH", result.to_string());
     }
 
+    /// Test `query_nonce` CLI command.
+    /// Given normal conditions, when query nonce, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_nonce_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_nonce()
+            .return_once(move |_, _| Ok(123));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments,
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryNonce {
+                    address: "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string(),
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        //Then
+        assert_eq!("Nonce: 123", result.to_string());
+    }
+
     /// Test the `query_balance` CLI command.
     /// Given ethereum lightclient returns an error, when query balance, then the error is propagated.
     /// Error case.
