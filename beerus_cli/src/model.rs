@@ -43,6 +43,11 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    QueryNonce {
+        /// The address to query the nonce of
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+    },
 }
 
 /// StarkNet related commands.
@@ -83,6 +88,7 @@ pub enum StarkNetSubCommands {
 /// The response from a CLI command.
 pub enum CommandResponse {
     EthereumQueryBalance(String),
+    EthereumQueryNonce(u64),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -97,6 +103,9 @@ impl Display for CommandResponse {
             // Print the balance in Ether.
             // Result looks like: 0.000000000000000001 ETH
             CommandResponse::EthereumQueryBalance(balance) => write!(f, "{} ETH", balance),
+            // Print the balance in Ether.
+            // Result looks like: Nonce: 10
+            CommandResponse::EthereumQueryNonce(nonce) => write!(f, "Nonce: {}", nonce),
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{}", state_root),

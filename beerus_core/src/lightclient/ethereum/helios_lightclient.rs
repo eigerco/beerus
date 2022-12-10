@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use helios::client::{Client, ClientBuilder, FileDB};
+use std::primitive::u64;
 
 use crate::config::Config;
 
@@ -34,6 +35,14 @@ impl EthereumLightClient for HeliosLightClient {
         block: helios::types::BlockTag,
     ) -> eyre::Result<primitive_types::U256> {
         self.helios_light_client.get_balance(address, block).await
+    }
+
+    async fn get_nonce(
+        &self,
+        address: &ethers::types::Address,
+        block: helios::types::BlockTag,
+    ) -> eyre::Result<u64> {
+        self.helios_light_client.get_nonce(address, block).await
     }
 }
 

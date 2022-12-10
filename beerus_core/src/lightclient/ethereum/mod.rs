@@ -47,4 +47,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256>;
+    /// Get the Nonce of an account.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `address` - Address of the account.
+    /// * `block` - Block tag.
+    /// # Returns
+    /// The balance of the account.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_nonce(&self, address: &Address, block: BlockTag) -> Result<u64>;
 }
