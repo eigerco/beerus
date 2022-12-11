@@ -95,6 +95,88 @@ mod test {
         );
     }
 
+    /// Test the `nonce_balance` endpoint.
+    /// `/ethereum/nonce/<address>`
+    /// Given normal conditions, when query nonce, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_nonce_then_ok() {
+        //Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_nonce()
+            .return_once(move |_, _| Ok(123));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("Valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/nonce/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"address\":\"0xc24215226336d22238a20a72f8e489c005b44c4a\",\"nonce\":123}"
+        )
+    }
+
+    /// Test the `nonce_balance` endpoint.
+    /// `/ethereum/nonce/<address>`
+    /// Given Ethereum light client returns error when query nonce, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_nonce_then_error_is_propagates() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_nonce()
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query nonce")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/nonce/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query nonce\"}"
+        );
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given normal conditions, when query starknet state root, then ok.
