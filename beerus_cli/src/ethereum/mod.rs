@@ -42,7 +42,7 @@ pub async fn query_balance(beerus: BeerusLightClient, address: String) -> Result
 /// * If the nonce query fails.
 pub async fn query_nonce(beerus: BeerusLightClient, address: String) -> Result<CommandResponse> {
     // Parse the Ethereum address.
-    let addr = Address::from_str(&address)?;
+    let addr: Address = Address::from_str(&address)?;
 
     // TODO: Make the block tag configurable.
     let block = BlockTag::Latest;
