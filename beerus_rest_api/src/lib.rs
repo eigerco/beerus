@@ -15,6 +15,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
         openapi_get_routes![
             index,
             ethereum::endpoints::query_balance,
+            ethereum::endpoints::query_nonce,
             starknet::endpoints::query_starknet_state_root,
             starknet::endpoints::query_starknet_contract_view,
             starknet::endpoints::query_starknet_get_storage_at,

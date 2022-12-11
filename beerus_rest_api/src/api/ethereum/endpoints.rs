@@ -1,4 +1,4 @@
-use crate::api::ethereum::resp::QueryBalanceResponse;
+use crate::api::ethereum::resp::{QueryBalanceResponse, QueryNonceResponse};
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
@@ -17,6 +17,15 @@ pub async fn query_balance(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBalanceResponse> {
     ApiResponse::from_result(query_balance_inner(beerus, address).await)
+}
+
+#[openapi]
+#[get("/ethereum/nonce/<address>")]
+pub async fn query_nonce(
+    address: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryNonceResponse> {
+    ApiResponse::from_result(query_nonce_inner(beerus, address).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -48,5 +57,30 @@ pub async fn query_balance_inner(
         address: address.to_string(),
         balance: balance_in_eth,
         unit: "ETH".to_string(),
+    })
+}
+
+/// Query the balance of an Ethereum address.
+/// # Arguments
+/// * `address` - The Ethereum address.
+/// # Returns
+/// `Ok(query_balance_response)` - The query balance response.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the Ethereum address is invalid or the block tag is invalid.
+/// # Examples
+
+pub async fn query_nonce_inner(
+    beerus: &State<BeerusLightClient>,
+    address: &str,
+) -> Result<QueryNonceResponse> {
+    debug!("Querying nonce of address: {}", address);
+    let addr = Address::from_str(address)?;
+    let block = BlockTag::Latest;
+    let nonce = beerus.ethereum_lightclient.get_nonce(&addr, block).await?;
+
+    Ok(QueryNonceResponse {
+        address: address.to_string(),
+        nonce,
     })
 }
