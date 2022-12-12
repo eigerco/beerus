@@ -1,5 +1,5 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryNonceResponse,
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryCodeResponse, QueryNonceResponse,
 };
 use crate::api::ApiResponse;
 
@@ -36,6 +36,15 @@ pub async fn query_block_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockNumberResponse> {
     ApiResponse::from_result(query_block_number_inner(beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/code/<address>")]
+pub async fn query_code(
+    address: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryCodeResponse> {
+    ApiResponse::from_result(query_code_inner(address, beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -108,4 +117,23 @@ pub async fn query_block_number_inner(
     debug!("Querying block number");
     let block_number = beerus.ethereum_lightclient.get_block_number().await?;
     Ok(QueryBlockNumberResponse { block_number })
+}
+
+/// Query the code of a contract from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_code)` - 256bits vector (code)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_code_inner(
+    address: &str,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryCodeResponse> {
+    debug!("Querying contract code");
+    let addr = Address::from_str(&address)?;
+    let block = BlockTag::Latest;
+    let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
+
+    Ok(QueryCodeResponse { code })
 }

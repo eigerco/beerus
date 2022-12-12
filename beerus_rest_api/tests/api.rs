@@ -215,7 +215,7 @@ mod test {
 
     /// Test the `query_block_number` endpoint.
     /// `/ethereum/block_number`
-    /// Given StarkNet light client returns error when query block number, then error is propagated.
+    /// Given Ethereum light client returns error when query block number, then error is propagated.
     #[tokio::test]
     async fn given_ethereum_lightclient_returns_error_when_query_block_number_then_error_is_propagated(
     ) {
@@ -248,6 +248,83 @@ mod test {
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query block number\"}"
         );
+    }
+
+    /// Test the `get_code` endpoint.
+    /// `/ethereum/code`
+    /// Given normal conditions, when query code, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_code_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let check_value = vec![0, 0, 0, 1];
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/code/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"code\":[0,0,0,1]}"
+        )
+    }
+
+    /// Test the `query_code` endpoint.
+    /// `/ethereum/code`
+    /// Given Ethereum light client returns error when query code, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_code_then_error_is_propagated() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Err(eyre::eyre!("Cannot query code")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/code/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Cannot query code\"}"
+        )
     }
 
     /// Test the `query_starknet_state_root` endpoint.
