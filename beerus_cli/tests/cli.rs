@@ -124,7 +124,7 @@ mod test {
         let result = runner::run(beerus, cli).await.unwrap();
 
         // Then
-        assert_eq!("Block number: 123", result.to_string());
+        assert_eq!("123", result.to_string());
     }
 
     /// Test the `query_balance` CLI command.

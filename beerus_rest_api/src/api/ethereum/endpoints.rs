@@ -1,4 +1,6 @@
-use crate::api::ethereum::resp::{QueryBalanceResponse, QueryNonceResponse,QueryBlockNumberResponse};
+use crate::api::ethereum::resp::{
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryNonceResponse,
+};
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;

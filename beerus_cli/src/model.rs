@@ -105,14 +105,14 @@ impl Display for CommandResponse {
         match self {
             // Print the balance in Ether.
             // Result looks like: 0.000000000000000001 ETH
-            CommandResponse::EthereumQueryBalance(balance) => write!(f, "{} ETH", balance),
+            CommandResponse::EthereumQueryBalance(balance) => write!(f, "{balance} ETH"),
             // Print the address nonce.
             // Result looks like: Nonce: 10
-            CommandResponse::EthereumQueryNonce(nonce) => write!(f, "Nonce: {}", nonce),
+            CommandResponse::EthereumQueryNonce(nonce) => write!(f, "Nonce: {nonce}"),
             // Print the current block number.
             // Result looks like: 123456
             CommandResponse::EthereumQueryBlockNumber(block_number) => {
-                write!(f, "Block number: {block_number}")
+                write!(f, "{block_number}")
             }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
