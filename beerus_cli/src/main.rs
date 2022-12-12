@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
     let command_response = runner::run(beerus, cli).await?;
     // Print the command response.
     // The handling of the command response is left to each `CommandResponse` implementation.
-    println!("{}", command_response);
+    println!("{command_response}");
 
     Ok(())
 }

@@ -15,3 +15,9 @@ pub struct QueryNonceResponse {
     pub address: String,
     pub nonce: u64,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockNumberResponse {
+    pub block_number: u64,
+}
