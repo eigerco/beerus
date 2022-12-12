@@ -59,4 +59,14 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_nonce(&self, address: &Address, block: BlockTag) -> Result<u64>;
+
+    /// Get the current block number.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The current block number.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_block_number(&self) -> Result<u64>;
 }
