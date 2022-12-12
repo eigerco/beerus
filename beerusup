@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -e
+
+NAME="beerus"
+INSTALLER="${NAME}up"
+
+BEERUS_ROOT="$HOME/.$NAME"
+BEERUS_BIN="$BEERUS_ROOT/bin"
+
+BEERUS_URL="https://raw.githubusercontent.com/keep-starknet-strange/beerus/main"
+BEERUSUP_URL="$BEERUS_URL/$INSTALLER"
+
+if [ -d "$BEERUS_ROOT" ]; then
+    # check version
+    echo "$BEERUS_ROOT"
+else
+    # install
+    mkdir -p $BEERUS_BIN
+    curl -# $BEERUSUP_URL -o "$BEERUS_BIN/$INSTALLER"
+    chmod +x "$BEERUSUP_URL"
+    echo "creating stuff..."
+    add_to_shell
+fi
+
+add_to_shell() {
+    echo "checking profile..."
+    # Store the correct profile file (i.e. .profile for bash or .zshrc for ZSH).
+    case $SHELL in
+    */zsh)
+        PROFILE=$HOME/.zshrc
+        PREF_SHELL=zsh
+        ;;
+    */bash)
+        PROFILE=$HOME/.bashrc
+        PREF_SHELL=bash
+        ;;
+    */fish)
+        PROFILE=$HOME/.config/fish/config.fish
+        PREF_SHELL=fish
+        ;;
+    *)
+        echo "$INSTALLER: could not detect shell, manually add ${BEERUS_ROOT} to your PATH."
+        exit 1
+    esac
+
+    if [[ ":$PATH:" != *":${BEERUS_BIN}:"* ]]; then
+        # Add the BEERUS_BIN directory to the PATH
+        echo -e "\nexport PATH=\"\$PATH:$BEERUS_BIN\"" >> $PROFILE
+        export PATH="$PATH:$BEERUS_BIN"
+    fi
+}
