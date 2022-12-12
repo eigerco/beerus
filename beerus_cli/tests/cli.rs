@@ -129,7 +129,7 @@ mod test {
 
     #[tokio::test]
     async fn given_normal_conditions_when_query_code_then_ok() {
-        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
         let check_value = vec![0, 0, 0, 1];
         // Given
@@ -307,7 +307,7 @@ mod test {
 
         // Then
         match result {
-            Err(e) => assert_eq!("ethereum_lightclient_erro1r", e.to_string()),
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error,got ok"),
         }
     }
