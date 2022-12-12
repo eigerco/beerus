@@ -111,6 +111,23 @@ storage value of a StarkNet contract.
 
 ### Installation
 
+The project requires nightly rustup:
+
+```bash
+rustup toolchain install nightly
+rustup default nightly
+```
+
+The project requires an Ethereum node and a Starknet node. For Ethereum nodes
+you can use Alchemy (not Infura since it does not support getProof endpoint).
+
+For StarkNet node for the moment you can use Infura but soon verify proof will
+be implemented in Pathfinder nodes, and so will these nodes be working as well.
+
+Meanwhile you can just use unit tests to dev.
+
+cargo test —all
+
 > **[TODO]**
 
 ### Configuration
