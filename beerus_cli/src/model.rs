@@ -50,6 +50,12 @@ pub enum EthereumSubCommands {
     },
 
     QueryBlockNumber {},
+
+    QueryCode {
+        /// The address of the contract to query the code
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+    },
 }
 
 /// StarkNet related commands.
@@ -86,7 +92,7 @@ pub enum StarkNetSubCommands {
         key: String,
     },
     QueryNonce {
-        /// The address of the contract to query
+        /// The address of the contract to query the nonce
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
@@ -97,6 +103,7 @@ pub enum CommandResponse {
     EthereumQueryBalance(String),
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
+    EthereumQueryCode(Vec<u8>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -119,6 +126,11 @@ impl Display for CommandResponse {
             // Result looks like: 123456
             CommandResponse::EthereumQueryBlockNumber(block_number) => {
                 write!(f, "{block_number}")
+            }
+            // Print the code of a contract in 256bits vector
+            // Result looks like: [1,1,10,ff]
+            CommandResponse::EthereumQueryCode(code) => {
+                write!(f, "{code:?}")
             }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374

@@ -30,6 +30,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 ethereum::query_nonce(beerus, address.to_string()).await
             }
             EthereumSubCommands::QueryBlockNumber {} => ethereum::query_block_number(beerus).await,
+            EthereumSubCommands::QueryCode { address } => {
+                ethereum::query_code(beerus, address.to_string()).await
+            }
         },
         // StarkNet commands.
         Commands::StarkNet(starknet_commands) => match &starknet_commands.command {

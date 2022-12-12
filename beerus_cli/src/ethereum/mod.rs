@@ -64,3 +64,20 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
     let block_number = beerus.ethereum_lightclient.get_block_number().await?;
     Ok(CommandResponse::EthereumQueryBlockNumber(block_number))
 }
+
+/// Query the code of a contract
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - Vector of 256bits
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<CommandResponse> {
+    let block = BlockTag::Latest;
+
+    let addr = Address::from_str(&address)?;
+
+    let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
+
+    Ok(CommandResponse::EthereumQueryCode(code))
+}
