@@ -93,23 +93,19 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
-    /// Get the value at a specific key in a contract's storage.
-    /// Returns the value at the key.
+    /// Get contract's nonce.
+    /// Returns the nonce value.
     ///
     /// # Arguments
     ///
     /// * `address` - Address of the contract.
-    /// * `key` - Key of the storage.
+    ///
     ///
     /// # Returns
     ///
     /// `Ok(FieldElement)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn get_nonce(
-        &self, 
-        _block_number:u64,
-        address: FieldElement,
-    ) -> Result<FieldElement> {
+    async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement> {
         self.client
             .get_nonce(
                 &starknet::providers::jsonrpc::models::BlockId::Number(503597),
@@ -117,5 +113,5 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             )
             .await
             .map_err(|e| eyre::eyre!(e))
-    }    
+    }
 }
