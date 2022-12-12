@@ -37,6 +37,8 @@
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+      - [Beerusup](#beerusup)
+      - [Build From Source](#build-from-source)
   - [Configuration](#configuration)
 - [Usage](#usage)
   - [CLI](#cli)
@@ -112,6 +114,15 @@ storage value of a StarkNet contract.
 - [Rust](https://www.rust-lang.org/tools/install)
 
 ### Installation
+
+##### Beerusup
+
+To install with `beerusup` run:
+```bash
+curl https://raw.githubusercontent.com/keep-starknet-strange/beerus/beerusup/beerusup | bash
+```
+
+##### Build From Source
 
 The project requires nightly rustup:
 
