@@ -250,6 +250,39 @@ mod test {
         );
     }
 
+    /// Test the `chain_id` endpoint.
+    /// `/ethereum/chain_id`
+    /// Given normal conditions, when query chain id, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_chain_id_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_chain_id()
+            .return_once(move || 1);
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/chain_id")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"chain_id\":1}");
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given normal conditions, when query starknet state root, then ok.

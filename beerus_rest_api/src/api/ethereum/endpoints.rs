@@ -1,5 +1,5 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryNonceResponse,
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryChainIdResponse, QueryNonceResponse,
 };
 use crate::api::ApiResponse;
 
@@ -36,6 +36,14 @@ pub async fn query_block_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockNumberResponse> {
     ApiResponse::from_result(query_block_number_inner(beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/chain_id")]
+pub async fn query_chain_id(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryChainIdResponse> {
+    ApiResponse::from_result(query_chain_id_inner(beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -108,4 +116,18 @@ pub async fn query_block_number_inner(
     debug!("Querying block number");
     let block_number = beerus.ethereum_lightclient.get_block_number().await?;
     Ok(QueryBlockNumberResponse { block_number })
+}
+
+/// Query the chain ID of the Ethereum chain.
+/// # Returns
+/// `chain_id` - The chain ID.
+/// # Errors
+/// Cannot fail.
+/// # Examples
+pub async fn query_chain_id_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryChainIdResponse> {
+    debug!("Querying chain ID");
+    let chain_id = beerus.ethereum_lightclient.chain_id().await;
+    Ok(QueryChainIdResponse { chain_id })
 }

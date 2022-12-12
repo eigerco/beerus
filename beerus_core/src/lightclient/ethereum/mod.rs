@@ -69,4 +69,12 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_block_number(&self) -> Result<u64>;
+
+    /// Get the chain ID.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The chain ID.
+    /// # Errors
+    /// Cannot fail.
+    async fn chain_id(&self) -> u64;
 }
