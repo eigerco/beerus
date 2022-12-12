@@ -127,6 +127,37 @@ mod test {
         assert_eq!("123", result.to_string());
     }
 
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_code_then_ok() {
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let check_value = vec![0, 0, 0, 1];
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryCode { address },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        assert_eq!("[0, 0, 0, 1]", result.to_string());
+    }
+
     /// Test the `query_balance` CLI command.
     /// Given ethereum lightclient returns an error, when query balance, then the error is propagated.
     /// Error case.
@@ -240,6 +271,44 @@ mod test {
         match result {
             Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    //TODO: comments
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_code_then_error_is_propagated() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryCode { address },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_erro1r", e.to_string()),
+            Ok(_) => panic!("Expected error,got ok"),
         }
     }
 

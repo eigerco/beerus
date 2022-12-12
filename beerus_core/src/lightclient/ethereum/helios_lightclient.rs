@@ -48,6 +48,14 @@ impl EthereumLightClient for HeliosLightClient {
     async fn get_block_number(&self) -> eyre::Result<u64> {
         self.helios_light_client.get_block_number().await
     }
+
+    async fn get_code(
+        &self,
+        address: &ethers::types::Address,
+        block: helios::types::BlockTag,
+    ) -> eyre::Result<Vec<u8>> {
+        self.helios_light_client.get_code(address, block).await
+    }
 }
 
 /// HeliosLightClient non-trait functions.
