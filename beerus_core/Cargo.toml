@@ -23,3 +23,4 @@ mockall = "0.11.3"
 url = "2.3.1"
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 temp-env = "0.3.1"
+httpmock = "0.6.7"
