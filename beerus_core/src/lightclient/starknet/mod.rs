@@ -57,13 +57,13 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         address: FieldElement,
         key: FieldElement,
-        _block_number: u64,
+        block_number: u64,
     ) -> Result<FieldElement> {
         self.client
             .get_storage_at(
                 address,
                 key,
-                &starknet::providers::jsonrpc::models::BlockId::Number(485441),
+                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
             )
             .await
             .map_err(|e| eyre::eyre!(e))
@@ -83,11 +83,11 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(Vec<FieldElement>)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn call(&self, request: FunctionCall, _block_number: u64) -> Result<Vec<FieldElement>> {
+    async fn call(&self, request: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>> {
         self.client
             .call(
                 request,
-                &starknet::providers::jsonrpc::models::BlockId::Number(485441),
+                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
             )
             .await
             .map_err(|e| eyre::eyre!(e))
