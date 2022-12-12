@@ -28,6 +28,8 @@
 
 - [Report a Bug](#report-a-bug)
 - [Request a Feature](#request-a-feature)
+- [Report a bug](#report-a-bug-1)
+- [Request a feature](#request-a-feature-1)
 - [About](#about)
   - [Built With](#built-with)
 - [Architecture](#architecture)
@@ -121,14 +123,47 @@ rustup default nightly
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
 
-For StarkNet node for the moment you can use Infura but soon verify proof will
+For StarkNet node for the moment you can use Infura but soon [verify proof]([#62](https://github.com/keep-starknet-strange/beerus/issues/62)) will
 be implemented in Pathfinder nodes, and so will these nodes be working as well.
 
 Meanwhile you can just use unit tests to dev.
 
+```bash
 cargo test —all
+```
 
-> **[TODO]**
+Build from source:
+
+```bash
+cargo build --all --release
+```
+
+The binaries will be located in `target/release/`.
+Specifically, the binary for the CLI is `target/release/beerus_cli` and the binary for the API is `target/release/beerus_rest_api`.
+
+Specify the environment variables and run the binary.
+
+For example to query the state root of the StarkNet network using the CLI:
+
+```bash
+source .env && ./target/release/beerus_cli starknet query-state-root
+# Should output something like:
+# 3018024614248707887030376849268409283849258987090518998455999582305744756580
+```
+
+To do the same using the API:
+
+```bash
+source .env && ./target/release/beerus_rest_api
+# Then go to http://127.0.0.1:8000/starknet/state/root
+# Should output something like:
+```
+
+```json
+{
+  "state_root": "3018024614248707887030376849268409283849258987090518998455999582305744756580"
+}
+```
 
 ### Configuration
 
@@ -265,7 +300,7 @@ Thanks goes to these wonderful people
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/abdelhamidbakhta"><img src="https://avatars.githubusercontent.com/u/45264458?v=4?s=100" width="100px;" alt="Abdel @ StarkWare"/><br /><sub><b>Abdel @ StarkWare</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=abdelhamidbakhta" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/abdelhamidbakhta"><img src="https://avatars.githubusercontent.com/u/45264458?v=4?s=100" width="100px;" alt="Abdel @ StarkWare"/><br /><sub><b>Abdel @ StarkWare</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=abdelhamidbakhta" title="Tests">⚠️</a> <a href="https://github.com/keep-starknet-strange/beerus/commits?author=abdelhamidbakhta" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/LucasLvy"><img src="https://avatars.githubusercontent.com/u/70894690?v=4?s=100" width="100px;" alt="Lucas @ StarkWare"/><br /><sub><b>Lucas @ StarkWare</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=LucasLvy" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/danilowhk"><img src="https://avatars.githubusercontent.com/u/12735159?v=4?s=100" width="100px;" alt="danilowhk"/><br /><sub><b>danilowhk</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=danilowhk" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/msaug"><img src="https://avatars.githubusercontent.com/u/60658558?v=4?s=100" width="100px;" alt="Mathieu"/><br /><sub><b>Mathieu</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=msaug" title="Code">💻</a></td>
