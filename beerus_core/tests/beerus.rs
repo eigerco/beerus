@@ -107,6 +107,86 @@ mod tests {
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
+    /// Test the `get_balance` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_balance` method of the external dependencies.
+    /// It tests the `get_balance` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_balance_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_balance` method of the Ethereum light client.
+        ethereum_lightclient_mock
+            .expect_get_balance()
+            .return_once(move |_, _| Ok(123.into()));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+
+        let addr: Address = Address::from_str(&address).unwrap();
+
+        let block = BlockTag::Latest;
+
+        // Query the balance of the Ethereum address.
+        let result = beerus
+            .ethereum_lightclient
+            .get_balance(&addr, block)
+            .await
+            .unwrap();
+
+        // Assert that the `get_balance` method of the Beerus light client returns `123`.
+        assert_eq!("123", result.to_string());
+    }
+
+    /// Test the `get_balance` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_balance` method of the external dependencies.
+    /// It tests the `get_balance` method of the Beerus light client.
+    /// It tests the error handling of the `get_balance` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_error_when_call_get_balance_then_should_return_error() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_balance()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+
+        let addr: Address = Address::from_str(&address).unwrap();
+
+        let block = BlockTag::Latest;
+
+        // Query the balance of the Ethereum address.
+        let result = beerus.ethereum_lightclient.get_balance(&addr, block).await;
+
+        // Then
+        // Assert that the `get_balance` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_balance` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
     /// Test the `get_nonce` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_nonce` method of the external dependencies.
