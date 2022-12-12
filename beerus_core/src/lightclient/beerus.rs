@@ -177,13 +177,22 @@ impl BeerusLightClient {
         self.starknet_lightclient.call(opts, last_block).await
     }
 
-    //TODO: Add comments
-    pub async fn starknet_get_nonce(
-        &self,
-        address: FieldElement,
-    ) -> Result<FieldElement>{
+    /// Get the nonce at a given address.
+    /// This function is used to get the nonce at a given address.
+    ///
+    /// # Arguments
+    ///
+    /// * `contract_address` - The StarkNet contract address.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_get_nonce(&self, address: FieldElement) -> Result<FieldElement> {
         let last_block = self.starknet_last_proven_block().await?.as_u64();
 
-        self.starknet_lightclient.get_nonce(last_block,address).await
-    }    
+        self.starknet_lightclient
+            .get_nonce(last_block, address)
+            .await
+    }
 }

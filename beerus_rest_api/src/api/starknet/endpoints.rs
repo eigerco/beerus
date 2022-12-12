@@ -1,4 +1,7 @@
-use super::resp::{QueryContractViewResponse, QueryGetStorageAtResponse, QueryStateRootResponse};
+use super::resp::{
+    QueryContractViewResponse, QueryGetStorageAtResponse, QueryNonceResponse,
+    QueryStateRootResponse,
+};
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
@@ -41,6 +44,16 @@ pub async fn query_starknet_get_storage_at(
     key: String,
 ) -> ApiResponse<QueryGetStorageAtResponse> {
     ApiResponse::from_result(query_starknet_get_storage_at_inner(beerus, contract, key).await)
+}
+
+/// Query get_nonce
+#[openapi]
+#[get("/starknet/nonce/<contract>")]
+pub async fn query_starknet_get_nonce(
+    beerus: &State<BeerusLightClient>,
+    contract: String,
+) -> ApiResponse<QueryNonceResponse> {
+    ApiResponse::from_result(query_starknet_get_nonce_inner(beerus, contract).await)
 }
 
 /// Query the state root of StarkNet.
@@ -127,5 +140,31 @@ pub async fn query_starknet_contract_view_inner(
 
     Ok(QueryContractViewResponse {
         result: view.into_iter().map(|x| x.to_string()).collect(),
+    })
+}
+
+/// Query get_nonce.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `contract_address` - The contract address.
+///
+///
+/// # Returns
+///
+/// * `QueryNonceResponse` - The contract nonce response.
+pub async fn query_starknet_get_nonce_inner(
+    beerus: &State<BeerusLightClient>,
+    contract_address: String,
+) -> Result<QueryNonceResponse> {
+    debug!("Querying Starknet contract nonce");
+    let contract_address = FieldElement::from_str(&contract_address)?;
+
+    Ok(QueryNonceResponse {
+        result: beerus
+            .starknet_get_nonce(contract_address)
+            .await?
+            .to_string(),
     })
 }

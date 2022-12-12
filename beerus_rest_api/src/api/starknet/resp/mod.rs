@@ -17,3 +17,9 @@ pub struct QueryContractViewResponse {
 pub struct QueryGetStorageAtResponse {
     pub result: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryNonceResponse {
+    pub result: String,
+}

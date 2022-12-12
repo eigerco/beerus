@@ -418,7 +418,7 @@ mod test {
         }
     }
 
-    /// Test the `query_contract` CLI command.
+    /// Test the `query_nonce` CLI command.
     /// Given normal conditions, when query contract, then ok.
     /// Success case.
     #[tokio::test]
@@ -471,6 +471,92 @@ mod test {
         let result = runner::run(beerus, cli).await.unwrap();
         // Then
         assert_eq!("[123, 456]", result.to_string());
+    }
+
+    /// Test the `query_nonce` CLI command.
+    /// Given normal conditions, when query nonce, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_nonce_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FieldElement::from_dec_str("298305742194").unwrap();
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| Ok(expected_result));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryNonce {
+                    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+                        .to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("Nonce: 298305742194", result.to_string());
+    }
+
+    /// Test the `query_nonce` CLI command.
+    /// Given starknet lightclient returns an error, when query nonce, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_query_nonce_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| Err(eyre::eyre!("starknet_lightclient_error")));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryNonce {
+                    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+                        .to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

@@ -85,16 +85,22 @@ pub async fn query_starknet_contract_view(
     ))
 }
 
-// TODO: Add Comments
+/// Query starknet_nonce
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `address` - The StarkNet address.
+/// # Returns
+/// * `Result<()>` - The result of the query.
+/// # Errors
+/// * If the StarkNet nonce query fails.
+/// * If the StarkNet address is invalid.
 pub async fn query_starknet_nonce(
     beerus: BeerusLightClient,
     address: String,
-) -> Result<CommandResponse>{
+) -> Result<CommandResponse> {
     let addr = FieldElement::from_str(&address)?;
 
     Ok(CommandResponse::StarkNetQueryNonce(
-        beerus
-            .starknet_get_nonce(addr).await?,
+        beerus.starknet_get_nonce(addr).await?,
     ))
-
 }

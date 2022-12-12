@@ -559,6 +559,74 @@ mod tests {
         assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
+    /// Test that starknet get_nonce.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_nonce_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let expected_result = FieldElement::from_hex_be("298305742194").unwrap();
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient_mock
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| Ok(expected_result));
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let address = FieldElement::from_hex_be(
+            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )
+        .unwrap();
+        // Get nonce
+        let res = beerus.starknet_get_nonce(address).await.unwrap();
+
+        assert!(res == expected_result);
+    }
+
+    /// Test that starknet get_nonce.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_nonce_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = "Wrong url";
+        starknet_lightclient_mock
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| Err(eyre!(expected_error)));
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let address = FieldElement::from_hex_be(
+            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )
+        .unwrap();
+
+        // Get Nonce.
+        let res = beerus.starknet_get_nonce(address).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error);
+    }
+
     /// Test that with a correct url we can create StarkNet light client.
     #[test]
     fn given_normal_conditions_when_create_sn_lightclient_should_work() {

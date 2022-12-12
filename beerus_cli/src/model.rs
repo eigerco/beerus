@@ -85,11 +85,11 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "KEY")]
         key: String,
     },
-    QueryNonce{
+    QueryNonce {
         /// The address of the contract to query
         #[arg(short, long, value_name = "ADDRESS")]
-        address: String,        
-    }
+        address: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -100,8 +100,7 @@ pub enum CommandResponse {
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
-    StarkNetQueryNonce(FieldElement)
-
+    StarkNetQueryNonce(FieldElement),
 }
 
 /// Display implementation for the CLI command response.
@@ -140,7 +139,8 @@ impl Display for CommandResponse {
             CommandResponse::StarkNetQueryGetStorageAt(response) => {
                 write!(f, "{response}")
             }
-
+            // Print the nonce value.
+            // Result looks like: 3
             CommandResponse::StarkNetQueryNonce(nonce) => {
                 write!(f, "Nonce: {}", nonce)
             }

@@ -502,6 +502,92 @@ mod test {
         );
     }
 
+    /// Test the `query_starknet_get_nonce` endpoint.
+    /// `/starknet/nonce/<contract>/`
+    /// Given normal conditions, when query starknet get_nonce, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_get_nonce_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FieldElement::from_hex_be("298305742194").unwrap();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| Ok(expected_result));
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/nonce/0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"result\":\"45642708951444\"}"
+        );
+    }
+
+    /// Test the `query_starknet_get_nonce` endpoint.
+    /// `/starknet/nonce/<contract>/`
+    /// Given StarkNet light client returns error when query starknet get_nonce, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_get_nonce_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_nonce()
+            .return_once(move |_block_nb, _address| {
+                Err(eyre::eyre!("cannot query starknet address nonce"))
+            });
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_req, _block_nb| Ok(vec![2]));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/nonce/0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet address nonce\"}"
+        );
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
