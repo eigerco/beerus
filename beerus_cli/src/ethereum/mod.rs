@@ -52,3 +52,15 @@ pub async fn query_nonce(beerus: BeerusLightClient, address: String) -> Result<C
 
     Ok(CommandResponse::EthereumQueryNonce(nonce))
 }
+
+/// Query the block number of the latest block.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The block number of the latest block.
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let block_number = beerus.ethereum_lightclient.get_block_number().await?;
+    Ok(CommandResponse::EthereumQueryBlockNumber(block_number))
+}

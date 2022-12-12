@@ -1,4 +1,6 @@
-use crate::api::ethereum::resp::{QueryBalanceResponse, QueryNonceResponse};
+use crate::api::ethereum::resp::{
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryNonceResponse,
+};
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
@@ -26,6 +28,14 @@ pub async fn query_nonce(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryNonceResponse> {
     ApiResponse::from_result(query_nonce_inner(beerus, address).await)
+}
+
+#[openapi]
+#[get("/ethereum/block_number")]
+pub async fn query_block_number(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockNumberResponse> {
+    ApiResponse::from_result(query_block_number_inner(beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -83,4 +93,19 @@ pub async fn query_nonce_inner(
         address: address.to_string(),
         nonce,
     })
+}
+
+/// Query the block number of the Ethereum chain.
+/// # Returns
+/// `Ok(block_number)` - The block number.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the block number query fails.
+/// # Examples
+pub async fn query_block_number_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockNumberResponse> {
+    debug!("Querying block number");
+    let block_number = beerus.ethereum_lightclient.get_block_number().await?;
+    Ok(QueryBlockNumberResponse { block_number })
 }

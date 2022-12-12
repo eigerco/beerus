@@ -16,7 +16,7 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/45264458?v=4",
       "profile": "https://github.com/abdelhamidbakhta",
       "contributions": [
-        "code"
+        "test"
       ]
     },
     {
@@ -35,6 +35,24 @@
       "profile": "https://github.com/danilowhk",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "msaug",
+      "name": "Mathieu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/60658558?v=4",
+      "profile": "https://github.com/msaug",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hurrikaanig",
+      "name": "TurcFort07",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37303126?v=4",
+      "profile": "https://github.com/hurrikaanig",
+      "contributions": [
+        "doc"
       ]
     }
   ],

@@ -177,6 +177,79 @@ mod test {
         );
     }
 
+    /// Test the `query_block_number` endpoint.
+    /// `/ethereum/block_number`
+    /// Given normal conditions, when query block number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_number_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_number()
+            .return_once(move || Ok(123));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/block_number")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"block_number\":123}"
+        );
+    }
+
+    /// Test the `query_block_number` endpoint.
+    /// `/ethereum/block_number`
+    /// Given StarkNet light client returns error when query block number, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_block_number_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_number()
+            .return_once(move || Err(eyre::eyre!("cannot query block number")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/block_number")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query block number\"}"
+        );
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given normal conditions, when query starknet state root, then ok.

@@ -187,6 +187,38 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
+    /// Test the `get_block_number` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_block_number` method of the external dependencies.
+    /// It tests the `get_block_number` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_block_number_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_block_number` method of the Ethereum light client.
+        let expected_block_number = 1;
+        ethereum_lightclient_mock
+            .expect_get_block_number()
+            .return_once(move || Ok(expected_block_number));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.ethereum_lightclient.get_block_number().await;
+
+        // Then
+        // Assert that the `get_block_number` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the block number returned by the `get_block_number` method of the Beerus light client is the expected block number.
+        assert_eq!(result.unwrap(), expected_block_number);
+    }
+
     /// Test the `start` method when the StarkNet light client returns an error.
     /// This test mocks external dependencies.
     /// It does not test the `start` method of the external dependencies.
