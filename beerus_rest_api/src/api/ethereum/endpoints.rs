@@ -119,7 +119,7 @@ pub async fn query_block_number_inner(
     Ok(QueryBlockNumberResponse { block_number })
 }
 
-/// Query the code of a contract from the the Ethereum chain.
+/// Query the Code of a contract from the the Ethereum chain.
 /// # Returns
 /// `Ok(get_code)` - 256bits vector (code)
 /// `Err(error)` - An error occurred.
@@ -131,7 +131,7 @@ pub async fn query_code_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryCodeResponse> {
     debug!("Querying contract code");
-    let addr = Address::from_str(&address)?;
+    let addr = Address::from_str(address)?;
     let block = BlockTag::Latest;
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 

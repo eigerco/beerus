@@ -247,7 +247,7 @@ mod tests {
         let result = beerus.ethereum_lightclient.get_code(&addr, block).await;
 
         // Then
-        // Assert that the `get_block_number` method of the Beerus light client returns `Ok`.
+        // Assert that the `get_code` method of the Beerus light client returns `Ok`.
         assert!(result.is_ok());
         // Assert that the code returned byt `get_code` method of the Beerus light client is the expected code.
         assert_eq!(result.unwrap(), vec![0, 100, 87, 63]);
