@@ -142,7 +142,7 @@ impl Display for CommandResponse {
             // Print the nonce value.
             // Result looks like: 3
             CommandResponse::StarkNetQueryNonce(nonce) => {
-                write!(f, "Nonce: {}", nonce)
+                write!(f, "Nonce: {nonce}")
             }
         }
     }
