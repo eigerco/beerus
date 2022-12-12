@@ -88,7 +88,7 @@ Here is a high level overview of the architecture of Beerus.
 
 Here is a simple overview of how Beerus work. The example is for querying a storage value of a StarkNet contract.
 
-[!Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
+[![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
 
 ## Getting Started
 
