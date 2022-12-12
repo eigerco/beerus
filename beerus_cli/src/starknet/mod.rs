@@ -84,3 +84,17 @@ pub async fn query_starknet_contract_view(
             .await?,
     ))
 }
+
+// TODO: Add Comments
+pub async fn query_starknet_nonce(
+    beerus: BeerusLightClient,
+    address: String,
+) -> Result<CommandResponse>{
+    let addr = FieldElement::from_str(&address)?;
+
+    Ok(CommandResponse::StarkNetQueryNonce(
+        beerus
+            .starknet_get_nonce(addr).await?,
+    ))
+
+}

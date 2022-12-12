@@ -176,4 +176,14 @@ impl BeerusLightClient {
         // Call the StarkNet light client.
         self.starknet_lightclient.call(opts, last_block).await
     }
+
+    //TODO: Add comments
+    pub async fn starknet_get_nonce(
+        &self,
+        address: FieldElement,
+    ) -> Result<FieldElement>{
+        let last_block = self.starknet_last_proven_block().await?.as_u64();
+
+        self.starknet_lightclient.get_nonce(last_block,address).await
+    }    
 }
