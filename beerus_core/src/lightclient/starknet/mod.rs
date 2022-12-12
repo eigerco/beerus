@@ -108,7 +108,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement> {
         self.client
             .get_nonce(
-                &starknet::providers::jsonrpc::models::BlockId::Number(503597),
+                &starknet::providers::jsonrpc::models::BlockId::Number(504084),
                 address,
             )
             .await
