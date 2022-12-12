@@ -19,6 +19,7 @@ pub trait StarkNetLightClient: Send + Sync {
         key: FieldElement,
         block_number: u64,
     ) -> Result<FieldElement>;
+    async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -91,4 +92,30 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| eyre::eyre!(e))
     }
+
+    /// Get the value at a specific key in a contract's storage.
+    /// Returns the value at the key.
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - Address of the contract.
+    /// * `key` - Key of the storage.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_nonce(
+        &self, 
+        _block_number:u64,
+        address: FieldElement,
+    ) -> Result<FieldElement> {
+        self.client
+            .get_nonce(
+                &starknet::providers::jsonrpc::models::BlockId::Number(503597),
+                address,
+            )
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }    
 }

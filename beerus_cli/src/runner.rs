@@ -56,6 +56,13 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QueryNonce { address } =>{
+                starknet::query_starknet_nonce(
+                    beerus,
+                    address.to_string(),
+                )
+                .await
+            }            
         },
     }
 }
