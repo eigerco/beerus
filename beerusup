@@ -126,10 +126,7 @@ install_beerus_manually() {
     mv ./target/release/beerus_cli $PROJECT_BIN
     mv ./target/release/beerus_rest_api $PROJECT_BIN
 
-    # TODO: 
-    # after issue 82 is resolved get version from usage
-    # BEERUS_VER=$(beerus-cli --version)
-    BEERUS_VER=$(git rev-parse HEAD)
+    BEERUS_VER=$(beerus_cli --version | awk '{print $2}')
 
     cd $WRK_DIR
     rm -rf $PROJECT_TMP/beerus
@@ -154,8 +151,8 @@ if [ "$1" = "dev" ] || [ $? -ne 0 ]; then
     install_beerus_manually
 else
     # Pull latest release if there is a new version
-    CURRENT_VER=$(beerus_cli --version)
-    if [ "$LATEST_TAG" = "$CURRENT_VER" ]; then
+    CURRENT_VER=$(beerus_cli --version | awk '{print $2}')
+    if [ "$LATEST_TAG" = "v$CURRENT_VER" ]; then
         echo "$NAME is currently running the latest version: $LATEST_VER"
     else
         echo "$NAME being updated to $LATEST_VER"

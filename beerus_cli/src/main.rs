@@ -13,6 +13,8 @@ use eyre::Result;
 async fn main() -> Result<()> {
     // Initialize the logger.
     env_logger::init();
+    // Parse the CLI arguments.
+    let cli = Cli::parse();
     // Read the config from the environment.
     let config = Config::new_from_env()?;
     // Create a new Ethereum light client.
@@ -27,8 +29,6 @@ async fn main() -> Result<()> {
     );
     // Start the Beerus light client.
     beerus.start().await?;
-    // Parse the CLI arguments.
-    let cli = Cli::parse();
     // Run the CLI command.
     let command_response = runner::run(beerus, cli).await?;
     // Print the command response.
