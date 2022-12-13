@@ -1,6 +1,6 @@
 use super::resp::{
     QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryNonceResponse, QueryStateRootResponse,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
@@ -74,6 +74,16 @@ pub async fn query_l1_to_l2_message_cancellations(
     msg_hash: String,
 ) -> ApiResponse<QueryL1ToL2MessageCancellationsResponse> {
     ApiResponse::from_result(query_l1_to_l2_message_cancellations_inner(beerus, msg_hash).await)
+}
+
+/// Query l1_to_l2_messages
+#[openapi]
+#[get("/starknet/messaging/l1_to_l2_messages/<msg_hash>")]
+pub async fn query_l1_to_l2_messages(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> ApiResponse<QueryL1ToL2MessagesResponse> {
+    ApiResponse::from_result(query_l1_to_l2_messages_inner(beerus, msg_hash).await)
 }
 
 /// Query the state root of StarkNet.
@@ -210,6 +220,32 @@ pub async fn query_l1_to_l2_message_cancellations_inner(
     Ok(QueryL1ToL2MessageCancellationsResponse {
         result: beerus
             .starknet_l1_to_l2_message_cancellations(msg_hash)
+            .await?
+            .to_string(),
+    })
+}
+
+/// Query l1_to_l2_messages.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `msg_hash` - The hash of the message.
+///
+///
+/// # Returns
+///
+/// * `L1ToL2Messages` - The timestamp at the time L1ToL2Message was called with a message matching 'msg_hash'.
+pub async fn query_l1_to_l2_messages_inner(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> Result<QueryL1ToL2MessagesResponse> {
+    debug!("Querying Starknet contract nonce");
+    let msg_hash = U256::from_str(&msg_hash)?;
+
+    Ok(QueryL1ToL2MessagesResponse {
+        result: beerus
+            .starknet_l1_to_l2_messages(msg_hash)
             .await?
             .to_string(),
     })
