@@ -778,7 +778,7 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error);
     }
 
-    /// Test that timestamp is returned when the Ethereum light client returns a value.
+    /// Test that msg_fee + 1 for the message with the given 'msgHash is returned when the Ethereum light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_l1_to_l2_messages_then_should_work() {
         // Mock config, ethereum light client and starknet light client.
@@ -804,16 +804,16 @@ mod tests {
         );
 
         // Perform the test call.
-        let cancellation_timestamp = beerus
+        let message_timestamp = beerus
             .starknet_l1_to_l2_messages(U256::from(0))
             .await
             .unwrap();
 
         // Assert that the result is correct.
-        assert_eq!(cancellation_timestamp, expected_timestamp);
+        assert_eq!(message_timestamp, expected_timestamp);
     }
 
-    /// Test that starknet_l1_to_l2_message_cancellations return an error when the Ethereum Light client returns an error.
+    /// Test that starknet_l1_to_l2_messages return an error when the Ethereum Light client returns an error.
     #[tokio::test]
     async fn given_ethereum_light_client_returns_error_when_starknet_l1_to_l2_messages_then_should_fail_with_same_error(
     ) {
