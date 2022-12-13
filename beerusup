@@ -8,8 +8,7 @@ PROJECT_BIN="$PROJECT_ROOT/bin"
 PROJECT_TMP="$PROJECT_ROOT/tmp"
 INSTALLER_PATH="$PROJECT_BIN/$INSTALLER"
 
-# BEERUS_URL="keep-starknet-strange/beerus/main"
-PROJECT_REPO="drspacemn/beerus/main"
+PROJECT_REPO="keep-starknet-strange/beerus/main"
 INSTALLER_URL="https://raw.githubusercontent.com/$PROJECT_REPO/$INSTALLER"
 
 # Store the correct profile file
