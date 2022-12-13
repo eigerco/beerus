@@ -31,7 +31,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             }
             EthereumSubCommands::QueryBlockNumber {} => ethereum::query_block_number(beerus).await,
             EthereumSubCommands::QueryCode { address } => {
-                ethereum::query_code(beerus, address.to_string()).await
+                ethereum::query_code(beerus, address.to_owned()).await
             }
         },
         // StarkNet commands.
