@@ -1,12 +1,13 @@
 use super::resp::{
-    QueryContractViewResponse, QueryGetStorageAtResponse, QueryNonceResponse,
-    QueryStateRootResponse,
+    QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use log::debug;
+use primitive_types::U256;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
@@ -54,6 +55,16 @@ pub async fn query_starknet_get_nonce(
     contract: String,
 ) -> ApiResponse<QueryNonceResponse> {
     ApiResponse::from_result(query_starknet_get_nonce_inner(beerus, contract).await)
+}
+
+/// Query l1_to_l2_message_cancellations
+#[openapi]
+#[get("/starknet/messaging/l1_to_l2_message_cancellations/<msg_hash>")]
+pub async fn query_l1_to_l2_message_cancellations(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> ApiResponse<QueryL1ToL2MessageCancellationsResponse> {
+    ApiResponse::from_result(query_l1_to_l2_message_cancellations_inner(beerus, msg_hash).await)
 }
 
 /// Query the state root of StarkNet.
@@ -164,6 +175,32 @@ pub async fn query_starknet_get_nonce_inner(
     Ok(QueryNonceResponse {
         result: beerus
             .starknet_get_nonce(contract_address)
+            .await?
+            .to_string(),
+    })
+}
+
+/// Query l1_to_l2_message_cancellations.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `msg_hash` - The hash of the message.
+///
+///
+/// # Returns
+///
+/// * `L1ToL2MessageCancellations` - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
+pub async fn query_l1_to_l2_message_cancellations_inner(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> Result<QueryL1ToL2MessageCancellationsResponse> {
+    debug!("Querying Starknet contract nonce");
+    let msg_hash = U256::from_str(&msg_hash)?;
+
+    Ok(QueryL1ToL2MessageCancellationsResponse {
+        result: beerus
+            .starknet_l1_to_l2_message_cancellations(msg_hash)
             .await?
             .to_string(),
     })

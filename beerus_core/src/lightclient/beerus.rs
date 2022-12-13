@@ -1,9 +1,10 @@
-use crate::config::Config;
-use ethers::types::U256;
+use crate::{config::Config, ethers_helper};
+use ethers::{abi::Abi, types::U256};
 
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
+use primitive_types::H160;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::FunctionCall;
 
@@ -27,6 +28,10 @@ pub struct BeerusLightClient {
     pub starknet_lightclient: Box<dyn StarkNetLightClient>,
     /// Sync status.
     pub sync_status: SyncStatus,
+    /// StarkNet core ABI.
+    pub starknet_core_abi: Abi,
+    /// StarkNet core contract address.
+    pub starknet_core_contract_address: H160,
 }
 
 impl BeerusLightClient {
@@ -36,11 +41,19 @@ impl BeerusLightClient {
         ethereum_lightclient: Box<dyn EthereumLightClient>,
         starknet_lightclient: Box<dyn StarkNetLightClient>,
     ) -> Self {
+        let starknet_core_abi = include_str!("../resources/starknet_core_abi.json");
+        // Deserialize the StarkNet core ABI.
+        // For now we assume that the ABI is valid and that the deserialization will never fail.
+        let starknet_core_abi: Abi = serde_json::from_str(starknet_core_abi).unwrap();
+        let starknet_core_contract_address = config.starknet_core_contract_address;
+
         Self {
             config,
             ethereum_lightclient,
             starknet_lightclient,
             sync_status: SyncStatus::NotSynced,
+            starknet_core_abi,
+            starknet_core_contract_address,
         }
     }
 
@@ -66,7 +79,10 @@ impl BeerusLightClient {
         // Get the StarkNet core contract address.
         let starknet_core_contract_address = &self.config.starknet_core_contract_address;
 
-        let data = vec![149, 136, 236, 162];
+        // Corresponds to the StarkNet core contract function `stateRoot`.
+        // The function signature is `stateRoot() -> (uint256)`.
+        // The function selector is `0x95d8ecA2`.
+        let data = vec![0x95, 0x88, 0xec, 0xa2];
 
         // Build the call options.
         let call_opts = CallOpts {
@@ -194,5 +210,43 @@ impl BeerusLightClient {
         self.starknet_lightclient
             .get_nonce(last_block, address)
             .await
+    }
+
+    /// Return the timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
+    /// The function returns 0 if cancelL1ToL2Message was never called.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// * `msg_hash` - The message hash as bytes32.
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
+    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
+        // Convert the message hash to bytes32.
+        let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
+        // Encode the function data.
+        let data = ethers_helper::encode_function_data(
+            msg_hash_bytes32,
+            self.starknet_core_abi.clone(),
+            "l1ToL2MessageCancellations",
+        )?;
+        let data = data.to_vec();
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: self.starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let call_response = self
+            .ethereum_lightclient
+            .call(&call_opts, BlockTag::Latest)
+            .await?;
+        Ok(U256::from_big_endian(&call_response))
     }
 }

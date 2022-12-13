@@ -786,6 +786,73 @@ mod tests {
         assert!(helios_light_client.is_ok());
     }
 
+    /// Test that cancellation timestamp is returned when the Ethereum light client returns a value.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_l1_to_l2_message_cancellations_then_should_work()
+    {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Expected block number.
+        let expected_timestamp = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_timestamp_bytes: Vec<u8> = vec![0; 32];
+        expected_timestamp.to_big_endian(&mut expected_timestamp_bytes);
+
+        // Set the expected return value for the Ethereum light client mock.
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Ok(expected_timestamp_bytes));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Perform the test call.
+        let cancellation_timestamp = beerus
+            .starknet_l1_to_l2_message_cancellations(U256::from(0))
+            .await
+            .unwrap();
+
+        // Assert that the result is correct.
+        assert_eq!(cancellation_timestamp, expected_timestamp);
+    }
+
+    /// Test that starknet_l1_to_l2_message_cancellations return an error when the Ethereum Light client returns an error.
+    #[tokio::test]
+    async fn given_ethereum_light_client_returns_error_when_starknet_l1_to_l2_message_cancellations_then_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Ethereum light client mock.
+        let expected_error = "Ethereum client out of sync";
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Perform the test call.
+        let result = beerus
+            .starknet_l1_to_l2_message_cancellations(U256::from(0))
+            .await;
+
+        // Assert that the result is correct.
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), expected_error);
+    }
+
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
