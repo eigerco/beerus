@@ -65,7 +65,6 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
     Ok(CommandResponse::EthereumQueryBlockNumber(block_number))
 }
 
-
 /// Query the code of a contract
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -74,6 +73,7 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
 /// # Errors
 /// * If the block number query fails.
 pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<CommandResponse> {
+    //TODO: Make this configurable
     let block = BlockTag::Latest;
 
     let addr = Address::from_str(&address)?;
@@ -90,5 +90,4 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
 pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
     let chain_id = beerus.ethereum_lightclient.chain_id().await;
     Ok(CommandResponse::EthereumQueryChainId(chain_id))
-
 }

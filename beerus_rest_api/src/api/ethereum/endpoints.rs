@@ -1,7 +1,6 @@
 use crate::api::ethereum::resp::{
-
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryCodeResponse, QueryNonceResponse,QueryChainIdResponse
-
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryNonceResponse,
 };
 use crate::api::ApiResponse;
 
@@ -47,6 +46,7 @@ pub async fn query_code(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryCodeResponse> {
     ApiResponse::from_result(query_code_inner(address, beerus).await)
+}
 
 #[openapi]
 #[get("/ethereum/chain_id")]
@@ -128,7 +128,6 @@ pub async fn query_block_number_inner(
     Ok(QueryBlockNumberResponse { block_number })
 }
 
-
 /// Query the Code of a contract from the the Ethereum chain.
 /// # Returns
 /// `Ok(get_code)` - 256bits vector (code)
@@ -146,7 +145,7 @@ pub async fn query_code_inner(
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 
     Ok(QueryCodeResponse { code })
-
+}
 /// Query the chain ID of the Ethereum chain.
 /// # Returns
 /// `chain_id` - The chain ID.
@@ -159,5 +158,4 @@ pub async fn query_chain_id_inner(
     debug!("Querying chain ID");
     let chain_id = beerus.ethereum_lightclient.chain_id().await;
     Ok(QueryChainIdResponse { chain_id })
-
 }

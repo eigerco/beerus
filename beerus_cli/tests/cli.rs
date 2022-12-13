@@ -56,108 +56,6 @@ mod test {
         assert_eq!("0.000000000000000123 ETH", result.to_string());
     }
 
-    /// Test `query_nonce` CLI command.
-    /// Given normal conditions, when query nonce, then ok.
-    /// Success case.
-    #[tokio::test]
-    async fn given_normal_conditions_when_query_nonce_then_ok() {
-        // Build mocks
-        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
-
-        // Given
-        // Mock dependencies.
-        ethereum_lightclient
-            .expect_get_nonce()
-            .return_once(move |_, _| Ok(123));
-
-        let beerus = BeerusLightClient::new(
-            config,
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
-        );
-
-        // Mock the command line arguments,
-        let cli = Cli {
-            config: None,
-            command: Commands::Ethereum(EthereumCommands {
-                command: EthereumSubCommands::QueryNonce {
-                    address: "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string(),
-                },
-            }),
-        };
-
-        // When
-        let result = runner::run(beerus, cli).await.unwrap();
-
-        //Then
-        assert_eq!("Nonce: 123", result.to_string());
-    }
-
-    /// Test `query_block_number` CLI command.
-    /// Given normal conditions, when query block_number, then ok.
-    /// Success case.
-    #[tokio::test]
-    async fn given_normal_conditions_when_query_block_number_then_ok() {
-        // Build mocks.
-        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
-
-        // Given
-        // Mock dependencies.
-        ethereum_lightclient
-            .expect_get_block_number()
-            .return_once(move || Ok(123));
-
-        let beerus = BeerusLightClient::new(
-            config,
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
-        );
-
-        // Mock the command line arguments.
-        let cli = Cli {
-            config: None,
-            command: Commands::Ethereum(EthereumCommands {
-                command: EthereumSubCommands::QueryBlockNumber {},
-            }),
-        };
-        // When
-        let result = runner::run(beerus, cli).await.unwrap();
-
-        // Then
-        assert_eq!("123", result.to_string());
-    }
-
-    #[tokio::test]
-    async fn given_normal_conditions_when_query_code_then_ok() {
-        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
-
-        let check_value = vec![0, 0, 0, 1];
-        // Given
-        // Mock dependencies
-        ethereum_lightclient
-            .expect_get_code()
-            .return_once(move |_, _| Ok(check_value));
-
-        let beerus = BeerusLightClient::new(
-            config,
-            Box::new(ethereum_lightclient),
-            Box::new(starknet_lightclient),
-        );
-
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
-        // Mock the command line arguments.
-        let cli = Cli {
-            config: None,
-            command: Commands::Ethereum(EthereumCommands {
-                command: EthereumSubCommands::QueryCode { address },
-            }),
-        };
-
-        let result = runner::run(beerus, cli).await.unwrap();
-
-        assert_eq!("[0, 0, 0, 1]", result.to_string());
-    }
-
     /// Test the `query_balance` CLI command.
     /// Given ethereum lightclient returns an error, when query balance, then the error is propagated.
     /// Error case.
@@ -197,6 +95,44 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
+
+    /// Test `query_nonce` CLI command.
+    /// Given normal conditions, when query nonce, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_nonce_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_nonce()
+            .return_once(move |_, _| Ok(123));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments,
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryNonce {
+                    address: "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string(),
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        //Then
+        assert_eq!("Nonce: 123", result.to_string());
+    }
+
     /// Test the `query_nonce` CLI command.
     /// Given ethereum lightclient returns an error, when query nonce, then the error is propagated.
     /// Error case.
@@ -237,6 +173,40 @@ mod test {
     }
 
     /// Test `query_block_number` CLI command.
+    /// Given normal conditions, when query block_number, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_number_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_number()
+            .return_once(move || Ok(123));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBlockNumber {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("123", result.to_string());
+    }
+
+    /// Test `query_block_number` CLI command.
     /// Given ethereum lightclient returns an error, when query block_number, then the error is propagated.
     /// Error case.
     #[tokio::test]
@@ -274,20 +244,91 @@ mod test {
         }
     }
 
-
-    /// Test the `query_chain_id` CLI command.
-    /// Given normal conditions, when query chain_id, then ok.
+    /// Test the `query_code` CLI command.
+    /// Given normal conditions, when query code, then ok.
     /// Success case.
     #[tokio::test]
-    async fn given_normal_conditions_when_query_chain_id_then_ok() {
+    async fn given_normal_conditions_when_query_code_then_ok() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
+        let check_value = vec![0, 0, 0, 1];
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryCode { address },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        assert_eq!("[0, 0, 0, 1]", result.to_string());
+    }
+
+    /// Test `query-code` CLI command.
+    /// Given ethereum lightclient returns an error, when query code, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_code_then_error_is_propagated() {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
         // Given
         // Mock dependencies.
         ethereum_lightclient
+            .expect_get_code()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
 
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryCode { address },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error,got ok"),
+        }
+    }
+
+    /// Test the `query_chain_id` CLI command.
+    /// Given normal conditions, when query chain_id, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_chain_id_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
             .expect_chain_id()
             .return_once(move || 1);
 
@@ -297,12 +338,10 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
             command: Commands::Ethereum(EthereumCommands {
-
                 command: EthereumSubCommands::QueryChainId {},
             }),
         };
@@ -311,7 +350,6 @@ mod test {
 
         // Then
         assert_eq!("1", result.to_string());
-
     }
 
     /// Test the `query_state_root` CLI command.

@@ -51,7 +51,6 @@ pub enum EthereumSubCommands {
 
     QueryBlockNumber {},
 
-
     QueryCode {
         /// The address of the contract to query the code
         #[arg(short, long, value_name = "ADDRESS")]
@@ -59,7 +58,6 @@ pub enum EthereumSubCommands {
     },
 
     QueryChainId {},
-
 }
 
 /// StarkNet related commands.
@@ -134,6 +132,7 @@ impl Display for CommandResponse {
             }
             // Print the code of a contract in 256bits vector
             // Result looks like: [1,1,10,ff]
+            //TODO: Add Opt to save the file (ex: -o code.json)
             CommandResponse::EthereumQueryCode(code) => {
                 write!(f, "{code:?}")
             }
