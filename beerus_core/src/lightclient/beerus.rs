@@ -250,14 +250,14 @@ impl BeerusLightClient {
         Ok(U256::from_big_endian(&call_response))
     }
 
-    /// Return the timestamp at the time L1ToL2Message was called with a message matching 'msg_hash'.
+    /// Return the msg_fee + 1 from the L1ToL2Message hash'. 0 if there is no matching msg_hash
     /// The function returns 0 if L1ToL2Message was never called.
     /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
     /// # Arguments
     /// * `msg_hash` - The message hash as bytes32.
     /// # Returns
-    /// `Ok(U256)` if the operation was successful - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
-    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
+    /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
+    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
     /// `Err(eyre::Report)` if the operation failed.
     pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
         // Convert the message hash to bytes32.
