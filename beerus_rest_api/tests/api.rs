@@ -659,7 +659,7 @@ mod test {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(
             response.into_string().await.unwrap(),
-            "{\"result\":\"45642708951444\"}"
+            "{\"result\":\"1234\"}"
         );
     }
 
