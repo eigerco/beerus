@@ -50,6 +50,7 @@ pub enum EthereumSubCommands {
     },
 
     QueryBlockNumber {},
+    QueryChainId {},
 }
 
 /// StarkNet related commands.
@@ -97,6 +98,7 @@ pub enum CommandResponse {
     EthereumQueryBalance(String),
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
+    EthereumQueryChainId(u64),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -120,6 +122,9 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockNumber(block_number) => {
                 write!(f, "{block_number}")
             }
+            // Print the chain id.
+            // Result looks like: 1
+            CommandResponse::EthereumQueryChainId(chain_id) => write!(f, "{chain_id}"),
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),

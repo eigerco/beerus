@@ -219,6 +219,36 @@ mod tests {
         assert_eq!(result.unwrap(), expected_block_number);
     }
 
+    /// Test the `chain_id` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `chain_id` method of the external dependencies.
+    /// It tests the `chain_id` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_chain_id_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `chain_id` method of the Ethereum light client.
+        let expected_chain_id = 1;
+        ethereum_lightclient_mock
+            .expect_chain_id()
+            .return_once(move || expected_chain_id);
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.ethereum_lightclient.chain_id().await;
+
+        // Then
+        // Assert that the chain id returned by the `chain_id` method of the Beerus light client is the expected chain id.
+        assert_eq!(result, expected_chain_id);
+    }
+
     /// Test the `start` method when the StarkNet light client returns an error.
     /// This test mocks external dependencies.
     /// It does not test the `start` method of the external dependencies.

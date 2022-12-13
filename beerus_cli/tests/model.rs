@@ -9,6 +9,12 @@ mod tests {
     }
 
     #[test]
+    fn test_display_ethereum_query_chain_id() {
+        let response = CommandResponse::EthereumQueryChainId(1);
+        assert_eq!(response.to_string(), "1");
+    }
+
+    #[test]
     fn test_display_starknet_query_state_root() {
         let response = CommandResponse::StarkNetQueryStateRoot(1.into());
         assert_eq!(response.to_string(), "1");
