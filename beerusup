@@ -76,7 +76,7 @@ install_beerus() {
     echo "Pulling $NAME release..."
     TARBALL_URL="https://github.com/$PROJECT_REPO/releases/download/${LATEST_VER}/${NAME}_${PLATFORM}_${ARCHITECTURE}.tar.gz"
     
-    find $PROJECT_BIN ! -name '$INSTALLER' -type f -exec rm {} +
+    find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
     echo "Unpacking Beerus release...\n"
     curl -L $TARBALL_URL | tar -xzC $PROJECT_BIN
@@ -122,7 +122,7 @@ install_beerus_manually() {
     echo "Building $NAME...\n"
     cargo build -q --all --release 
 
-    find $PROJECT_BIN ! -name '$INSTALLER' -type f -exec rm {} +
+    find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
     mv ./target/release/beerus_cli $PROJECT_BIN
     mv ./target/release/beerus_rest_api $PROJECT_BIN
