@@ -222,8 +222,11 @@ impl BeerusLightClient {
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
     /// `Err(eyre::Report)` if the operation failed.
     pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
+        // Convert the message hash to bytes32.
+        let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
+        // Encode the function data.
         let data = ethers_helper::encode_function_data(
-            msg_hash,
+            msg_hash_bytes32,
             self.starknet_core_abi.clone(),
             "l1ToL2MessageCancellations",
         )?;

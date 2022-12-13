@@ -91,6 +91,11 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    L1ToL2MessageCancellations {
+        /// The hash of the message
+        #[arg(short, long, value_name = "MSG_HASH")]
+        msg_hash: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -103,6 +108,7 @@ pub enum CommandResponse {
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
     StarkNetQueryNonce(FieldElement),
+    StarkNetL1ToL2MessageCancellations(U256),
 }
 
 /// Display implementation for the CLI command response.
@@ -147,7 +153,13 @@ impl Display for CommandResponse {
             // Print the nonce value.
             // Result looks like: 3
             CommandResponse::StarkNetQueryNonce(nonce) => {
-                write!(f, "Nonce: {nonce}")
+                write!(f, "{nonce}")
+            }
+            // Print the timestamp of the cancellation.
+            // Result looks like: 123456
+            // If the message was not cancelled, the timestamp will be 0.
+            CommandResponse::StarkNetL1ToL2MessageCancellations(timestamp) => {
+                write!(f, "{timestamp}")
             }
         }
     }
