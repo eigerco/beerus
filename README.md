@@ -113,30 +113,36 @@ storage value of a StarkNet contract.
 
 - [Rust](https://www.rust-lang.org/tools/install)
 
-### Installation
-
-#### Beerusup
-
-To install with `beerusup` run:
-
-```bash
-curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
-```
-
-#### Build From Source
-
-The project requires nightly rustup:
+- The project requires nightly rustup:
 
 ```bash
 rustup toolchain install nightly
 rustup default nightly
 ```
 
+### Installation
+
+#### Beerusup
+
+To install with `beerusup` run (beerusup requires nightly rustup):
+
+```bash
+curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
+```
+
+#### Environment variables
+
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
 
 For StarkNet node for the moment you can use Infura but soon [verify proof]([#62](https://github.com/keep-starknet-strange/beerus/issues/62)) will
 be implemented in Pathfinder nodes, and so will these nodes be working as well.
+
+Copy the `.env.example` file to a `.env` file and populate each variable (they are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
+
+```bash
+cp .env.example .env
+```
 
 Meanwhile you can just use unit tests to dev.
 
