@@ -239,7 +239,7 @@ mod tests {
         );
 
         // Prepare variables
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
         let addr = Address::from_str(&address).unwrap();
         let block = BlockTag::Latest;
 
