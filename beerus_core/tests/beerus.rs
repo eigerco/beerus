@@ -278,7 +278,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
 
         let addr: Address = Address::from_str(&address).unwrap();
 
