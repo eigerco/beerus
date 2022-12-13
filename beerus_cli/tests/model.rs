@@ -35,4 +35,11 @@ mod tests {
             CommandResponse::StarkNetQueryGetStorageAt(FieldElement::from_dec_str("123").unwrap());
         assert_eq!(response.to_string(), "123");
     }
+
+    #[test]
+    fn test_display_starknet_query_chain_id() {
+        let response =
+            CommandResponse::StarknetQueryChainId(FieldElement::from_dec_str("123").unwrap());
+        assert_eq!(response.to_string(), "Chain id: 123");
+    }
 }

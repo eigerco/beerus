@@ -126,3 +126,13 @@ pub async fn query_starknet_l1_to_l2_messages_cancellation_timestamp(
             .await?,
     ))
 }
+
+/// Query the chain id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The chain id of the StarkNet network.
+pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let chain_id = beerus.starknet_lightclient.chain_id().await?;
+    Ok(CommandResponse::StarknetQueryChainId(chain_id))
+}

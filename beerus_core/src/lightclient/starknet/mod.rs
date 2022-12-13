@@ -20,6 +20,7 @@ pub trait StarkNetLightClient: Send + Sync {
         block_number: u64,
     ) -> Result<FieldElement>;
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
+    async fn chain_id(&self) -> Result<FieldElement>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -113,5 +114,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             )
             .await
             .map_err(|e| eyre::eyre!(e))
+    }
+
+    async fn chain_id(&self) -> Result<FieldElement> {
+        self.client.chain_id().await.map_err(|e| eyre::eyre!(e))
     }
 }
