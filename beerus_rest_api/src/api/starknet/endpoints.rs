@@ -76,7 +76,7 @@ pub async fn query_l1_to_l2_message_cancellations(
     ApiResponse::from_result(query_l1_to_l2_message_cancellations_inner(beerus, msg_hash).await)
 }
 
-/// Query l1_to_l2_messages
+/// Query l1_to_l2_messages call
 #[openapi]
 #[get("/starknet/messaging/l1_to_l2_messages/<msg_hash>")]
 pub async fn query_l1_to_l2_messages(
