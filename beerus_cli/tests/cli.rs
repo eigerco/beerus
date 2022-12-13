@@ -593,6 +593,36 @@ mod test {
         }
     }
 
+    /// Test the `query_chain_id` CLI command.
+    /// Given normal conditions, when query chain_id, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn starknet_chain_id_should_return_the_chain_id() {
+        // Given
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let expected_result = FieldElement::from_dec_str("123").unwrap();
+        starknet_lightclient
+            .expect_chain_id()
+            .return_once(move || Ok(expected_result));
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryChainId {},
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("Chain id: 123", result.to_string());
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),

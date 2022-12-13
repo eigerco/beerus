@@ -701,6 +701,36 @@ mod test {
         );
     }
 
+    /// Test the `chain_id` endpoint.
+    /// `/starknet/chain_id`
+    #[tokio::test]
+    async fn query_starknet_chain_id_should_return_chain_id() {
+        // Given
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let expected_result = FieldElement::from_dec_str("123").unwrap();
+        starknet_lightclient
+            .expect_chain_id()
+            .return_once(move || Ok(expected_result));
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/chain_id")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"chain_id\":\"123\"}"
+        );
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),

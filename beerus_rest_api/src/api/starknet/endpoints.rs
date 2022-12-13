@@ -4,6 +4,7 @@ use super::resp::{
 };
 use crate::api::ApiResponse;
 
+use crate::api::starknet::resp::QueryChainIdResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use log::debug;
@@ -55,6 +56,14 @@ pub async fn query_starknet_get_nonce(
     contract: String,
 ) -> ApiResponse<QueryNonceResponse> {
     ApiResponse::from_result(query_starknet_get_nonce_inner(beerus, contract).await)
+}
+
+#[openapi]
+#[get("/starknet/chain_id")]
+pub async fn query_starknet_chain_id(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryChainIdResponse> {
+    ApiResponse::from_result(query_chain_id_inner(beerus).await)
 }
 
 /// Query l1_to_l2_message_cancellations
@@ -203,5 +212,20 @@ pub async fn query_l1_to_l2_message_cancellations_inner(
             .starknet_l1_to_l2_message_cancellations(msg_hash)
             .await?
             .to_string(),
+    })
+}
+
+/// Query the chain ID of the Starknet chain.
+/// # Returns
+/// `chain_id` - The chain ID.
+/// # Errors
+/// Cannot fail.
+/// # Examples
+pub async fn query_chain_id_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryChainIdResponse> {
+    debug!("Querying chain ID");
+    Ok(QueryChainIdResponse {
+        chain_id: beerus.starknet_lightclient.chain_id().await?.to_string(),
     })
 }
