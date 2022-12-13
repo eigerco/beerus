@@ -38,7 +38,7 @@
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Beerusup](#beerusup)
-    - [Build From Source](#build-from-source)
+    - [Environment variables](#environment-variables)
   - [Configuration](#configuration)
 - [Usage](#usage)
   - [CLI](#cli)
@@ -113,30 +113,36 @@ storage value of a StarkNet contract.
 
 - [Rust](https://www.rust-lang.org/tools/install)
 
-### Installation
-
-#### Beerusup
-
-To install with `beerusup` run:
-
-```bash
-curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
-```
-
-#### Build From Source
-
-The project requires nightly rustup:
+- The project requires nightly rustup:
 
 ```bash
 rustup toolchain install nightly
 rustup default nightly
 ```
 
+### Installation
+
+#### Beerusup
+
+To install with `beerusup` run (beerusup requires nightly rustup):
+
+```bash
+curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
+```
+
+#### Environment variables
+
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
 
 For StarkNet node for the moment you can use Infura but soon [verify proof]([#62](https://github.com/keep-starknet-strange/beerus/issues/62)) will
 be implemented in Pathfinder nodes, and so will these nodes be working as well.
+
+Copy the `.env.example` file to a `.env` file and populate each variable (they are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
+
+```bash
+cp .env.example .env
+```
 
 Meanwhile you can just use unit tests to dev.
 
@@ -315,10 +321,13 @@ Thanks goes to these wonderful people
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/abdelhamidbakhta"><img src="https://avatars.githubusercontent.com/u/45264458?v=4?s=100" width="100px;" alt="Abdel @ StarkWare"/><br /><sub><b>Abdel @ StarkWare</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=abdelhamidbakhta" title="Tests">⚠️</a> <a href="https://github.com/keep-starknet-strange/beerus/commits?author=abdelhamidbakhta" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/LucasLvy"><img src="https://avatars.githubusercontent.com/u/70894690?v=4?s=100" width="100px;" alt="Lucas @ StarkWare"/><br /><sub><b>Lucas @ StarkWare</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=LucasLvy" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/danilowhk"><img src="https://avatars.githubusercontent.com/u/12735159?v=4?s=100" width="100px;" alt="danilowhk"/><br /><sub><b>danilowhk</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=danilowhk" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ClementWalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=ClementWalter" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/clementwalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=ClementWalter" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Eikix"><img src="https://avatars.githubusercontent.com/u/66871571?v=4?s=100" width="100px;" alt="Elias Tazartes"/><br /><sub><b>Elias Tazartes</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=Eikix" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/msaug"><img src="https://avatars.githubusercontent.com/u/60658558?v=4?s=100" width="100px;" alt="Mathieu"/><br /><sub><b>Mathieu</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=msaug" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hurrikaanig"><img src="https://avatars.githubusercontent.com/u/37303126?v=4?s=100" width="100px;" alt="TurcFort07"/><br /><sub><b>TurcFort07</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=hurrikaanig" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/drspacemn"><img src="https://avatars.githubusercontent.com/u/16685321?v=4?s=100" width="100px;" alt="drspacemn"/><br /><sub><b>drspacemn</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=drspacemn" title="Code">💻</a></td>
+    </tr>
+    <tr>
+       <td align="center" valign="top" width="14.28%"><a href="https://github.com/drspacemn"><img src="https://avatars.githubusercontent.com/u/16685321?v=4?s=100" width="100px;" alt="drspacemn"/><br /><sub><b>drspacemn</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=drspacemn" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>
