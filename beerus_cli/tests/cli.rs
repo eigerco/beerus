@@ -144,7 +144,7 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
