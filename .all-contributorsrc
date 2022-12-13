@@ -39,6 +39,15 @@
       ]
     },
     {
+      "login": "ClementWalter",
+      "name": "Clément Walter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18620296?v=4",
+      "profile": "https://www.linkedin.com/in/clementwalter",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "msaug",
       "name": "Mathieu",
       "avatar_url": "https://avatars.githubusercontent.com/u/60658558?v=4",
@@ -54,15 +63,6 @@
       "profile": "https://github.com/hurrikaanig",
       "contributions": [
         "doc"
-      ]
-    },
-    {
-      "login": "ClementWalter",
-      "name": "Clément Walter",
-      "avatar_url": "https://avatars.githubusercontent.com/u/18620296?v=4",
-      "profile": "https://www.linkedin.com/in/clementwalter",
-      "contributions": [
-        "code"
       ]
     },
     {
