@@ -545,7 +545,7 @@ mod test {
         let result = runner::run(beerus, cli).await.unwrap();
 
         // Then
-        assert_eq!("Nonce: 298305742194", result.to_string());
+        assert_eq!("298305742194", result.to_string());
     }
 
     /// Test the `query_nonce` CLI command.
