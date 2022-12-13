@@ -113,13 +113,6 @@ storage value of a StarkNet contract.
 
 - [Rust](https://www.rust-lang.org/tools/install)
 
-- The project requires nightly rustup:
-
-```bash
-rustup toolchain install nightly
-rustup default nightly
-```
-
 ### Installation
 
 #### Beerusup
@@ -141,7 +134,7 @@ be implemented in Pathfinder nodes, and so will these nodes be working as well.
 Copy the `.env.example` file to a `.env` file and populate each variable (they are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
 
 ```bash
-cp .env.example .env
+cp examples/.env.example .env
 ```
 
 Meanwhile you can just use unit tests to dev.

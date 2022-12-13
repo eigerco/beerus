@@ -13,8 +13,7 @@ INSTALLER_URL="https://raw.githubusercontent.com/$PROJECT_REPO/$INSTALLER"
 
 # Store the correct profile file
 add_to_shell() {
-    mkdir -p $PROJECT_BIN
-    mkdir -p $PROJECT_TMP
+    mkdir -p $PROJECT_BIN $PROJECT_TMP
     curl -sL $INSTALLER_URL -o $INSTALLER_PATH
     chmod +x "$INSTALLER_PATH"
 
@@ -104,17 +103,10 @@ install_beerus_manually() {
         exit 1
     fi
 
-    DEFAULT=$(rustup default | grep nightly)
-    if [ $? -ne 0 ]; then
-        echo "please set the following:"
-        echo "\trustup toolchain install nightly"
-        echo "\trustup default nightly\n"
-        exit 1
-    fi
-
     WRK_DIR=$(pwd)
     echo "Pulling $NAME repo..."
-    
+
+    rm -rf $PROJECT_TMP/beerus
     git clone --quiet https://github.com/keep-starknet-strange/beerus.git $PROJECT_TMP/beerus
     cd $PROJECT_TMP/beerus
     
