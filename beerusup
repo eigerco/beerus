@@ -3,50 +3,22 @@
 NAME="beerus"
 INSTALLER="${NAME}up"
 
-BEERUS_ROOT="$HOME/.$NAME"
-BEERUS_BIN="$BEERUS_ROOT/bin"
-BEERUSUP_PATH="$BEERUS_BIN/$INSTALLER"
+PROJECT_ROOT="$HOME/.$NAME"
+PROJECT_BIN="$PROJECT_ROOT/bin"
+PROJECT_TMP="$PROJECT_ROOT/tmp"
+INSTALLER_PATH="$PROJECT_BIN/$INSTALLER"
 
 # BEERUS_URL="keep-starknet-strange/beerus/main"
-BEERUS_REPO="drspacemn/beerus/main"
-BEERUSUP_URL="https://raw.githubusercontent.com/$BEERUS_REPO/$INSTALLER"
+PROJECT_REPO="drspacemn/beerus/main"
+INSTALLER_URL="https://raw.githubusercontent.com/$PROJECT_REPO/$INSTALLER"
 
-# Create Beerus root if doesn't exist
-if [ ! -d "$BEERUS_ROOT" ]; then
-    # create Beerus Root
-    mkdir -p $BEERUS_BIN
-    curl -# -L $BEERUSUP_URL -o $BEERUSUP_PATH
-    chmod +x "$BEERUSUP_URL"
-    
-    add_to_shell
-fi
-
-# Build latest dev version if directed
-if [ "$1" -eq "dev" ]; then
-    install_beerus_manually
-    exit 0
-fi
-
-# check latest version
-LATEST_VER=$(curl https://api.github.com/repos/$BEERUS_REPO/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$') 
-# TMP: check before Beerus has a release
-if [ $? -ne 0 ]; then
-    install_beerus_manually
-    exit 0
-fi
-
-CURRENT_VER=$(beerus_cli --version)
-if [ "$LATEST_TAG" = "$CURRENT_VER" ]; then
-    echo "Beerus is currently running the latest version: $LATEST_VER"
-    exit 0
-else
-    echo "Beerus being updated to $LATEST_VER"
-    install_beerus()
-fi
-
+# Store the correct profile file
 add_to_shell() {
-    echo "checking profile..."
-    # Store the correct profile file (i.e. .profile for bash or .zshrc for ZSH).
+    mkdir -p $PROJECT_BIN
+    mkdir -p $PROJECT_TMP
+    curl -sL $INSTALLER_URL -o $INSTALLER_PATH
+    chmod +x "$INSTALLER_PATH"
+
     case $SHELL in
     */zsh)
         PROFILE=$HOME/.zshrc
@@ -61,17 +33,19 @@ add_to_shell() {
         PREF_SHELL=fish
         ;;
     *)
-        echo "$INSTALLER: could not detect shell, manually add ${BEERUS_ROOT} to your PATH."
+        echo "$INSTALLER: could not detect shell, manually add ${PROJECT_ROOT} to your PATH."
         exit 1
     esac
 
-    if [[ ":$PATH:" != *":${BEERUS_BIN}:"* ]]; then
-        # Add the BEERUS_BIN directory to the PATH
-        echo -e "\nexport PATH=\"\$PATH:$BEERUS_BIN\"" >> $PROFILE
-        export PATH="$PATH:$BEERUS_BIN"
+    IN_PROFILE=$(grep $NAME $PROFILE)
+    if [ $? -ne 0 ]; then
+        echo "export PATH=\"\$PATH:$PROJECT_BIN\"" >> $PROFILE
     fi
 }
 
+# Install latest Beerus Release
+# pull releaes tarball by platform and architecture
+# (ref: https://github.com/a16z/helios/blob/master/heliosup/heliosup)
 install_beerus() {
     PLATFORM="$(uname -s)"
     case $PLATFORM in
@@ -88,74 +62,112 @@ install_beerus() {
 
     ARCHITECTURE="$(uname -m)"
     if [ "${ARCHITECTURE}" = "x86_64" ]; then
-    # Redirect stderr to /dev/null to avoid printing errors if non Rosetta.
-    if [ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" = "1" ]; then
-        ARCHITECTURE="arm64" # Rosetta.
-    else
-        ARCHITECTURE="amd64" # Intel.
-    fi
+        if [ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" = "1" ]; then
+            ARCHITECTURE="arm64" # Rosetta.
+        else
+            ARCHITECTURE="amd64" # Intel.
+        fi
     elif [ "${ARCHITECTURE}" = "arm64" ] ||[ "${ARCHITECTURE}" = "aarch64" ] ; then
-    ARCHITECTURE="arm64" # Arm.
+        ARCHITECTURE="arm64" # Arm.
     else
-    ARCHITECTURE="amd64" # Amd.
+        ARCHITECTURE="amd64" # Amd.
     fi
 
-    # TODO:
-    #   This installation method will be dependent on tar releases by platform and architecture
-    #   ^^^ Currently not the case
-    TARBALL_URL="https://github.com/$BEERUS_REPO/releases/download/${LATEST_VER}/${NAME}_${PLATFORM}_${ARCHITECTURE}.tar.gz"
+    echo "Pulling $NAME release..."
+    TARBALL_URL="https://github.com/$PROJECT_REPO/releases/download/${LATEST_VER}/${NAME}_${PLATFORM}_${ARCHITECTURE}.tar.gz"
     
-    rm "$BEERUS_BIN/beerus_cli"
-    rm "$BEERUS_BIN/beerus_rest_api"
-    curl -L $TARBALL_URL | tar -xzC $BEERUS_BIN
+    find $PROJECT_BIN ! -name '$INSTALLER' -type f -exec rm {} +
 
-    echo "Beerus installed at version: ${LATEST_VER}"
+    echo "Unpacking Beerus release...\n"
+    curl -L $TARBALL_URL | tar -xzC $PROJECT_BIN
+
+    echo "$NAME installed at version: ${LATEST_VER}\n"
 }
 
+# Clone Beerus Repo
+# install based on latest commit
 install_beerus_manually() {
-    if ! command -v cargo &> /dev/null
+    if ! command -v cargo > /dev/null
     then
         echo "please install rustlang: https://www.rust-lang.org/tools/install"
         exit 1
     fi
 
-    if ! command -v rustup &> /dev/null
+    if ! command -v rustup > /dev/null
     then
         echo "please install rustup: https://rustup.rs"
         exit 1
     fi
 
-    if ! command -v git &> /dev/null
+    if ! command -v git > /dev/null
     then
         echo "please install git"
         exit 1
     fi
 
-    echo "Beerus manual build requires the nightly toolchain, can we set nightly as defualt?"
-    select yn in "Yes" "No"; do
-        case $yn in 
-            [Yy]* ) rustup toolchain install nightly; rustup default nightly;;
-            [Nn]* ) echo "okay have a nice day"; exit 1;;
-            * ) echo "please answer yes or no"; exit 1;;
-        esac
-    done
+    DEFAULT=$(rustup default | grep nightly)
+    if [ $? -ne 0 ]; then
+        echo "please set the following:"
+        echo "\trustup toolchain install nightly"
+        echo "\trustup default nightly\n"
+        exit 1
+    fi
 
     WRK_DIR=$(pwd)
-    git clone https://github.com/keep-starknet-strange/beerus.git tmp-beerus && cd tmp-beerus
+    echo "Pulling $NAME repo..."
     
-    cargo build --all --release
+    git clone --quiet https://github.com/keep-starknet-strange/beerus.git $PROJECT_TMP/beerus
+    cd $PROJECT_TMP/beerus
+    
+    echo "Building $NAME...\n"
+    cargo build -q --all --release 
 
-    rm "$BEERUS_BIN/beerus_cli"
-    rm "$BEERUS_BIN/beerus_rest_api"
-    mv ./target/release/beerus_cli $BEERUS_BIN
-    mv ./target/release/beerus__rest_api $BEERUS_BIN
+    find $PROJECT_BIN ! -name '$INSTALLER' -type f -exec rm {} +
 
-    # TODO: after issue 82 is resolved get version from usage
+    mv ./target/release/beerus_cli $PROJECT_BIN
+    mv ./target/release/beerus_rest_api $PROJECT_BIN
+
+    # TODO: 
+    # after issue 82 is resolved get version from usage
     # BEERUS_VER=$(beerus-cli --version)
     BEERUS_VER=$(git rev-parse HEAD)
 
     cd $WRK_DIR
-    rm -rf tmp-beerus
+    rm -rf $PROJECT_TMP/beerus
 
-    echo "Beerus installed at version: ${BEERUS_VER}"
+    echo "$NAME installed at version: ${BEERUS_VER}\n"
 }
+
+# Create Beerus root if doesn't exist
+if [ ! -d "$PROJECT_ROOT" ]; then
+    echo "Installing $NAME root..."
+    add_to_shell
+fi
+
+# check latest version
+LATEST_VER=$(curl -sL https://api.github.com/repos/$PROJECT_REPO/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
+
+# TODO:
+# remove ([ $? -ne 0 ]) after first release
+
+# Build latest dev version if directed
+if [ "$1" = "dev" ] || [ $? -ne 0 ]; then
+    install_beerus_manually
+else
+    # Pull latest release if there is a new version
+    CURRENT_VER=$(beerus_cli --version)
+    if [ "$LATEST_TAG" = "$CURRENT_VER" ]; then
+        echo "$NAME is currently running the latest version: $LATEST_VER"
+    else
+        echo "$NAME being updated to $LATEST_VER"
+        install_beerus
+    fi
+fi
+
+echo "$NAME root installed at: $PROJECT_ROOT"
+if [ ! -z "$PROFILE" ]; then echo "\trun 'source $PROFILE' to activate path"; fi
+
+echo "\nSet config:"
+echo "\tETHEREUM_EXECUTION_RPC_URL\n\tETHEREUM_CONSENSUS_RPC_URL\n\tSTARKNET_RPC_URL"
+echo "\tETHEREUM_NETWORK(defaults to 'goerli')"
+exit 0
