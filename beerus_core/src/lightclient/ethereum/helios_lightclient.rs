@@ -55,6 +55,9 @@ impl EthereumLightClient for HeliosLightClient {
         block: helios::types::BlockTag,
     ) -> eyre::Result<Vec<u8>> {
         self.helios_light_client.get_code(address, block).await
+
+    async fn chain_id(&self) -> u64 {
+        self.helios_light_client.chain_id().await
     }
 }
 

@@ -65,6 +65,7 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
     Ok(CommandResponse::EthereumQueryBlockNumber(block_number))
 }
 
+
 /// Query the code of a contract
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -80,4 +81,14 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 
     Ok(CommandResponse::EthereumQueryCode(code))
+}
+/// Query the chain id of the Ethereum network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The chain id of the Ethereum network.
+pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let chain_id = beerus.ethereum_lightclient.chain_id().await;
+    Ok(CommandResponse::EthereumQueryChainId(chain_id))
+
 }

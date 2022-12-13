@@ -274,17 +274,22 @@ mod test {
         }
     }
 
-    //TODO: comments
+
+    /// Test the `query_chain_id` CLI command.
+    /// Given normal conditions, when query chain_id, then ok.
+    /// Success case.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_code_then_error_is_propagated() {
+    async fn given_normal_conditions_when_query_chain_id_then_ok() {
+
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
         // Given
         // Mock dependencies.
         ethereum_lightclient
-            .expect_get_code()
-            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+            .expect_chain_id()
+            .return_once(move || 1);
 
         let beerus = BeerusLightClient::new(
             config,
@@ -292,24 +297,21 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
 
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
             command: Commands::Ethereum(EthereumCommands {
-                command: EthereumSubCommands::QueryCode { address },
+
+                command: EthereumSubCommands::QueryChainId {},
             }),
         };
-
         // When
-        let result = runner::run(beerus, cli).await;
+        let result = runner::run(beerus, cli).await.unwrap();
 
         // Then
-        match result {
-            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_owned()),
-            Ok(_) => panic!("Expected error,got ok"),
-        }
+        assert_eq!("1", result.to_string());
+
     }
 
     /// Test the `query_state_root` CLI command.

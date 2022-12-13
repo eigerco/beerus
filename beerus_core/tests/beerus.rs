@@ -219,57 +219,24 @@ mod tests {
         assert_eq!(result.unwrap(), expected_block_number);
     }
 
-    /// Test the `get_code` method when everything is fine.
+    /// Test the `chain_id` method when everything is fine.
     /// This test mocks external dependencies.
-    /// It does not test the `get_code` method of the external dependencies.
-    /// It tests the `get_code` method of the Beerus light client.    
+    /// It does not test the `chain_id` method of the external dependencies.
+    /// It tests the `chain_id` method of the Beerus light client.
     #[tokio::test]
-    async fn given_normal_conditions_when_get_code_then_should_return_ok() {
-        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+    async fn given_normal_conditions_when_call_chain_id_then_should_return_ok() {
 
-        // Mock the `get_code` method of the Ethereum light client.
-        let expected_code = vec![0, 100, 87, 63];
-        ethereum_lightclient_mock
-            .expect_get_code()
-            .return_once(move |_, _| Ok(expected_code));
-        let beerus = BeerusLightClient::new(
-            config.clone(),
-            Box::new(ethereum_lightclient_mock),
-            Box::new(starknet_lightclient_mock),
-        );
-
-        // Prepare variables
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
-        let addr = Address::from_str(&address).unwrap();
-        let block = BlockTag::Latest;
-
-        // When
-        let result = beerus.ethereum_lightclient.get_code(&addr, block).await;
-
-        // Then
-        // Assert that the `get_code` method of the Beerus light client returns `Ok`.
-        assert!(result.is_ok());
-        // Assert that the code returned byt `get_code` method of the Beerus light client is the expected code.
-        assert_eq!(result.unwrap(), vec![0, 100, 87, 63]);
-    }
-
-    /// Test the `get_code` method when the Ethereum light client returns an error.
-    /// This test mocks external dependencies.
-    /// It does not test the `get_code` method of the external dependencies.
-    /// It tests the `get_code` method of the Beerus light client.
-    /// It tests the error handling of the `start` method of the Beerus light client.
-    #[tokio::test]
-    async fn given_ethereum_lightclient_error_when_call_get_code_then_should_return_error() {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "ethereum_lightclient_error";
 
-        // Mock dependencies.
+        // Mock the `chain_id` method of the Ethereum light client.
+        let expected_chain_id = 1;
         ethereum_lightclient_mock
-            .expect_get_code()
-            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+            .expect_chain_id()
+            .return_once(move || expected_chain_id);
+
 
         // When
         let beerus = BeerusLightClient::new(
@@ -278,20 +245,13 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned();
 
-        let addr: Address = Address::from_str(&address).unwrap();
-
-        let block = BlockTag::Latest;
-
-        // Query the balance of the Ethereum address.
-        let result = beerus.ethereum_lightclient.get_code(&addr, block).await;
+        let result = beerus.ethereum_lightclient.chain_id().await;
 
         // Then
-        // Assert that the `get_code` method of the Beerus light client returns `Err`.
-        assert!(result.is_err());
-        // Assert that the error returned by the `get_code` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the chain id returned by the `chain_id` method of the Beerus light client is the expected chain id.
+        assert_eq!(result, expected_chain_id);
+
     }
 
     /// Test the `start` method when the StarkNet light client returns an error.
@@ -515,7 +475,7 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(!res.is_empty());
-        assert!(res == expected_result2);
+        assert_eq!(res, expected_result2);
     }
 
     /// Test that starknet call return an error when the StarkNet Light client returns an error.
@@ -592,7 +552,7 @@ mod tests {
         // Perform the test call.
         let res = beerus.starknet_get_storage_at(address, key).await.unwrap();
 
-        assert!(res == expected_result);
+        assert_eq!(res, expected_result);
     }
 
     /// Test that starknet get_storage_at return an error when the StarkNet Light client returns an error.
@@ -662,7 +622,7 @@ mod tests {
         // Get nonce
         let res = beerus.starknet_get_nonce(address).await.unwrap();
 
-        assert!(res == expected_result);
+        assert_eq!(res, expected_result);
     }
 
     /// Test that starknet get_nonce.
