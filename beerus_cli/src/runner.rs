@@ -61,6 +61,13 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             StarkNetSubCommands::QueryNonce { address } => {
                 starknet::query_starknet_nonce(beerus, address.to_string()).await
             }
+            StarkNetSubCommands::L1ToL2MessageCancellations { msg_hash } => {
+                starknet::query_starknet_l1_to_l2_messages_cancellation_timestamp(
+                    beerus,
+                    msg_hash.to_string(),
+                )
+                .await
+            }
         },
     }
 }
