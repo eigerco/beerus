@@ -47,12 +47,6 @@ jobs:
         with:
           files: lcov.info
           fail_ci_if_error: false
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: my-artifact
-          path: report.json
-          if-no-files-found: error
 
   fmt:
     name: fmt
