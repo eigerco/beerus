@@ -668,6 +668,46 @@ mod test {
         }
     }
 
+    /// Given ethereum lightclient returns an error, when wrong address input, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_wrong_address_input_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_balance()
+            .return_once(move |_, _| Ok(123.into()));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBalance {
+                    // Testing wrong address input
+                    address: "ABCDE".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("Invalid input length", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
