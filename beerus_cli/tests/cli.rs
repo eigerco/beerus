@@ -307,7 +307,7 @@ mod test {
 
         // Then
         match result {
-            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_owned()),
             Ok(_) => panic!("Expected error,got ok"),
         }
     }
