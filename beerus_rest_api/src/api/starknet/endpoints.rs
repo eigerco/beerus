@@ -235,7 +235,8 @@ pub async fn query_l1_to_l2_message_cancellations_inner(
 ///
 /// # Returns
 ///
-/// * `L1ToL2Messages` - The timestamp at the time L1ToL2Message was called with a message matching 'msg_hash'.
+/// * `L1ToL2Messages` - The msg_fee + 1 for the message with the given L1ToL2Message hash.
+
 pub async fn query_l1_to_l2_messages_inner(
     beerus: &State<BeerusLightClient>,
     msg_hash: String,

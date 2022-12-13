@@ -169,7 +169,7 @@ impl Display for CommandResponse {
             CommandResponse::StarkNetL1ToL2MessageCancellations(timestamp) => {
                 write!(f, "{timestamp}")
             }
-            // Print the timestamp of the l1 to l2 message.
+            // Print thethe msg_fee + 1 for the message with the given 'msgHash',
             // Result looks like: 123456
             CommandResponse::StarkNetL1ToL2Messages(timestamp) => {
                 write!(f, "{timestamp}")

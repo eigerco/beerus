@@ -127,16 +127,16 @@ pub async fn query_starknet_l1_to_l2_messages_cancellation_timestamp(
     ))
 }
 
-/// Query L1 to L2 messages timestamp.
+/// Query L1 to L2 the msg_fee + 1 for the message with the given 'msgHash'
 /// # Arguments
 /// * `beerus` - The Beerus light client.
 /// * `msg_hash` - The message hash.
 /// # Returns
 /// * `Result<CommandResponse>` - The result of the query.
 /// # Errors
-/// * If the L1 to L2 messages timestamp query fails.
+/// * If the L1 to L2 messages query fails.
 /// * If the message hash is invalid.
-pub async fn query_starknet_l1_to_l2_messages_timestamp(
+pub async fn query_starknet_l1_to_l2_messages(
     beerus: BeerusLightClient,
     msg_hash: String,
 ) -> Result<CommandResponse> {
