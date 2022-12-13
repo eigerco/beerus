@@ -470,7 +470,7 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(!res.is_empty());
-        assert!(res == expected_result2);
+        assert_eq!(res, expected_result2);
     }
 
     /// Test that starknet call return an error when the StarkNet Light client returns an error.
@@ -547,7 +547,7 @@ mod tests {
         // Perform the test call.
         let res = beerus.starknet_get_storage_at(address, key).await.unwrap();
 
-        assert!(res == expected_result);
+        assert_eq!(res, expected_result);
     }
 
     /// Test that starknet get_storage_at return an error when the StarkNet Light client returns an error.
@@ -617,7 +617,7 @@ mod tests {
         // Get nonce
         let res = beerus.starknet_get_nonce(address).await.unwrap();
 
-        assert!(res == expected_result);
+        assert_eq!(res, expected_result);
     }
 
     /// Test that starknet get_nonce.

@@ -38,7 +38,7 @@ mod test {
             .unwrap();
 
         mock_request.assert();
-        assert!(storage_var == FieldElement::from_str("0x01").unwrap());
+        assert_eq!(storage_var, FieldElement::from_str("0x01").unwrap());
     }
 
     #[tokio::test]
@@ -64,7 +64,7 @@ mod test {
                 FieldElement::from_str("0x00").unwrap(),
             )
             .await;
-        assert!(mock_request.hits() == 0);
+        assert_eq!(mock_request.hits(), 0);
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
     }
@@ -94,7 +94,7 @@ mod test {
             .unwrap();
 
         mock_request.assert();
-        assert!(storage_var == vec![FieldElement::from_str("0x01").unwrap()]);
+        assert_eq!(storage_var, vec![FieldElement::from_str("0x01").unwrap()]);
     }
 
     #[tokio::test]
@@ -121,7 +121,7 @@ mod test {
                 vec![],
             )
             .await;
-        assert!(mock_request.hits() == 0);
+        assert_eq!(mock_request.hits(), 0);
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
     }
