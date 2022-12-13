@@ -158,7 +158,7 @@ mod test {
             config: None,
             command: Commands::Ethereum(EthereumCommands {
                 command: EthereumSubCommands::QueryNonce {
-                    address: "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string(),
+                    address: "0xc24215226336d22238a20a72f8e489c005b44c4a".to_owned(),
                 },
             }),
         };
