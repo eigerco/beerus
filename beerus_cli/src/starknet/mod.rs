@@ -126,3 +126,32 @@ pub async fn query_starknet_l1_to_l2_messages_cancellation_timestamp(
             .await?,
     ))
 }
+
+/// Query L1 to L2 the msg_fee + 1 for the message with the given 'msgHash'
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `msg_hash` - The message hash.
+/// # Returns
+/// * `Result<CommandResponse>` - The result of the query.
+/// # Errors
+/// * If the L1 to L2 messages query fails.
+/// * If the message hash is invalid.
+pub async fn query_starknet_l1_to_l2_messages(
+    beerus: BeerusLightClient,
+    msg_hash: String,
+) -> Result<CommandResponse> {
+    let msg_hash = U256::from_str(&msg_hash)?;
+    Ok(CommandResponse::StarkNetL1ToL2Messages(
+        beerus.starknet_l1_to_l2_messages(msg_hash).await?,
+    ))
+}
+
+/// Query the chain id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The chain id of the StarkNet network.
+pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let chain_id = beerus.starknet_lightclient.chain_id().await?;
+    Ok(CommandResponse::StarknetQueryChainId(chain_id))
+}

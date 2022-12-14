@@ -496,14 +496,10 @@ dependencies = [
  "clap",
  "env_logger 0.10.0",
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "helios",
  "log",
  "primitive-types 0.11.1",
- "revm",
- "serde",
- "serde_json",
  "starknet",
  "tokio",
 ]
@@ -513,17 +509,13 @@ name = "beerus_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "env_logger 0.10.0",
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "helios",
  "hex",
  "httpmock",
- "log",
  "mockall",
  "primitive-types 0.11.1",
- "revm",
  "serde",
  "serde_json",
  "starknet",
@@ -539,12 +531,10 @@ dependencies = [
  "beerus_core",
  "env_logger 0.9.3",
  "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "eyre",
  "helios",
  "log",
  "primitive-types 0.11.1",
- "revm",
  "rocket",
  "rocket_okapi",
  "schemars",
@@ -4875,9 +4865,9 @@ dependencies = [
 
 [[package]]
 name = "secp256k1"
-version = "0.24.1"
+version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff55dc09d460954e9ef2fa8a7ced735a964be9981fd50e870b2b3b0705e14964"
+checksum = "d9512ffd81e3a3503ed401f79c33168b9148c75038956039166cd750eaa037c3"
 dependencies = [
  "secp256k1-sys",
 ]

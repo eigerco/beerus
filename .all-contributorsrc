@@ -57,6 +57,15 @@
       ]
     },
     {
+      "login": "drspacemn",
+      "name": "drspacemn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16685321?v=4",
+      "profile": "https://github.com/drspacemn",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "msaug",
       "name": "Mathieu",
       "avatar_url": "https://avatars.githubusercontent.com/u/60658558?v=4",
@@ -75,10 +84,10 @@
       ]
     },
     {
-      "login": "drspacemn",
-      "name": "drspacemn",
-      "avatar_url": "https://avatars.githubusercontent.com/u/16685321?v=4",
-      "profile": "https://github.com/drspacemn",
+      "login": "florian-bellotti",
+      "name": "Florian Bellotti",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7861901?v=4",
+      "profile": "https://github.com/florian-bellotti",
       "contributions": [
         "code"
       ]

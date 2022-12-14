@@ -103,6 +103,12 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "MSG_HASH")]
         msg_hash: String,
     },
+    L1ToL2Messages {
+        /// The hash of the message
+        #[arg(short, long, value_name = "MSG_HASH")]
+        msg_hash: String,
+    },
+    QueryChainId {},
 }
 
 /// The response from a CLI command.
@@ -116,7 +122,9 @@ pub enum CommandResponse {
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
     StarkNetQueryNonce(FieldElement),
+    StarknetQueryChainId(FieldElement),
     StarkNetL1ToL2MessageCancellations(U256),
+    StarkNetL1ToL2Messages(U256),
 }
 
 /// Display implementation for the CLI command response.
@@ -175,6 +183,17 @@ impl Display for CommandResponse {
             // If the message was not cancelled, the timestamp will be 0.
             CommandResponse::StarkNetL1ToL2MessageCancellations(timestamp) => {
                 write!(f, "{timestamp}")
+            }
+            // Print thethe msg_fee + 1 for the message with the given 'msgHash',
+            // Result looks like: 123456
+            CommandResponse::StarkNetL1ToL2Messages(timestamp) => {
+                write!(f, "{timestamp}")
+            }
+
+            // Print the chain id.
+            // Result looks like: `Chain id: 1`
+            CommandResponse::StarknetQueryChainId(chain_id) => {
+                write!(f, "Chain id: {chain_id}")
             }
         }
     }
