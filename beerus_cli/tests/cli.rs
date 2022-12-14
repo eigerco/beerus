@@ -166,6 +166,7 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
+
     /// Test the `query_nonce` CLI command.
     /// Given ethereum lightclient returns an error, when query nonce, then the error is propagated.
     /// Error case.
@@ -879,6 +880,83 @@ mod test {
         // Then
         match result {
             Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
+    /// Given normal conditions, when query starknet l2 to l1 messages, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_l2_to_l1_messages_then_ok() {
+        // Given
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Expected block number.
+        let expected_fee = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_fee_bytes: Vec<u8> = vec![0; 32];
+        expected_fee.to_big_endian(&mut expected_fee_bytes);
+
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_call_opts, _block_tag| Ok(expected_fee_bytes));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::L2ToL1Messages {
+                    msg_hash: "0".to_string(),
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(expected_fee.to_string(), result.to_string());
+    }
+
+    /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
+    /// Given starknet lightclient returns an error, when query starknet l2 to l1 messages, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_starknet_query_starknet_l2_to_l1_messages_then_error_is_propagated(
+    ) {
+        // Given
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_call_opts, _block_tag| {
+                Err(eyre::eyre!("ethereum_lightclient_error"))
+            });
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::L2ToL1Messages {
+                    msg_hash: "0".to_string(),
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error, got ok"),
         }
     }

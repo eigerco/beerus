@@ -928,6 +928,85 @@ mod test {
         );
     }
 
+    /// Test the `query_l2_to_l1_message` endpoint.
+    /// `/starknet/messaging/l2_to_l1_messages/<msg_hash>`
+    /// Given normal conditions, when query_l2_to_l1_message, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_l2_to_l1_message_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_fee = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_fee_bytes: Vec<u8> = vec![0; 32];
+        expected_fee.to_big_endian(&mut expected_fee_bytes);
+
+        // Set the expected return value for the Ethereum light client mock.
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_call_opts, _block_tag| Ok(expected_fee_bytes));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/messaging/l2_to_l1_messages/0x1f83c4cce9da5a3a089a76501b8da5f7400e80f398594c4f1715ad1cb1a14012")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"result\":\"1234\"}"
+        );
+    }
+
+    /// Test the `query_l2_to_l1_message` endpoint.
+    /// `/starknet/messaging/l2_to_l1_messages/<msg_hash>`
+    /// Given StarkNet light client returns error when query_l2_to_l1_message, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_l2_to_l1_message_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the Ethereum light client mock.
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_call_opts, _block_tag| Err(eyre::eyre!("cannot query")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/messaging/l2_to_l1_messages/0x1f83c4cce9da5a3a089a76501b8da5f7400e80f398594c4f1715ad1cb1a14012")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query\"}"
+        );
+    }
+
     /// Test the `chain_id` endpoint.
     /// `/starknet/chain_id`
     #[tokio::test]
