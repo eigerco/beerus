@@ -27,3 +27,9 @@ pub struct QueryBlockNumberResponse {
 pub struct QueryChainIdResponse {
     pub chain_id: u64,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryCodeResponse {
+    pub code: Vec<u8>,
+}

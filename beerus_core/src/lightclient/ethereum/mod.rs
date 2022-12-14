@@ -77,4 +77,14 @@ pub trait EthereumLightClient: Send + Sync {
     /// # Errors
     /// Cannot fail.
     async fn chain_id(&self) -> u64;
+
+    /// Get the code of a given address.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The code of the contract.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>>;
 }

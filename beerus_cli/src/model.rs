@@ -50,7 +50,14 @@ pub enum EthereumSubCommands {
     },
 
     QueryBlockNumber {},
+
     QueryChainId {},
+
+    QueryCode {
+        /// The address of the contract to query the code
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+    },
 }
 
 /// StarkNet related commands.
@@ -110,6 +117,7 @@ pub enum CommandResponse {
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
     EthereumQueryChainId(u64),
+    EthereumQueryCode(Vec<u8>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -139,6 +147,12 @@ impl Display for CommandResponse {
             // Print the chain id.
             // Result looks like: 1
             CommandResponse::EthereumQueryChainId(chain_id) => write!(f, "{chain_id}"),
+            // Print the code of a contract in 256bits vector
+            // Result looks like: [1,1,10,ff]
+            //TODO: Add Opt to save the file (ex: -o code.json)
+            CommandResponse::EthereumQueryCode(code) => {
+                write!(f, "{code:?}")
+            }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),
