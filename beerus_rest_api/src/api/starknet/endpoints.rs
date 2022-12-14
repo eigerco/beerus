@@ -5,6 +5,7 @@ use super::resp::{
 };
 use crate::api::ApiResponse;
 
+use crate::api::starknet::resp::QueryL2ToL1MessagesResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use log::debug;
@@ -93,6 +94,16 @@ pub async fn query_starknet_block_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockNumberResponse> {
     ApiResponse::from_result(query_starknet_block_number_inner(beerus).await)
+}
+
+/// Query the l2_to_l1_message call
+#[openapi]
+#[get("/starknet/messaging/l2_to_l1_messages/<msg_hash>")]
+pub async fn query_l2_to_l1_messages(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> ApiResponse<QueryL2ToL1MessagesResponse> {
+    ApiResponse::from_result(query_l2_to_l1_messages_inner(beerus, msg_hash).await)
 }
 
 /// Query the state root of StarkNet.
@@ -256,6 +267,32 @@ pub async fn query_l1_to_l2_messages_inner(
     Ok(QueryL1ToL2MessagesResponse {
         result: beerus
             .starknet_l1_to_l2_messages(msg_hash)
+            .await?
+            .to_string(),
+    })
+}
+
+/// Query l2_to_l1_messages.
+///
+/// # Arguments
+///
+/// * `beerus` - The Beerus light client.
+/// * `msg_hash` - The hash of the message.
+///
+///
+/// # Returns
+///
+/// * `L2ToL1Messages` - The msg_fee + 1 for the message with the given L2ToL1Message hash.
+
+pub async fn query_l2_to_l1_messages_inner(
+    beerus: &State<BeerusLightClient>,
+    msg_hash: String,
+) -> Result<QueryL2ToL1MessagesResponse> {
+    debug!("Querying Starknet contract nonce");
+    let msg_hash = U256::from_str(&msg_hash)?;
+    Ok(QueryL2ToL1MessagesResponse {
+        result: beerus
+            .starknet_l2_to_l1_messages(msg_hash)
             .await?
             .to_string(),
     })
