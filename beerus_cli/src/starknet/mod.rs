@@ -134,7 +134,7 @@ pub async fn query_starknet_l1_to_l2_messages_cancellation_timestamp(
 /// # Returns
 /// * `Result<CommandResponse>` - The result of the query.
 /// # Errors
-/// * If the L1 to L2 messages query fails.
+/// * If the l1toL2 messages query fails.
 /// * If the message hash is invalid.
 pub async fn query_starknet_l1_to_l2_messages(
     beerus: BeerusLightClient,
