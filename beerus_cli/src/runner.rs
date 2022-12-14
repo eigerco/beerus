@@ -30,6 +30,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 ethereum::query_nonce(beerus, address.to_string()).await
             }
             EthereumSubCommands::QueryBlockNumber {} => ethereum::query_block_number(beerus).await,
+            EthereumSubCommands::QueryChainId {} => ethereum::query_chain_id(beerus).await,
         },
         // StarkNet commands.
         Commands::StarkNet(starknet_commands) => match &starknet_commands.command {
@@ -60,6 +61,17 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             StarkNetSubCommands::QueryNonce { address } => {
                 starknet::query_starknet_nonce(beerus, address.to_string()).await
             }
+            StarkNetSubCommands::L1ToL2MessageCancellations { msg_hash } => {
+                starknet::query_starknet_l1_to_l2_messages_cancellation_timestamp(
+                    beerus,
+                    msg_hash.to_string(),
+                )
+                .await
+            }
+            StarkNetSubCommands::L1ToL2Messages { msg_hash } => {
+                starknet::query_starknet_l1_to_l2_messages(beerus, msg_hash.to_string()).await
+            }
+            StarkNetSubCommands::QueryChainId {} => starknet::query_chain_id(beerus).await,
         },
     }
 }

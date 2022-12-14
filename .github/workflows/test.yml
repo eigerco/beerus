@@ -34,25 +34,17 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Setup coverage env
         uses: taiki-e/install-action@cargo-llvm-cov
-      - name: Generate json coverage report
+      - name: Generate code coverage
         env:
           ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
           ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
           STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
-        run: cargo llvm-cov --all-features --workspace --json --output-path report.json -- --nocapture
-      - name: Generate code coverage
-        run: cargo llvm-cov report --lcov --output-path lcov.info
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           files: lcov.info
           fail_ci_if_error: false
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: my-artifact
-          path: report.json
-          if-no-files-found: error
 
   fmt:
     name: fmt

@@ -39,6 +39,33 @@
       ]
     },
     {
+      "login": "ClementWalter",
+      "name": "Clément Walter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18620296?v=4",
+      "profile": "https://www.linkedin.com/in/clementwalter",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Eikix",
+      "name": "Elias Tazartes",
+      "avatar_url": "https://avatars.githubusercontent.com/u/66871571?v=4",
+      "profile": "https://github.com/Eikix",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "drspacemn",
+      "name": "drspacemn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16685321?v=4",
+      "profile": "https://github.com/drspacemn",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "msaug",
       "name": "Mathieu",
       "avatar_url": "https://avatars.githubusercontent.com/u/60658558?v=4",
@@ -57,10 +84,10 @@
       ]
     },
     {
-      "login": "ClementWalter",
-      "name": "Clément Walter",
-      "avatar_url": "https://avatars.githubusercontent.com/u/18620296?v=4",
-      "profile": "https://www.linkedin.com/in/clementwalter",
+      "login": "florian-bellotti",
+      "name": "Florian Bellotti",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7861901?v=4",
+      "profile": "https://github.com/florian-bellotti",
       "contributions": [
         "code"
       ]

@@ -243,6 +243,40 @@ mod test {
         }
     }
 
+    /// Test the `query_chain_id` CLI command.
+    /// Given normal conditions, when query chain_id, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_chain_id_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_chain_id()
+            .return_once(move || 1);
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryChainId {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("1", result.to_string());
+    }
+
     /// Test the `query_state_root` CLI command.
     /// Given normal conditions, when query state root, then ok.
     #[tokio::test]
@@ -511,7 +545,7 @@ mod test {
         let result = runner::run(beerus, cli).await.unwrap();
 
         // Then
-        assert_eq!("Nonce: 298305742194", result.to_string());
+        assert_eq!("298305742194", result.to_string());
     }
 
     /// Test the `query_nonce` CLI command.
@@ -557,6 +591,36 @@ mod test {
             Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error, got ok"),
         }
+    }
+
+    /// Test the `query_chain_id` CLI command.
+    /// Given normal conditions, when query chain_id, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn starknet_chain_id_should_return_the_chain_id() {
+        // Given
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let expected_result = FieldElement::from_dec_str("123").unwrap();
+        starknet_lightclient
+            .expect_chain_id()
+            .return_once(move || Ok(expected_result));
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryChainId {},
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("Chain id: 123", result.to_string());
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

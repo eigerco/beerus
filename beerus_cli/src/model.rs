@@ -50,6 +50,7 @@ pub enum EthereumSubCommands {
     },
 
     QueryBlockNumber {},
+    QueryChainId {},
 }
 
 /// StarkNet related commands.
@@ -90,6 +91,17 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    L1ToL2MessageCancellations {
+        /// The hash of the message
+        #[arg(short, long, value_name = "MSG_HASH")]
+        msg_hash: String,
+    },
+    L1ToL2Messages {
+        /// The hash of the message
+        #[arg(short, long, value_name = "MSG_HASH")]
+        msg_hash: String,
+    },
+    QueryChainId {},
 }
 
 /// The response from a CLI command.
@@ -97,10 +109,14 @@ pub enum CommandResponse {
     EthereumQueryBalance(String),
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
+    EthereumQueryChainId(u64),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
     StarkNetQueryNonce(FieldElement),
+    StarknetQueryChainId(FieldElement),
+    StarkNetL1ToL2MessageCancellations(U256),
+    StarkNetL1ToL2Messages(U256),
 }
 
 /// Display implementation for the CLI command response.
@@ -120,6 +136,9 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockNumber(block_number) => {
                 write!(f, "{block_number}")
             }
+            // Print the chain id.
+            // Result looks like: 1
+            CommandResponse::EthereumQueryChainId(chain_id) => write!(f, "{chain_id}"),
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),
@@ -142,7 +161,24 @@ impl Display for CommandResponse {
             // Print the nonce value.
             // Result looks like: 3
             CommandResponse::StarkNetQueryNonce(nonce) => {
-                write!(f, "Nonce: {nonce}")
+                write!(f, "{nonce}")
+            }
+            // Print the timestamp of the cancellation.
+            // Result looks like: 123456
+            // If the message was not cancelled, the timestamp will be 0.
+            CommandResponse::StarkNetL1ToL2MessageCancellations(timestamp) => {
+                write!(f, "{timestamp}")
+            }
+            // Print thethe msg_fee + 1 for the message with the given 'msgHash',
+            // Result looks like: 123456
+            CommandResponse::StarkNetL1ToL2Messages(timestamp) => {
+                write!(f, "{timestamp}")
+            }
+
+            // Print the chain id.
+            // Result looks like: `Chain id: 1`
+            CommandResponse::StarknetQueryChainId(chain_id) => {
+                write!(f, "Chain id: {chain_id}")
             }
         }
     }
