@@ -165,6 +165,21 @@ pub async fn query_starknet_l2_to_l1_messages(
     ))
 }
 
+/// Query l1 to l2 message nonce
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<()>` - The result of the query.
+/// # Errors
+/// * If the StarkNet nonce query fails.
+pub async fn query_starknet_l1_to_l2_message_nonce(
+    beerus: BeerusLightClient,
+) -> Result<CommandResponse> {
+    Ok(CommandResponse::StarkNetL1ToL2MessageNonce(
+        beerus.starknet_l1_to_l2_message_nonce().await?,
+    ))
+}
+
 /// Query the chain id of the StarkNet network.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
