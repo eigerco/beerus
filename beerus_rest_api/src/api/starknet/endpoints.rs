@@ -1,10 +1,10 @@
 use super::resp::{
-    QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryBlockNumberResponse, QueryChainIdResponse, QueryContractViewResponse,
+    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
-use crate::api::starknet::resp::QueryChainIdResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use log::debug;
@@ -84,6 +84,15 @@ pub async fn query_l1_to_l2_messages(
     msg_hash: String,
 ) -> ApiResponse<QueryL1ToL2MessagesResponse> {
     ApiResponse::from_result(query_l1_to_l2_messages_inner(beerus, msg_hash).await)
+}
+
+/// Query the current block number.
+#[openapi]
+#[get("/starknet/block_number")]
+pub async fn query_starknet_block_number(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockNumberResponse> {
+    ApiResponse::from_result(query_starknet_block_number_inner(beerus).await)
 }
 
 /// Query the state root of StarkNet.
@@ -264,5 +273,24 @@ pub async fn query_chain_id_inner(
     debug!("Querying chain ID");
     Ok(QueryChainIdResponse {
         chain_id: beerus.starknet_lightclient.chain_id().await?.to_string(),
+    })
+}
+
+/// Query the current block number of the Starknet chain.
+/// # Returns
+/// `block_number` - The current block number.
+/// # Errors
+/// Cannot fail.
+/// # Examples: 123456
+pub async fn query_starknet_block_number_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockNumberResponse> {
+    debug!("Querying current block number");
+    Ok(QueryBlockNumberResponse {
+        block_number: beerus
+            .starknet_lightclient
+            .block_number()
+            .await?
+            .to_string(),
     })
 }
