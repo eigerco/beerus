@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     // Read the config from the environment.
     let config = Config::new_from_env()?;
     // Create a new Ethereum light client.
-    let ethereum_lightclient = HeliosLightClient::new(config.clone())?;
+    let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
     // Create a new StarkNet light client.
     let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
     // Create a new Beerus light client.

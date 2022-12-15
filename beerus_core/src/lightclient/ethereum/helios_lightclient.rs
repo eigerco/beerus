@@ -57,14 +57,18 @@ impl EthereumLightClient for HeliosLightClient {
 /// HeliosLightClient non-trait functions.
 impl HeliosLightClient {
     /// Create a new HeliosLightClient.
-    pub fn new(config: Config) -> eyre::Result<Self> {
+    pub async fn new(config: Config) -> eyre::Result<Self> {
+        // Fetch the current checkpoint.
+        let checkpoint_value = config.get_checkpoint().await.unwrap();
+
         // Build the Helios wrapped light client.
         let helios_light_client = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .checkpoint("c93123ff83f8bd1fdbe3a0dbd8cfa3b491a3eda66ecd49fa21c4fd82985ed73b")
+            .checkpoint(&checkpoint_value)
             .build()?;
+
         Ok(Self {
             helios_light_client,
         })
