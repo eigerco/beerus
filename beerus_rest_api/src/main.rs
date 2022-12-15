@@ -19,7 +19,7 @@ async fn rocket() -> Rocket<Build> {
     let config = Config::default();
 
     // Create a new Ethereum light client.
-    let ethereum_lightclient = HeliosLightClient::new(config.clone()).unwrap();
+    let ethereum_lightclient = HeliosLightClient::new(config.clone()).await.unwrap();
     // Create a new StarkNet light client.
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
     // Create a new Beerus light client.

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use ethers::types::Address;
 use eyre::{eyre, Result};
-use helios::config::networks::Network;
+use helios::config::{checkpoints, networks::Network};
 
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.
@@ -59,6 +59,24 @@ impl Config {
             "mainnet" => Ok(Network::MAINNET),
             _ => Err(eyre!("Invalid network")),
         }
+    }
+    // Return the current checkpoint given the network.
+    pub async fn get_checkpoint(&self) -> eyre::Result<String> {
+        let cf = checkpoints::CheckpointFallback::new()
+            .build()
+            .await
+            .unwrap();
+        match self.ethereum_network.to_lowercase().as_str() {
+            "mainnet" => {
+                let _checkpoint = cf.fetch_latest_checkpoint(&Network::MAINNET).await?;
+                return Ok(format!("{_checkpoint:x}"));
+            }
+            "goerli" => {
+                let _checkpoint = cf.fetch_latest_checkpoint(&Network::GOERLI).await?;
+                return Ok(format!("{_checkpoint:x}"));
+            }
+            _ => return Err(eyre!("Invalid network")),
+        };
     }
 }
 

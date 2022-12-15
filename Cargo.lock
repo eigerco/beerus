@@ -495,7 +495,7 @@ dependencies = [
  "beerus_core",
  "clap",
  "env_logger 0.10.0",
- "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+ "ethers 1.0.0",
  "eyre",
  "helios",
  "log",
@@ -509,7 +509,7 @@ name = "beerus_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+ "ethers 1.0.0",
  "eyre",
  "helios",
  "hex",
@@ -530,7 +530,7 @@ version = "0.1.0"
 dependencies = [
  "beerus_core",
  "env_logger 0.9.3",
- "ethers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+ "ethers 1.0.0",
  "eyre",
  "helios",
  "log",
@@ -875,12 +875,12 @@ dependencies = [
 [[package]]
 name = "client"
 version = "0.1.1"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
  "common",
  "config",
  "consensus",
- "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers 1.0.2",
  "execution",
  "eyre",
  "futures",
@@ -963,9 +963,9 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.1.0"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
- "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers 1.0.2",
  "eyre",
  "hex",
  "serde",
@@ -985,22 +985,28 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
  "common",
- "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers 1.0.2",
  "eyre",
  "figment",
+ "futures",
  "hex",
+ "log",
+ "reqwest",
  "serde",
+ "serde_yaml",
  "ssz-rs",
+ "strum",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
 name = "consensus"
 version = "0.1.0"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
  "async-trait",
  "blst",
@@ -1008,7 +1014,7 @@ dependencies = [
  "chrono",
  "common",
  "config",
- "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers 1.0.2",
  "eyre",
  "hex",
  "log",
@@ -1655,21 +1661,6 @@ dependencies = [
 [[package]]
 name = "ethers"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2f6be73d1978a881402f8ca28466199156b560ac36527224bbe632b14faa373"
-dependencies = [
- "ethers-addressbook 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-contract 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-middleware 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-providers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethers-signers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "ethers"
-version = "1.0.0"
 source = "git+https://github.com/gakonst/ethers-rs?rev=5c9a048f#5c9a048f7306770bd9c6b1d337cbb848c720e137"
 dependencies = [
  "ethers-addressbook 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
@@ -1679,6 +1670,21 @@ dependencies = [
  "ethers-middleware 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-providers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
  "ethers-signers 1.0.0 (git+https://github.com/gakonst/ethers-rs?rev=5c9a048f)",
+]
+
+[[package]]
+name = "ethers"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11f26f9d8d80da18ca72aca51804c65eb2153093af3bec74fd5ce32aa0c1f665"
+dependencies = [
+ "ethers-addressbook 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-contract 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-etherscan 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-middleware 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-providers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-signers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2076,13 +2082,13 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 [[package]]
 name = "execution"
 version = "0.1.0"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
  "async-trait",
  "bytes",
  "common",
  "consensus",
- "ethers 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers 1.0.2",
  "eyre",
  "futures",
  "hex",
@@ -2571,8 +2577,8 @@ checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
 
 [[package]]
 name = "helios"
-version = "0.1.1"
-source = "git+https://github.com/a16z/helios#4d721e86c3e3ed61c853922d9cd77f5b98c4b5b7"
+version = "0.1.2"
+source = "git+https://github.com/a16z/helios#aa838aeee199cc4d425e6dfc998fd97428e44779"
 dependencies = [
  "client",
  "common",
@@ -4323,9 +4329,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.11.12"
+version = "0.11.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "431949c384f4e2ae07605ccaa56d1d9d2ecdb5cadd4f9577ccfab29f2e5149fc"
+checksum = "68cc60575865c7831548863cc02356512e3f1dc2f3f82cb837d7fc4cc8f3c97c"
 dependencies = [
  "base64 0.13.1",
  "bytes",
@@ -5037,6 +5043,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_yaml"
+version = "0.9.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d232d893b10de3eb7258ff01974d6ee20663d8e833263c99409d4b13a0209da"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
 ]
 
 [[package]]
@@ -5976,6 +5995,12 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1e5fa573d8ac5f1a856f8d7be41d390ee973daf97c806b2c1a465e4e1406e68"
 
 [[package]]
 name = "untrusted"

@@ -856,12 +856,12 @@ mod tests {
     }
 
     /// Test that we can create a Helios light client.
-    #[test]
-    fn given_normal_conditions_when_create_helios_lightclient_should_work() {
+    #[tokio::test]
+    async fn given_normal_conditions_when_create_helios_lightclient_should_work() {
         // Mock config.
         let (config, _, _) = mock_clients();
         // Create a new Helios light client.
-        let helios_light_client = HeliosLightClient::new(config);
+        let helios_light_client = HeliosLightClient::new(config).await;
         assert!(helios_light_client.is_ok());
     }
 
