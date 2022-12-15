@@ -122,7 +122,7 @@ mod tests {
         // Mock the `get_balance` method of the Ethereum light client.
         ethereum_lightclient_mock
             .expect_get_balance()
-            .return_once(move |_, _| Ok(123.into()));
+            .return_once(move |_, _| Ok((123).into()));
 
         // When
         let beerus = BeerusLightClient::new(
@@ -334,7 +334,7 @@ mod tests {
     /// Test the `get_code` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_code` method of the external dependencies.
-    /// It tests the `get_code` method of the Beerus light client.    
+    /// It tests the `get_code` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_get_code_then_should_return_ok() {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
@@ -1139,6 +1139,40 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
+    /// This test mocks external dependencies.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_l1_to_l2_message_nonce_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Expected block number.
+        let expected_nonce = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_nonce_bytes: Vec<u8> = vec![0; 32];
+        expected_nonce.to_big_endian(&mut expected_nonce_bytes);
+
+        // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Ok(expected_nonce_bytes));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Query the balance of the Ethereum address.
+        let result = beerus.starknet_l1_to_l2_message_nonce().await.unwrap();
+
+        // Assert that the `get_nonce` method of the Beerus light client returns `123`.
+        assert_eq!("1234", result.to_string());
     }
 
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

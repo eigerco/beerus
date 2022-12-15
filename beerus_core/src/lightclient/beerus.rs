@@ -10,7 +10,7 @@ use starknet::providers::jsonrpc::models::FunctionCall;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 
-/// Enum representing the different synchrnization status of the light client.
+/// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
     NotSynced,
@@ -69,7 +69,7 @@ impl BeerusLightClient {
         Ok(())
     }
 
-    /// Return the current syncrhonization status.
+    /// Return the current synchronization status.
     pub fn sync_status(&self) -> &SyncStatus {
         &self.sync_status
     }
@@ -305,6 +305,39 @@ impl BeerusLightClient {
             msg_hash_bytes32,
             self.starknet_core_abi.clone(),
             "l2ToL1Messages",
+        )?;
+        let data = data.to_vec();
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: self.starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let call_response = self
+            .ethereum_lightclient
+            .call(&call_opts, BlockTag::Latest)
+            .await?;
+        Ok(U256::from_big_endian(&call_response))
+    }
+
+    /// Return the nonce for the L1ToL2Message bridge.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
+        // Encode the function data.
+        let data = ethers_helper::encode_function_data(
+            (),
+            self.starknet_core_abi.clone(),
+            "l1ToL2MessageNonce",
         )?;
         let data = data.to_vec();
 
