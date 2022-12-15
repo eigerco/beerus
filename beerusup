@@ -143,7 +143,7 @@ if [ "$1" = "dev" ] || [ $? -ne 0 ]; then
     install_beerus_manually
 else
     # Pull latest release if there is a new version
-    CURRENT_VER=$(beerus_cli --version | awk '{print $2}')
+    CURRENT_VER=$($PROJECT_BIN/beerus_cli --version | awk '{print $2}')
     if [ "$LATEST_TAG" = "v$CURRENT_VER" ]; then
         echo "$NAME is currently running the latest version: $LATEST_VER"
     else
