@@ -28,6 +28,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             starknet::endpoints::query_l1_to_l2_message_cancellations,
             starknet::endpoints::query_l1_to_l2_messages,
             starknet::endpoints::query_l2_to_l1_messages,
+            starknet::endpoints::query_l1_to_l2_message_nonce,
             starknet::endpoints::query_starknet_chain_id,
             starknet::endpoints::query_starknet_block_number,
             starknet::endpoints::query_starknet_block_hash_and_number,
