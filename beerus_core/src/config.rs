@@ -60,24 +60,23 @@ impl Config {
             _ => Err(eyre!("Invalid network")),
         }
     }
-    // Return the currenct checkpoint given the network
+    // Return the current checkpoint given the network.
     pub async fn get_checkpoint(&self) -> eyre::Result<String> {
         let cf = checkpoints::CheckpointFallback::new()
             .build()
             .await
             .unwrap();
-        let checkpoint: String = match self.ethereum_network.to_lowercase().as_str() {
+        match self.ethereum_network.to_lowercase().as_str() {
             "mainnet" => {
                 let _checkpoint = cf.fetch_latest_checkpoint(&Network::MAINNET).await?;
-                format!("{_checkpoint:#x}").chars().skip(2).collect()
+                return Ok(format!("{_checkpoint:x}"));
             }
             "goerli" => {
                 let _checkpoint = cf.fetch_latest_checkpoint(&Network::GOERLI).await?;
-                format!("{_checkpoint:#x}").chars().skip(2).collect()
+                return Ok(format!("{_checkpoint:x}"));
             }
             _ => return Err(eyre!("Invalid network")),
         };
-        Ok(checkpoint)
     }
 }
 
