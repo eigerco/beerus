@@ -44,6 +44,12 @@ pub struct QueryL2ToL1MessagesResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryL1ToL2MessageNonceResponse {
+    pub result: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryChainIdResponse {
     pub chain_id: String,
 }

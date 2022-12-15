@@ -1,7 +1,8 @@
 use super::resp::{
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
     QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
@@ -113,6 +114,15 @@ pub async fn query_l2_to_l1_messages(
     msg_hash: String,
 ) -> ApiResponse<QueryL2ToL1MessagesResponse> {
     ApiResponse::from_result(query_l2_to_l1_messages_inner(beerus, msg_hash).await)
+}
+
+/// Query l1_to_l2_message_nonce call
+#[openapi]
+#[get("/starknet/messaging/l1_to_l2_message_nonce")]
+pub async fn query_l1_to_l2_message_nonce(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryL1ToL2MessageNonceResponse> {
+    ApiResponse::from_result(query_l1_to_l2_message_nonce_inner(beerus).await)
 }
 
 /// Query the state root of StarkNet.
@@ -356,5 +366,20 @@ pub async fn query_starknet_block_hash_and_number_inner(
     Ok(QueryBlockHashAndNumberResponse {
         block_hash: response.block_hash.to_string(),
         block_number: response.block_number.to_string(),
+    })
+}
+
+/// Query the l1 to l2 message nonce
+/// # Returns
+/// `nonce` - The nonce.
+/// # Errors
+/// Cannot fail.
+/// # Examples
+pub async fn query_l1_to_l2_message_nonce_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryL1ToL2MessageNonceResponse> {
+    debug!("Querying l1 to l2 message nonce");
+    Ok(QueryL1ToL2MessageNonceResponse {
+        result: beerus.starknet_l1_to_l2_message_nonce().await?.to_string(),
     })
 }

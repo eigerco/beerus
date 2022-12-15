@@ -1194,6 +1194,51 @@ mod test {
         );
     }
 
+    /// Test the `query_l1_to_l2_message_nonce` endpoint.
+    /// `/starknet/messaging/l1_to_l2_message_nonce`
+    /// Given normal conditions, when query_l1_to_l2_messages, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_l1_to_l2_message_nonce_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_nonce = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_nonce_bytes: Vec<u8> = vec![0; 32];
+        expected_nonce.to_big_endian(&mut expected_nonce_bytes);
+
+        // Set the expected return value for the Ethereum light client mock.
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Ok(expected_nonce_bytes));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/messaging/l1_to_l2_message_nonce"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"result\":\"1234\"}"
+        );
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
