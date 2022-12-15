@@ -14,7 +14,7 @@ use mockall::automock;
 #[automock]
 #[async_trait]
 pub trait EthereumLightClient: Send + Sync {
-    /// Start and synchronise the Ethereum light client.
+    /// Start and synchronize the Ethereum light client.
     /// This function should be called before any other function.
     ///
     /// # Returns
