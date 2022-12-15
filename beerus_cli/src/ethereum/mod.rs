@@ -93,7 +93,7 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
     Ok(CommandResponse::EthereumQueryCode(code))
 }
 
-/// Query tx count og a given block Number
+/// Query tx count of a given block Number
 /// # Arguments
 /// * `beerus` - The Beerus light client.
 /// # Returns
