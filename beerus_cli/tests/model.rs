@@ -42,4 +42,10 @@ mod tests {
             CommandResponse::StarknetQueryChainId(FieldElement::from_dec_str("123").unwrap());
         assert_eq!(response.to_string(), "Chain id: 123");
     }
+
+    #[test]
+    fn test_display_starknet_query_block_number() {
+        let response = CommandResponse::StarknetQueryBlockNumber(123456);
+        assert_eq!(response.to_string(), "Block number: 123456");
+    }
 }

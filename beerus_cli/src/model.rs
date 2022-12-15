@@ -109,6 +109,7 @@ pub enum StarkNetSubCommands {
         msg_hash: String,
     },
     QueryChainId {},
+    QueryBlockNumber {},
 }
 
 /// The response from a CLI command.
@@ -123,6 +124,7 @@ pub enum CommandResponse {
     StarkNetQueryGetStorageAt(FieldElement),
     StarkNetQueryNonce(FieldElement),
     StarknetQueryChainId(FieldElement),
+    StarknetQueryBlockNumber(u64),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
 }
@@ -193,6 +195,12 @@ impl Display for CommandResponse {
             // Result looks like: `Chain id: 1`
             CommandResponse::StarknetQueryChainId(chain_id) => {
                 write!(f, "Chain id: {chain_id}")
+            }
+
+            // Print the current block number.
+            // Result looks like: `Block number: 123456`
+            CommandResponse::StarknetQueryBlockNumber(block_number) => {
+                write!(f, "Block number: {block_number}")
             }
         }
     }
