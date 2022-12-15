@@ -17,7 +17,7 @@ mod test {
         },
     };
     use ethers::types::{Address, Transaction, H256, U256};
-    use helios::types::{ExecutionBlock, Transactions};
+    use helios::types::{BlockTag, ExecutionBlock, Transactions};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     /// Test the `send_raw_transaction` CLI command.
@@ -1017,6 +1017,90 @@ mod test {
         match result {
             Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error,got ok"),
+        }
+    }
+
+    /// Test the `query_block_by_number` CLI command.
+    /// Given normal conditions, when query block by number, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_by_number_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Expected block return.
+        let expected_block = ExecutionBlock {
+            number: 1,
+            ..Default::default()
+        };
+
+        ethereum_lightclient
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Ok(expected_block.clone()));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBlockByNumber {
+                    block: "1".to_string(),
+                    full_tx: false,
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(expected_block.to_string(), result.to_string());
+    }
+
+    /// Test the `query_block_by_number` CLI command.
+    /// Given ethereum lightclient returns an error, when query block by number, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_block_by_number_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        ethereum_lightclient
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBlockByNumber {
+                    block: 1,
+                    full_tx: false,
+                },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
         }
     }
 

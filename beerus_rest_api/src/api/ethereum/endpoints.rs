@@ -1,5 +1,5 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
+    QueryBalanceResponse, QueryBlockByNumberResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
     QueryBlockTxCountByBlockHashResponse, QueryBlockTxCountByBlockNumberResponse,
     QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
     QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse,
@@ -135,6 +135,16 @@ pub async fn get_priority_fee(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryPriorityFeeResponse> {
     ApiResponse::from_result(query_priority_fee_inner(beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/get_block_by_number/<block>/<full_tx>")]
+pub async fn query_block_by_number(
+    block: &str,
+    full_tx: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockByNumberResponse> {
+    ApiResponse::from_result(query_block_by_number_inner(beerus, block, full_tx).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -455,4 +465,32 @@ pub async fn query_priority_fee_inner(
     let unformatted_tx_data = beerus.ethereum_lightclient.get_priority_fee().await?;
     let priority_fee = format!("{unformatted_tx_data:?}");
     Ok(QueryPriorityFeeResponse { priority_fee })
+}
+
+/// Query information about a block by block number.
+/// # Arguments
+/// * `block` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// `Ok(query_block_response)` - The query block response.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the block tag is invalid or the full_tx boolean is invalid.
+/// # Examples
+pub async fn query_block_by_number_inner(
+    beerus: &State<BeerusLightClient>,
+    block: &str,
+    full_tx: &str,
+) -> Result<QueryBlockByNumberResponse> {
+    debug!("Querying block by number: {}", block);
+
+    let full_tx = bool::from_str(full_tx)?;
+    let block = serde_json::from_str(block)?;
+    let block_details = beerus
+        .ethereum_lightclient
+        .get_block_by_number(block, full_tx)
+        .await?;
+    Ok(QueryBlockByNumberResponse {
+        block: block_details,
+    })
 }

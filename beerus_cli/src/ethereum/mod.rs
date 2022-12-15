@@ -301,3 +301,24 @@ pub async fn query_get_priority_fee(beerus: BeerusLightClient) -> Result<Command
         get_priority_fee,
     ))
 }
+
+/// Query information about a block by block number.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// * `Result<CommandResponse>` - The block information.
+/// # Errors
+/// * If the block query fails.
+pub async fn query_block_by_number(
+    beerus: BeerusLightClient,
+    block: BlockTag,
+    full_tx: bool,
+) -> Result<CommandResponse> {
+    let block = beerus
+        .ethereum_lightclient
+        .get_block_by_number(block, full_tx)
+        .await?;
+    Ok(CommandResponse::EthereumQueryBlockByNumber(block))
+}

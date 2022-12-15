@@ -1,7 +1,9 @@
 use clap::{Parser, Subcommand};
+use helios::types::{BlockTag, ExecutionBlock};
 use ethers::types::{H256, U256};
 use helios::types::ExecutionBlock;
 use serde_json::json;
+use serde::Serialize;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
 use std::{fmt::Display, path::PathBuf};
@@ -97,6 +99,15 @@ pub enum EthereumSubCommands {
     },
 
     QueryPriorityFee {},
+    QueryBlockByNumber {
+        /// The block number to query
+        #[arg(short, long, value_name = "BLOCK_NUMBER")]
+        block: String,
+
+        /// Fetch full transaction objects or just the transaction hashes
+        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        full_tx: bool,
+    },
 }
 
 /// StarkNet related commands.
@@ -190,6 +201,7 @@ pub enum CommandResponse {
     EthereumQueryEstimateGas(u64),
     EthereumQueryBlockByHash(Option<ExecutionBlock>),
     EthereumQueryGetPriorityFee(U256),
+    EthereumQueryBlockByNumber(Option<ExecutionBlock>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -266,6 +278,16 @@ impl Display for CommandResponse {
             // Result looks like:
             CommandResponse::EthereumQueryGetPriorityFee(get_priority_fee) => {
                 write!(f, "{get_priority_fee}")
+            }
+            CommandResponse::EthereumQueryBlockByNumber(block) => {
+                match block {
+                    Some(block) => {
+                        //TODO fix this
+                        let json_block = serde_json::to_string(&block).unwrap();
+                        write!(f, "{"1"}")
+                    }
+                    None => write!(f, "No block found"),
+                }
             }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374

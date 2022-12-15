@@ -490,7 +490,7 @@ mod tests {
     /// Test the `get_block_transaction_count_by_number` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_block_transaction_count_by_number` method of the external dependencies.
-    /// It tests the `get_block_transaction_count_by_number` method of the Beerus light client.    
+    /// It tests the `get_block_transaction_count_by_number` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_tx_count_by_block_number_then_ok() {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
@@ -563,10 +563,103 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
+    /// Test the `get_block_by_number` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_block_by_number` method of the external dependencies.
+    /// It tests the `get_block_by_number` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_block_by_number_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_block_by_number` method of the Ethereum light client.
+        let expected_block_number = 1;
+        let expected_block = Some(ExecutionBlock {
+            number: 1,
+            base_fee_per_gas: U256::from(1),
+            difficulty: U256::from(1),
+            extra_data: vec![],
+            gas_limit: 1,
+            gas_used: 1,
+            hash: H256::from_low_u64_be(1),
+            logs_bloom: vec![],
+            miner: Address::from_low_u64_be(1),
+            mix_hash: H256::from_low_u64_be(1),
+            nonce: String::from("1"),
+            parent_hash: H256::from_low_u64_be(1),
+            receipts_root: H256::from_low_u64_be(1),
+            sha3_uncles: H256::from_low_u64_be(1),
+            size: 1,
+            state_root: H256::from_low_u64_be(1),
+            timestamp: 1,
+            total_difficulty: 1,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: H256::from_low_u64_be(1),
+            uncles: vec![],
+        });
+        ethereum_lightclient_mock
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Ok(expected_block));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus
+            .ethereum_lightclient
+            .get_block_by_number(BlockTag::Number(expected_block_number), false)
+            .await;
+
+        // Then
+        // Assert that the `get_block_by_number` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the block returned by the `get_block_by_number` method of the Beerus light client is the expected block.
+        assert_eq!(result.unwrap(), Some(&expected_block));
+    }
+
+    /// Test the `get_block_by_number` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_block_by_number` method of the external dependencies.
+    /// It tests the `get_block_by_number` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_error_when_call_get_block_by_number_then_should_return_err() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_block_by_number` method of the Ethereum light client.
+        let expected_error = "ethereum_lightclient_error".to_string();
+        ethereum_lightclient_mock
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus
+            .ethereum_lightclient
+            .get_block_by_number(BlockTag::Latest, false)
+            .await;
+
+        // Then
+        // Assert that the `get_block_by_number` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_block_by_number` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
     /// Test the `get_block_transaction_count_by_hash` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_block_transaction_count_by_hash` method of the external dependencies.
-    /// It tests the `get_block_transaction_count_by_hash` method of the Beerus light client.    
+    /// It tests the `get_block_transaction_count_by_hash` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_tx_count_by_block_hash_then_ok() {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
@@ -642,7 +735,7 @@ mod tests {
     /// Test the `get_transaction_by_hash` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_transaction_by_hash` method of the external dependencies.
-    /// It tests the `get_transaction_by_hash` method of the Beerus light client.    
+    /// It tests the `get_transaction_by_hash` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_transaction_by_hash_then_ok() {
         // Given
@@ -728,7 +821,7 @@ mod tests {
     /// Test the `gas_price method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `gas_price` method of the external dependencies.
-    /// It tests the `gas_price` method of the Beerus light client.    
+    /// It tests the `gas_price` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_gas_price_then_ok() {
         // Given
@@ -984,7 +1077,7 @@ mod tests {
     /// Test the `priority_fee method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `priority_fee` method of the external dependencies.
-    /// It tests the `priority_fee` method of the Beerus light client.    
+    /// It tests the `priority_fee` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_priority_fee_then_ok() {
         // Given

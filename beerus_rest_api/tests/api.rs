@@ -369,6 +369,48 @@ mod test {
         assert_eq!(response.into_string().await.unwrap(), "{\"chain_id\":1}");
     }
 
+    /// Test the `query_ethereum_block_by_number` endpoint.
+    /// `ethereum/get_block_by_number/<block_number>/<full_txs>`
+    /// Given normal conditions, when query block by number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_by_number_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 1,
+            ..Default::default()
+        };
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Ok(expected_block));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/ethereum/get_block_by_number/1/true"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"block\":{\"number\":1,\"hash\":null,\"parent_hash\":null,\"nonce\":null,\
+        \"sha3_uncles\":null,\"logs_bloom\":null,\"transactions_root\":null,\"state_root\":null,\"receipts_root\":null,\"miner\":null,\"difficulty\":null,\"total_difficulty\":null,\
+        \"size\":null,\"extra_data\":null,\"gas_limit\":null,\"gas_used\":null,\"timestamp\":null,\"transactions\":[],\"uncles\":[]}}");
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given normal conditions, when query starknet state root, then ok.

@@ -1,3 +1,4 @@
+use helios::types::ExecutionBlock;
 use rocket::serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -91,4 +92,10 @@ pub struct QueryBlockByHashResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryPriorityFeeResponse {
     pub priority_fee: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockByNumberResponse {
+    pub block: Option<ExecutionBlock>,
 }

@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use ethers::types::{Address, Transaction, H256, U256};
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
-use helios::types::{BlockTag, CallOpts, ExecutionBlock};
+use helios::types::{BlockTag, ExecutionBlock, CallOpts, ExecutionBlock};
 use std::primitive::u64;
 
 use crate::config::Config;
@@ -93,6 +93,16 @@ impl EthereumLightClient for HeliosLightClient {
     }
     async fn get_priority_fee(&self) -> Result<U256> {
         self.helios_light_client.get_priority_fee().await
+    }
+
+    async fn get_block_by_number(
+        &self,
+        block: BlockTag,
+        full_tx: bool,
+    ) -> eyre::Result<Option<ExecutionBlock>> {
+        self.helios_light_client
+            .get_block_by_number(block, full_tx)
+            .await
     }
 }
 
