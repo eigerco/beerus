@@ -58,6 +58,11 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    QueryBlockTxCountBykNumber {
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "BLOCK")]
+        block: u64,
+    },
 }
 
 /// StarkNet related commands.
@@ -118,6 +123,7 @@ pub enum CommandResponse {
     EthereumQueryBlockNumber(u64),
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
+    EthereumQueryBlockTxCountByNumber(u64),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -152,6 +158,11 @@ impl Display for CommandResponse {
             //TODO: Add Opt to save the file (ex: -o code.json)
             CommandResponse::EthereumQueryCode(code) => {
                 write!(f, "{code:?}")
+            }
+            // Print the count of txs of a block
+            // Result looks like: 150
+            CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
+                write!(f, "{tx_count}")
             }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374

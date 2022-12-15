@@ -87,4 +87,14 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>>;
+
+    /// Get the txs counts of a given block number.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The code of the contract.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
 }
