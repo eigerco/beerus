@@ -1,8 +1,6 @@
-use beerus_core::lightclient::starknet::storage_proof::{
-    felt_to_bits_be, verify_full_proof, GetProofOutput, Membership, ProofRequest,
-};
+use beerus_core::lightclient::starknet::storage_proof::{GetProofOutput, Membership};
 use serde::Deserialize;
-use starknet::core::{crypto::pedersen_hash, types::FieldElement};
+use starknet::core::types::FieldElement;
 use std::fs;
 
 #[derive(Debug, Deserialize)]
@@ -20,38 +18,15 @@ fn non_membership() {
     )
     .unwrap();
     let j: JsonOutput = serde_json::from_str(&s).unwrap();
-    let contract_proof = j.result.contract_proof;
+    let output = j.result;
+
+    let storage_keys = [FieldElement::ONE];
+    let storage_values = [FieldElement::TWO];
     let contract_address = FieldElement::from_hex_be(
         "0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153",
     )
     .unwrap();
-    let contract_data = j.result.contract_data.unwrap();
-    let class_hash = contract_data.class_hash;
-    let contract_nonce = contract_data.nonce;
-    let contract_root = contract_data.root;
-    let version = contract_data.contract_state_hash_version;
+    let memberships = output.verify(state_root, contract_address, &storage_keys, &storage_values);
 
-    let a = pedersen_hash(&class_hash, &contract_root);
-    let b = pedersen_hash(&a, &contract_nonce);
-    let contract_value = pedersen_hash(&b, &version);
-
-    let mut contract_key = contract_address.to_bits_le();
-    contract_key.reverse();
-    let contract_request = ProofRequest::new(
-        state_root,
-        &contract_key[contract_key.len() - 251..],
-        contract_value,
-        &contract_proof,
-    );
-    let key1 = felt_to_bits_be(FieldElement::ONE);
-    let value1 = FieldElement::TWO;
-    let req1 = ProofRequest::new(
-        contract_root,
-        &key1[key1.len() - 251..],
-        value1,
-        &contract_data.storage_proofs[0],
-    );
-    let storage_requests = [req1];
-    let memberships = verify_full_proof(contract_request, &storage_requests);
     assert_eq!(memberships, Some(vec![Some(Membership::NonMember)]));
 }
