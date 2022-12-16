@@ -97,7 +97,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
- 
 
     /// Get the tx data of a given tx hash.
     /// This function should be called after `start`.
