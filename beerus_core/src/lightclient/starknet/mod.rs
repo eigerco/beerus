@@ -8,6 +8,8 @@ use starknet::{
 };
 use url::Url;
 
+pub mod storage_proof;
+
 #[automock]
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {
