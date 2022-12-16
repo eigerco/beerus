@@ -1,11 +1,14 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse,QueryTransactionByHashResponse
+    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse, QueryTransactionByHashResponse,
 };
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::{types::Address, utils, H256};
+use ethers::{
+    types::{Address, H256},
+    utils,
+};
 use eyre::Result;
 use helios::types::BlockTag;
 use log::debug;
@@ -71,7 +74,7 @@ pub async fn get_transaction_by_hash(
     hash: &str,
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryTransactionByHashResponse> {
-    ApiResponse::from_result(query_transaction_by_hash_inner(hash,beerus).await)
+    ApiResponse::from_result(query_transaction_by_hash_inner(hash, beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -201,19 +204,25 @@ pub async fn query_block_transaction_count_by_number_inner(
     Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
 }
 
+/// Query the Tx data of a Tx Hash from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_transaction_by_hash)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
 pub async fn query_transaction_by_hash_inner(
     hash: &str,
-    beerus: &State<BeerusLightClient>
+    beerus: &State<BeerusLightClient>,
 ) -> Result<QueryTransactionByHashResponse> {
     debug!("Querying Tx data");
-    let h256_hash= H256::from_str(hash);
+    let h256_hash = H256::from_str(hash).unwrap();
 
     let unformatted_tx_data = beerus
         .ethereum_lightclient
-        .get_transaction_by_hash(h256_hash)
+        .get_transaction_by_hash(&h256_hash)
         .await?;
-    let tx_data = format!("{:?}", unformatted_tx_data);
+    let tx_data = format!("{unformatted_tx_data:?}");
 
-    Ok(QueryTransactionByHashResponse{tx_data})
-
+    Ok(QueryTransactionByHashResponse { tx_data })
 }

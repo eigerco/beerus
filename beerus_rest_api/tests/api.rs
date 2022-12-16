@@ -10,7 +10,7 @@ mod test {
         },
     };
     use beerus_rest_api::build_rocket_server;
-    use ethers::types::Address;
+    use ethers::types::{Address, Transaction};
     use primitive_types::U256;
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::core::types::FieldElement;
@@ -467,6 +467,135 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"Cannot query block tx count\"}"
+        )
+    }
+
+    /// Test the `query_transaction_by_hash` endpoint.
+    /// `/ethereum/query_transaction_by_hash`
+    /// Given normal conditions, when `query_transaction_by_hash`, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_transaction_by_hash_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // let check_value = Transaction(
+        //      hash: H256::zero(),
+        //      nonce: U256::zero(),
+        //      block_hash: Ok(H256::zero()),
+        //      block_number: Option<U64> =
+        //      transaction_index: Option<U64> =
+        //      from: H160 =
+        //      to: Option<H160> =
+        //      value: U256 =
+        //      gas_price: Option<U256> =
+        //      gas: U256 =
+        //      input: Bytes =
+        //      v: U64 =
+        //      r: U256 =
+        //      s: U256 =
+        //      fee_currency: Option<H160> =
+        //      gateway_fee_recipient: Option<H160> =
+        //      gateway_fee: Option<U256> =
+        //      transaction_type: Option<U64> =
+        //      access_list: Option<AccessList> =
+        //      max_priority_fee_per_gas: Option<U256> =
+        //      max_fee_per_gas: Option<U256> =
+        //      chain_id: Option<U256> =
+        // );
+
+        // To create a new variable of the Transaction struct from the given code, you can use the following syntax:
+
+        // Copy code
+        // let transaction = Transaction {
+        //     hash: H256::zero(),
+        //     nonce: U256::zero(),
+        //     block_hash: None,
+        //     block_number: None,
+        //     transaction_index: None,
+        //     from: Address::zero(),
+        //     to: None,
+        //     value: U256::zero(),
+        //     gas_price: None,
+        //     gas: U256::zero(),
+        //     input: Bytes::default(),
+        //     v: U64::zero(),
+        //     r: U256::zero(),
+        //     s: U256::zero(),
+        //     #[cfg(feature = "celo")]
+        //     fee_currency: None,
+        //     #[cfg(feature = "celo")]
+        //     gateway_fee_recipient: None,
+        //     #[cfg(feature = "celo")]
+        //     gateway_fee: None,
+        //     transaction_type: None,
+        //     access_list: None,
+        //     max_priority_fee_per_gas: None,
+        //     max_fee_per_gas: None,
+        //     chain_id: None,
+        //     other: OtherFields(None),
+        // };
+
+        let transaction = Transaction::default();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Ok(Some(transaction)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!("/ethereum/tx_by_hash/0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d"))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"tx_data\":\"Some(Transaction { hash: 0x0000000000000000000000000000000000000000000000000000000000000000, nonce: 0, block_hash: None, block_number: None, transaction_index: None, from: 0x0000000000000000000000000000000000000000, to: None, value: 0, gas_price: None, gas: 0, input: Bytes(0x), v: 0, r: 0, s: 0, transaction_type: None, access_list: None, max_priority_fee_per_gas: None, max_fee_per_gas: None, chain_id: None, other: OtherFields { inner: {} } })\"}")
+    }
+
+    /// Test the `query_transaction_by_hash` endpoint.
+    /// `/ethereum/query_transaction_by_hash/1`
+    /// Given Ethereum light client returns error when `query_transaction_by_hash`, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    ) {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Err(eyre::eyre!("Cannot query tx data")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!("/ethereum/tx_by_hash/0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d"))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Cannot query tx data\"}"
         )
     }
 
