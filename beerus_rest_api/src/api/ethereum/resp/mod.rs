@@ -33,3 +33,9 @@ pub struct QueryChainIdResponse {
 pub struct QueryCodeResponse {
     pub code: Vec<u8>,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockTxCountByBlockNumberResponse {
+    pub tx_count: u64,
+}

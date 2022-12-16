@@ -25,7 +25,6 @@ default-features = false
 features = [
     "precommit-hook",
     "run-for-all",
-    "run-cargo-test",
     "run-cargo-clippy",
     "run-cargo-fmt",
 ]

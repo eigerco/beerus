@@ -399,6 +399,77 @@ mod test {
         )
     }
 
+    /// Test the `query_block_transaction_count_by_number` endpoint.
+    /// `/ethereum/tx_count_by_block_number`
+    /// Given normal conditions, when `query_block_transaction_count_by_number`, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_by_block_number_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let check_value: u64 = 120;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_number()
+            .return_once(move |_| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!("/ethereum/tx_count_by_block_number/1"))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"tx_count\":120}")
+    }
+
+    /// Test the `query_block_transaction_count_by_number` endpoint.
+    /// `/ethereum/tx_count_by_block_number/1`
+    /// Given Ethereum light client returns error when `query_block_transaction_count_by_number`, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_numbe_then_error_is_propagated(
+    ) {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_number()
+            .return_once(move |_| Err(eyre::eyre!("Cannot query block tx count")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!("/ethereum/tx_count_by_block_number/1"))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Cannot query block tx count\"}"
+        )
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given Ethereum light client returns error when query balance, then error is propagated.
@@ -884,6 +955,80 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"chain_id\":\"123\"}"
+        );
+    }
+
+    /// Test the `block_number` endpoint.
+    /// `/starknet/block_number/<contract>/`
+    /// Given normal conditions, when query starknet get_nonce, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_block_number_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result: u64 = 123456;
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_block_number()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/block_number")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"block_number\":\"123456\"}"
+        );
+    }
+
+    /// Test the `block_number` endpoint.
+    /// `/starknet/block_number/<contract>/`
+    /// Given StarkNet light client returns error when query starknet block_number, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_block_number_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_block_number()
+            .return_once(move || Err(eyre::eyre!("cannot query starknet address block number")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/block_number")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet address block number\"}"
         );
     }
 

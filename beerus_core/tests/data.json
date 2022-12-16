@@ -1,0 +1,132 @@
+{
+    "jsonrpc": "2.0",
+    "result": {
+        "contract_proof": [
+            {
+                "Binary": {
+                    "left": "0x6088eafaf0673d5277d465330fbcc946889997526b31dc5f48c4d58491af44e",
+                    "right": "0x599b71be34606a6bdffa82f339ba7c7ccd08c34d70c6d070bbbfde896656498"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x1326b221a89888b6da85f1f9ac4d8e1b565a7eba1461e84b510669c0eed7254",
+                    "right": "0x7d3b02ec3acb848c76a9a827ea70c44922420b0ce37d4cd9104c8a9ffce2fbe"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x76efe2284ef8d83e0af857b423c241692f6886c72430e019db1aefc389ce587",
+                    "right": "0x196325ad675d923995126b1707375cee1ddef97c2236c0b0de37e4b13d66ad3"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x52b662df84a8bccd3d8763d1d209e8863aab572cda546cc7b38790affc7e0b9",
+                    "right": "0x6edde0ba2c807dc8cd875c356ddb6eb7fe518fa013f54af662dbd17950504f8"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x317cabfb30acbfb2bafa3a3944ea8385087475291e282bdf46ad95c1285c5b3",
+                    "right": "0x7a9eb298d8274edd0759feda92c9d655dd6f1c6e5adfe0114e10576bfca0bdd"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x95416cb4b476155a382af243e7f2c3d3d4c8a666f3fecf305f1f9953ac8eda",
+                    "right": "0x2c862f7dac7de47e47e3247824bf5c8dff760515742c7ea35c20c0b79cea85c"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x67a5b63ec1f4b8672b1bc6da1ae2d655788a80883349ffea0115f9c40453f0",
+                    "right": "0x234b583cdf424cf175b318a18eed355c89f69371f68cd4c7265531cc7edb3e6"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x79d8f72c5d4f8d845d43497c0d4a731fdf9f5624b8b6b7381ea49a079cc6a52",
+                    "right": "0x7d08d7b553bb2b2c2aaece8d83bddd288d43332c0b2785520ef857497d1cf7e"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x1a362b0f4c2bc3474a0d94c90db4c906dbfabbb8fd3caf9d1a0680736417abd",
+                    "right": "0x102f9b064c8a3f1addffe55ac8234b4d8a0282b2e9ce3fe40560583ca11f515"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x14c957ae6bed1a4d281d1ba18e626636306a387114b7fce116cb582e49a0c5a",
+                    "right": "0xd90d957ebb41912e87f7ab98cda0c38a34454976c2fba6543b6f48cee4c1d5"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x21ba972472bba4884990e622525d688c37bd9a57e9bc1731ed796371c76a6f6",
+                    "right": "0x72ab4534ca96619189ae6ac3b686d45831143714535fd9fef0eb4c647becefa"
+                }
+            },
+            {
+                "Binary": {
+                    "left": "0x541079ae225b9999405b90c6dfd2a97bc16ee4642cf638114a6c1729806464d",
+                    "right": "0x61e56e543bd691f32a14996f9eb35965bd7a812f8456e6a8e38a46038f419bd"
+                }
+            },
+            {
+                "Edge": {
+                    "path": {
+                        "value": "0x607157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153",
+                        "len": 239
+                    },
+                    "child": "0x3a9cb941f554ed0ee500c47f7c54c0eef7608e5dea9f15110f5f91f8ffc0724"
+                }
+            }
+        ],
+        "contract_data": {
+            "class_hash": "0x10455c752b86932ce552f2b0fe81a880746649b9aee7e0d842bf3f52378f9f8",
+            "nonce": "0x0",
+            "root": "0x3dea434f623bd5e269756c363fc68644f0378b1a2e090813b189bcd00890faf",
+            "contract_state_hash_version": "0x0",
+            "storage_proofs": [
+                [
+                    {
+                        "Binary": {
+                            "left": "0x35ad055a5678edc2681f611f3a5e8ef30338a0f355a1ebe92a97bfd7fb46043",
+                            "right": "0x4c8dc22a26049b128b15eaf6eb4a5c9aaf2be2f884fcf21fbce951dc7b6225d"
+                        }
+                    },
+                    {
+                        "Binary": {
+                            "left": "0x3c04edb7912de9ff5368461b42ea15cd6ad1439b1a7d2f449c685ab5ef7d1df",
+                            "right": "0x626ef0f5568f97297a74f1642dea9111e1acd5a6aab5236c45ab1a7d2e4579"
+                        }
+                    },
+                    {
+                        "Binary": {
+                            "left": "0x4f5561e6fdd3f9109a788983998ebfedcd34a27631c0a6cce3f1dd04a83daf4",
+                            "right": "0x24d9c672a494ff7532a46dc3be0e94cdd1628a6a16efb7301ca0f5bea04776f"
+                        }
+                    },
+                    {
+                        "Binary": {
+                            "left": "0x2d76491b56715dd05d4b4cea61b96c8ebddb9a1904c379da369218d3ecce81b",
+                            "right": "0x1a6069b30f974199e33650c9d218d56968cc167a2dcb0e75ddf6b2dcd983d0d"
+                        }
+                    },
+                    {
+                        "Edge": {
+                            "path": {
+                                "value": "0x22ef8244ea5435f7cc3f33de473761a1c6b5084bfccb20812dc13543a642dc",
+                                "len": 247
+                            },
+                            "child": "0x7e5"
+                        }
+                    }
+                ]
+            ]
+        }
+    },
+    "id": 2
+}

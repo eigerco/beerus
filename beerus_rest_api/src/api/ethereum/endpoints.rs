@@ -1,6 +1,6 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
-    QueryNonceResponse,
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
+    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse,
 };
 use crate::api::ApiResponse;
 
@@ -54,6 +54,15 @@ pub async fn query_code(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryCodeResponse> {
     ApiResponse::from_result(query_code_inner(address, beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/tx_count_by_block_number/<block>")]
+pub async fn get_block_transaction_count_by_number(
+    block: u64,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockTxCountByBlockNumberResponse> {
+    ApiResponse::from_result(query_block_transaction_count_by_number_inner(block, beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -159,4 +168,26 @@ pub async fn query_code_inner(
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 
     Ok(QueryCodeResponse { code })
+}
+
+/// Query the Tx count of a given Block Number from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_block_transaction_count_by_number)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_block_transaction_count_by_number_inner(
+    _block: u64,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockTxCountByBlockNumberResponse> {
+    debug!("Querying Block Tx count");
+    // TODO: Change to BlockTag::Number(block) when previous blocks are available from Helios Client
+    let block = BlockTag::Latest;
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_number(block)
+        .await?;
+
+    Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
 }

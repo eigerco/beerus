@@ -8,6 +8,8 @@ use starknet::{
 };
 use url::Url;
 
+pub mod storage_proof;
+
 #[automock]
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {
@@ -21,6 +23,7 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<FieldElement>;
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
     async fn chain_id(&self) -> Result<FieldElement>;
+    async fn block_number(&self) -> Result<u64>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -118,5 +121,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
 
     async fn chain_id(&self) -> Result<FieldElement> {
         self.client.chain_id().await.map_err(|e| eyre::eyre!(e))
+    }
+
+    async fn block_number(&self) -> Result<u64> {
+        self.client.block_number().await.map_err(|e| eyre::eyre!(e))
     }
 }

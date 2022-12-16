@@ -92,3 +92,24 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
 
     Ok(CommandResponse::EthereumQueryCode(code))
 }
+
+/// Query tx count of a given block Number
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - u64 (txs counts)
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_block_transaction_count_by_number(
+    beerus: BeerusLightClient,
+    block: u64,
+) -> Result<CommandResponse> {
+    let block = BlockTag::Number(block);
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_number(block)
+        .await?;
+
+    Ok(CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count))
+}

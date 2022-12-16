@@ -34,6 +34,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             EthereumSubCommands::QueryCode { address } => {
                 ethereum::query_code(beerus, address.to_owned()).await
             }
+            EthereumSubCommands::QueryBlockTxCountBykNumber { block } => {
+                ethereum::query_block_transaction_count_by_number(beerus, *block).await
+            }
         },
         // StarkNet commands.
         Commands::StarkNet(starknet_commands) => match &starknet_commands.command {
@@ -75,6 +78,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 starknet::query_starknet_l1_to_l2_messages(beerus, msg_hash.to_string()).await
             }
             StarkNetSubCommands::QueryChainId {} => starknet::query_chain_id(beerus).await,
+            StarkNetSubCommands::QueryBlockNumber {} => starknet::query_block_number(beerus).await,
         },
     }
 }

@@ -118,7 +118,7 @@ install_beerus_manually() {
     mv ./target/release/beerus_cli $PROJECT_BIN
     mv ./target/release/beerus_rest_api $PROJECT_BIN
 
-    BEERUS_VER=$(beerus_cli --version | awk '{print $2}')
+    BEERUS_VER=$($PROJECT_BIN/beerus_cli --version | awk '{print $2}')
 
     cd $WRK_DIR
     rm -rf $PROJECT_TMP/beerus
@@ -143,7 +143,7 @@ if [ "$1" = "dev" ] || [ $? -ne 0 ]; then
     install_beerus_manually
 else
     # Pull latest release if there is a new version
-    CURRENT_VER=$(beerus_cli --version | awk '{print $2}')
+    CURRENT_VER=$($PROJECT_BIN/beerus_cli --version | awk '{print $2}')
     if [ "$LATEST_TAG" = "v$CURRENT_VER" ]; then
         echo "$NAME is currently running the latest version: $LATEST_VER"
     else
@@ -153,7 +153,10 @@ else
 fi
 
 echo "$NAME root installed at: $PROJECT_ROOT"
-if [ ! -z "$PROFILE" ]; then echo "\trun 'source $PROFILE' to activate path"; fi
+if [ ! -z "$PROFILE" ]; then
+    echo "Run 'source $PROFILE' to activate path or start a new terminal session to use Beerus."
+    echo "Then, run 'beerus_cli --help'."
+fi
 
 echo "\nSet config:"
 echo "\tETHEREUM_EXECUTION_RPC_URL\n\tETHEREUM_CONSENSUS_RPC_URL\n\tSTARKNET_RPC_URL"

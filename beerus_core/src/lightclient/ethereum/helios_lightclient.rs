@@ -50,6 +50,11 @@ impl EthereumLightClient for HeliosLightClient {
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>> {
         self.helios_light_client.get_code(address, block).await
     }
+    async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
+        self.helios_light_client
+            .get_block_transaction_count_by_number(block)
+            .await
+    }
 }
 
 /// HeliosLightClient non-trait functions.
