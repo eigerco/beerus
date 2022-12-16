@@ -169,7 +169,7 @@ pub async fn query_starknet_l2_to_l1_messages(
 /// # Arguments
 /// * `beerus` - The Beerus light client.
 /// # Returns
-/// * `Result<()>` - The result of the query.
+/// * `Result<CommandResponse>` - The result of the query.
 /// # Errors
 /// * If the StarkNet nonce query fails.
 pub async fn query_starknet_l1_to_l2_message_nonce(
