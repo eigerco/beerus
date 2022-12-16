@@ -118,8 +118,8 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "MSG_HASH")]
         msg_hash: String,
     },
-    L1ToL2MessageNonce {},
     /// The nonce of the L1 to L2 message bridge
+    L1ToL2MessageNonce {},
     QueryChainId {},
     QueryBlockNumber {},
     QueryBlockHashAndNumber {},
@@ -217,7 +217,6 @@ impl Display for CommandResponse {
             CommandResponse::StarkNetL2ToL1Messages(fee) => {
                 write!(f, "{fee}")
             }
-
             // Print the current nonce of the L1 to L2 message bridge,
             // Result looks like: 123456
             CommandResponse::StarkNetL1ToL2MessageNonce(nonce) => {
@@ -228,7 +227,6 @@ impl Display for CommandResponse {
             CommandResponse::StarknetQueryChainId(chain_id) => {
                 write!(f, "Chain id: {chain_id}")
             }
-
             // Print the current block number.
             // Result looks like: `Block number: 123456`
             CommandResponse::StarknetQueryBlockNumber(block_number) => {
