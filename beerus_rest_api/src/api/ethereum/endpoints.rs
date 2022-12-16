@@ -170,15 +170,15 @@ pub async fn query_code_inner(
     Ok(QueryCodeResponse { code })
 }
 
-/// Query the Code of a contract from the the Ethereum chain.
+/// Query the Tx count of a given Block Number from the the Ethereum chain.
 /// # Returns
-/// `Ok(get_block_transaction_count_by_number)` - 256bits vector (code)
+/// `Ok(get_block_transaction_count_by_number)` - u64 (tx_count)
 /// `Err(error)` - An error occurred.
 /// # Errors
 /// If the code query fails.
 /// # Examples
 pub async fn query_block_transaction_count_by_number_inner(
-    block: u64,
+    _block: u64,
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryBlockTxCountByBlockNumberResponse> {
     debug!("Querying Block Tx count");

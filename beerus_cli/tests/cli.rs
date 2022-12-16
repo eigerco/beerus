@@ -351,8 +351,8 @@ mod test {
         }
     }
 
-    /// Test the `query_code` CLI command.
-    /// Given normal conditions, when query code, then ok.
+    /// Test the `query-block-tx-count-by-number` CLI command.
+    /// Given normal conditions, when `query-block-tx-count-by-number`, then ok.
     /// Success case.
     #[tokio::test]
     async fn given_normal_conditions_when_query_tx_count_by_block_number_then_ok() {
@@ -386,7 +386,7 @@ mod test {
     }
 
     /// Test `query-block-tx-count-by-number` CLI command.
-    /// Given ethereum lightclient returns an error, when query block tx count by number, then the error is propagated.
+    /// Given ethereum lightclient returns an error, when `query-block-tx-count-by-number`, then the error is propagated.
     /// Error case.
     #[tokio::test]
     async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
