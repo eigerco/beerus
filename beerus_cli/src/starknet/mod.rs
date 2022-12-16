@@ -155,3 +155,13 @@ pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse
     let chain_id = beerus.starknet_lightclient.chain_id().await?;
     Ok(CommandResponse::StarknetQueryChainId(chain_id))
 }
+
+/// Query the current block number of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The current block number of the StarkNet network.
+pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let block_number = beerus.starknet_lightclient.block_number().await?;
+    Ok(CommandResponse::StarknetQueryBlockNumber(block_number))
+}

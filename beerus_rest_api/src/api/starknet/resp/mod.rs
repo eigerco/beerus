@@ -41,3 +41,9 @@ pub struct QueryL1ToL2MessagesResponse {
 pub struct QueryChainIdResponse {
     pub chain_id: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockNumberResponse {
+    pub block_number: String,
+}
