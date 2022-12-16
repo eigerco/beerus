@@ -509,7 +509,7 @@ name = "beerus_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "ethers 1.0.0",
+ "ethers 1.0.2",
  "eyre",
  "helios",
  "hex",

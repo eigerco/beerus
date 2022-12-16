@@ -1,7 +1,7 @@
 pub mod helios_lightclient;
 
 use async_trait::async_trait;
-use ethers::types::Address;
+use ethers::types::{Address, Transaction, H256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use mockall::automock;
@@ -97,4 +97,15 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
+ 
+
+    /// Get the tx data of a given tx hash.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The code of the contract.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>>;
 }

@@ -1,11 +1,11 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse,
+    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse,QueryTransactionByHashResponse
 };
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::{types::Address, utils};
+use ethers::{types::Address, utils, H256};
 use eyre::Result;
 use helios::types::BlockTag;
 use log::debug;
@@ -63,6 +63,15 @@ pub async fn get_block_transaction_count_by_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockTxCountByBlockNumberResponse> {
     ApiResponse::from_result(query_block_transaction_count_by_number_inner(block, beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/tx_by_hash/<hash>")]
+pub async fn get_transaction_by_hash(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryTransactionByHashResponse> {
+    ApiResponse::from_result(query_transaction_by_hash_inner(hash,beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -190,4 +199,21 @@ pub async fn query_block_transaction_count_by_number_inner(
         .await?;
 
     Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
+}
+
+pub async fn query_transaction_by_hash_inner(
+    hash: &str,
+    beerus: &State<BeerusLightClient>
+) -> Result<QueryTransactionByHashResponse> {
+    debug!("Querying Tx data");
+    let h256_hash= H256::from_str(hash);
+
+    let unformatted_tx_data = beerus
+        .ethereum_lightclient
+        .get_transaction_by_hash(h256_hash)
+        .await?;
+    let tx_data = format!("{:?}", unformatted_tx_data);
+
+    Ok(QueryTransactionByHashResponse{tx_data})
+
 }
