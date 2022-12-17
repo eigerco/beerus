@@ -478,63 +478,6 @@ mod test {
         // Build mocks
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-        // let check_value = Transaction(
-        //      hash: H256::zero(),
-        //      nonce: U256::zero(),
-        //      block_hash: Ok(H256::zero()),
-        //      block_number: Option<U64> =
-        //      transaction_index: Option<U64> =
-        //      from: H160 =
-        //      to: Option<H160> =
-        //      value: U256 =
-        //      gas_price: Option<U256> =
-        //      gas: U256 =
-        //      input: Bytes =
-        //      v: U64 =
-        //      r: U256 =
-        //      s: U256 =
-        //      fee_currency: Option<H160> =
-        //      gateway_fee_recipient: Option<H160> =
-        //      gateway_fee: Option<U256> =
-        //      transaction_type: Option<U64> =
-        //      access_list: Option<AccessList> =
-        //      max_priority_fee_per_gas: Option<U256> =
-        //      max_fee_per_gas: Option<U256> =
-        //      chain_id: Option<U256> =
-        // );
-
-        // To create a new variable of the Transaction struct from the given code, you can use the following syntax:
-
-        // Copy code
-        // let transaction = Transaction {
-        //     hash: H256::zero(),
-        //     nonce: U256::zero(),
-        //     block_hash: None,
-        //     block_number: None,
-        //     transaction_index: None,
-        //     from: Address::zero(),
-        //     to: None,
-        //     value: U256::zero(),
-        //     gas_price: None,
-        //     gas: U256::zero(),
-        //     input: Bytes::default(),
-        //     v: U64::zero(),
-        //     r: U256::zero(),
-        //     s: U256::zero(),
-        //     #[cfg(feature = "celo")]
-        //     fee_currency: None,
-        //     #[cfg(feature = "celo")]
-        //     gateway_fee_recipient: None,
-        //     #[cfg(feature = "celo")]
-        //     gateway_fee: None,
-        //     transaction_type: None,
-        //     access_list: None,
-        //     max_priority_fee_per_gas: None,
-        //     max_fee_per_gas: None,
-        //     chain_id: None,
-        //     other: OtherFields(None),
-        // };
-
         let transaction = Transaction::default();
 
         // Given
