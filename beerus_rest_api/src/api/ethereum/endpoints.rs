@@ -479,18 +479,24 @@ pub async fn query_priority_fee_inner(
 /// # Examples
 pub async fn query_block_by_number_inner(
     beerus: &State<BeerusLightClient>,
-    block: &str,
+    block_tag: &str,
     full_tx: &str,
 ) -> Result<QueryBlockByNumberResponse> {
-    debug!("Querying block by number: {}", block);
-
+    debug!("Querying block by number: {}, with full transactions: {}", block_tag,full_tx);
     let full_tx = bool::from_str(full_tx)?;
-    let block = serde_json::from_str(block)?;
+    let block_tag: String = serde_json::to_string(&block_tag)?;
+    let block_tag: BlockTag = serde_json::from_str(block_tag.as_str())?;
     let block_details = beerus
         .ethereum_lightclient
-        .get_block_by_number(block, full_tx)
+        .get_block_by_number(block_tag, full_tx)
         .await?;
-    Ok(QueryBlockByNumberResponse {
-        block: block_details,
-    })
+    let block = match block_details {
+        Some(block) => {
+            let block_json_string: String = serde_json::to_string(&block).unwrap();
+            let block_json_value: serde_json::Value = serde_json::from_str(block_json_string.as_str()).unwrap();
+            Some(block_json_value)
+        }
+        None => None,
+    };
+    Ok(QueryBlockByNumberResponse { block })
 }

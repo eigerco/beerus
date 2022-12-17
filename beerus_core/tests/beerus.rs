@@ -598,9 +598,10 @@ mod tests {
             transactions_root: H256::from_low_u64_be(1),
             uncles: vec![],
         });
+        let _expected_block = expected_block.clone();
         ethereum_lightclient_mock
             .expect_get_block_by_number()
-            .return_once(move |_, _| Ok(expected_block));
+            .return_once(move |_, _| Ok(_expected_block));
 
         // When
         let beerus = BeerusLightClient::new(
@@ -618,7 +619,9 @@ mod tests {
         // Assert that the `get_block_by_number` method of the Beerus light client returns `Ok`.
         assert!(result.is_ok());
         // Assert that the block returned by the `get_block_by_number` method of the Beerus light client is the expected block.
-        assert_eq!(result.unwrap(), Some(&expected_block));
+        let result_json = serde_json::to_string(&result.unwrap()).unwrap();
+        let expected_block_json = serde_json::to_string(&expected_block).unwrap();
+        assert_eq!(result_json, expected_block_json);
     }
 
     /// Test the `get_block_by_number` method when the Ethereum light client returns an error.
@@ -633,9 +636,10 @@ mod tests {
 
         // Mock the `get_block_by_number` method of the Ethereum light client.
         let expected_error = "ethereum_lightclient_error".to_string();
+        let _expected_error = expected_error.clone();
         ethereum_lightclient_mock
             .expect_get_block_by_number()
-            .return_once(move |_, _| Err(eyre!(expected_error)));
+            .return_once(move |_, _| Err(eyre!(_expected_error)));
 
         // When
         let beerus = BeerusLightClient::new(

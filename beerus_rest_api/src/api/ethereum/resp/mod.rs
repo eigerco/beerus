@@ -97,5 +97,5 @@ pub struct QueryPriorityFeeResponse {
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryBlockByNumberResponse {
-    pub block: Option<ExecutionBlock>,
+    pub block: Option<serde_json::Value>,
 }

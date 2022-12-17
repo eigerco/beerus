@@ -10,8 +10,6 @@ use super::{
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use eyre::Result;
 use helios::types::BlockTag;
-use serde::{Deserialize, Deserializer};
-use serde_json::Number;
 
 /// Main entry point for the Beerus CLI.
 /// # Arguments
@@ -60,8 +58,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 ethereum::query_get_priority_fee(beerus).await
             }
             EthereumSubCommands::QueryBlockByNumber { block, full_tx } => {
-                let block_tag: BlockTag = serde_json::from_str(block)?;
-                return ethereum::query_block_by_number(beerus, block_tag, *full_tx).await;
+                let block_json = serde_json::to_string(&block)?;
+                let block_tag: BlockTag = serde_json::from_str(block_json.as_str())?;
+                ethereum::query_block_by_number(beerus, block_tag, *full_tx).await
             }
         },
         // StarkNet commands.

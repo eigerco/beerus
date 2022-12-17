@@ -377,15 +377,37 @@ mod test {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-        let expected_block = ExecutionBlock {
-            number: 1,
-            ..Default::default()
+        let expected_block = ExecutionBlock{
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![]
         };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value = serde_json::from_str(block_string.as_str()).unwrap();
+        let expected_response = format!("{{\"block\":{expected_block_value}}}");
         // Given
         // Mock dependencies.
         ethereum_lightclient
             .expect_get_block_by_number()
-            .return_once(move |_, _| Ok(expected_block));
+            .return_once(move |_, _| Ok(Some(expected_block)));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -406,9 +428,7 @@ mod test {
 
         // Then
         assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.into_string().await.unwrap(), "{\"block\":{\"number\":1,\"hash\":null,\"parent_hash\":null,\"nonce\":null,\
-        \"sha3_uncles\":null,\"logs_bloom\":null,\"transactions_root\":null,\"state_root\":null,\"receipts_root\":null,\"miner\":null,\"difficulty\":null,\"total_difficulty\":null,\
-        \"size\":null,\"extra_data\":null,\"gas_limit\":null,\"gas_used\":null,\"timestamp\":null,\"transactions\":[],\"uncles\":[]}}");
+        assert_eq!(response.into_string().await.unwrap(), expected_response);
     }
 
     /// Test the `query_starknet_state_root` endpoint.

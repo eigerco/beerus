@@ -282,9 +282,8 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockByNumber(block) => {
                 match block {
                     Some(block) => {
-                        //TODO fix this
                         let json_block = serde_json::to_string(&block).unwrap();
-                        write!(f, "{"1"}")
+                        write!(f, "{json_block}")
                     }
                     None => write!(f, "No block found"),
                 }
