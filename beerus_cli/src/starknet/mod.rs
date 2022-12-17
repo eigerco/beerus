@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use ethers::types::U256;
 use eyre::Result;
-use primitive_types::U256;
 use starknet::core::types::FieldElement;
 
 use crate::model::CommandResponse;

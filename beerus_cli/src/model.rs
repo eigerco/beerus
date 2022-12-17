@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use primitive_types::U256;
+use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use std::{fmt::Display, path::PathBuf};
 

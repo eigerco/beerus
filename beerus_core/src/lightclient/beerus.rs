@@ -1,10 +1,11 @@
 use crate::{config::Config, ethers_helper};
-use ethers::{abi::Abi, types::U256};
-
+use ethers::{
+    abi::Abi,
+    types::{H160, U256},
+};
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use primitive_types::H160;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::FunctionCall;
 
@@ -259,7 +260,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
+    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: ethers::types::U256) -> Result<U256> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.

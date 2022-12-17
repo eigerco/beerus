@@ -1,8 +1,8 @@
+use ethers::types::U256;
 use ethers::{
     abi::{Abi, AbiError, Token, Tokenize},
     types::Bytes,
 };
-use primitive_types::U256;
 
 /// Helper for ABI encoding arguments for a specific function in a contract.
 /// # Arguments

@@ -1,11 +1,11 @@
 pub mod helios_lightclient;
 
 use async_trait::async_trait;
+use ethers::types::U256;
 use ethers::types::{Address, Transaction, H256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use mockall::automock;
-use primitive_types::U256;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.

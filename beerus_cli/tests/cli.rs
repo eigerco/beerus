@@ -16,8 +16,8 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
+    use ethers::types::U256;
     use ethers::types::{Address, Transaction};
-    use primitive_types::U256;
     use starknet::core::types::FieldElement;
 
     /// Test the `query_balance` CLI command.

@@ -32,7 +32,7 @@ impl EthereumLightClient for HeliosLightClient {
         &self,
         address: &Address,
         block: BlockTag,
-    ) -> eyre::Result<primitive_types::U256> {
+    ) -> eyre::Result<ethers::types::U256> {
         self.helios_light_client.get_balance(address, block).await
     }
 
