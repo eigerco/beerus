@@ -4,7 +4,9 @@ use eyre::Result;
 use mockall::automock;
 use starknet::{
     core::types::FieldElement,
-    providers::jsonrpc::{models::FunctionCall, HttpTransport, JsonRpcClient},
+    providers::jsonrpc::{
+        models::BlockHashAndNumber, models::FunctionCall, HttpTransport, JsonRpcClient,
+    },
 };
 use url::Url;
 
@@ -24,6 +26,7 @@ pub trait StarkNetLightClient: Send + Sync {
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
     async fn chain_id(&self) -> Result<FieldElement>;
     async fn block_number(&self) -> Result<u64>;
+    async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -125,5 +128,12 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
 
     async fn block_number(&self) -> Result<u64> {
         self.client.block_number().await.map_err(|e| eyre::eyre!(e))
+    }
+
+    async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+        self.client
+            .block_hash_and_number()
+            .await
+            .map_err(|e| eyre::eyre!(e))
     }
 }
