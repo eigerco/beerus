@@ -288,4 +288,42 @@ impl BeerusLightClient {
             .await?;
         Ok(U256::from_big_endian(&call_response))
     }
+
+    ///  Returns the msg_fee + 1 for the message with the given 'msgHash', or 0 if no message with such a hash is pending.
+    /// The function returns 0 if L2ToL1Message was never called.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// * `msg_hash` - The message hash as bytes32.
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L2ToL1Message hash'.
+    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no matching message hash
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
+        // Convert the message hash to bytes32.
+        let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
+        // Encode the function data.
+        let data = ethers_helper::encode_function_data(
+            msg_hash_bytes32,
+            self.starknet_core_abi.clone(),
+            "l2ToL1Messages",
+        )?;
+        let data = data.to_vec();
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: self.starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let call_response = self
+            .ethereum_lightclient
+            .call(&call_opts, BlockTag::Latest)
+            .await?;
+        Ok(U256::from_big_endian(&call_response))
+    }
 }

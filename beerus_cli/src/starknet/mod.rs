@@ -146,6 +146,25 @@ pub async fn query_starknet_l1_to_l2_messages(
     ))
 }
 
+/// Query (msg_fee+1) for the L2 to L1 message with the given 'msgHash'
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `msg_hash` - The message hash.
+/// # Returns
+/// * `Result<CommandResponse>` - The result of the query.
+/// # Errors
+/// * If the L2 to L1 messages query fails.
+/// * If the message hash is invalid.
+pub async fn query_starknet_l2_to_l1_messages(
+    beerus: BeerusLightClient,
+    msg_hash: String,
+) -> Result<CommandResponse> {
+    let msg_hash = U256::from_str(&msg_hash)?;
+    Ok(CommandResponse::StarkNetL2ToL1Messages(
+        beerus.starknet_l2_to_l1_messages(msg_hash).await?,
+    ))
+}
+
 /// Query the chain id of the StarkNet network.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
