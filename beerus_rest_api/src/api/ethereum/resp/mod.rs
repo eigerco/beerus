@@ -1,4 +1,3 @@
-use helios::types::ExecutionBlock;
 use rocket::serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 

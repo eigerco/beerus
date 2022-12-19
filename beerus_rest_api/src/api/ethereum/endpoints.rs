@@ -1,9 +1,9 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockByNumberResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
-    QueryBlockTxCountByBlockHashResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
-    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse,
-    SendRawTransactionResponse, TransactionObject,
+    QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockByNumberResponse,
+    QueryBlockNumberResponse, QueryBlockTxCountByBlockHashResponse,
+    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryEstimateGasResponse, QueryGasPriceResponse, QueryNonceResponse, QueryPriorityFeeResponse,
+    QueryTransactionByHashResponse, SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
@@ -482,7 +482,10 @@ pub async fn query_block_by_number_inner(
     block_tag: &str,
     full_tx: &str,
 ) -> Result<QueryBlockByNumberResponse> {
-    debug!("Querying block by number: {}, with full transactions: {}", block_tag,full_tx);
+    debug!(
+        "Querying block by number: {}, with full transactions: {}",
+        block_tag, full_tx
+    );
     let full_tx = bool::from_str(full_tx)?;
     let block_tag: String = serde_json::to_string(&block_tag)?;
     let block_tag: BlockTag = serde_json::from_str(block_tag.as_str())?;
@@ -493,7 +496,8 @@ pub async fn query_block_by_number_inner(
     let block = match block_details {
         Some(block) => {
             let block_json_string: String = serde_json::to_string(&block).unwrap();
-            let block_json_value: serde_json::Value = serde_json::from_str(block_json_string.as_str()).unwrap();
+            let block_json_value: serde_json::Value =
+                serde_json::from_str(block_json_string.as_str()).unwrap();
             Some(block_json_value)
         }
         None => None,

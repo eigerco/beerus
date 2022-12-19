@@ -377,7 +377,7 @@ mod test {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-        let expected_block = ExecutionBlock{
+        let expected_block = ExecutionBlock {
             number: 0,
             base_fee_per_gas: Default::default(),
             difficulty: Default::default(),
@@ -398,10 +398,11 @@ mod test {
             total_difficulty: 0,
             transactions: Transactions::Full(vec![]),
             transactions_root: Default::default(),
-            uncles: vec![]
+            uncles: vec![],
         };
         let block_string = serde_json::to_string(&expected_block).unwrap();
-        let expected_block_value: serde_json::Value = serde_json::from_str(block_string.as_str()).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
         let expected_response = format!("{{\"block\":{expected_block_value}}}");
         // Given
         // Mock dependencies.

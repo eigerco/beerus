@@ -17,7 +17,7 @@ mod test {
         },
     };
     use ethers::types::{Address, Transaction, H256, U256};
-    use helios::types::{BlockTag, ExecutionBlock, Transactions};
+    use helios::types::{ExecutionBlock, Transactions};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     /// Test the `send_raw_transaction` CLI command.
@@ -291,7 +291,8 @@ mod test {
     /// Given ethereum lightclient returns an error, when query block_number, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_ethereum_lightclient_returns_error_when_query_block_number_then_error_is_propagated() {
+    async fn given_ethereum_lightclient_returns_error_when_query_block_number_then_error_is_propagated(
+    ) {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
@@ -1086,7 +1087,8 @@ mod test {
     /// Given ethereum lightclient returns an error, when query block by number, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_ethereum_lightclient_returns_error_when_query_block_by_number_then_error_is_propagated() {
+    async fn given_ethereum_lightclient_returns_error_when_query_block_by_number_then_error_is_propagated(
+    ) {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
@@ -1170,7 +1172,8 @@ mod test {
     /// Given ethereum lightclient returns an error, when query state root, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_ethereum_lightclient_returns_error_when_query_state_root_then_error_is_propagated() {
+    async fn given_ethereum_lightclient_returns_error_when_query_state_root_then_error_is_propagated(
+    ) {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
@@ -1396,7 +1399,8 @@ mod test {
     /// Given starknet lightclient returns an error, when query nonce, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_starknet_lightclient_returns_error_when_starknet_query_nonce_then_error_is_propagated() {
+    async fn given_starknet_lightclient_returns_error_when_starknet_query_nonce_then_error_is_propagated(
+    ) {
         // Build mocks.
         let (config, mut ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -1867,7 +1871,7 @@ mod test {
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )
-                .unwrap(),
+            .unwrap(),
         };
         (
             config,

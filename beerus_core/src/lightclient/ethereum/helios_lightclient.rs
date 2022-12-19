@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use ethers::types::{Address, Transaction, H256, U256};
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
-use helios::types::{BlockTag, ExecutionBlock, CallOpts, ExecutionBlock};
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use std::primitive::u64;
 
 use crate::config::Config;
