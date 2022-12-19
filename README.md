@@ -128,10 +128,13 @@ curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/bee
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
 
-For StarkNet node for the moment you can use Infura but soon [verify proof]([#62](https://github.com/keep-starknet-strange/beerus/issues/62)) will
-be implemented in Pathfinder nodes, and so will these nodes be working as well.
+For StarkNet node for the moment you can use Infura but soon
+[verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
+will be implemented in Pathfinder nodes, and so will these nodes be working as
+well.
 
-Copy the `.env.example` file to a `.env` file and populate each variable (they are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
+Copy the `.env.example` file to a `.env` file and populate each variable (they
+are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
 
 ```bash
 cp examples/.env.example .env
@@ -140,7 +143,7 @@ cp examples/.env.example .env
 Meanwhile you can just use unit tests to dev.
 
 ```bash
-cargo test —all
+cargo test --all
 ```
 
 Build from source:
@@ -149,8 +152,9 @@ Build from source:
 cargo build --all --release
 ```
 
-The binaries will be located in `target/release/`.
-Specifically, the binary for the CLI is `target/release/beerus_cli` and the binary for the API is `target/release/beerus_rest_api`.
+The binaries will be located in `target/release/`. Specifically, the binary for
+the CLI is `target/release/beerus_cli` and the binary for the API is
+`target/release/beerus_rest_api`.
 
 Specify the environment variables and run the binary.
 
