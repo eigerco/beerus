@@ -11,7 +11,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2022-12-15
           override: true
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
@@ -27,7 +27,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2022-12-15
           components: llvm-tools-preview
           override: true
       - name: Retreive cached dependecies
@@ -54,7 +54,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2022-12-15
           override: true
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
