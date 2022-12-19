@@ -12,7 +12,6 @@ mod tests {
     use ethers::types::{Address, Transaction, H256};
     use eyre::eyre;
     use helios::types::BlockTag;
-    use primitive_types::U256;
     use starknet::{
         core::types::FieldElement, macros::selector, providers::jsonrpc::models::BlockHashAndNumber,
     };

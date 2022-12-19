@@ -16,9 +16,8 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
-    use ethers::types::{Address, Transaction,U256};
-    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};=======
-
+    use ethers::types::{Address, Transaction, U256};
+    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     /// Test the `query_balance` CLI command.
     /// Given normal conditions, when query balance, then ok.

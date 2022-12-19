@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use ethers::types::U256;
 use starknet::core::types::FieldElement;
 
+use starknet::providers::jsonrpc::models::BlockHashAndNumber;
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -245,7 +246,6 @@ impl Display for CommandResponse {
                     "Block hash: {}, Block number: {}",
                     response.block_hash, response.block_number
                 )
-
             }
         }
     }
