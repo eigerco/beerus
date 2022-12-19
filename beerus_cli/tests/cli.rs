@@ -1043,7 +1043,7 @@ mod test {
     /// Given normal conditions, when query nonce, then ok.
     /// Success case.
     #[tokio::test]
-    async fn starknet_l1_to_l2_message_nonce_should_return_the_nonce() {
+    async fn given_normal_conditions_when_starknet_l1_to_l2_message_nonce_then_ok() {
         // Given
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
@@ -1076,6 +1076,44 @@ mod test {
 
         // Then
         assert_eq!("L1 to L2 Message Nonce: 1234", result.to_string());
+    }
+
+    /// Test the `starknet_l1_to_l2_message_nonce` CLI command.
+    /// Given normal conditions, when query nonce, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_ethereum_client_error_when_starknet_l1_to_l2_message_nonce_then_error() {
+        // Given
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_error = "Ethereum light client error";
+
+        // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Err(eyre::eyre!(expected_error)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::L1ToL2MessageNonce {},
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!(expected_error, e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

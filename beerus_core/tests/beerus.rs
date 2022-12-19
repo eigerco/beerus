@@ -1167,12 +1167,44 @@ mod tests {
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
-
-        // Query the balance of the Ethereum address.
         let result = beerus.starknet_l1_to_l2_message_nonce().await.unwrap();
 
-        // Assert that the `get_nonce` method of the Beerus light client returns `123`.
+        // Then
         assert_eq!("1234", result.to_string());
+    }
+
+    /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
+    /// This test mocks external dependencies.
+    #[tokio::test]
+    async fn given_ethereum_client_error_when_call_get_l1_to_l2_message_nonce_then_should_return_error(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "Ethereum light client error";
+
+        // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
+        ethereum_lightclient_mock
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        let result = beerus.starknet_l1_to_l2_message_nonce().await;
+
+        // Then
+        // Assert that the `block_number` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `block_number` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {

@@ -437,7 +437,7 @@ mod test {
     /// `/ethereum/tx_count_by_block_number/1`
     /// Given Ethereum light client returns error when `query_block_transaction_count_by_number`, then error is propagated.
     #[tokio::test]
-    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_numbe_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
     ) {
         // Build mocks
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
@@ -1236,6 +1236,45 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"result\":\"1234\"}"
+        );
+    }
+
+    /// Test the `query_l1_to_l2_message_nonce` endpoint.
+    /// `/starknet/messaging/l1_to_l2_message_nonce`
+    /// Given Ethereum light client returns error when query_l1_to_l2_message_nonce, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_ligthclient_returns_error_when_query_l1_to_l2_message_nonce_then_error()
+    {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Set the expected return value for the StarkNet light client mock.
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_block_nb, _address| Err(eyre::eyre!("Ethereum client error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/messaging/l1_to_l2_message_nonce"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Ethereum client error\"}"
         );
     }
 
