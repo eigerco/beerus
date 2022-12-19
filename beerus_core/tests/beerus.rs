@@ -12,7 +12,9 @@ mod tests {
     use eyre::eyre;
     use helios::types::BlockTag;
     use primitive_types::U256;
-    use starknet::{core::types::FieldElement, macros::selector};
+    use starknet::{
+        core::types::FieldElement, macros::selector, providers::jsonrpc::models::BlockHashAndNumber,
+    };
     use std::str::FromStr;
 
     #[test]
@@ -1155,6 +1157,85 @@ mod tests {
             MockEthereumLightClient::new(),
             MockStarkNetLightClient::new(),
         )
+    }
+
+    /// Test the `block_hash_and_number` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `block_hash_and_number` method of the external dependencies.
+    /// It tests the `block_hash_and_number` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_block_hash_and_number_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `block_hash_and_number` method of the Starknet light client.
+        let expected_result = BlockHashAndNumber {
+            block_hash: FieldElement::from_dec_str("123456").unwrap(),
+            block_number: 123456,
+        };
+        let expected_block_hash_and_number = expected_result.clone();
+
+        starknet_lightclient_mock
+            .expect_block_hash_and_number()
+            .return_once(move || Ok(expected_block_hash_and_number));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus
+            .starknet_lightclient
+            .block_hash_and_number()
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the block hash and number returned by the `block_hash_and_number` method of the Beerus light client
+        // is the expected block hash and number.
+        assert_eq!(result.block_hash, expected_result.block_hash);
+        assert_eq!(result.block_number, expected_result.block_number);
+    }
+
+    /// Test the `block_hash_and_number` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `block_hash_and_number` method of the external dependencies.
+    /// It tests the `block_hash_and_number` method of the Beerus light client.
+    /// It tests the error handling of the `block_hash_and_number` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_block_hash_and_number_then_should_return_error(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `block_number` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_block_hash_and_number()
+            .times(1)
+            .return_once(move || Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.starknet_lightclient.block_hash_and_number().await;
+
+        // Then
+        // Assert that the `block_hash_and_number` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `block_number` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
     /// Test that msg_fee + 1 for the message with the given 'msgHash is returned when the Ethereum light client returns a value.

@@ -1,6 +1,6 @@
 use super::resp::{
-    QueryBlockNumberResponse, QueryChainIdResponse, QueryContractViewResponse,
-    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
+    QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
@@ -94,6 +94,15 @@ pub async fn query_starknet_block_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockNumberResponse> {
     ApiResponse::from_result(query_starknet_block_number_inner(beerus).await)
+}
+
+/// Query the current block hash and number.
+#[openapi]
+#[get("/starknet/block_hash_and_number")]
+pub async fn query_starknet_block_hash_and_number(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockHashAndNumberResponse> {
+    ApiResponse::from_result(query_starknet_block_hash_and_number_inner(beerus).await)
 }
 
 /// Query the l2_to_l1_message call
@@ -329,5 +338,23 @@ pub async fn query_starknet_block_number_inner(
             .block_number()
             .await?
             .to_string(),
+    })
+}
+
+/// Query the current block hash and number of the Starknet chain.
+/// # Returns
+/// `block_hash` - The current block hash.
+/// `block_number` - The current block number.
+/// # Errors
+/// Cannot fail.
+/// # Examples: block_hash: 123456, number: 123456
+pub async fn query_starknet_block_hash_and_number_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockHashAndNumberResponse> {
+    debug!("Querying current block hash and number");
+    let response = beerus.starknet_lightclient.block_hash_and_number().await?;
+    Ok(QueryBlockHashAndNumberResponse {
+        block_hash: response.block_hash.to_string(),
+        block_number: response.block_number.to_string(),
     })
 }

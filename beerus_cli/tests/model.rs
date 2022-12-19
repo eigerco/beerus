@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use beerus_cli::model::CommandResponse;
-    use starknet::core::types::FieldElement;
+    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
     #[test]
     fn test_display_ethereum_query_balance() {
         let response = CommandResponse::EthereumQueryBalance("1".to_string());
@@ -47,5 +47,18 @@ mod tests {
     fn test_display_starknet_query_block_number() {
         let response = CommandResponse::StarknetQueryBlockNumber(123456);
         assert_eq!(response.to_string(), "Block number: 123456");
+    }
+
+    #[test]
+    fn test_display_starknet_query_block_hash_and_number() {
+        let block_hash_and_number = BlockHashAndNumber {
+            block_hash: FieldElement::from_dec_str("123456").unwrap(),
+            block_number: 123456,
+        };
+        let response = CommandResponse::StarknetQueryBlockHashAndNumber(block_hash_and_number);
+        assert_eq!(
+            response.to_string(),
+            "Block hash: 123456, Block number: 123456"
+        );
     }
 }
