@@ -13,7 +13,7 @@ mod test {
     use ethers::types::U256;
     use ethers::types::{Address, Transaction};
     use rocket::{http::Status, local::asynchronous::Client, uri};
-    use starknet::core::types::FieldElement;
+    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     /// Test the `query_balance` endpoint.
     /// `/ethereum/balance/<address>`
@@ -1110,8 +1110,8 @@ mod test {
     }
 
     /// Test the `block_number` endpoint.
-    /// `/starknet/block_number/<contract>/`
-    /// Given normal conditions, when query starknet get_nonce, then ok.
+    /// `/starknet/block_number`
+    /// Given normal conditions, when query starknet block_number, then ok.
     #[tokio::test]
     async fn given_normal_conditions_when_query_starknet_block_number_then_ok() {
         // Build mocks.
@@ -1146,7 +1146,7 @@ mod test {
     }
 
     /// Test the `block_number` endpoint.
-    /// `/starknet/block_number/<contract>/`
+    /// `/starknet/block_number`
     /// Given StarkNet light client returns error when query starknet block_number, then error is propagated.
     #[tokio::test]
     async fn given_starknet_ligthclient_returns_error_when_query_starknet_block_number_then_error_is_propagated(
@@ -1174,6 +1174,89 @@ mod test {
 
         // When
         let response = client.get(uri!("/starknet/block_number")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet address block number\"}"
+        );
+    }
+
+    /// Test the `block_hash_and_number` endpoint.
+    /// `/starknet/block_hash_and_number`
+    /// Given normal conditions, when query starknet block_hash_and_number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_block_hash_and_number_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = BlockHashAndNumber {
+            block_hash: FieldElement::from_dec_str("123456").unwrap(),
+            block_number: 123456,
+        };
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_block_hash_and_number()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/block_hash_and_number"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"block_hash\":\"123456\",\"block_number\":\"123456\"}"
+        );
+    }
+
+    /// Test the `block_hash_and_number` endpoint.
+    /// `/starknet/block_hash_and_number`
+    /// Given StarkNet light client returns error when query starknet block_hash_and_number, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_block_hash_and_number_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_block_hash_and_number()
+            .return_once(move || Err(eyre::eyre!("cannot query starknet address block number")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/block_hash_and_number"))
+            .dispatch()
+            .await;
 
         // Then
         assert_eq!(response.status(), Status::InternalServerError);

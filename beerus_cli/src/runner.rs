@@ -85,6 +85,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             }
             StarkNetSubCommands::QueryChainId {} => starknet::query_chain_id(beerus).await,
             StarkNetSubCommands::QueryBlockNumber {} => starknet::query_block_number(beerus).await,
+            StarkNetSubCommands::QueryBlockHashAndNumber {} => {
+                starknet::query_block_hash_and_number(beerus).await
+            }
         },
     }
 }

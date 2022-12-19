@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use ethers::types::U256;
 use starknet::core::types::FieldElement;
+
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -124,6 +125,7 @@ pub enum StarkNetSubCommands {
     },
     QueryChainId {},
     QueryBlockNumber {},
+    QueryBlockHashAndNumber {},
 }
 
 /// The response from a CLI command.
@@ -141,6 +143,7 @@ pub enum CommandResponse {
     StarkNetQueryNonce(FieldElement),
     StarknetQueryChainId(FieldElement),
     StarknetQueryBlockNumber(u64),
+    StarknetQueryBlockHashAndNumber(BlockHashAndNumber),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL2ToL1Messages(U256),
@@ -233,6 +236,16 @@ impl Display for CommandResponse {
             // Result looks like: `Transaction Data: { hash: 0x00.. , nonce: 10, ..}`
             CommandResponse::EthereumQueryTxByHash(tx_data) => {
                 write!(f, "Transaction Data: {tx_data:?}")
+            }
+            // Print the current block hash and number.
+            // Result looks like: `Block hash: 123456, Block number: 123456`
+            CommandResponse::StarknetQueryBlockHashAndNumber(response) => {
+                write!(
+                    f,
+                    "Block hash: {}, Block number: {}",
+                    response.block_hash, response.block_number
+                )
+
             }
         }
     }

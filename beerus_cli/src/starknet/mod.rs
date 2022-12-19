@@ -184,3 +184,14 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
     let block_number = beerus.starknet_lightclient.block_number().await?;
     Ok(CommandResponse::StarknetQueryBlockNumber(block_number))
 }
+
+/// Query the current block hash and number of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - The current block hash and number of the StarkNet network.
+pub async fn query_block_hash_and_number(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    Ok(CommandResponse::StarknetQueryBlockHashAndNumber(
+        beerus.starknet_lightclient.block_hash_and_number().await?,
+    ))
+}

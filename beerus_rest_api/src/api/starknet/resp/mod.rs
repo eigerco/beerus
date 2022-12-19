@@ -53,3 +53,10 @@ pub struct QueryChainIdResponse {
 pub struct QueryBlockNumberResponse {
     pub block_number: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockHashAndNumberResponse {
+    pub block_hash: String,
+    pub block_number: String,
+}
