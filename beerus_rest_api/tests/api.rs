@@ -542,6 +542,79 @@ mod test {
         )
     }
 
+    /// Test the `query_gas_price` endpoint.
+    /// `/ethereum/gas_price`
+    /// Given normal conditions, when query block number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_gas_price_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_gas_price()
+            .return_once(move || Ok(U256::default()));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/gas_price")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"gas_price\":\"0\"}"
+        );
+    }
+
+    /// Test the `query_gas_price` endpoint.
+    /// `/ethereum/block_number`
+    /// Given Ethereum light client returns error when query gas price, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_gas_price()
+            .return_once(move || Err(eyre::eyre!("cannot query block number")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/gas_price")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query block number\"}"
+        );
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given Ethereum light client returns error when query balance, then error is propagated.

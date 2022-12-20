@@ -569,6 +569,79 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
+    /// Test the `gas_price method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `gas_price` method of the external dependencies.
+    /// It tests the `gas_price` method of the Beerus light client.    
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_gas_price_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `gas_price` method of the Ethereum light client.
+        let gas_price = U256::default();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient_mock
+            .expect_get_gas_price()
+            .return_once(move || Ok(gas_price));
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.get_gas_price().await;
+
+        // Then
+        // Assert that the `gas_price` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned byt `gas_price` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), gas_price);
+    }
+
+    /// Test the `gas_price` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `gas_price` method of the external dependencies.
+    /// It tests the `gas_price` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_gas_price()
+            .return_once(move || Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.get_gas_price().await;
+
+        // Then
+        // Assert that the `gas_price` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `gas_price` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
     /// Test the `start` method when the StarkNet light client returns an error.
     /// This test mocks external dependencies.
     /// It does not test the `start` method of the external dependencies.

@@ -70,6 +70,7 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "HASH")]
         hash: String,
     },
+    QueryGasPrice {},
 }
 
 /// StarkNet related commands.
@@ -157,6 +158,7 @@ pub enum CommandResponse {
     EthereumQueryCode(Vec<u8>),
     EthereumQueryBlockTxCountByNumber(u64),
     EthereumQueryTxByHash(String),
+    EthereumQueryGasPrice(U256),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -202,6 +204,13 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
                 write!(f, "{tx_count}")
             }
+
+            // Print the gas price from the Ethereum Network
+            // Result looks like: 150
+            CommandResponse::EthereumQueryGasPrice(gas_price) => {
+                write!(f, "{gas_price}")
+            }
+
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),

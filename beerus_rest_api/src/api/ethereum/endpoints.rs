@@ -1,6 +1,7 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryNonceResponse, QueryTransactionByHashResponse,
+    QueryChainIdResponse, QueryCodeResponse, QueryGasPriceResponse, QueryNonceResponse,
+    QueryTransactionByHashResponse,
 };
 use crate::api::ApiResponse;
 
@@ -75,6 +76,15 @@ pub async fn get_transaction_by_hash(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryTransactionByHashResponse> {
     ApiResponse::from_result(query_transaction_by_hash_inner(hash, beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/gas_price")]
+
+pub async fn get_gas_price(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryGasPriceResponse> {
+    ApiResponse::from_result(query_gas_price_inner(beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -225,4 +235,20 @@ pub async fn query_transaction_by_hash_inner(
     let tx_data = format!("{unformatted_tx_data:?}");
 
     Ok(QueryTransactionByHashResponse { tx_data })
+}
+
+/// Query gas price from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_gas_price)` - U256 (gas_price)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_gas_price_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryGasPriceResponse> {
+    debug!("Querying Gas Price");
+    let unformatted_tx_data = beerus.ethereum_lightclient.get_gas_price().await?;
+    let gas_price = format!("{unformatted_tx_data:?}");
+    Ok(QueryGasPriceResponse { gas_price })
 }

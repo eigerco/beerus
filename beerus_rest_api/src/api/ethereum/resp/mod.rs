@@ -45,3 +45,9 @@ pub struct QueryBlockTxCountByBlockNumberResponse {
 pub struct QueryTransactionByHashResponse {
     pub tx_data: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGasPriceResponse {
+    pub gas_price: String,
+}
