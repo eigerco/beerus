@@ -8,7 +8,7 @@ homepage.workspace = true
 [dependencies]
 async-trait = "0.1.58"
 helios = { git = "https://github.com/a16z/helios" }
-ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "5c9a048f" }
+ethers = "1.0.2"
 primitive-types = "0.11.1"
 eyre = "0.6.8"
 serde = { version = "1.0.147", features = ["derive"] }

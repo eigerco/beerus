@@ -8,10 +8,10 @@ mod tests {
             starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
         },
     };
-    use ethers::types::Address;
+    use ethers::types::U256;
+    use ethers::types::{Address, Transaction, H256};
     use eyre::eyre;
     use helios::types::BlockTag;
-    use primitive_types::U256;
     use starknet::{
         core::types::FieldElement, macros::selector, providers::jsonrpc::models::BlockHashAndNumber,
     };
@@ -478,6 +478,92 @@ mod tests {
         // Assert that the `get_block_transaction_count_by_number` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_block_transaction_count_by_number` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test the `get_transaction_by_hash` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_by_hash` method of the external dependencies.
+    /// It tests the `get_transaction_by_hash` method of the Beerus light client.    
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_transaction_by_hash_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_transaction_by_hash` method of the Ethereum light client.
+        let transaction = Transaction::default();
+        let _transaction = transaction.clone();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient_mock
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Ok(Some(_transaction)));
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let tx_hash =
+            H256::from_str("0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d")
+                .unwrap();
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .ethereum_lightclient
+            .get_transaction_by_hash(&tx_hash)
+            .await;
+
+        // Then
+        // Assert that the `query_transaction_by_hash` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned byt `query_transaction_by_hash` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), Some(transaction));
+    }
+
+    /// Test the `query_transaction_by_hash` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `query_transaction_by_hash` method of the external dependencies.
+    /// It tests the `query_transaction_by_hash` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let tx_hash =
+            H256::from_str("0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d")
+                .unwrap();
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .ethereum_lightclient
+            .get_transaction_by_hash(&tx_hash)
+            .await;
+
+        // Then
+        // Assert that the `query_transaction_by_hash` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `query_transaction_by_hash` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 

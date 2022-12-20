@@ -8,9 +8,9 @@ use crate::api::ApiResponse;
 
 use crate::api::starknet::resp::QueryL2ToL1MessagesResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use ethers::types::U256;
 use eyre::Result;
 use log::debug;
-use primitive_types::U256;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
