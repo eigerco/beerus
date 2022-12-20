@@ -1,8 +1,7 @@
 pub mod helios_lightclient;
 
 use async_trait::async_trait;
-use ethers::types::U256;
-use ethers::types::{Address, Transaction, H256};
+use ethers::types::{Address, Transaction, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use mockall::automock;
@@ -107,4 +106,14 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>>;
+
+    /// Get gas price.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The gas price from the Ethereum network.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_gas_price(&self) -> Result<U256>;
 }

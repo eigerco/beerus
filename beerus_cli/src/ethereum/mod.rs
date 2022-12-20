@@ -138,3 +138,16 @@ pub async fn query_transaction_by_hash(
 
     Ok(CommandResponse::EthereumQueryTxByHash(tx_data))
 }
+
+/// Query gas price from Ethereum
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - Gas Price from the Ethereum Network :
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_gas_price(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let gas_price = beerus.ethereum_lightclient.get_gas_price().await?;
+
+    Ok(CommandResponse::EthereumQueryGasPrice(gas_price))
+}
