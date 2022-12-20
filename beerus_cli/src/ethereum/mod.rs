@@ -1,5 +1,8 @@
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::{types::Address, utils};
+use ethers::{
+    types::{Address, H256},
+    utils,
+};
 use eyre::Result;
 use helios::types::BlockTag;
 use std::str::FromStr;
@@ -112,4 +115,26 @@ pub async fn query_block_transaction_count_by_number(
         .await?;
 
     Ok(CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count))
+}
+
+/// Query Tx data of a given Tx Hash
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - Tx Data :
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_transaction_by_hash(
+    beerus: BeerusLightClient,
+    tx_hash: String,
+) -> Result<CommandResponse> {
+    let hash = H256::from_str(&tx_hash)?;
+
+    let unformatted_tx_data = beerus
+        .ethereum_lightclient
+        .get_transaction_by_hash(&hash)
+        .await?;
+    let tx_data = format!("{unformatted_tx_data:?}");
+
+    Ok(CommandResponse::EthereumQueryTxByHash(tx_data))
 }

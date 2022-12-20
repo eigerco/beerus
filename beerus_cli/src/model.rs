@@ -1,6 +1,8 @@
 use clap::{Parser, Subcommand};
-use primitive_types::U256;
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
+use ethers::types::U256;
+use starknet::core::types::FieldElement;
+
+use starknet::providers::jsonrpc::models::BlockHashAndNumber;
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -58,10 +60,14 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
-    QueryBlockTxCountBykNumber {
+    QueryBlockTxCountByNumber {
         /// The block from which to query the txs count
         #[arg(short, long, value_name = "BLOCK")]
         block: u64,
+    },
+    QueryTxByHash {
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
     },
 }
 
@@ -131,6 +137,7 @@ pub enum CommandResponse {
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
     EthereumQueryBlockTxCountByNumber(u64),
+    EthereumQueryTxByHash(String),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -226,6 +233,11 @@ impl Display for CommandResponse {
                 write!(f, "Block number: {block_number}")
             }
 
+            // Print the Tx data given a Tx Hash
+            // Result looks like: `Transaction Data: { hash: 0x00.. , nonce: 10, ..}`
+            CommandResponse::EthereumQueryTxByHash(tx_data) => {
+                write!(f, "Transaction Data: {tx_data:?}")
+            }
             // Print the current block hash and number.
             // Result looks like: `Block hash: 123456, Block number: 123456`
             CommandResponse::StarknetQueryBlockHashAndNumber(response) => {

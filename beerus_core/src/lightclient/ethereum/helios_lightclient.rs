@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ethers::types::Address;
+use ethers::types::{Address, Transaction, H256};
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
 use helios::types::{BlockTag, CallOpts};
@@ -32,7 +32,7 @@ impl EthereumLightClient for HeliosLightClient {
         &self,
         address: &Address,
         block: BlockTag,
-    ) -> eyre::Result<primitive_types::U256> {
+    ) -> eyre::Result<ethers::types::U256> {
         self.helios_light_client.get_balance(address, block).await
     }
 
@@ -53,6 +53,11 @@ impl EthereumLightClient for HeliosLightClient {
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
         self.helios_light_client
             .get_block_transaction_count_by_number(block)
+            .await
+    }
+    async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>> {
+        self.helios_light_client
+            .get_transaction_by_hash(tx_hash)
             .await
     }
 }
