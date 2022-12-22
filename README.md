@@ -198,7 +198,7 @@ Here is the list of all the available environment variables:
 ### CLI
 
 ```bash
-Usage: beerus-cli [OPTIONS] <COMMAND>
+Usage: beerus_cli [OPTIONS] <COMMAND>
 
 Commands:
   ethereum  Ethereum related subcommands
@@ -215,7 +215,7 @@ Options:
 ##### Query balance
 
 ```bash
-beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
+beerus_cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
 # 2011.286832686010020640 ETH
 ```
 
@@ -224,14 +224,14 @@ beerus-cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d
 ##### Query contract view
 
 ```bash
-beerus-cli starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
+beerus_cli starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
 [FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }, FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }]
 ```
 
 ##### Query get storage at
 
 ```bash
-beerus-cli starknet query-get-storage-at --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --key 0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1
+beerus_cli starknet query-get-storage-at --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --key 0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1
 298305742194
 ```
 
@@ -326,6 +326,7 @@ Thanks goes to these wonderful people
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hurrikaanig"><img src="https://avatars.githubusercontent.com/u/37303126?v=4?s=100" width="100px;" alt="TurcFort07"/><br /><sub><b>TurcFort07</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=hurrikaanig" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/florian-bellotti"><img src="https://avatars.githubusercontent.com/u/7861901?v=4?s=100" width="100px;" alt="Florian Bellotti"/><br /><sub><b>Florian Bellotti</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=florian-bellotti" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/bbrandtom"><img src="https://avatars.githubusercontent.com/u/45038918?v=4?s=100" width="100px;" alt="Tom Brand"/><br /><sub><b>Tom Brand</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=bbrandtom" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>
