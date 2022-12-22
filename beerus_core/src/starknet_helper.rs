@@ -9,8 +9,8 @@ use std::str::FromStr;
 
 /// Helper converting block identifier string with corresponding type to a BlockId Type
 /// # Arguments
-/// * `block_id_type` - The arguments to encode.
-/// * `block_id` - The ABI of the contract.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
 /// # Returns
 /// The block identifier as BlockId type.
 /// # Errors
@@ -31,7 +31,7 @@ pub fn block_id_string_to_block_id_type(block_id_type: &str, block_id: &str) -> 
 
 /// Helper to create a ContractClass object for testing
 /// # Returns
-/// A mock ContractClass object equivalent to MOCK_CONTRACT_CLASS_STRING
+/// Tuple of a mock ContractClass object and its equivalent JSON Value
 pub fn create_mock_contract_class() -> (ContractClass, Value) {
     let mock_contract_class = ContractClass {
         program: vec![1, 2, 3],

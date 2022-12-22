@@ -1447,7 +1447,7 @@ mod tests {
 
         let expected_error = "StarkNet light client error";
 
-        // Mock the `block_number` method of the StarkNet light client.
+        // Mock the `get_class` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_class()
             .times(1)
