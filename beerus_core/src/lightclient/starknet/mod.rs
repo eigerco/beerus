@@ -5,7 +5,9 @@ use mockall::automock;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
-        models::BlockHashAndNumber, models::FunctionCall, HttpTransport, JsonRpcClient,
+        models::FunctionCall,
+        models::{BlockHashAndNumber, BlockId, ContractClass},
+        HttpTransport, JsonRpcClient,
     },
 };
 use url::Url;
@@ -27,6 +29,11 @@ pub trait StarkNetLightClient: Send + Sync {
     async fn chain_id(&self) -> Result<FieldElement>;
     async fn block_number(&self) -> Result<u64>;
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+    async fn get_class(
+        &self,
+        block_id: &BlockId,
+        class_hash: FieldElement,
+    ) -> Result<ContractClass>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -115,7 +122,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement> {
         self.client
             .get_nonce(
-                &starknet::providers::jsonrpc::models::BlockId::Number(504084),
+                &starknet::providers::jsonrpc::models::BlockId::Number(_block_number),
                 address,
             )
             .await
@@ -133,6 +140,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
         self.client
             .block_hash_and_number()
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the contract class definition in the given block associated with the given hash.
+    /// The contract class definition.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `class_hash` - The class hash.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(ContractClass)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_class(
+        &self,
+        block_id: &BlockId,
+        class_hash: FieldElement,
+    ) -> Result<ContractClass> {
+        self.client
+            .get_class(block_id, class_hash)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
