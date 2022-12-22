@@ -1,8 +1,9 @@
 use clap::{Parser, Subcommand};
 use ethers::types::U256;
+use serde_json::json;
 use starknet::core::types::FieldElement;
 
-use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -127,8 +128,24 @@ pub enum StarkNetSubCommands {
     /// The nonce of the L1 to L2 message bridge
     L1ToL2MessageNonce {},
     QueryChainId {},
+    /// The current block number of the StarkNet network
     QueryBlockNumber {},
+    /// The current block hash and number of the StarkNet network
     QueryBlockHashAndNumber {},
+    /// The contract class definition
+    QueryGetClass {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+        /// The class hash
+        #[arg(short, long, value_name = "CLASS_HASH")]
+        class_hash: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -147,6 +164,7 @@ pub enum CommandResponse {
     StarknetQueryChainId(FieldElement),
     StarknetQueryBlockNumber(u64),
     StarknetQueryBlockHashAndNumber(BlockHashAndNumber),
+    StarknetQueryGetClass(ContractClass),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -253,6 +271,36 @@ impl Display for CommandResponse {
                     "Block hash: {}, Block number: {}",
                     response.block_hash, response.block_number
                 )
+            }
+            // Print the contract class definition in the given block associated with the given hash.
+            // Result looks like:
+            // {
+            //    "abi": [
+            //      {
+            //          "inputs": [
+            //              {
+            //                  "name": "amount",
+            //                  "type": "felt"
+            //              }
+            //          ]
+            //      }
+            //    ],
+            //    "entry_points_by_type": {
+            //      "CONSTRUCTOR": [],
+            //      "EXTERNAL": [],
+            //      "L1_HANDLER": []
+            //    },
+            //    "program": "AQID"
+            // }
+            CommandResponse::StarknetQueryGetClass(response) => {
+                let json_response = json!(
+                    {
+                        "program": base64::encode(&response.program),
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi.as_ref().unwrap()
+                    }
+                );
+                write!(f, "{json_response}")
             }
         }
     }
