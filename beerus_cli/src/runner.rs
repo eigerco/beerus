@@ -91,6 +91,19 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             StarkNetSubCommands::QueryBlockHashAndNumber {} => {
                 starknet::query_block_hash_and_number(beerus).await
             }
+            StarkNetSubCommands::QueryGetClass {
+                block_id_type,
+                block_id,
+                class_hash,
+            } => {
+                starknet::get_class(
+                    beerus,
+                    block_id_type.to_string(),
+                    block_id.to_string(),
+                    class_hash.to_string(),
+                )
+                .await
+            }
         },
     }
 }

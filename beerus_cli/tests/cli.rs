@@ -1037,6 +1037,94 @@ mod test {
         }
     }
 
+    /// Test the `get_class` CLI command.
+    /// Given normal conditions, when query get_class, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_class_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_contract_class();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_class()
+            .return_once(move |_block_id, _class_hash| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryGetClass {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    class_hash: "0x123".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            result.to_string(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `get_class` CLI command.
+    /// Given starknet lightclient returns an error, when query get_class, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_class_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_class()
+            .return_once(move |_block_id, _class_hash| {
+                Err(eyre::eyre!("starknet_lightclient_error"))
+            });
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryGetClass {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    class_hash: "0x123".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
     /// Given normal conditions, when query starknet l2 to l1 messages, then ok.
     /// Success case.

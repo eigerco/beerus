@@ -210,3 +210,28 @@ pub async fn query_block_hash_and_number(beerus: BeerusLightClient) -> Result<Co
         beerus.starknet_lightclient.block_hash_and_number().await?,
     ))
 }
+
+/// Query the contract class definition in the given block associated with the given hash.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_hash` - The block hash.
+/// * `block_number` - The block number.
+/// * `class_hash` - The class hash.
+/// # Returns
+/// * `Result<CommandResponse>` - The contract class definition.
+pub async fn get_class(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+    class_hash: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let class_hash = FieldElement::from_str(&class_hash)?;
+    Ok(CommandResponse::StarknetQueryGetClass(
+        beerus
+            .starknet_lightclient
+            .get_class(&block_id, class_hash)
+            .await?,
+    ))
+}
