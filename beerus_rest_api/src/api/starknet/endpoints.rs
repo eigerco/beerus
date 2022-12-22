@@ -411,7 +411,6 @@ pub async fn query_l1_to_l2_message_nonce_inner(
 /// Query the contract class
 /// # Returns
 /// `ContractClass` - The contract class definition.
-/// # Examples
 pub async fn get_class_inner(
     beerus: &State<BeerusLightClient>,
     block_id_type: String,

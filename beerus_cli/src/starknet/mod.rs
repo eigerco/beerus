@@ -214,8 +214,8 @@ pub async fn query_block_hash_and_number(beerus: BeerusLightClient) -> Result<Co
 /// Query the contract class definition in the given block associated with the given hash.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
-/// * `block_hash` - The block hash.
-/// * `block_number` - The block number.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
 /// * `class_hash` - The class hash.
 /// # Returns
 /// * `Result<CommandResponse>` - The contract class definition.
