@@ -109,6 +109,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "pscott",
+      "name": "pscott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30843220?v=4",
+      "profile": "https://github.com/pscott",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
