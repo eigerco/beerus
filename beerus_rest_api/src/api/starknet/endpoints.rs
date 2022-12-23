@@ -1,8 +1,8 @@
 use super::resp::{
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse,
+    QueryContractViewResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
+    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
@@ -123,6 +123,30 @@ pub async fn query_l1_to_l2_message_nonce(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryL1ToL2MessageNonceResponse> {
     ApiResponse::from_result(query_l1_to_l2_message_nonce_inner(beerus).await)
+}
+
+/// Query the contract class definition in the given block associated with the given hash.
+/// The contract class definition.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `class_hash` - The class hash.
+///
+/// # Returns
+///
+/// `Ok(ContractClass)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/contract/class/<class_hash>?<block_id>&<block_id_type>")]
+pub async fn get_class(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    class_hash: String,
+) -> ApiResponse<QueryGetClassResponse> {
+    ApiResponse::from_result(get_class_inner(beerus, block_id_type, block_id, class_hash).await)
 }
 
 /// Query the state root of StarkNet.
@@ -381,5 +405,29 @@ pub async fn query_l1_to_l2_message_nonce_inner(
     debug!("Querying l1 to l2 message nonce");
     Ok(QueryL1ToL2MessageNonceResponse {
         result: beerus.starknet_l1_to_l2_message_nonce().await?.to_string(),
+    })
+}
+
+/// Query the contract class
+/// # Returns
+/// `ContractClass` - The contract class definition.
+pub async fn get_class_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    class_hash: String,
+) -> Result<QueryGetClassResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let class_hash = FieldElement::from_str(&class_hash)?;
+    debug!("Querying Contract Class");
+    let result = beerus
+        .starknet_lightclient
+        .get_class(&block_id, class_hash)
+        .await?;
+    Ok(QueryGetClassResponse {
+        program: base64::encode(&result.program),
+        entry_points_by_type: serde_json::value::to_value(&result.entry_points_by_type).unwrap(),
+        abi: serde_json::value::to_value(result.abi.unwrap()).unwrap(),
     })
 }

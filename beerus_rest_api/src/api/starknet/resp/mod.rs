@@ -1,6 +1,6 @@
 use rocket::serde::Serialize;
 use schemars::JsonSchema;
-
+use serde_json::Value;
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryStateRootResponse {
@@ -65,4 +65,12 @@ pub struct QueryBlockNumberResponse {
 pub struct QueryBlockHashAndNumberResponse {
     pub block_hash: String,
     pub block_number: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGetClassResponse {
+    pub abi: Value,
+    pub entry_points_by_type: Value,
+    pub program: String,
 }
