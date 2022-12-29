@@ -117,6 +117,30 @@ pub async fn query_block_transaction_count_by_number(
     Ok(CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count))
 }
 
+/// Query tx count of a given block Hash
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - u64 (txs counts)
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_block_transaction_count_by_hash(
+    beerus: BeerusLightClient,
+    hash: String,
+) -> Result<CommandResponse> {
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_hash(&hash)
+        .await?;
+
+    Ok(CommandResponse::EthereumQueryBlockTxCountByHash(tx_count))
+}
+
 /// Query Tx data of a given Tx Hash
 /// # Arguments
 /// * `beerus` - The Beerus light client.

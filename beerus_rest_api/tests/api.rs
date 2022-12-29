@@ -470,6 +470,81 @@ mod test {
         )
     }
 
+    /// Test the `query_block_transaction_count_by_hash` endpoint.
+    /// `/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a`
+    /// Given normal conditions, when `query_block_transaction_count_by_hash`, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_by_block_hash_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let check_value: u64 = 120;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"tx_count\":120}")
+    }
+
+    /// Test the `query_block_transaction_count_by_hash` endpoint.
+    /// `/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a`
+    /// Given Ethereum light client returns error when `query_block_transaction_count_by_hash`, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    ) {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Err(eyre::eyre!("Cannot query block tx count")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Cannot query block tx count\"}"
+        )
+    }
+
     /// Test the `query_transaction_by_hash` endpoint.
     /// `/ethereum/query_transaction_by_hash`
     /// Given normal conditions, when `query_transaction_by_hash`, then ok.

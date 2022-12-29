@@ -385,7 +385,7 @@ mod test {
         assert_eq!("120", result.to_string());
     }
 
-    /// Test `query-block-tx-count-by-number` CLI command.
+    /// Test `query-block-tx-count-by-hash` CLI command.
     /// Given ethereum lightclient returns an error, when `query-block-tx-count-by-number`, then the error is propagated.
     /// Error case.
     #[tokio::test]
@@ -412,6 +412,80 @@ mod test {
             config: None,
             command: Commands::Ethereum(EthereumCommands {
                 command: EthereumSubCommands::QueryBlockTxCountByNumber { block },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error,got ok"),
+        }
+    }
+
+    /// Test the `query-block-tx-count-by-hash` CLI command.
+    /// Given normal conditions, when `query-block-tx-count-by-hash`, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_by_block_hash_then_ok() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let check_value: u64 = 120;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let hash = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBlockTxCountByHash { hash },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        assert_eq!("120", result.to_string());
+    }
+
+    /// Test `query-block-tx-count-by-hash` CLI command.
+    /// Given ethereum lightclient returns an error, when `query-block-tx-count-by-hash`, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let hash = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryBlockTxCountByHash { hash },
             }),
         };
 

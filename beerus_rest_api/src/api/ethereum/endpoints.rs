@@ -1,7 +1,7 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryGasPriceResponse, QueryNonceResponse,
-    QueryTransactionByHashResponse,
+    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockHashResponse,
+    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryGasPriceResponse, QueryNonceResponse, QueryTransactionByHashResponse,
 };
 use crate::api::ApiResponse;
 
@@ -67,6 +67,15 @@ pub async fn get_block_transaction_count_by_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockTxCountByBlockNumberResponse> {
     ApiResponse::from_result(query_block_transaction_count_by_number_inner(block, beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/tx_count_by_block_hash/<hash>")]
+pub async fn get_block_transaction_count_by_hash(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockTxCountByBlockHashResponse> {
+    ApiResponse::from_result(query_block_transaction_count_by_hash_inner(hash, beerus).await)
 }
 
 #[openapi]
@@ -212,6 +221,32 @@ pub async fn query_block_transaction_count_by_number_inner(
         .await?;
 
     Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
+}
+
+/// Query the Tx count of a given Block hash from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_block_transaction_count_by_hash)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_block_transaction_count_by_hash_inner(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockTxCountByBlockHashResponse> {
+    debug!("Querying Block Tx count");
+    // Parse hash the string as a Vec<u8>
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_hash(&hash)
+        .await?;
+
+    Ok(QueryBlockTxCountByBlockHashResponse { tx_count })
 }
 
 /// Query the Tx data of a Tx Hash from the the Ethereum chain.

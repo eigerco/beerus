@@ -66,6 +66,11 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "BLOCK")]
         block: u64,
     },
+    QueryBlockTxCountByHash {
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
+    },
     QueryTxByHash {
         #[arg(short, long, value_name = "HASH")]
         hash: String,
@@ -157,6 +162,7 @@ pub enum CommandResponse {
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
     EthereumQueryBlockTxCountByNumber(u64),
+    EthereumQueryBlockTxCountByHash(u64),
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     StarkNetQueryStateRoot(U256),
@@ -204,7 +210,11 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
                 write!(f, "{tx_count}")
             }
-
+            // Print the count of txs of a block
+            // Result looks like: 150
+            CommandResponse::EthereumQueryBlockTxCountByHash(tx_count) => {
+                write!(f, "{tx_count}")
+            }
             // Print the gas price from the Ethereum Network
             // Result looks like: 150
             CommandResponse::EthereumQueryGasPrice(gas_price) => {
