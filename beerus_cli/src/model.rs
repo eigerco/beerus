@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use ethers::types::U256;
+use ethers::types::{H256, U256};
 use serde_json::json;
 use starknet::core::types::FieldElement;
 
@@ -40,6 +40,12 @@ pub struct EthereumCommands {
 /// Ethereum related subcommands.
 #[derive(Subcommand, Debug)]
 pub enum EthereumSubCommands {
+    /// Sends a Raw Transaction.
+    SendRawTransaction {
+        /// Bytes of the Raw Transaction
+        #[arg(short, long, value_name = "BYTES")]
+        bytes: String,
+    },
     /// Query the balance of an Ethereum address.
     QueryBalance {
         /// The address to query the balance of
@@ -151,6 +157,7 @@ pub enum StarkNetSubCommands {
 
 /// The response from a CLI command.
 pub enum CommandResponse {
+    EthereumSendRawTransaction(H256),
     EthereumQueryBalance(String),
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
@@ -179,6 +186,9 @@ impl Display for CommandResponse {
     /// See the documentation for `std::fmt::Display`.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            // Print raw Transaction response
+            // Result looks like: 0.000000000000000001 ETH
+            CommandResponse::EthereumSendRawTransaction(response) => write!(f, "{response}"),
             // Print the balance in Ether.
             // Result looks like: 0.000000000000000001 ETH
             CommandResponse::EthereumQueryBalance(balance) => write!(f, "{balance} ETH"),

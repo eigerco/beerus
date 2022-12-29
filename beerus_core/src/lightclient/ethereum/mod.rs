@@ -34,6 +34,18 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn call(&self, opts: &CallOpts, block: BlockTag) -> Result<Vec<u8>>;
 
+    /// Send Raw Transaction
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `bytes` - Transaction Bytes.
+    /// # Returns
+    /// The balance of the account.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn send_raw_transaction(&self, bytes: &[u8]) -> Result<H256>;
+
     /// Get the balance of an account.
     /// This function should be called after `start`.
     /// # Arguments
@@ -46,6 +58,7 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256>;
+
     /// Get the Nonce of an account.
     /// This function should be called after `start`.
     /// # Arguments
