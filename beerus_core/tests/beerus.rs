@@ -11,7 +11,7 @@ mod tests {
     use ethers::types::U256;
     use ethers::types::{Address, Transaction, H256};
     use eyre::eyre;
-    use helios::types::BlockTag;
+    use helios::types::{BlockTag, CallOpts};
     use starknet::{
         core::types::FieldElement,
         macros::selector,
@@ -639,6 +639,89 @@ mod tests {
         // Assert that the `gas_price` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `gas_price` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test the `estimate_gas` method when everything is fine.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_estimate_gas_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `estimate_gas` method of the Ethereum light client.
+        let gas = 10_u64;
+
+        let call_opts = CallOpts {
+            from: Some(Address::from_low_u64_be(0)),
+            to: Address::from_low_u64_be(1),
+            gas: Some(U256::from(10_u64)),
+            gas_price: Some(U256::from(10_u64)),
+            value: Some(U256::from(10_u64)),
+            data: Some(vec![0_u8, 1_u8]),
+        };
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient_mock
+            .expect_estimate_gas()
+            .return_once(move |_| Ok(gas));
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.estimate_gas(&call_opts).await;
+
+        // Then
+        // Assert that the `estimate_gas` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned byt `estimate_gas` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), gas);
+    }
+
+    /// Test the `estimate_gas` method when the Ethereum light client returns an error.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+        let call_opts = CallOpts {
+            from: Some(Address::from_low_u64_be(0)),
+            to: Address::from_low_u64_be(1),
+            gas: Some(U256::from(10_u64)),
+            gas_price: Some(U256::from(10_u64)),
+            value: Some(U256::from(10_u64)),
+            data: Some(vec![0_u8, 1_u8]),
+        };
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_estimate_gas()
+            .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.estimate_gas(&call_opts).await;
+
+        // Then
+        // Assert that the `estimate_gas` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `estimate_gas` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
@@ -1502,7 +1585,7 @@ mod tests {
         // Assert that the contract class returned by the `get_class` method of the Beerus light client
         // is the expected contract class.
         assert_eq!(
-            serde_json::value::to_value(&result).unwrap(),
+            serde_json::value::to_value(result).unwrap(),
             expected_result_value
         )
     }

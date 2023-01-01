@@ -66,6 +66,10 @@ impl EthereumLightClient for HeliosLightClient {
     async fn get_gas_price(&self) -> Result<U256> {
         self.helios_light_client.get_gas_price().await
     }
+
+    async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64> {
+        self.helios_light_client.estimate_gas(opts).await
+    }
 }
 
 /// HeliosLightClient non-trait functions.
