@@ -41,6 +41,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 ethereum::query_transaction_by_hash(beerus, hash.to_string()).await
             }
             EthereumSubCommands::QueryGasPrice {} => ethereum::query_gas_price(beerus).await,
+            EthereumSubCommands::QueryEstimateGas { params } => {
+                ethereum::query_estimate_gas(beerus, params.to_owned()).await
+            }
         },
         // StarkNet commands.
         Commands::StarkNet(starknet_commands) => match &starknet_commands.command {
