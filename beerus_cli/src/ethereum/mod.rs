@@ -1,15 +1,15 @@
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use core::str::FromStr;
 use ethers::types::U256;
 use ethers::utils::hex;
 use ethers::{
-    types::{Address, H256},
+    types::{Address, BlockNumber, Filter, H256},
     utils,
 };
-use eyre::Result;
+use eyre::{eyre, Result};
 use helios::types::{BlockTag, CallOpts};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TransactionObject {
@@ -205,4 +205,18 @@ pub async fn query_estimate_gas(
     let gas = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
 
     Ok(CommandResponse::EthereumQueryEstimateGas(gas))
+}
+
+pub async fn query_logs(
+    beerus: BeerusLightClient,
+    from_block: String,
+    to_block: String,
+    address: String,
+) -> Result<CommandResponse> {
+    let from_block = BlockNumber::from_str(&from_block).map_err(|err| eyre!(err))?;
+    let to_block = BlockNumber::from_str(&to_block).map_err(|err| eyre!(err))?;
+    let address = Address::from_str(&address)?;
+    let filter = Filter::new().select(from_block..to_block).address(address);
+    let logs = beerus.ethereum_lightclient.get_logs(&filter).await?;
+    Ok(CommandResponse::EthereumQueryLogs(logs))
 }

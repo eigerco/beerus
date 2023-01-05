@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use ethers::prelude::Log;
 use ethers::types::U256;
 use serde_json::json;
 use starknet::core::types::FieldElement;
@@ -74,6 +75,14 @@ pub enum EthereumSubCommands {
     QueryEstimateGas {
         #[arg(short, long, value_name = "params")]
         params: String,
+    },
+    QueryLogs {
+        #[arg(short, long, value_name = "FROMBLOCK")]
+        from_block: String,
+        #[arg(short, long, value_name = "TOBLOCK")]
+        to_block: String,
+        #[arg(short, long, value_name = "TOSTRING")]
+        address: String,
     },
 }
 
@@ -164,6 +173,7 @@ pub enum CommandResponse {
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     EthereumQueryEstimateGas(u64),
+    EthereumQueryLogs(Vec<Log>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -222,6 +232,15 @@ impl Display for CommandResponse {
                 write!(f, "{gas}")
             }
 
+            CommandResponse::EthereumQueryLogs(logs) => {
+                let formatted_str = logs
+                    .iter()
+                    .by_ref()
+                    .map(|log| format!("{log:?}"))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                write!(f, "[{formatted_str}]")
+            }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),
