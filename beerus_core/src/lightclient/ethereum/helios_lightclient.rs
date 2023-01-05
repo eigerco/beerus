@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ethers::types::{Address, Transaction, H256, U256};
+use ethers::types::{Address, Transaction, H256, U256, Log, Filter};
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
 use helios::types::{BlockTag, CallOpts};
@@ -69,6 +69,10 @@ impl EthereumLightClient for HeliosLightClient {
 
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64> {
         self.helios_light_client.estimate_gas(opts).await
+    }
+
+    async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>> {
+        self.helios_light_client.get_logs(filter).await
     }
 }
 
