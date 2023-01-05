@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ethers::types::{Address, Transaction, H256, U256, Log, Filter};
+use ethers::types::{Address, Filter, Log, Transaction, H256, U256};
 use eyre::Result;
 use helios::client::{Client, ClientBuilder, FileDB};
 use helios::types::{BlockTag, CallOpts};
