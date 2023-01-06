@@ -1,9 +1,8 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-
-    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
-    QueryNonceResponse, QueryTransactionByHashResponse, TransactionObject,SendRawTransactionResponse
-
+    QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
+    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryEstimateGasResponse, QueryGasPriceResponse, QueryNonceResponse,
+    QueryTransactionByHashResponse, SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
@@ -100,36 +99,6 @@ pub async fn get_gas_price(
     ApiResponse::from_result(query_gas_price_inner(beerus).await)
 }
 
-/// Send raw transaction.
-/// # Arguments
-/// * `bytes` - Bytes of the transaction.
-/// # Returns
-/// `Ok(send_raw_transaction)` - Response from the Raw Transaction.
-/// `Err(error)` - An error occurred.
-/// # Errors
-/// If the Ethereum address is invalid or the block tag is invalid.
-/// # Examples
-pub async fn send_raw_transaction_inner(
-    beerus: &State<BeerusLightClient>,
-    bytes: &str,
-) -> Result<SendRawTransactionResponse> {
-    debug!("Sending Raw Transaction: {}", bytes);
-    let bytes: Vec<u8> = bytes[2..]
-        .chars()
-        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
-        .collect();
-    let bytes_slice: &[u8] = bytes.as_ref();
-    // Send Raw Transaction.
-    let response = beerus
-        .ethereum_lightclient
-        .send_raw_transaction(bytes_slice)
-        .await?;
-
-    Ok(SendRawTransactionResponse {
-        response: format!("{:?}", response),
-    })
-}
-
 #[openapi]
 #[post("/ethereum/estimate_gas", data = "<transaction_object>")]
 pub async fn query_estimate_gas(
@@ -137,6 +106,16 @@ pub async fn query_estimate_gas(
     transaction_object: Json<TransactionObject>,
 ) -> ApiResponse<QueryEstimateGasResponse> {
     ApiResponse::from_result(query_estimate_gas_inner(beerus, transaction_object).await)
+}
+
+#[openapi]
+#[get("/ethereum/get_block_by_hash/<hash>/<full_tx>")]
+pub async fn get_block_by_hash(
+    hash: &str,
+    full_tx: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockByHashResponse> {
+    ApiResponse::from_result(query_block_by_hash_inner(beerus, hash, full_tx).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -343,4 +322,76 @@ pub async fn query_estimate_gas_inner(
 
     let quantity = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
     Ok(QueryEstimateGasResponse { quantity })
+}
+
+/// Send raw transaction.
+/// # Arguments
+/// * `bytes` - Bytes of the transaction.
+/// # Returns
+/// `Ok(send_raw_transaction)` - Response from the Raw Transaction.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the Ethereum address is invalid or the block tag is invalid.
+/// # Examples
+pub async fn send_raw_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    bytes: &str,
+) -> Result<SendRawTransactionResponse> {
+    debug!("Sending Raw Transaction: {}", bytes);
+    let bytes: Vec<u8> = bytes[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let bytes_slice: &[u8] = bytes.as_ref();
+    // Send Raw Transaction.
+    let response = beerus
+        .ethereum_lightclient
+        .send_raw_transaction(bytes_slice)
+        .await?;
+
+    Ok(SendRawTransactionResponse {
+        response: format!("{response:?}"),
+    })
+}
+
+/// Query information about a block by block number.
+/// # Arguments
+/// * `block` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// `Ok(query_block_response)` - The query block response.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the block tag is invalid or the full_tx boolean is invalid.
+/// # Examples
+pub async fn query_block_by_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    hash: &str,
+    full_tx: &str,
+) -> Result<QueryBlockByHashResponse> {
+    debug!(
+        "Querying block by hash: {}, with full transactions: {}",
+        hash, full_tx
+    );
+
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let full_tx = bool::from_str(full_tx)?;
+    let block_details = beerus
+        .ethereum_lightclient
+        .get_block_by_hash(&hash, full_tx)
+        .await?;
+    let block = match block_details {
+        Some(block) => {
+            let block_json_string: String = serde_json::to_string(&block).unwrap();
+            let block_json_value: serde_json::Value =
+                serde_json::from_str(block_json_string.as_str()).unwrap();
+            Some(block_json_value)
+        }
+        None => None,
+    };
+    Ok(QueryBlockByHashResponse { block })
 }

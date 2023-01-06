@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use ethers::types::{H256, U256};
+use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-
 use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
 use std::{fmt::Display, path::PathBuf};
 
@@ -80,6 +80,15 @@ pub enum EthereumSubCommands {
     QueryEstimateGas {
         #[arg(short, long, value_name = "params")]
         params: String,
+    },
+    QueryBlockByHash {
+        /// The block number to query
+        #[arg(short, long, value_name = "BLOCK_HASH")]
+        hash: String,
+
+        /// Fetch full transaction objects or just the transaction hashes
+        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        full_tx: bool,
     },
 }
 
@@ -171,6 +180,7 @@ pub enum CommandResponse {
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     EthereumQueryEstimateGas(u64),
+    EthereumQueryBlockByHash(Option<ExecutionBlock>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -231,6 +241,16 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryEstimateGas(gas) => {
                 write!(f, "{gas}")
             }
+
+            // Print Block given a block hash
+            // Result looks like: 150
+            CommandResponse::EthereumQueryBlockByHash(block) => match block {
+                Some(block) => {
+                    let json_block = serde_json::to_string(&block).unwrap();
+                    write!(f, "{json_block}")
+                }
+                None => write!(f, "No block found"),
+            },
 
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374

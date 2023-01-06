@@ -12,6 +12,7 @@ mod test {
     use beerus_rest_api::build_rocket_server;
     use ethers::types::{Address, Transaction};
     use ethers::types::{H256, U256};
+    use helios::types::{ExecutionBlock, Transactions};
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
@@ -776,6 +777,139 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query estimate gas\"}"
+        );
+    }
+
+    /// Test the `query_ethereum_block_by_hash` endpoint.
+    /// `ethereum/get_block_by_hash<block_hash>/<full_txs>`
+    /// Given normal conditions, when query block by hash, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_by_hash_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![],
+        };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
+        let expected_response = format!("{{\"block\":{expected_block_value}}}");
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_hash()
+            .return_once(move |_, _| Ok(Some(expected_block)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/get_block_by_hash/0xc24215226336d22238a20a72f8e489c005b44c4a/true"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), expected_response);
+    }
+
+    /// Test the `query_block_by_hash` endpoint.
+    /// `ethereum/get_block_by_hash<block_hash>/<full_txs>`
+    /// Given Ethereum light client returns error when query block by hash, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_block_by_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![],
+        };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
+        let _expected_response = format!("{{\"block\":{expected_block_value}}}");
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_hash()
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query block by hash")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/get_block_by_hash/0xc24215226336d22238a20a72f8e489c005b44c4a/true"
+            ))
+            .dispatch()
+            .await;
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query block by hash\"}"
         );
     }
 

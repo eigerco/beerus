@@ -3,8 +3,9 @@ pub mod helios_lightclient;
 use async_trait::async_trait;
 use ethers::types::{Address, Transaction, H256, U256};
 use eyre::Result;
-use helios::types::{BlockTag, CallOpts};
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use mockall::automock;
+use std::u8;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.
@@ -140,4 +141,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64>;
+
+    /// Get information about a block by block hash.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `hash` - block hash
+    /// * `full_tx` - If true it returns the full transaction objects, if false only the hashes of the transactions.
+    /// # Returns
+    /// A block object, or null when no block was found.
+    /// # Errors
+    /// If the call fails.
+    async fn get_block_by_hash(&self, hash: &[u8], full_tx: bool)
+        -> Result<Option<ExecutionBlock>>;
 }
