@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use ethers::types::{H256, U256};
+use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-use helios::types::ExecutionBlock;
 use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
 use std::{fmt::Display, path::PathBuf};
 

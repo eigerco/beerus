@@ -16,8 +16,8 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
-    use helios::types::{ExecutionBlock, Transactions};
     use ethers::types::{Address, Transaction, H256, U256};
+    use helios::types::{ExecutionBlock, Transactions};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     /// Test the `send_raw_transaction` CLI command.
@@ -729,7 +729,7 @@ mod test {
         }
     }
 
-        /// Test the `query_block_by_hash` CLI command.
+    /// Test the `query_block_by_hash` CLI command.
     /// Given normal conditions, when query block by hash, then ok.
     /// Success case.
     #[tokio::test]

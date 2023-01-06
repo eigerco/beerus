@@ -1,9 +1,8 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-
-    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
-    QueryNonceResponse, QueryTransactionByHashResponse, TransactionObject,SendRawTransactionResponse, QueryBlockByHashResponse
-
+    QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
+    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryEstimateGasResponse, QueryGasPriceResponse, QueryNonceResponse,
+    QueryTransactionByHashResponse, SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 

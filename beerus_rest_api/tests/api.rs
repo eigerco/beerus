@@ -12,9 +12,9 @@ mod test {
     use beerus_rest_api::build_rocket_server;
     use ethers::types::{Address, Transaction};
     use ethers::types::{H256, U256};
+    use helios::types::{ExecutionBlock, Transactions};
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
-    use helios::types::{ExecutionBlock, Transactions};
 
     /// Test the `send_raw_transaction` endpoint.
     /// `/ethereum/send_raw_transaction/<bytes>`
@@ -911,7 +911,7 @@ mod test {
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query block by hash\"}"
         );
-    }    
+    }
 
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`

@@ -3,7 +3,7 @@ pub mod helios_lightclient;
 use async_trait::async_trait;
 use ethers::types::{Address, Transaction, H256, U256};
 use eyre::Result;
-use helios::types::{BlockTag, CallOpts,ExecutionBlock};
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use mockall::automock;
 use std::u8;
 
