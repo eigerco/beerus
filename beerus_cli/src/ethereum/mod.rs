@@ -22,6 +22,37 @@ pub struct TransactionObject {
     pub nonce: Option<String>,
 }
 
+/// Send Raw Transaction on Ethereum
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `bytes` - Raw Transactions Bytes.
+/// # Returns
+/// * `Result<CommandResponse>` - Raw tx bytes response.
+/// # Errors
+/// * If the Ethereum address is invalid.
+/// * If the balance query fails.
+pub async fn send_raw_transaction(
+    beerus: BeerusLightClient,
+    bytes: String,
+) -> Result<CommandResponse> {
+    // Parse the Ethereum address.
+    let bytes: Vec<u8> = bytes[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let bytes_slice: &[u8] = bytes.as_ref();
+
+    // Query the balance of the Ethereum address.
+    let transaction_response = beerus
+        .ethereum_lightclient
+        .send_raw_transaction(bytes_slice)
+        .await?;
+
+    Ok(CommandResponse::EthereumSendRawTransaction(
+        transaction_response,
+    ))
+}
+
 /// Query the balance of an Ethereum address.
 /// # Arguments
 /// * `beerus` - The Beerus light client.

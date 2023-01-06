@@ -1,7 +1,9 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
+
     QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
-    QueryNonceResponse, QueryTransactionByHashResponse, TransactionObject,
+    QueryNonceResponse, QueryTransactionByHashResponse, TransactionObject,SendRawTransactionResponse
+
 };
 use crate::api::ApiResponse;
 
@@ -19,6 +21,15 @@ use rocket::serde::json::Json;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use std::str::FromStr;
+
+#[openapi]
+#[get("/ethereum/send_raw_transaction/<bytes>")]
+pub async fn send_raw_transaction(
+    bytes: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<SendRawTransactionResponse> {
+    ApiResponse::from_result(send_raw_transaction_inner(beerus, bytes).await)
+}
 
 #[openapi]
 #[get("/ethereum/balance/<address>")]
@@ -87,6 +98,36 @@ pub async fn get_gas_price(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryGasPriceResponse> {
     ApiResponse::from_result(query_gas_price_inner(beerus).await)
+}
+
+/// Send raw transaction.
+/// # Arguments
+/// * `bytes` - Bytes of the transaction.
+/// # Returns
+/// `Ok(send_raw_transaction)` - Response from the Raw Transaction.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the Ethereum address is invalid or the block tag is invalid.
+/// # Examples
+pub async fn send_raw_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    bytes: &str,
+) -> Result<SendRawTransactionResponse> {
+    debug!("Sending Raw Transaction: {}", bytes);
+    let bytes: Vec<u8> = bytes[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let bytes_slice: &[u8] = bytes.as_ref();
+    // Send Raw Transaction.
+    let response = beerus
+        .ethereum_lightclient
+        .send_raw_transaction(bytes_slice)
+        .await?;
+
+    Ok(SendRawTransactionResponse {
+        response: format!("{:?}", response),
+    })
 }
 
 #[openapi]

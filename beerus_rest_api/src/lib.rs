@@ -14,6 +14,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
         "/",
         openapi_get_routes![
             index,
+            ethereum::endpoints::send_raw_transaction,
             ethereum::endpoints::query_balance,
             ethereum::endpoints::query_nonce,
             ethereum::endpoints::query_block_number,

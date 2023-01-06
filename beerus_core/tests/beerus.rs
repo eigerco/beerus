@@ -111,6 +111,86 @@ mod tests {
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
+    /// Test the `send_raw_transaction` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `send_raw_transaction` method of the external dependencies.
+    /// It tests the `send_raw_transaction` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_send_raw_transaction_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+        let expected_value =
+            H256::from_str("0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d")
+                .unwrap();
+
+        // H256::new();
+        // Mock the `get_balance` method of the Ethereum light client.
+        ethereum_lightclient_mock
+            .expect_send_raw_transaction()
+            .return_once(move |_| Ok(expected_value));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let bytes = &[10];
+
+        // Query the balance of the Ethereum address.
+        let result = beerus
+            .ethereum_lightclient
+            .send_raw_transaction(bytes)
+            .await
+            .unwrap();
+
+        // Assert that the `send_raw_transaction` method of the Beerus light client returns `123`.
+        assert_eq!(expected_value, result);
+    }
+
+    /// Test the `get_send_raw_transaction` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `send_raw_transaction` method of the external dependencies.
+    /// It tests the `send_raw_transaction` method of the Beerus light client.
+    /// It tests the error handling of the `send_raw_transaction` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_error_when_call_send_raw_transaction_then_should_return_error(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_send_raw_transaction()
+            .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let bytes = &vec![60, 80, 60];
+
+        // Send raw transaction.
+        let result = beerus
+            .ethereum_lightclient
+            .send_raw_transaction(bytes)
+            .await;
+
+        // Then
+        // Assert that the `send_raw_transaction` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `send_raw_transaction` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
     /// Test the `get_balance` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_balance` method of the external dependencies.

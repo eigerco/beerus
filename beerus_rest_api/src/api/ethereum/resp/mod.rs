@@ -15,6 +15,11 @@ pub struct TransactionObject {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct SendRawTransactionResponse {
+    pub response: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryBalanceResponse {
     pub address: String,
     pub balance: String,

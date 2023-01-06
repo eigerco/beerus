@@ -23,6 +23,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
     match &cli.command {
         // Ethereum commands.
         Commands::Ethereum(ethereum_commands) => match &ethereum_commands.command {
+            EthereumSubCommands::SendRawTransaction { bytes } => {
+                ethereum::send_raw_transaction(beerus, bytes.to_string()).await
+            }
             EthereumSubCommands::QueryBalance { address } => {
                 ethereum::query_balance(beerus, address.to_string()).await
             }

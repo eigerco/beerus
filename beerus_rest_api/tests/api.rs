@@ -10,10 +10,95 @@ mod test {
         },
     };
     use beerus_rest_api::build_rocket_server;
-    use ethers::types::U256;
     use ethers::types::{Address, Transaction};
+    use ethers::types::{H256, U256};
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
+
+    /// Test the `send_raw_transaction` endpoint.
+    /// `/ethereum/send_raw_transaction/<bytes>`
+    /// Given normal conditions, when sending raw transaction, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_send_raw_transaction_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+        let expected_value =
+            H256::from_str("0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d")
+                .unwrap();
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_send_raw_transaction()
+            .return_once(move |_| Ok(expected_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/send_raw_transaction/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"response\":\"0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d\"}"
+        );
+    }
+
+    /// Test the `send_raw_transaction` endpoint.
+    /// `/ethereum/send_raw_transaction/<bytes>`
+    /// Given Ethereum light client returns error when sending raw transaction, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_send_raw_transaction_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_send_raw_transaction()
+            .return_once(move |_| Err(eyre::eyre!("cannot send raw transaction")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/send_raw_transaction/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot send raw transaction\"}"
+        );
+    }
 
     /// Test the `query_balance` endpoint.
     /// `/ethereum/balance/<address>`
