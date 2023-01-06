@@ -1,5 +1,17 @@
-use rocket::serde::Serialize;
+use rocket::serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionObject {
+    pub from: Option<String>,
+    pub to: String,
+    pub gas: Option<String>,
+    pub gas_price: Option<String>,
+    pub value: Option<String>,
+    pub data: Option<String>,
+    pub nonce: Option<String>,
+}
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
@@ -55,4 +67,10 @@ pub struct QueryTransactionByHashResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryGasPriceResponse {
     pub gas_price: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryEstimateGasResponse {
+    pub quantity: u64,
 }

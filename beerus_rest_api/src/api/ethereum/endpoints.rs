@@ -1,18 +1,23 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryGasPriceResponse, QueryNonceResponse,
-    QueryTransactionByHashResponse, SendRawTransactionResponse,
+
+    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
+    QueryNonceResponse, QueryTransactionByHashResponse, TransactionObject,SendRawTransactionResponse
+
 };
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use ethers::types::U256;
+
 use ethers::{
     types::{Address, H256},
     utils,
 };
 use eyre::Result;
-use helios::types::BlockTag;
+use helios::types::{BlockTag, CallOpts};
 use log::debug;
+use rocket::serde::json::Json;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use std::str::FromStr;
@@ -89,7 +94,6 @@ pub async fn get_transaction_by_hash(
 
 #[openapi]
 #[get("/ethereum/gas_price")]
-
 pub async fn get_gas_price(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryGasPriceResponse> {
@@ -124,6 +128,15 @@ pub async fn send_raw_transaction_inner(
     Ok(SendRawTransactionResponse {
         response: format!("{:?}", response),
     })
+}
+
+#[openapi]
+#[post("/ethereum/estimate_gas", data = "<transaction_object>")]
+pub async fn query_estimate_gas(
+    beerus: &State<BeerusLightClient>,
+    transaction_object: Json<TransactionObject>,
+) -> ApiResponse<QueryEstimateGasResponse> {
+    ApiResponse::from_result(query_estimate_gas_inner(beerus, transaction_object).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -290,4 +303,44 @@ pub async fn query_gas_price_inner(
     let unformatted_tx_data = beerus.ethereum_lightclient.get_gas_price().await?;
     let gas_price = format!("{unformatted_tx_data:?}");
     Ok(QueryGasPriceResponse { gas_price })
+}
+
+/// Query the gas estimate of a transaction from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_gas_estimate)` - u64 (quantity)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_estimate_gas_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_object: Json<TransactionObject>,
+) -> Result<QueryEstimateGasResponse> {
+    debug!("Querying Gas Estimate");
+    let call_opts = CallOpts {
+        from: transaction_object
+            .from
+            .as_ref()
+            .and_then(|v| Address::from_str(v).ok()),
+        to: Address::from_str(&transaction_object.to)?,
+        value: transaction_object
+            .value
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        gas: transaction_object
+            .gas
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        gas_price: transaction_object
+            .gas_price
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        data: transaction_object
+            .data
+            .as_ref()
+            .and_then(|v| (ethers::utils::hex::decode(v)).ok()),
+    };
+
+    let quantity = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
+    Ok(QueryEstimateGasResponse { quantity })
 }

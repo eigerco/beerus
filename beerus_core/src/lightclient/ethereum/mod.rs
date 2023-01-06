@@ -129,4 +129,15 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_gas_price(&self) -> Result<U256>;
+
+    /// Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
+    /// # Arguments
+    /// * `opts` - Call options.
+    /// # Returns
+    /// The gas estimate.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64>;
 }

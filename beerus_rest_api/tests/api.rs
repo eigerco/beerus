@@ -407,6 +407,7 @@ mod test {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().await.unwrap(), "{\"state_root\":\"2593003852473857760763774375943570015682902311385614557145528717605591462989\"}");
     }
+
     /// Test the `get_code` endpoint.
     /// `/ethereum/code`
     /// Given normal conditions, when query code, then ok.
@@ -697,6 +698,84 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query block number\"}"
+        );
+    }
+
+    /// Test the `query_estimate_gas` endpoint.
+    /// `/ethereum/estimate_gas`
+    /// Given normal conditions, when query estimate gas, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_estimate_gas_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_estimate_gas()
+            .return_once(move |_| Ok(10));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/ethereum/estimate_gas"))
+            .body(r#"{"from":"0x0000000000000000000000000000000000000000","to":"0x0000000000000000000000000000000000000000","value":"10","data":"0x41"}"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"quantity\":10}");
+    }
+
+    /// Test the `query_estimate_gas` endpoint.
+    /// `/ethereum/estimate_gas`
+    /// Given Ethereum light client returns error when query estimate gas, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_estimate_gas()
+            .return_once(move |_| Err(eyre::eyre!("cannot query estimate gas")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/ethereum/estimate_gas"))
+            .body(r#"{"from":"0x0000000000000000000000000000000000000000","to":"0x0000000000000000000000000000000000000000","value":"10","data":"0x41"}"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query estimate gas\"}"
         );
     }
 

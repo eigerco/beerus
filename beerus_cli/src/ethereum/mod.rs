@@ -1,13 +1,26 @@
+use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use ethers::types::U256;
+use ethers::utils::hex;
 use ethers::{
     types::{Address, H256},
     utils,
 };
 use eyre::Result;
-use helios::types::BlockTag;
+use helios::types::{BlockTag, CallOpts};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use crate::model::CommandResponse;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TransactionObject {
+    pub from: Option<String>,
+    pub to: String,
+    pub gas: Option<String>,
+    pub gas_price: Option<String>,
+    pub value: Option<String>,
+    pub data: Option<String>,
+    pub nonce: Option<String>,
+}
 
 /// Send Raw Transaction on Ethereum
 /// # Arguments
@@ -181,4 +194,46 @@ pub async fn query_gas_price(beerus: BeerusLightClient) -> Result<CommandRespons
     let gas_price = beerus.ethereum_lightclient.get_gas_price().await?;
 
     Ok(CommandResponse::EthereumQueryGasPrice(gas_price))
+}
+
+/// Query how much gas is necessary to allow the transaction to complete from Ethereum
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `transactionObject` - The transaction object
+/// # Returns
+/// * `Result<CommandResponse>` - Quantity of gas required from the Ethereum Network
+/// # Errors
+/// * If the query fails.
+pub async fn query_estimate_gas(
+    beerus: BeerusLightClient,
+    params: String,
+) -> Result<CommandResponse> {
+    let transaction_object: TransactionObject = serde_json::from_str(&params)?;
+    let call_opts = CallOpts {
+        from: transaction_object
+            .from
+            .as_ref()
+            .and_then(|v| Address::from_str(v).ok()),
+        to: Address::from_str(&transaction_object.to)?,
+        value: transaction_object
+            .value
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        gas: transaction_object
+            .gas
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        gas_price: transaction_object
+            .gas_price
+            .as_ref()
+            .and_then(|v| U256::from_dec_str(v).ok()),
+        data: transaction_object
+            .data
+            .as_ref()
+            .and_then(|v| (hex::decode(v)).ok()),
+    };
+
+    let gas = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
+
+    Ok(CommandResponse::EthereumQueryEstimateGas(gas))
 }
