@@ -237,3 +237,28 @@ pub async fn query_estimate_gas(
 
     Ok(CommandResponse::EthereumQueryEstimateGas(gas))
 }
+
+/// Query information about a block by block hash.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `hash` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// * `Result<CommandResponse>` - The block information.
+/// # Errors
+/// * If the block query fails.
+pub async fn query_block_by_hash(
+    beerus: BeerusLightClient,
+    hash: String,
+    full_tx: bool,
+) -> Result<CommandResponse> {
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let block = beerus
+        .ethereum_lightclient
+        .get_block_by_hash(&hash, full_tx)
+        .await?;
+    Ok(CommandResponse::EthereumQueryBlockByHash(block))
+}
