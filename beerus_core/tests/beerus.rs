@@ -981,6 +981,79 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
+    /// Test the `priority_fee method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `priority_fee` method of the external dependencies.
+    /// It tests the `priority_fee` method of the Beerus light client.    
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_priority_fee_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `priority_fee` method of the Ethereum light client.
+        let priority_fee = U256::default();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient_mock
+            .expect_get_priority_fee()
+            .return_once(move || Ok(priority_fee));
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.get_priority_fee().await;
+
+        // Then
+        // Assert that the `priority_fee` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned byt `priority_fee` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), priority_fee);
+    }
+
+    /// Test the `priority_fee` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `priority_fee` method of the external dependencies.
+    /// It tests the `priority_fee` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_priority_fee()
+            .return_once(move || Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus.ethereum_lightclient.get_priority_fee().await;
+
+        // Then
+        // Assert that the `priority_fee` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `priority_fee` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }    
+
     /// Test the `start` method when the StarkNet light client returns an error.
     /// This test mocks external dependencies.
     /// It does not test the `start` method of the external dependencies.
