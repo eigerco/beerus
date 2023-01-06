@@ -62,6 +62,13 @@ impl EthereumLightClient for HeliosLightClient {
             .await
     }
 
+    async fn get_block_transaction_count_by_hash(&self, hash: &[u8]) -> Result<u64> {
+        let hash = hash.to_vec();
+        self.helios_light_client
+            .get_block_transaction_count_by_hash(&hash)
+            .await
+    }
+
     async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>> {
         self.helios_light_client
             .get_transaction_by_hash(tx_hash)
@@ -83,6 +90,9 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client
             .get_block_by_hash(&hash, full_tx)
             .await
+    }
+    async fn get_priority_fee(&self) -> Result<U256> {
+        self.helios_light_client.get_priority_fee().await
     }
 }
 
