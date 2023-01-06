@@ -161,6 +161,31 @@ pub async fn query_block_transaction_count_by_number(
     Ok(CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count))
 }
 
+/// Query information about a block by block hash.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `hash` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// * `Result<CommandResponse>` - The block information.
+/// # Errors
+/// * If the block query fails.
+pub async fn query_block_by_hash(
+    beerus: BeerusLightClient,
+    hash: String,
+    full_tx: bool,
+) -> Result<CommandResponse> {
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let block = beerus
+        .ethereum_lightclient
+        .get_block_by_hash(&hash, full_tx)
+        .await?;
+    Ok(CommandResponse::EthereumQueryBlockByHash(block))
+}
+
 /// Query Tx data of a given Tx Hash
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -238,27 +263,41 @@ pub async fn query_estimate_gas(
     Ok(CommandResponse::EthereumQueryEstimateGas(gas))
 }
 
-/// Query information about a block by block hash.
+/// Query tx count of a given block Hash
 /// # Arguments
 /// * `beerus` - The Beerus light client.
-/// * `hash` - The block number or tag.
-/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
 /// # Returns
-/// * `Result<CommandResponse>` - The block information.
+/// * `Result<CommandResponse>` - u64 (txs counts)
 /// # Errors
-/// * If the block query fails.
-pub async fn query_block_by_hash(
+/// * If the block number query fails.
+pub async fn query_block_transaction_count_by_hash(
     beerus: BeerusLightClient,
     hash: String,
-    full_tx: bool,
 ) -> Result<CommandResponse> {
     let hash: Vec<u8> = hash[2..]
         .chars()
         .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
         .collect();
-    let block = beerus
+
+    let tx_count = beerus
         .ethereum_lightclient
-        .get_block_by_hash(&hash, full_tx)
+        .get_block_transaction_count_by_hash(&hash)
         .await?;
-    Ok(CommandResponse::EthereumQueryBlockByHash(block))
+
+    Ok(CommandResponse::EthereumQueryBlockTxCountByHash(tx_count))
+}
+
+/// Query max priority fee per gas from Ethereum
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - Gas Price from the Ethereum Network :
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_get_priority_fee(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    let get_priority_fee = beerus.ethereum_lightclient.get_priority_fee().await?;
+
+    Ok(CommandResponse::EthereumQueryGetPriorityFee(
+        get_priority_fee,
+    ))
 }

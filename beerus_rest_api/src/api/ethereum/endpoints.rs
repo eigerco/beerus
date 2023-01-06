@@ -1,8 +1,9 @@
 use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockNumberResponse,
-    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
-    QueryEstimateGasResponse, QueryGasPriceResponse, QueryNonceResponse,
-    QueryTransactionByHashResponse, SendRawTransactionResponse, TransactionObject,
+    QueryBlockTxCountByBlockHashResponse, QueryBlockTxCountByBlockNumberResponse,
+    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
+    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse,
+    SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
@@ -83,6 +84,15 @@ pub async fn get_block_transaction_count_by_number(
 }
 
 #[openapi]
+#[get("/ethereum/tx_count_by_block_hash/<hash>")]
+pub async fn get_block_transaction_count_by_hash(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockTxCountByBlockHashResponse> {
+    ApiResponse::from_result(query_block_transaction_count_by_hash_inner(hash, beerus).await)
+}
+
+#[openapi]
 #[get("/ethereum/tx_by_hash/<hash>")]
 pub async fn get_transaction_by_hash(
     hash: &str,
@@ -116,6 +126,15 @@ pub async fn get_block_by_hash(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockByHashResponse> {
     ApiResponse::from_result(query_block_by_hash_inner(beerus, hash, full_tx).await)
+}
+
+#[openapi]
+#[get("/ethereum/priority_fee")]
+
+pub async fn get_priority_fee(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryPriorityFeeResponse> {
+    ApiResponse::from_result(query_priority_fee_inner(beerus).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -243,6 +262,32 @@ pub async fn query_block_transaction_count_by_number_inner(
         .await?;
 
     Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
+}
+
+/// Query the Tx count of a given Block hash from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_block_transaction_count_by_hash)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_block_transaction_count_by_hash_inner(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockTxCountByBlockHashResponse> {
+    debug!("Querying Block Tx count");
+    // Parse hash the string as a Vec<u8>
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_hash(&hash)
+        .await?;
+
+    Ok(QueryBlockTxCountByBlockHashResponse { tx_count })
 }
 
 /// Query the Tx data of a Tx Hash from the the Ethereum chain.
@@ -394,4 +439,20 @@ pub async fn query_block_by_hash_inner(
         None => None,
     };
     Ok(QueryBlockByHashResponse { block })
+}
+
+/// Query priority fee from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_priority_fee)` - U256 (priority_fee)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_priority_fee_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryPriorityFeeResponse> {
+    debug!("Querying Gas Price");
+    let unformatted_tx_data = beerus.ethereum_lightclient.get_priority_fee().await?;
+    let priority_fee = format!("{unformatted_tx_data:?}");
+    Ok(QueryPriorityFeeResponse { priority_fee })
 }

@@ -111,6 +111,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
 
+    /// Get the txs counts of a given block hash.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The code of the contract.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_block_transaction_count_by_hash(&self, hash: &[u8]) -> Result<u64>;
+
     /// Get the tx data of a given tx hash.
     /// This function should be called after `start`.
     /// # Returns
@@ -153,4 +163,14 @@ pub trait EthereumLightClient: Send + Sync {
     /// If the call fails.
     async fn get_block_by_hash(&self, hash: &[u8], full_tx: bool)
         -> Result<Option<ExecutionBlock>>;
+
+    /// Get max priority fee_per_gas.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The gas price from the Ethereum network.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_priority_fee(&self) -> Result<U256>;
 }

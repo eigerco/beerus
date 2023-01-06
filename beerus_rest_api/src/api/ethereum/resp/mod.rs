@@ -59,6 +59,12 @@ pub struct QueryBlockTxCountByBlockNumberResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryBlockTxCountByBlockHashResponse {
+    pub tx_count: u64,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryTransactionByHashResponse {
     pub tx_data: String,
 }
@@ -79,4 +85,10 @@ pub struct QueryEstimateGasResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryBlockByHashResponse {
     pub block: Option<serde_json::Value>,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryPriorityFeeResponse {
+    pub priority_fee: String,
 }

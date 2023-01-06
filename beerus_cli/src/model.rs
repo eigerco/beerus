@@ -72,6 +72,11 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "BLOCK")]
         block: u64,
     },
+    QueryBlockTxCountByHash {
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
+    },
     QueryTxByHash {
         #[arg(short, long, value_name = "HASH")]
         hash: String,
@@ -90,6 +95,8 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
         full_tx: bool,
     },
+
+    QueryPriorityFee {},
 }
 
 /// StarkNet related commands.
@@ -177,10 +184,12 @@ pub enum CommandResponse {
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
     EthereumQueryBlockTxCountByNumber(u64),
+    EthereumQueryBlockTxCountByHash(u64),
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     EthereumQueryEstimateGas(u64),
     EthereumQueryBlockByHash(Option<ExecutionBlock>),
+    EthereumQueryGetPriorityFee(U256),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -229,21 +238,23 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
                 write!(f, "{tx_count}")
             }
-
-            // Print the gas price from the Ethereum Network
+            // Print the count of txs of a block
             // Result looks like: 150
+            CommandResponse::EthereumQueryBlockTxCountByHash(tx_count) => {
+                write!(f, "{tx_count}")
+            }
+            // Print the gas price from the Ethereum Network
+            // Result looks like: 15000
             CommandResponse::EthereumQueryGasPrice(gas_price) => {
                 write!(f, "{gas_price}")
             }
-
             // Print the estimated gas from the Ethereum Network
-            // Result looks like: 150
+            // Result looks like: 15000
             CommandResponse::EthereumQueryEstimateGas(gas) => {
                 write!(f, "{gas}")
             }
-
             // Print Block given a block hash
-            // Result looks like: 150
+            // Result looks like:
             CommandResponse::EthereumQueryBlockByHash(block) => match block {
                 Some(block) => {
                     let json_block = serde_json::to_string(&block).unwrap();
@@ -251,7 +262,11 @@ impl Display for CommandResponse {
                 }
                 None => write!(f, "No block found"),
             },
-
+            // Print the max priority fee per gas from the Ethereum Network
+            // Result looks like:
+            CommandResponse::EthereumQueryGetPriorityFee(get_priority_fee) => {
+                write!(f, "{get_priority_fee}")
+            }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),
