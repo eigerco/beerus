@@ -1052,7 +1052,7 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `priority_fee` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
-    }    
+    }
 
     /// Test the `start` method when the StarkNet light client returns an error.
     /// This test mocks external dependencies.
