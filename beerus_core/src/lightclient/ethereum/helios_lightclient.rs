@@ -94,6 +94,16 @@ impl EthereumLightClient for HeliosLightClient {
     async fn get_priority_fee(&self) -> Result<U256> {
         self.helios_light_client.get_priority_fee().await
     }
+
+    async fn get_block_by_number(
+        &self,
+        block: BlockTag,
+        full_tx: bool,
+    ) -> eyre::Result<Option<ExecutionBlock>> {
+        self.helios_light_client
+            .get_block_by_number(block, full_tx)
+            .await
+    }
 }
 
 /// HeliosLightClient non-trait functions.

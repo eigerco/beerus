@@ -173,4 +173,19 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_priority_fee(&self) -> Result<U256>;
+
+    /// Get information about a block by block number.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `block` - integer of a block number, or the string "earliest", "latest" or "pending"
+    /// * `full_tx` - If true it returns the full transaction objects, if false only the hashes of the transactions.
+    /// # Returns
+    /// A block object, or null when no block was found.
+    /// # Errors
+    /// If the call fails.
+    async fn get_block_by_number(
+        &self,
+        block: BlockTag,
+        full_tx: bool,
+    ) -> Result<Option<ExecutionBlock>>;
 }

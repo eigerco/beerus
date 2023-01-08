@@ -92,3 +92,9 @@ pub struct QueryBlockByHashResponse {
 pub struct QueryPriorityFeeResponse {
     pub priority_fee: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockByNumberResponse {
+    pub block: Option<serde_json::Value>,
+}
