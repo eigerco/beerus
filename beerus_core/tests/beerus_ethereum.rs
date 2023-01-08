@@ -14,7 +14,6 @@ mod tests {
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::providers::jsonrpc::models::{BlockHashAndNumber, BlockId};
     use std::str::FromStr;
-    3    |     use std::str::FromStr;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
