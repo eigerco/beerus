@@ -4,20 +4,17 @@ mod tests {
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
-            starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
+            ethereum::MockEthereumLightClient,
+            starknet::{MockStarkNetLightClient, StarkNetLightClientImpl},
         },
     };
     use ethers::types::U256;
     use ethers::types::{Address, Transaction, H256};
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
-    use starknet::{
-        core::types::FieldElement,
-        macros::selector,
-        providers::jsonrpc::models::{BlockHashAndNumber, BlockId},
-    };
+    use starknet::providers::jsonrpc::models::{BlockHashAndNumber, BlockId};
     use std::str::FromStr;
+    3    |     use std::str::FromStr;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {

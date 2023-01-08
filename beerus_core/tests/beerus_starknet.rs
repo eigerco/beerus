@@ -8,10 +8,9 @@ mod tests {
             starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
         },
     };
+    use ethers::types::Address;
     use ethers::types::U256;
-    use ethers::types::{Address, Transaction, H256};
     use eyre::eyre;
-    use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
         core::types::FieldElement,
         macros::selector,
