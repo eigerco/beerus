@@ -192,7 +192,7 @@ pub enum StarkNetSubCommands {
         /// eg. 0x123, 123, pending, or latest
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
-        /// The class hash
+        /// The contract address
         #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
         contract_address: String,
     },
