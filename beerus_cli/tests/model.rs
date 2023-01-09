@@ -67,4 +67,11 @@ mod tests {
         let response = CommandResponse::StarkNetL1ToL2MessageNonce(123.into());
         assert_eq!(response.to_string(), "L1 to L2 Message Nonce: 123");
     }
+
+    #[test]
+    fn test_display_starknet_get_class_hash_at() {
+        let response =
+            CommandResponse::StarknetQueryGetClassHash(FieldElement::from_dec_str("123").unwrap());
+        assert_eq!(response.to_string(), "Class hash: 123");
+    }
 }
