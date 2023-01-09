@@ -2120,4 +2120,84 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), expected_error);
     }
+
+    /// Test the `get_class_hash` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_class_hash` method of the external dependencies.
+    /// It tests the `get_class_hash` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_class_hash_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_class_hash` method of the Starknet light client.
+        let expected_result = FieldElement::from_str("0x0123").unwrap();
+
+        starknet_lightclient_mock
+            .expect_get_class_hash_at()
+            .return_once(move |_block_id, _contract_address| Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+        let contract_address = FieldElement::from_str("0x0123").unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .get_class_hash_at(&block_id, contract_address)
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the contract class returned by the `get_class_hash` method of the Beerus light client
+        // is the expected contract class.
+        assert_eq!(result, expected_result)
+    }
+
+    /// Test the `get_class_hash` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_class_hash` method of the external dependencies.
+    /// It tests the `get_class_hash` method of the Beerus light client.
+    /// It tests the error handling of the `get_class_hash` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_get_class_hash_then_should_return_error() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `get_class_hash` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_get_class_hash_at()
+            .times(1)
+            .return_once(move |_block_id, _contract_address| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+        let contract_address = FieldElement::from_str("0x0123").unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .get_class_hash_at(&block_id, contract_address)
+            .await;
+
+        // Then
+        // Assert that the `get_class_hash` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_class_hash` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
 }

@@ -1,3 +1,4 @@
+use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
 use ethers::{
     abi::Abi,
@@ -6,10 +7,10 @@ use ethers::{
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::FunctionCall;
-
-use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{BlockId, FunctionCall},
+};
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
@@ -358,5 +359,25 @@ impl BeerusLightClient {
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
+    }
+
+    /// Get the class hash given a block Id and contract address
+    ///
+    /// # Arguments
+    /// * `block_id` - The StarkNet contract address.
+    /// * `contract_address` - The StarkNet contract address.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_class_hash_at(
+        &self,
+        block_id: &BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement> {
+        self.starknet_lightclient
+            .get_class_hash_at(block_id, contract_address)
+            .await
     }
 }

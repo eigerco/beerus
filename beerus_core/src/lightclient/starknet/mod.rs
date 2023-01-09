@@ -34,6 +34,11 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         class_hash: FieldElement,
     ) -> Result<ContractClass>;
+    async fn get_class_hash_at(
+        &self,
+        block_id: &BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -163,6 +168,28 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<ContractClass> {
         self.client
             .get_class(block_id, class_hash)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the contract class hash given a block Id and contract_address;
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `contract_address` - The class hash.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_class_hash_at(
+        &self,
+        block_id: &BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement> {
+        self.client
+            .get_class_hash_at(block_id, contract_address)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
