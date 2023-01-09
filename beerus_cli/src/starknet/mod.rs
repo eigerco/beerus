@@ -236,7 +236,7 @@ pub async fn get_class(
     ))
 }
 
-/// Query the contract class hash given block associated with the given hash.
+/// Query the contract class hash given block associated with the contract address.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
 /// * `block_id_type` - The type of block identifier.
@@ -255,6 +255,7 @@ pub async fn get_class_hash(
     let contract_address = FieldElement::from_str(&contract_address)?;
     Ok(CommandResponse::StarknetQueryGetClassHash(
         beerus
+            .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
             .await?,
     ))

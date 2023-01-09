@@ -473,6 +473,7 @@ pub async fn get_class_hash_inner(
     let contract_address = FieldElement::from_str(&contract_address)?;
     debug!("Querying Contract Class");
     let result = beerus
+        .starknet_lightclient
         .get_class_hash_at(&block_id, contract_address)
         .await?;
     Ok(QueryGetClassHashResponse {
