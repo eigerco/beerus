@@ -2072,7 +2072,7 @@ mod test {
 
         // Set the expected return value for the StarkNet light client mock.
         starknet_lightclient.expect_get_class_hash_at().return_once(
-            move |_block_id, _class_hash| {
+            move |_block_id, _contract_address| {
                 Err(eyre::eyre!("cannot query starknet address class hash"))
             },
         );

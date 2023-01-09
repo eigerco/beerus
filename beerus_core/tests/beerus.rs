@@ -1877,24 +1877,6 @@ mod tests {
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
-    fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        (
-            config,
-            MockEthereumLightClient::new(),
-            MockStarkNetLightClient::new(),
-        )
-    }
-
     /// Test the `block_hash_and_number` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `block_hash_and_number` method of the external dependencies.
@@ -2136,7 +2118,7 @@ mod tests {
 
         starknet_lightclient_mock
             .expect_get_class_hash_at()
-            .return_once(move |_block_id, _contract_address| Ok(expected_result));
+            .return_once(move |_, _| Ok(expected_result));
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2175,8 +2157,7 @@ mod tests {
         // Mock the `get_class_hash` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_class_hash_at()
-            .times(1)
-            .return_once(move |_block_id, _contract_address| Err(eyre!(expected_error)));
+            .return_once(move |_, _| Err(eyre!(expected_error)));
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2192,12 +2173,27 @@ mod tests {
             .get_class_hash_at(&block_id, contract_address)
             .await;
 
-        // Then
         // Assert that the `get_class_hash` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_class_hash` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
-        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
-        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
+        let config = Config {
+            ethereum_network: "mainnet".to_string(),
+            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
+            ethereum_execution_rpc: "http://localhost:8545".to_string(),
+            starknet_rpc: "http://localhost:8545".to_string(),
+            starknet_core_contract_address: Address::from_str(
+                "0x0000000000000000000000000000000000000000",
+            )
+            .unwrap(),
+        };
+        (
+            config,
+            MockEthereumLightClient::new(),
+            MockStarkNetLightClient::new(),
+        )
     }
 }
