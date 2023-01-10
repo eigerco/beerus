@@ -132,7 +132,6 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 contract_address,
             } => {
                 starknet::get_class_hash(
-
                     beerus,
                     block_id_type.to_string(),
                     block_id.to_string(),
@@ -140,14 +139,12 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
-            
 
             StarkNetSubCommands::QueryGetClassAt {
                 block_id_type,
                 block_id,
                 contract_address,
             } => {
-
                 starknet::get_class_at(
                     beerus,
                     block_id_type.to_string(),
@@ -155,7 +152,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                     contract_address.to_string(),
                 )
                 .await
-            }            
+            }
         },
     }
 }

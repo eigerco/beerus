@@ -79,7 +79,6 @@ pub struct QueryGetClassResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryGetClassHashResponse {
     pub class_hash: String,
-
 }
 
 #[derive(Serialize, JsonSchema)]

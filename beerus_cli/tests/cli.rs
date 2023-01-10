@@ -1867,7 +1867,6 @@ mod test {
     /// Success case.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_class_hash_then_ok() {
-
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -1878,7 +1877,6 @@ mod test {
         starknet_lightclient
             .expect_get_class_hash_at()
             .return_once(move |_block_id, _contract_address| Ok(expected_result));
-
 
         let beerus = BeerusLightClient::new(
             config,
@@ -1891,7 +1889,6 @@ mod test {
             config: None,
             command: Commands::StarkNet(StarkNetCommands {
                 command: StarkNetSubCommands::QueryGetClassHash {
-
                     block_id_type: "number".to_string(),
                     block_id: "123".to_string(),
                     contract_address: "0x123".to_string(),
@@ -1910,7 +1907,6 @@ mod test {
     /// Error case.
     #[tokio::test]
     async fn given_starknet_lightclient_returns_error_when_starknet_get_class_hash_then_error_is_propagated(
-
     ) {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
@@ -1918,7 +1914,6 @@ mod test {
         // Given
         // Set the expected return value for the StarkNet light client mock.
         starknet_lightclient.expect_get_class_hash_at().return_once(
-
             move |_block_id, _contract_address| Err(eyre::eyre!("starknet_lightclient_error")),
         );
 
@@ -1933,7 +1928,6 @@ mod test {
             config: None,
             command: Commands::StarkNet(StarkNetCommands {
                 command: StarkNetSubCommands::QueryGetClassHash {
-
                     block_id_type: "number".to_string(),
                     block_id: "123".to_string(),
                     contract_address: "0x123".to_string(),
@@ -1949,8 +1943,6 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
-
-
 
     /// Test the `get_class_at` CLI command.
     /// Given normal conditions, when query get_class_at, then ok.
@@ -1980,7 +1972,6 @@ mod test {
         let cli = Cli {
             config: None,
             command: Commands::StarkNet(StarkNetCommands {
-
                 command: StarkNetSubCommands::QueryGetClassAt {
                     block_id_type: "number".to_string(),
                     block_id: "123".to_string(),
@@ -2025,7 +2016,6 @@ mod test {
         let cli = Cli {
             config: None,
             command: Commands::StarkNet(StarkNetCommands {
-
                 command: StarkNetSubCommands::QueryGetClassAt {
                     block_id_type: "number".to_string(),
                     block_id: "123".to_string(),

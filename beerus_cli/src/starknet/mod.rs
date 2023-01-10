@@ -246,7 +246,6 @@ pub async fn get_class(
 /// # Returns
 /// * `Result<CommandResponse>` - The contract class definition.
 pub async fn get_class_hash(
-
     beerus: BeerusLightClient,
     block_id_type: String,
     block_id: String,
@@ -259,7 +258,6 @@ pub async fn get_class_hash(
         beerus
             .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
-
             .await?,
     ))
 }
@@ -290,5 +288,3 @@ pub async fn get_class_at(
             .await?,
     ))
 }
-
-

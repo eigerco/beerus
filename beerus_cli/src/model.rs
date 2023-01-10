@@ -184,7 +184,6 @@ pub enum StarkNetSubCommands {
     },
     /// The contract class definition
     QueryGetClassHash {
-
         /// Type of block identifier
         /// eg. hash, number, tag
         #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
@@ -200,7 +199,6 @@ pub enum StarkNetSubCommands {
     },
 
     /// The contract class definition
-
     QueryGetClassAt {
         /// Type of block identifier
         /// eg. hash, number, tag
@@ -424,7 +422,7 @@ impl Display for CommandResponse {
             // Result looks like: `Class hash 12341663341423143215656`
             CommandResponse::StarknetQueryGetClassHash(response) => {
                 write!(f, "Class hash: {response}")
-
+            }
             // Print the contract class definition in the given block associated with the given hash.
             // Result looks like:
             // {
@@ -454,7 +452,6 @@ impl Display for CommandResponse {
                     }
                 );
                 write!(f, "{json_response}")
-
             }
         }
     }
