@@ -117,7 +117,7 @@ fn build_logs_filter(
     block_hash: &Option<String>,
 ) -> Result<Filter> {
     let mut filter = Filter::new();
-    match (from_block, to_block, &block_hash) {
+    match (from_block, to_block, block_hash) {
         (Some(from), Some(to), None) => {
             let from_block = BlockNumber::from_str(from)
                 .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
