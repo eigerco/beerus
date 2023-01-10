@@ -9,7 +9,7 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
-    use beerus_rest_api::{api::ethereum::resp::QueryLogsObject, build_rocket_server};
+    use beerus_rest_api::build_rocket_server;
     use ethers::types::{Address, Transaction};
     use ethers::{prelude::Log, types::U256};
     use rocket::{
