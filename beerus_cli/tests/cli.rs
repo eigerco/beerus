@@ -817,6 +817,106 @@ mod test {
     /// Given starknet lightclient returns an error, when query storage, then the error is propagated.
     /// Error case.
     #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_logs_then_error_is_propagated() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let mut log = ethers::types::Log::default();
+        let topic =
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef".to_string();
+        let data = ethers::types::Bytes::from_str(
+            "0x0000000000000000000000000000000000000000000000000000000000016931",
+        )
+        .unwrap();
+        let block_hash = "0x92ef607b2b14dc2e6bf866325a1e84c9129ef741a5c2bc169dc36ea282d9d060";
+        log.topics = vec![ethers::types::TxHash::from_str(&topic).unwrap()];
+        log.data = data.clone();
+        log.block_hash = Some(ethers::types::H256::from_str(&block_hash).unwrap());
+        let logs = vec![log];
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Ok(logs));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let params = EthereumSubCommands::QueryLogs {
+            address: None,
+            blockhash: Some(block_hash.to_string()),
+            from_block: None,
+            to_block: None,
+            topics: Some(vec![topic]),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands { command: params }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+        let expected = "[{\"address\":\"0x0000000000000000000000000000000000000000\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"],\"data\":\"0x0000000000000000000000000000000000000000000000000000000000016931\",\"blockHash\":\"0x92ef607b2b14dc2e6bf866325a1e84c9129ef741a5c2bc169dc36ea282d9d060\"}]";
+        assert_eq!(result.to_string(), expected);
+    }
+
+    /// Test the `query_logs` CLI command.
+    /// Given normal conditions, when `query_logs`, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_logs_then_ok() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let mut log = ethers::types::Log::default();
+        let topic =
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef".to_string();
+        let block_hash = "0x92ef607b2b14dc2e6bf866325a1e84c9129ef741a5c2bc169dc36ea282d9d060";
+        log.topics = vec![ethers::types::TxHash::from_str(&topic).unwrap()];
+        log.data = ethers::types::Bytes::from_str(
+            "0x0000000000000000000000000000000000000000000000000000000000016931",
+        )
+        .unwrap();
+        log.block_hash = Some(ethers::types::H256::from_str(&block_hash).unwrap());
+        let logs = vec![log];
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Ok(logs));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let params = EthereumSubCommands::QueryLogs {
+            address: None,
+            blockhash: Some("0x1".to_string()),
+            from_block: Some("0x1".to_string()),
+            to_block: Some("0x1".to_string()),
+            topics: Some(vec![topic]),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands { command: params }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+        let expected = "[{\"address\":\"0x0000000000000000000000000000000000000000\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"],\"data\":\"0x0000000000000000000000000000000000000000000000000000000000016931\",\"blockHash\":\"0x92ef607b2b14dc2e6bf866325a1e84c9129ef741a5c2bc169dc36ea282d9d060\"}]";
+        assert_eq!(result.to_string(), expected);
+    }
+    /// Test the `query_storage` CLI command.
+    /// Given starknet lightclient returns an error, when query storage, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
     async fn given_starknet_lightclient_returns_error_when_query_storage_then_error_is_propagated()
     {
         // Build mocks.

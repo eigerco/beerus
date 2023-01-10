@@ -134,7 +134,7 @@ fn build_logs_filter(
         (None, Some(to), None) => {
             let from_block = BlockNumber::Latest;
             let to_block = BlockNumber::from_str(to)
-                .map_err(|err| eyre!("Non valid form for to_block: {}", err))?;
+                .map_err(|err| eyre!("Non valid format for to_block: {}", err))?;
             filter = filter.select(from_block..to_block);
         }
         (None, None, Some(ref hash)) => {
