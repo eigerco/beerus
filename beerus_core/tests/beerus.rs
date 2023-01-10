@@ -2109,7 +2109,6 @@ mod tests {
     /// It tests the `get_class_hash` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_call_get_class_hash_then_should_return_ok() {
-
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
@@ -2120,7 +2119,6 @@ mod tests {
         starknet_lightclient_mock
             .expect_get_class_hash_at()
             .return_once(move |_, _| Ok(expected_result));
-
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2134,7 +2132,6 @@ mod tests {
         let result = beerus
             .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
-
             .await
             .unwrap();
 
@@ -2151,7 +2148,6 @@ mod tests {
     /// It tests the error handling of the `get_class_hash` method of the Beerus light client.
     #[tokio::test]
     async fn given_starknet_lightclient_error_when_call_get_class_hash_then_should_return_error() {
-
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
@@ -2162,7 +2158,6 @@ mod tests {
         starknet_lightclient_mock
             .expect_get_class_hash_at()
             .return_once(move |_, _| Err(eyre!(expected_error)));
-
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2200,9 +2195,7 @@ mod tests {
             MockEthereumLightClient::new(),
             MockStarkNetLightClient::new(),
         )
-
     }
-    
 
     /// Test the `get_class_at` method when everything is fine.
     /// This test mocks external dependencies.
@@ -2213,7 +2206,6 @@ mod tests {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
-
 
         // Mock the `get_class_at` method of the Starknet light client.
         let (expected_result, expected_result_value) =
@@ -2234,7 +2226,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-
             .get_class_at(&block_id, contract_address)
             .await
             .unwrap();
@@ -2278,7 +2269,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-
             .get_class_at(&block_id, contract_address)
             .await;
 

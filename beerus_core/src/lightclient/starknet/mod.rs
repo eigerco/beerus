@@ -196,11 +196,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<FieldElement> {
         self.client
             .get_class_hash_at(block_id, contract_address)
-
             .await
             .map_err(|e| eyre::eyre!(e))
     }
-
 
     /// Get the contract class definition in the given block associated with the contract address.
     /// The contract class definition.
