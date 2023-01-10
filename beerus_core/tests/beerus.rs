@@ -1733,9 +1733,9 @@ mod tests {
             .await;
 
         // Then
-        // Assert that the `gas_price` method of the Beerus light client returns `Ok`.
+        // Assert that the `get_logs` method of the Beerus light client returns `Ok`.
         assert!(result.is_ok());
-        // Assert that the code returned byt `gas_price` method of the Beerus light client is the expected code.
+        // Assert that the code returned by the `get_logs` method of the Beerus light client is the expected code.
         assert_eq!(result.unwrap(), vec![Log::default()]);
     }
 
@@ -1778,7 +1778,7 @@ mod tests {
         // Then
         // Assert that the `get_logs` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
-        // Assert that the error returned by the `gas_price` method of the Beerus light client is the expected error.
+        // Assert that the error returned by the `get_logs` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 }

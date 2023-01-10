@@ -699,7 +699,7 @@ mod test {
     }
 
     /// Test the `/ethereum/logs` endpoint.
-    /// Given normal conditions, when query , then ok.
+    /// Given normal conditions, when query logs, then errors is propagated.
     #[tokio::test]
     async fn given_normal_conditions_when_query_logs_then_error_is_propagated() {
         // Build mocks.
