@@ -76,15 +76,24 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "params")]
         params: String,
     },
+    /// Query Logs (blockchain events) that match
+    /// the given parameters.
     QueryLogs {
+        /// Address from which the log comes from.
         #[arg(short, long, value_name = "ADDRESS")]
         address: Option<String>,
+        /// Equivalent to from_block = to_block,
+        /// only allowed if neither from_block or to_block
+        /// is supplied.
         #[arg(short, long, value_name = "BLOCKHASH")]
         blockhash: Option<String>,
+        /// Starting block to filter from, defaults to "latest".
         #[arg(short, long, value_name = "FROMBLOCK")]
         from_block: Option<String>,
+        /// Ending block to filter to, defaults to "latest".
         #[arg(short, long, value_name = "TOBLOCK")]
         to_block: Option<String>,
+        /// Topics to filter, up to 4 allowed.
         #[arg(short, long, value_name = "TOPICS", value_delimiter = ',')]
         topics: Option<Vec<String>>,
     },
