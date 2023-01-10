@@ -128,5 +128,21 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64>;
 
-    async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>>;
+    /// Get logs (blockchain events), based on the given filter.
+    /// # Arguments
+    /// * `filter` - Filter options.
+    /// # Returns
+    /// Vector of logs, matching the given filter.
+    /// # Errors
+    /// If the call fails, or if there are more than 5 logs.
+    /// # TODO
+    /// Add examples.
+    async fn get_logs(
+        &self,
+        from_block: &Option<String>,
+        to_block: &Option<String>,
+        address: &Option<String>,
+        topics: &Option<Vec<String>>,
+        block_hash: &Option<String>,
+    ) -> Result<Vec<Log>>;
 }
