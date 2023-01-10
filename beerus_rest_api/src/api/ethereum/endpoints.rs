@@ -343,17 +343,15 @@ pub async fn query_logs_inner(
             topics: log
                 .topics
                 .into_iter()
-                .map(|topic| format!("{:?}", topic))
+                .map(|topic| format!("{topic:?}"))
                 .collect::<Vec<String>>(),
             data: log.data.to_string(),
-            block_hash: log.block_hash.map(|hash| format!("{:?}", hash)),
+            block_hash: log.block_hash.map(|hash| format!("{hash:?}")),
             block_number: log.block_number.map(|num| num.as_u64()),
-            transaction_hash: log.transaction_hash.map(|hash| format!("{:?}", hash)),
+            transaction_hash: log.transaction_hash.map(|hash| format!("{hash:?}")),
             transaction_index: log.transaction_index.map(|num| num.as_u64()),
             log_index: log.log_index.map(|index| index.to_string()),
-            transaction_log_index: log
-                .transaction_log_index
-                .map(|index| format!("{:?}", index)),
+            transaction_log_index: log.transaction_log_index.map(|index| format!("{index:?}")),
             log_type: log.log_type,
             removed: log.removed,
         })

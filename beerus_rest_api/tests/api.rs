@@ -705,11 +705,11 @@ mod test {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-            let error_msg = concat!(
-                "Non valid combination of from_block, to_block and blockhash. ",
-                "If you want to filter blocks, then ",
-                "you can only use either from_block and to_block or blockhash, not both",
-            );
+        let error_msg = concat!(
+            "Non valid combination of from_block, to_block and blockhash. ",
+            "If you want to filter blocks, then ",
+            "you can only use either from_block and to_block or blockhash, not both",
+        );
         ethereum_lightclient
             .expect_get_logs()
             .return_once(move |_, _, _, _, _| Err(eyre::eyre!(error_msg)));
