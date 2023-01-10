@@ -2121,4 +2121,90 @@ mod test {
             MockStarkNetLightClient::new(),
         )
     }
+
+    /// Test the `get_block_transaction_count` endpoint.
+    /// `/starknet/block_transaction_count?<block_id>&<block_id_type>`
+    /// Given normal conditions, when query starknet get_block_transaction_count, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_get_block_transaction_count_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result: u64 = 34;
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_block_transaction_count()
+            .return_once(move |_block_id| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/block_transaction_count?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"block_transaction_count\":\"34\"}"
+        );
+    }
+
+    /// Test the `get_block_transaction_count` endpoint.
+    /// `/starknet/block_transaction_count?<block_id>&<block_id_type>`
+    /// Given StarkNet light client returns error when query starknet get_block_transaction_count, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_get_block_transaction_count_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_block_transaction_count()
+            .return_once(move |_block_id| {
+                Err(eyre::eyre!("cannot query starknet block transaction count"))
+            });
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/block_transaction_count?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet block transaction count\"}"
+        );
+    }
 }
