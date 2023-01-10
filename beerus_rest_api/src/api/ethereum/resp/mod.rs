@@ -69,3 +69,34 @@ pub struct QueryGasPriceResponse {
 pub struct QueryEstimateGasResponse {
     pub quantity: u64,
 }
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryLogsObject {
+    pub address: Option<String>,
+    pub block_hash: Option<String>,
+    pub from_block: Option<String>,
+    pub to_block: Option<String>,
+    pub topics: Option<Vec<String>>,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseLog {
+    pub address: String,
+    pub topics: Vec<String>,
+    pub data: String,
+    pub block_hash: Option<String>,
+    pub block_number: Option<u64>,
+    pub transaction_hash: Option<String>,
+    pub transaction_index: Option<u64>,
+    pub log_index: Option<String>,
+    pub transaction_log_index: Option<String>,
+    pub log_type: Option<String>,
+    pub removed: Option<bool>,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryLogsResponse {
+    pub logs: Vec<ResponseLog>,
+}
