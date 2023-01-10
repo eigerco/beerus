@@ -119,21 +119,21 @@ fn build_logs_filter(
     let mut filter = Filter::new();
     match (from_block, to_block, &block_hash) {
         (Some(from), Some(to), None) => {
-            let from_block = BlockNumber::from_str(&from)
+            let from_block = BlockNumber::from_str(from)
                 .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
-            let to_block = BlockNumber::from_str(&to)
+            let to_block = BlockNumber::from_str(to)
                 .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
             filter = filter.select(from_block..to_block);
         }
         (Some(from), None, None) => {
-            let from_block = BlockNumber::from_str(&from)
+            let from_block = BlockNumber::from_str(from)
                 .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
             let to_block = BlockNumber::Latest;
             filter = filter.select(from_block..to_block);
         }
         (None, Some(to), None) => {
             let from_block = BlockNumber::Latest;
-            let to_block = BlockNumber::from_str(&to)
+            let to_block = BlockNumber::from_str(to)
                 .map_err(|err| eyre!("Non valid form for to_block: {}", err))?;
             filter = filter.select(from_block..to_block);
         }
@@ -164,7 +164,7 @@ fn build_logs_filter(
                 .topics
                 .get_mut(index)
                 .ok_or(eyre!("Too many topics, expected 4 at most"))?) =
-                Some(Topic::from(H256::from_str(&topic)?))
+                Some(Topic::from(H256::from_str(topic)?))
         }
     }
     Ok(filter)
