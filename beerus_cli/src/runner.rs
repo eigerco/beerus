@@ -48,14 +48,11 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 from_block,
                 to_block,
                 address,
+                topics,
+                blockhash: block_hash,
             } => {
-                ethereum::query_logs(
-                    beerus,
-                    from_block.to_string(),
-                    to_block.to_string(),
-                    address.to_string(),
-                )
-                .await
+                ethereum::query_logs(beerus, from_block, to_block, address, topics, block_hash)
+                    .await
             }
         },
         // StarkNet commands.

@@ -77,12 +77,16 @@ pub enum EthereumSubCommands {
         params: String,
     },
     QueryLogs {
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: Option<String>,
+        #[arg(short, long, value_name = "BLOCKHASH")]
+        blockhash: Option<String>,
         #[arg(short, long, value_name = "FROMBLOCK")]
-        from_block: String,
+        from_block: Option<String>,
         #[arg(short, long, value_name = "TOBLOCK")]
-        to_block: String,
-        #[arg(short, long, value_name = "TOSTRING")]
-        address: String,
+        to_block: Option<String>,
+        #[arg(short, long, value_name = "TOPICS", value_delimiter = ',')]
+        topics: Option<Vec<String>>,
     },
 }
 
@@ -233,13 +237,12 @@ impl Display for CommandResponse {
             }
 
             CommandResponse::EthereumQueryLogs(logs) => {
-                let formatted_str = logs
+                let logs = logs
                     .iter()
-                    .by_ref()
-                    .map(|log| format!("{log:?}"))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-                write!(f, "[{formatted_str}]")
+                    .map(|log| serde_json::to_string(&log).unwrap())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                write!(f, "[{logs}]")
             }
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374

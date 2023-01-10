@@ -4,10 +4,10 @@ use core::str::FromStr;
 use ethers::types::U256;
 use ethers::utils::hex;
 use ethers::{
-    types::{Address, BlockNumber, Filter, H256},
+    types::{Address, H256},
     utils,
 };
-use eyre::{eyre, Result};
+use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use serde::{Deserialize, Serialize};
 
@@ -209,14 +209,15 @@ pub async fn query_estimate_gas(
 
 pub async fn query_logs(
     beerus: BeerusLightClient,
-    from_block: String,
-    to_block: String,
-    address: String,
+    from_block: &Option<String>,
+    to_block: &Option<String>,
+    address: &Option<String>,
+    topics: &Option<Vec<String>>,
+    block_hash: &Option<String>,
 ) -> Result<CommandResponse> {
-    let from_block = BlockNumber::from_str(&from_block).map_err(|err| eyre!(err))?;
-    let to_block = BlockNumber::from_str(&to_block).map_err(|err| eyre!(err))?;
-    let address = Address::from_str(&address)?;
-    let filter = Filter::new().select(from_block..to_block).address(address);
-    let logs = beerus.ethereum_lightclient.get_logs(&filter).await?;
+    let logs = beerus
+        .ethereum_lightclient
+        .get_logs(from_block, to_block, address, topics, block_hash)
+        .await?;
     Ok(CommandResponse::EthereumQueryLogs(logs))
 }
