@@ -74,3 +74,11 @@ pub struct QueryGetClassResponse {
     pub entry_points_by_type: Value,
     pub program: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGetClassAtResponse {
+    pub abi: Value,
+    pub entry_points_by_type: Value,
+    pub program: String,
+}

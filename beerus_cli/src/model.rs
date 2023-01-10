@@ -182,6 +182,20 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "CLASS_HASH")]
         class_hash: String,
     },
+    /// The contract class definition
+    QueryGetClassAt {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+        /// The class hash
+        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        contract_address: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -208,6 +222,7 @@ pub enum CommandResponse {
     StarknetQueryBlockNumber(u64),
     StarknetQueryBlockHashAndNumber(BlockHashAndNumber),
     StarknetQueryGetClass(ContractClass),
+    StarknetQueryGetClassAt(ContractClass),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -375,6 +390,36 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClass(response) => {
+                let json_response = json!(
+                    {
+                        "program": base64::encode(&response.program),
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi.as_ref().unwrap()
+                    }
+                );
+                write!(f, "{json_response}")
+            }
+            // Print the contract class definition in the given block associated with the given hash.
+            // Result looks like:
+            // {
+            //    "abi": [
+            //      {
+            //          "inputs": [
+            //              {
+            //                  "name": "amount",
+            //                  "type": "felt"
+            //              }
+            //          ]
+            //      }
+            //    ],
+            //    "entry_points_by_type": {
+            //      "CONSTRUCTOR": [],
+            //      "EXTERNAL": [],
+            //      "L1_HANDLER": []
+            //    },
+            //    "program": "AQID"
+            // }
+            CommandResponse::StarknetQueryGetClassAt(response) => {
                 let json_response = json!(
                     {
                         "program": base64::encode(&response.program),

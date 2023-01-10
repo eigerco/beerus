@@ -1,8 +1,9 @@
 use super::resp::{
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
-    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
+    QueryContractViewResponse, QueryGetClassAtResponse, QueryGetClassResponse,
+    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
@@ -147,6 +148,32 @@ pub async fn get_class(
     class_hash: String,
 ) -> ApiResponse<QueryGetClassResponse> {
     ApiResponse::from_result(get_class_inner(beerus, block_id_type, block_id, class_hash).await)
+}
+
+/// Query the contract class definition in the given block associated with the contract address.
+/// The contract class definition.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `contract_address` - The contract address.
+///
+/// # Returns
+///
+/// `Ok(ContractClass)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/contract/class_at/<contract_address>?<block_id>&<block_id_type>")]
+pub async fn get_class_at(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    contract_address: String,
+) -> ApiResponse<QueryGetClassAtResponse> {
+    ApiResponse::from_result(
+        get_class_at_inner(beerus, block_id_type, block_id, contract_address).await,
+    )
 }
 
 /// Query the state root of StarkNet.
@@ -426,6 +453,30 @@ pub async fn get_class_inner(
         .get_class(&block_id, class_hash)
         .await?;
     Ok(QueryGetClassResponse {
+        program: base64::encode(&result.program),
+        entry_points_by_type: serde_json::value::to_value(&result.entry_points_by_type).unwrap(),
+        abi: serde_json::value::to_value(result.abi.unwrap()).unwrap(),
+    })
+}
+
+/// Query the contract class
+/// # Returns
+/// `ContractClass` - The contract class definition.
+pub async fn get_class_at_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    contract_address: String,
+) -> Result<QueryGetClassAtResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let contract_address = FieldElement::from_str(&contract_address)?;
+    debug!("Querying Contract Class");
+    let result = beerus
+        .starknet_lightclient
+        .get_class_at(&block_id, contract_address)
+        .await?;
+    Ok(QueryGetClassAtResponse {
         program: base64::encode(&result.program),
         entry_points_by_type: serde_json::value::to_value(&result.entry_points_by_type).unwrap(),
         abi: serde_json::value::to_value(result.abi.unwrap()).unwrap(),
