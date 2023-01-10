@@ -79,4 +79,14 @@ pub struct QueryGetClassResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryGetClassHashResponse {
     pub class_hash: String,
+
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+
+pub struct QueryGetClassAtResponse {
+    pub abi: Value,
+    pub entry_points_by_type: Value,
+    pub program: String,
 }
