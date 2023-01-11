@@ -1,6 +1,6 @@
 use super::resp::{
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
+    QueryContractViewResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,QueryGetBlockTransactionCountResponse
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryStateRootResponse,
@@ -201,6 +201,30 @@ pub async fn get_class_at(
 ) -> ApiResponse<QueryGetClassAtResponse> {
     ApiResponse::from_result(
         get_class_at_inner(beerus, block_id_type, block_id, contract_address).await,
+    )
+}
+
+/// Query the number of transactions in a block given a block id.
+/// The number of transactions in a block.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+///
+/// # Returns
+///
+/// `Ok(ContractClass)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/block_transaction_count?<block_id>&<block_id_type>")]
+pub async fn get_block_transaction_count(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> ApiResponse<QueryGetBlockTransactionCountResponse> {
+    ApiResponse::from_result(
+        get_block_transaction_count_inner(beerus, block_id_type, block_id).await,
     )
 }
 
@@ -530,5 +554,25 @@ pub async fn get_class_at_inner(
         program: base64::encode(&result.program),
         entry_points_by_type: serde_json::value::to_value(&result.entry_points_by_type).unwrap(),
         abi: serde_json::value::to_value(result.abi.unwrap()).unwrap(),
+    })
+}
+
+/// Query the number of transactions in a block given a block id.
+/// # Returns
+/// `block_transaction_count` - The number of transactions in a block.
+pub async fn get_block_transaction_count_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> Result<QueryGetBlockTransactionCountResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    debug!("Querying block transaction count");
+    Ok(QueryGetBlockTransactionCountResponse {
+        block_transaction_count: beerus
+            .starknet_lightclient
+            .get_block_transaction_count(&block_id)
+            .await?
+            .to_string(),
     })
 }

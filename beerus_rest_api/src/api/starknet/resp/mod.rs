@@ -89,3 +89,9 @@ pub struct QueryGetClassAtResponse {
     pub entry_points_by_type: Value,
     pub program: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGetBlockTransactionCountResponse {
+    pub block_transaction_count: String,
+}
