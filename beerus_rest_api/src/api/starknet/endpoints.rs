@@ -1,9 +1,9 @@
 use super::resp::{
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,QueryGetBlockTransactionCountResponse
-    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse,
+    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
+    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
+    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
 };
 use crate::api::ApiResponse;
 
