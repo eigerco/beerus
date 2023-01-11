@@ -139,6 +139,17 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QueryGetBlockTransactionCount {
+                block_id_type,
+                block_id,
+            } => {
+                starknet::get_block_transaction_count(
+                    beerus,
+                    block_id_type.to_string(),
+                    block_id.to_string(),
+                )
+                .await
+            }
         },
     }
 }
