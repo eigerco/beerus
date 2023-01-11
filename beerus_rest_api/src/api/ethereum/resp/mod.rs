@@ -15,6 +15,11 @@ pub struct TransactionObject {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct SendRawTransactionResponse {
+    pub response: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryBalanceResponse {
     pub address: String,
     pub balance: String,
@@ -54,6 +59,12 @@ pub struct QueryBlockTxCountByBlockNumberResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryBlockTxCountByBlockHashResponse {
+    pub tx_count: u64,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryTransactionByHashResponse {
     pub tx_data: String,
 }
@@ -68,6 +79,24 @@ pub struct QueryGasPriceResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryEstimateGasResponse {
     pub quantity: u64,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockByHashResponse {
+    pub block: Option<serde_json::Value>,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryPriorityFeeResponse {
+    pub priority_fee: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockByNumberResponse {
+    pub block: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]

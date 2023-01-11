@@ -3,8 +3,9 @@ pub mod helios_lightclient;
 use async_trait::async_trait;
 use ethers::types::{Address, Log, Transaction, H256, U256};
 use eyre::Result;
-use helios::types::{BlockTag, CallOpts};
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use mockall::automock;
+use std::u8;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.
@@ -34,6 +35,18 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn call(&self, opts: &CallOpts, block: BlockTag) -> Result<Vec<u8>>;
 
+    /// Send Raw Transaction
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `bytes` - Transaction Bytes.
+    /// # Returns
+    /// The balance of the account.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn send_raw_transaction(&self, bytes: &[u8]) -> Result<H256>;
+
     /// Get the balance of an account.
     /// This function should be called after `start`.
     /// # Arguments
@@ -46,6 +59,7 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256>;
+
     /// Get the Nonce of an account.
     /// This function should be called after `start`.
     /// # Arguments
@@ -97,6 +111,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
 
+    /// Get the txs counts of a given block hash.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The code of the contract.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_block_transaction_count_by_hash(&self, hash: &[u8]) -> Result<u64>;
+
     /// Get the tx data of a given tx hash.
     /// This function should be called after `start`.
     /// # Returns
@@ -127,6 +151,43 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64>;
+
+    /// Get information about a block by block hash.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `hash` - block hash
+    /// * `full_tx` - If true it returns the full transaction objects, if false only the hashes of the transactions.
+    /// # Returns
+    /// A block object, or null when no block was found.
+    /// # Errors
+    /// If the call fails.
+    async fn get_block_by_hash(&self, hash: &[u8], full_tx: bool)
+        -> Result<Option<ExecutionBlock>>;
+
+    /// Get max priority fee_per_gas.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The gas price from the Ethereum network.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_priority_fee(&self) -> Result<U256>;
+
+    /// Get information about a block by block number.
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `block` - integer of a block number, or the string "earliest", "latest" or "pending"
+    /// * `full_tx` - If true it returns the full transaction objects, if false only the hashes of the transactions.
+    /// # Returns
+    /// A block object, or null when no block was found.
+    /// # Errors
+    /// If the call fails.
+    async fn get_block_by_number(
+        &self,
+        block: BlockTag,
+        full_tx: bool,
+    ) -> Result<Option<ExecutionBlock>>;
 
     /// Get logs (blockchain events), based on the given filter.
     /// # Arguments

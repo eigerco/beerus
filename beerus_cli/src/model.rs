@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
 use ethers::prelude::Log;
-use ethers::types::U256;
+use ethers::types::{H256, U256};
+use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-
 use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
 use std::{fmt::Display, path::PathBuf};
 
@@ -41,6 +41,12 @@ pub struct EthereumCommands {
 /// Ethereum related subcommands.
 #[derive(Subcommand, Debug)]
 pub enum EthereumSubCommands {
+    /// Sends a Raw Transaction.
+    SendRawTransaction {
+        /// Bytes of the Raw Transaction
+        #[arg(short, long, value_name = "BYTES")]
+        bytes: String,
+    },
     /// Query the balance of an Ethereum address.
     QueryBalance {
         /// The address to query the balance of
@@ -67,6 +73,11 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "BLOCK")]
         block: u64,
     },
+    QueryBlockTxCountByHash {
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
+    },
     QueryTxByHash {
         #[arg(short, long, value_name = "HASH")]
         hash: String,
@@ -75,6 +86,26 @@ pub enum EthereumSubCommands {
     QueryEstimateGas {
         #[arg(short, long, value_name = "params")]
         params: String,
+    },
+    QueryBlockByHash {
+        /// The block number to query
+        #[arg(short, long, value_name = "BLOCK_HASH")]
+        hash: String,
+
+        /// Fetch full transaction objects or just the transaction hashes
+        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        full_tx: bool,
+    },
+
+    QueryPriorityFee {},
+    QueryBlockByNumber {
+        /// The block number to query
+        #[arg(short, long, value_name = "BLOCK_NUMBER")]
+        block: String,
+
+        /// Fetch full transaction objects or just the transaction hashes
+        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        full_tx: bool,
     },
     /// Query Logs (blockchain events) that match
     /// the given parameters.
@@ -173,20 +204,39 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "CLASS_HASH")]
         class_hash: String,
     },
+    /// The contract class definition
+    QueryGetClassAt {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+        /// The class hash
+        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        contract_address: String,
+    },
 }
 
 /// The response from a CLI command.
 pub enum CommandResponse {
+    EthereumSendRawTransaction(H256),
     EthereumQueryBalance(String),
     EthereumQueryNonce(u64),
     EthereumQueryBlockNumber(u64),
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
     EthereumQueryBlockTxCountByNumber(u64),
+    EthereumQueryBlockTxCountByHash(u64),
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     EthereumQueryEstimateGas(u64),
     EthereumQueryLogs(Vec<Log>),
+    EthereumQueryBlockByHash(Option<ExecutionBlock>),
+    EthereumQueryGetPriorityFee(U256),
+    EthereumQueryBlockByNumber(Option<ExecutionBlock>),
     StarkNetQueryStateRoot(U256),
     StarkNetQueryContract(Vec<FieldElement>),
     StarkNetQueryGetStorageAt(FieldElement),
@@ -195,6 +245,7 @@ pub enum CommandResponse {
     StarknetQueryBlockNumber(u64),
     StarknetQueryBlockHashAndNumber(BlockHashAndNumber),
     StarknetQueryGetClass(ContractClass),
+    StarknetQueryGetClassAt(ContractClass),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -207,6 +258,9 @@ impl Display for CommandResponse {
     /// See the documentation for `std::fmt::Display`.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            // Print raw Transaction response
+            // Result looks like: 0.000000000000000001 ETH
+            CommandResponse::EthereumSendRawTransaction(response) => write!(f, "{response}"),
             // Print the balance in Ether.
             // Result looks like: 0.000000000000000001 ETH
             CommandResponse::EthereumQueryBalance(balance) => write!(f, "{balance} ETH"),
@@ -232,15 +286,18 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
                 write!(f, "{tx_count}")
             }
-
-            // Print the gas price from the Ethereum Network
+            // Print the count of txs of a block
             // Result looks like: 150
+            CommandResponse::EthereumQueryBlockTxCountByHash(tx_count) => {
+                write!(f, "{tx_count}")
+            }
+            // Print the gas price from the Ethereum Network
+            // Result looks like: 15000
             CommandResponse::EthereumQueryGasPrice(gas_price) => {
                 write!(f, "{gas_price}")
             }
-
             // Print the estimated gas from the Ethereum Network
-            // Result looks like: 150
+            // Result looks like: 15000
             CommandResponse::EthereumQueryEstimateGas(gas) => {
                 write!(f, "{gas}")
             }
@@ -253,6 +310,27 @@ impl Display for CommandResponse {
                     .join(",");
                 write!(f, "[{logs}]")
             }
+            // Print Block given a block hash
+            // Result looks like:
+            CommandResponse::EthereumQueryBlockByHash(block) => match block {
+                Some(block) => {
+                    let json_block = serde_json::to_string(&block).unwrap();
+                    write!(f, "{json_block}")
+                }
+                None => write!(f, "No block found"),
+            },
+            // Print the max priority fee per gas from the Ethereum Network
+            // Result looks like:
+            CommandResponse::EthereumQueryGetPriorityFee(get_priority_fee) => {
+                write!(f, "{get_priority_fee}")
+            }
+            CommandResponse::EthereumQueryBlockByNumber(block) => match block {
+                Some(block) => {
+                    let json_block = serde_json::to_string(&block).unwrap();
+                    write!(f, "{json_block}")
+                }
+                None => write!(f, "No block found"),
+            },
             // Print the state root.
             // Result looks like: 2343271987571512511202187232154229702738820280823720849834887135668366687374
             CommandResponse::StarkNetQueryStateRoot(state_root) => write!(f, "{state_root}"),
@@ -344,6 +422,36 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClass(response) => {
+                let json_response = json!(
+                    {
+                        "program": base64::encode(&response.program),
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi.as_ref().unwrap()
+                    }
+                );
+                write!(f, "{json_response}")
+            }
+            // Print the contract class definition in the given block associated with the given hash.
+            // Result looks like:
+            // {
+            //    "abi": [
+            //      {
+            //          "inputs": [
+            //              {
+            //                  "name": "amount",
+            //                  "type": "felt"
+            //              }
+            //          ]
+            //      }
+            //    ],
+            //    "entry_points_by_type": {
+            //      "CONSTRUCTOR": [],
+            //      "EXTERNAL": [],
+            //      "L1_HANDLER": []
+            //    },
+            //    "program": "AQID"
+            // }
+            CommandResponse::StarknetQueryGetClassAt(response) => {
                 let json_response = json!(
                     {
                         "program": base64::encode(&response.program),

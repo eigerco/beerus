@@ -10,14 +10,97 @@ mod test {
         },
     };
     use beerus_rest_api::build_rocket_server;
+    use ethers::prelude::Log;
     use ethers::types::{Address, Transaction};
-    use ethers::{prelude::Log, types::U256};
-    use rocket::{
-        http::{ContentType, Status},
-        local::asynchronous::Client,
-        uri,
-    };
+    use ethers::types::{H256, U256};
+    use helios::types::{ExecutionBlock, Transactions};
+    use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
+
+    /// Test the `send_raw_transaction` endpoint.
+    /// `/ethereum/send_raw_transaction/<bytes>`
+    /// Given normal conditions, when sending raw transaction, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_send_raw_transaction_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+        let expected_value =
+            H256::from_str("0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d")
+                .unwrap();
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_send_raw_transaction()
+            .return_once(move |_| Ok(expected_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/send_raw_transaction/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"response\":\"0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d\"}"
+        );
+    }
+
+    /// Test the `send_raw_transaction` endpoint.
+    /// `/ethereum/send_raw_transaction/<bytes>`
+    /// Given Ethereum light client returns error when sending raw transaction, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_send_raw_transaction_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_send_raw_transaction()
+            .return_once(move |_| Err(eyre::eyre!("cannot send raw transaction")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/send_raw_transaction/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot send raw transaction\"}"
+        );
+    }
 
     /// Test the `query_balance` endpoint.
     /// `/ethereum/balance/<address>`
@@ -287,6 +370,69 @@ mod test {
         assert_eq!(response.into_string().await.unwrap(), "{\"chain_id\":1}");
     }
 
+    /// Test the `query_ethereum_block_by_number` endpoint.
+    /// `ethereum/get_block_by_number/<block_number>/<full_txs>`
+    /// Given normal conditions, when query block by number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_by_number_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![],
+        };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
+        let expected_response = format!("{{\"block\":{expected_block_value}}}");
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_number()
+            .return_once(move |_, _| Ok(Some(expected_block)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/ethereum/get_block_by_number/1/true"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), expected_response);
+    }
+
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given normal conditions, when query starknet state root, then ok.
@@ -465,6 +611,81 @@ mod test {
 
         let response = client
             .get(uri!("/ethereum/tx_count_by_block_number/1"))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Cannot query block tx count\"}"
+        )
+    }
+
+    /// Test the `query_block_transaction_count_by_hash` endpoint.
+    /// `/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a`
+    /// Given normal conditions, when `query_block_transaction_count_by_hash`, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_by_block_hash_then_ok() {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let check_value: u64 = 120;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Ok(check_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
+            .dispatch()
+            .await;
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), "{\"tx_count\":120}")
+    }
+
+    /// Test the `query_block_transaction_count_by_hash` endpoint.
+    /// `/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a`
+    /// Given Ethereum light client returns error when `query_block_transaction_count_by_hash`, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    ) {
+        // Build mocks
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_block_transaction_count_by_hash()
+            .return_once(move |_| Err(eyre::eyre!("Cannot query block tx count")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let response = client
+            .get(uri!(
+                "/ethereum/tx_count_by_block_hash/0xc24215226336d22238a20a72f8e489c005b44c4a"
+            ))
             .dispatch()
             .await;
 
@@ -698,6 +919,212 @@ mod test {
         );
     }
 
+    /// Test the `query_ethereum_block_by_hash` endpoint.
+    /// `ethereum/get_block_by_hash<block_hash>/<full_txs>`
+    /// Given normal conditions, when query block by hash, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_block_by_hash_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![],
+        };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
+        let expected_response = format!("{{\"block\":{expected_block_value}}}");
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_hash()
+            .return_once(move |_, _| Ok(Some(expected_block)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/get_block_by_hash/0xc24215226336d22238a20a72f8e489c005b44c4a/true"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), expected_response);
+    }
+
+    /// Test the `query_block_by_hash` endpoint.
+    /// `ethereum/get_block_by_hash<block_hash>/<full_txs>`
+    /// Given Ethereum light client returns error when query block by hash, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_block_by_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_block = ExecutionBlock {
+            number: 0,
+            base_fee_per_gas: Default::default(),
+            difficulty: Default::default(),
+            extra_data: vec![],
+            gas_limit: 0,
+            gas_used: 0,
+            hash: Default::default(),
+            logs_bloom: vec![],
+            miner: Default::default(),
+            mix_hash: Default::default(),
+            nonce: "".to_string(),
+            parent_hash: Default::default(),
+            receipts_root: Default::default(),
+            sha3_uncles: Default::default(),
+            size: 0,
+            state_root: Default::default(),
+            timestamp: 0,
+            total_difficulty: 0,
+            transactions: Transactions::Full(vec![]),
+            transactions_root: Default::default(),
+            uncles: vec![],
+        };
+        let block_string = serde_json::to_string(&expected_block).unwrap();
+        let expected_block_value: serde_json::Value =
+            serde_json::from_str(block_string.as_str()).unwrap();
+        let _expected_response = format!("{{\"block\":{expected_block_value}}}");
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_block_by_hash()
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query block by hash")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/ethereum/get_block_by_hash/0xc24215226336d22238a20a72f8e489c005b44c4a/true"
+            ))
+            .dispatch()
+            .await;
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query block by hash\"}"
+        );
+    }
+
+    /// Test the `query_priority_fee` endpoint.
+    /// `/ethereum/priority_fee`
+    /// Given normal conditions, when query block number, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_priority_fee_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_priority_fee()
+            .return_once(move || Ok(U256::default()));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/priority_fee")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"priority_fee\":\"0\"}"
+        );
+    }
+
+    /// Test the `query_priority_fee` endpoint.
+    /// `/ethereum/priority_fee`
+    /// Given Ethereum light client returns error when query priority fee, then error is propagated.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_priority_fee()
+            .return_once(move || Err(eyre::eyre!("cannot query priority fee")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/ethereum/priority_fee")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query priority fee\"}"
+        );
+    }
+
     /// Test the `/ethereum/logs` endpoint.
     /// Given normal conditions, when query logs, then errors is propagated.
     #[tokio::test]
@@ -724,12 +1151,11 @@ mod test {
         let client = Client::tracked(build_rocket_server(beerus).await)
             .await
             .expect("valid rocket instance");
-        // When
 
+        // When
         let response = client
             .post(uri!("/ethereum/logs"))
             .body(r#"{"fromBlock":"finalized","toBlock":"finalized","blockHash": "0x01"}"#)
-            .header(ContentType::JsonApi)
             .dispatch()
             .await;
 
@@ -766,24 +1192,19 @@ mod test {
         let client = Client::tracked(build_rocket_server(beerus).await)
             .await
             .expect("valid rocket instance");
-        // When
 
+        // When
         let response = client
             .post(uri!("/ethereum/logs"))
             .body(r#"{"fromBlock":"finalized","toBlock":"finalized", "topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]}"#)
-            .header(ContentType::JsonApi)
             .dispatch()
             .await;
 
-        // Then
-        assert_eq!(response.status(), Status::Ok);
         let expected =
               "{\"logs\":[{\"address\":\"0x0000000000000000000000000000000000000000\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"],\"data\":\"0x\",\"blockHash\":null,\"blockNumber\":null,\"transactionHash\":null,\"transactionIndex\":null,\"logIndex\":null,\"transactionLogIndex\":null,\"logType\":null,\"removed\":null}]}";
+
         assert_eq!(response.into_string().await.unwrap(), expected);
     }
-    /// Test the `query_gas_price` endpoint.
-    /// `/ethereum/block_number`
-    /// Given Ethereum light client returns error when query gas price, then error is propagated.
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given Ethereum light client returns error when query balance, then error is propagated.
@@ -1648,7 +2069,7 @@ mod test {
         starknet_lightclient
             .expect_get_class()
             .return_once(move |_block_id, _class_hash| {
-                Err(eyre::eyre!("cannot query starknet address block number"))
+                Err(eyre::eyre!("cannot query starknet contract class"))
             });
 
         let beerus = BeerusLightClient::new(
@@ -1674,7 +2095,93 @@ mod test {
         assert_eq!(response.status(), Status::InternalServerError);
         assert_eq!(
             response.into_string().await.unwrap(),
-            "{\"error_message\":\"cannot query starknet address block number\"}"
+            "{\"error_message\":\"cannot query starknet contract class\"}"
+        );
+    }
+
+    /// Test the `get_class_at` endpoint.
+    /// `/starknet/contract/class_att/<class_hash>?<block_id>&<block_id_type>`
+    /// Given normal conditions, when query starknet get_class_at, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_get_class_at_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_contract_class();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_class_at()
+            .return_once(move |_block_id, _contract_address| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/contract/class_at/0x123?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `get_class_at` endpoint.
+    /// `/starknet/contract/class/<class_hash>?<block_id>&<block_id_type>`
+    /// Given StarkNet light client returns error when query starknet get_class_at, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_get_class_at_then_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient.expect_get_class_at().return_once(
+            move |_block_id, _contract_address| {
+                Err(eyre::eyre!("cannot query starknet contract class"))
+            },
+        );
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/contract/class_at/0x123?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet contract class\"}"
         );
     }
 

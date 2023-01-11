@@ -14,15 +14,20 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
         "/",
         openapi_get_routes![
             index,
+            ethereum::endpoints::send_raw_transaction,
             ethereum::endpoints::query_balance,
             ethereum::endpoints::query_nonce,
             ethereum::endpoints::query_block_number,
             ethereum::endpoints::query_chain_id,
             ethereum::endpoints::query_code,
             ethereum::endpoints::get_block_transaction_count_by_number,
+            ethereum::endpoints::get_block_transaction_count_by_hash,
             ethereum::endpoints::get_transaction_by_hash,
             ethereum::endpoints::get_gas_price,
             ethereum::endpoints::query_estimate_gas,
+            ethereum::endpoints::get_block_by_hash,
+            ethereum::endpoints::get_priority_fee,
+            ethereum::endpoints::query_block_by_number,
             ethereum::endpoints::query_logs,
             starknet::endpoints::query_starknet_state_root,
             starknet::endpoints::query_starknet_contract_view,
@@ -36,6 +41,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             starknet::endpoints::query_starknet_block_number,
             starknet::endpoints::query_starknet_block_hash_and_number,
             starknet::endpoints::get_class,
+            starknet::endpoints::get_class_at,
         ],
     )
 }

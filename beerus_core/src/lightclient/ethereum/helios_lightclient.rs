@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
 use eyre::{eyre, Result};
 use helios::client::{Client, ClientBuilder, FileDB};
-use helios::types::{BlockTag, CallOpts};
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use std::primitive::u64;
 use std::str::FromStr;
 
@@ -27,6 +27,10 @@ impl EthereumLightClient for HeliosLightClient {
     async fn call(&self, opts: &CallOpts, block: BlockTag) -> eyre::Result<Vec<u8>> {
         // Wrap the Helios call.
         self.helios_light_client.call(opts, block).await
+    }
+
+    async fn send_raw_transaction(&self, bytes: &[u8]) -> eyre::Result<ethers::types::H256> {
+        self.helios_light_client.send_raw_transaction(bytes).await
     }
 
     async fn get_balance(
@@ -59,6 +63,13 @@ impl EthereumLightClient for HeliosLightClient {
             .await
     }
 
+    async fn get_block_transaction_count_by_hash(&self, hash: &[u8]) -> Result<u64> {
+        let hash = hash.to_vec();
+        self.helios_light_client
+            .get_block_transaction_count_by_hash(&hash)
+            .await
+    }
+
     async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>> {
         self.helios_light_client
             .get_transaction_by_hash(tx_hash)
@@ -70,6 +81,29 @@ impl EthereumLightClient for HeliosLightClient {
 
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64> {
         self.helios_light_client.estimate_gas(opts).await
+    }
+    async fn get_block_by_hash(
+        &self,
+        hash: &[u8],
+        full_tx: bool,
+    ) -> eyre::Result<Option<ExecutionBlock>> {
+        let hash: Vec<u8> = Vec::from(hash);
+        self.helios_light_client
+            .get_block_by_hash(&hash, full_tx)
+            .await
+    }
+    async fn get_priority_fee(&self) -> Result<U256> {
+        self.helios_light_client.get_priority_fee().await
+    }
+
+    async fn get_block_by_number(
+        &self,
+        block: BlockTag,
+        full_tx: bool,
+    ) -> eyre::Result<Option<ExecutionBlock>> {
+        self.helios_light_client
+            .get_block_by_number(block, full_tx)
+            .await
     }
 
     async fn get_logs(

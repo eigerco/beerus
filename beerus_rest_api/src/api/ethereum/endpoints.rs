@@ -1,7 +1,10 @@
 use crate::api::ethereum::resp::{
-    QueryBalanceResponse, QueryBlockNumberResponse, QueryBlockTxCountByBlockNumberResponse,
-    QueryChainIdResponse, QueryCodeResponse, QueryEstimateGasResponse, QueryGasPriceResponse,
-    QueryNonceResponse, QueryTransactionByHashResponse, ResponseLog, TransactionObject,
+    QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockByNumberResponse,
+    QueryBlockNumberResponse, QueryBlockTxCountByBlockHashResponse,
+    QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
+    QueryEstimateGasResponse, QueryGasPriceResponse, QueryLogsObject, QueryLogsResponse,
+    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse, ResponseLog,
+    SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
@@ -19,7 +22,14 @@ use rocket::{get, State};
 use rocket_okapi::openapi;
 use std::str::FromStr;
 
-use super::resp::{QueryLogsObject, QueryLogsResponse};
+#[openapi]
+#[get("/ethereum/send_raw_transaction/<bytes>")]
+pub async fn send_raw_transaction(
+    bytes: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<SendRawTransactionResponse> {
+    ApiResponse::from_result(send_raw_transaction_inner(beerus, bytes).await)
+}
 
 #[openapi]
 #[get("/ethereum/balance/<address>")]
@@ -74,6 +84,15 @@ pub async fn get_block_transaction_count_by_number(
 }
 
 #[openapi]
+#[get("/ethereum/tx_count_by_block_hash/<hash>")]
+pub async fn get_block_transaction_count_by_hash(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockTxCountByBlockHashResponse> {
+    ApiResponse::from_result(query_block_transaction_count_by_hash_inner(hash, beerus).await)
+}
+
+#[openapi]
 #[get("/ethereum/tx_by_hash/<hash>")]
 pub async fn get_transaction_by_hash(
     hash: &str,
@@ -97,6 +116,35 @@ pub async fn query_estimate_gas(
     transaction_object: Json<TransactionObject>,
 ) -> ApiResponse<QueryEstimateGasResponse> {
     ApiResponse::from_result(query_estimate_gas_inner(beerus, transaction_object).await)
+}
+
+#[openapi]
+#[get("/ethereum/get_block_by_hash/<hash>/<full_tx>")]
+pub async fn get_block_by_hash(
+    hash: &str,
+    full_tx: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockByHashResponse> {
+    ApiResponse::from_result(query_block_by_hash_inner(beerus, hash, full_tx).await)
+}
+
+#[openapi]
+#[get("/ethereum/priority_fee")]
+
+pub async fn get_priority_fee(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryPriorityFeeResponse> {
+    ApiResponse::from_result(query_priority_fee_inner(beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/get_block_by_number/<block>/<full_tx>")]
+pub async fn query_block_by_number(
+    block: &str,
+    full_tx: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryBlockByNumberResponse> {
+    ApiResponse::from_result(query_block_by_number_inner(beerus, block, full_tx).await)
 }
 
 #[openapi]
@@ -235,6 +283,32 @@ pub async fn query_block_transaction_count_by_number_inner(
     Ok(QueryBlockTxCountByBlockNumberResponse { tx_count })
 }
 
+/// Query the Tx count of a given Block hash from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_block_transaction_count_by_hash)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_block_transaction_count_by_hash_inner(
+    hash: &str,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryBlockTxCountByBlockHashResponse> {
+    debug!("Querying Block Tx count");
+    // Parse hash the string as a Vec<u8>
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_block_transaction_count_by_hash(&hash)
+        .await?;
+
+    Ok(QueryBlockTxCountByBlockHashResponse { tx_count })
+}
+
 /// Query the Tx data of a Tx Hash from the the Ethereum chain.
 /// # Returns
 /// `Ok(get_transaction_by_hash)` - u64 (tx_count)
@@ -312,6 +386,132 @@ pub async fn query_estimate_gas_inner(
 
     let quantity = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
     Ok(QueryEstimateGasResponse { quantity })
+}
+
+/// Send raw transaction.
+/// # Arguments
+/// * `bytes` - Bytes of the transaction.
+/// # Returns
+/// `Ok(send_raw_transaction)` - Response from the Raw Transaction.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the Ethereum address is invalid or the block tag is invalid.
+/// # Examples
+pub async fn send_raw_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    bytes: &str,
+) -> Result<SendRawTransactionResponse> {
+    debug!("Sending Raw Transaction: {}", bytes);
+    let bytes: Vec<u8> = bytes[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+    let bytes_slice: &[u8] = bytes.as_ref();
+    // Send Raw Transaction.
+    let response = beerus
+        .ethereum_lightclient
+        .send_raw_transaction(bytes_slice)
+        .await?;
+
+    Ok(SendRawTransactionResponse {
+        response: format!("{response:?}"),
+    })
+}
+
+/// Query information about a block by block number.
+/// # Arguments
+/// * `block` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// `Ok(query_block_response)` - The query block response.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the block tag is invalid or the full_tx boolean is invalid.
+/// # Examples
+pub async fn query_block_by_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    hash: &str,
+    full_tx: &str,
+) -> Result<QueryBlockByHashResponse> {
+    debug!(
+        "Querying block by hash: {}, with full transactions: {}",
+        hash, full_tx
+    );
+
+    let hash: Vec<u8> = hash[2..]
+        .chars()
+        .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+        .collect();
+
+    let full_tx = bool::from_str(full_tx)?;
+    let block_details = beerus
+        .ethereum_lightclient
+        .get_block_by_hash(&hash, full_tx)
+        .await?;
+    let block = match block_details {
+        Some(block) => {
+            let block_json_string: String = serde_json::to_string(&block).unwrap();
+            let block_json_value: serde_json::Value =
+                serde_json::from_str(block_json_string.as_str()).unwrap();
+            Some(block_json_value)
+        }
+        None => None,
+    };
+    Ok(QueryBlockByHashResponse { block })
+}
+
+/// Query priority fee from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_priority_fee)` - U256 (priority_fee)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_priority_fee_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryPriorityFeeResponse> {
+    debug!("Querying Gas Price");
+    let unformatted_tx_data = beerus.ethereum_lightclient.get_priority_fee().await?;
+    let priority_fee = format!("{unformatted_tx_data:?}");
+    Ok(QueryPriorityFeeResponse { priority_fee })
+}
+
+/// Query information about a block by block number.
+/// # Arguments
+/// * `block` - The block number or tag.
+/// * `full_tx` - Whether to return full transaction objects or just the transaction hashes.
+/// # Returns
+/// `Ok(query_block_response)` - The query block response.
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the block tag is invalid or the full_tx boolean is invalid.
+/// # Examples
+pub async fn query_block_by_number_inner(
+    beerus: &State<BeerusLightClient>,
+    block_tag: &str,
+    full_tx: &str,
+) -> Result<QueryBlockByNumberResponse> {
+    debug!(
+        "Querying block by number: {}, with full transactions: {}",
+        block_tag, full_tx
+    );
+    let full_tx = bool::from_str(full_tx)?;
+    let block_tag: String = serde_json::to_string(&block_tag)?;
+    let block_tag: BlockTag = serde_json::from_str(block_tag.as_str())?;
+    let block_details = beerus
+        .ethereum_lightclient
+        .get_block_by_number(block_tag, full_tx)
+        .await?;
+    let block = match block_details {
+        Some(block) => {
+            let block_json_string: String = serde_json::to_string(&block).unwrap();
+            let block_json_value: serde_json::Value =
+                serde_json::from_str(block_json_string.as_str()).unwrap();
+            Some(block_json_value)
+        }
+        None => None,
+    };
+    Ok(QueryBlockByNumberResponse { block })
 }
 
 /// Query logs.
