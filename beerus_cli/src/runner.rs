@@ -51,6 +51,16 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             EthereumSubCommands::QueryEstimateGas { params } => {
                 ethereum::query_estimate_gas(beerus, params.to_owned()).await
             }
+            EthereumSubCommands::QueryLogs {
+                from_block,
+                to_block,
+                address,
+                topics,
+                blockhash: block_hash,
+            } => {
+                ethereum::query_logs(beerus, from_block, to_block, address, topics, block_hash)
+                    .await
+            }
             EthereumSubCommands::QueryBlockByHash { hash, full_tx } => {
                 ethereum::query_block_by_hash(beerus, hash.to_string(), *full_tx).await
             }

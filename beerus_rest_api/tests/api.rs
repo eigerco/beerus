@@ -10,6 +10,7 @@ mod test {
         },
     };
     use beerus_rest_api::build_rocket_server;
+    use ethers::prelude::Log;
     use ethers::types::{Address, Transaction};
     use ethers::types::{H256, U256};
     use helios::types::{ExecutionBlock, Transactions};
@@ -1124,6 +1125,86 @@ mod test {
         );
     }
 
+    /// Test the `/ethereum/logs` endpoint.
+    /// Given normal conditions, when query logs, then errors is propagated.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_logs_then_error_is_propagated() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let error_msg = concat!(
+            "Non valid combination of from_block, to_block and blockhash. ",
+            "If you want to filter blocks, then ",
+            "you can only use either from_block and to_block or blockhash, not both",
+        );
+        ethereum_lightclient
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Err(eyre::eyre!(error_msg)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/ethereum/logs"))
+            .body(r#"{"fromBlock":"finalized","toBlock":"finalized","blockHash": "0x01"}"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(response.into_string().await.unwrap(),
+            "{\"error_message\":\"Non valid combination of from_block, to_block and blockhash. If you want to filter blocks, then you can only use either from_block and to_block or blockhash, not both\"}"
+        );
+    }
+
+    /// Test the `/ethereum/logs` endpoint.
+    /// Given normal conditions, when query , then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_logs_then_ok() {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+        let mut log = Log::default();
+        log.topics = vec![ethers::types::TxHash::from_str(
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+        )
+        .unwrap()];
+        let logs = vec![log];
+        ethereum_lightclient
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Ok(logs));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/ethereum/logs"))
+            .body(r#"{"fromBlock":"finalized","toBlock":"finalized", "topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]}"#)
+            .dispatch()
+            .await;
+
+        let expected =
+              "{\"logs\":[{\"address\":\"0x0000000000000000000000000000000000000000\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"],\"data\":\"0x\",\"blockHash\":null,\"blockNumber\":null,\"transactionHash\":null,\"transactionIndex\":null,\"logIndex\":null,\"transactionLogIndex\":null,\"logType\":null,\"removed\":null}]}";
+
+        assert_eq!(response.into_string().await.unwrap(), expected);
+    }
     /// Test the `query_starknet_state_root` endpoint.
     /// `/starknet/state/root`
     /// Given Ethereum light client returns error when query balance, then error is propagated.

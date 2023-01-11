@@ -28,6 +28,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             ethereum::endpoints::get_block_by_hash,
             ethereum::endpoints::get_priority_fee,
             ethereum::endpoints::query_block_by_number,
+            ethereum::endpoints::query_logs,
             starknet::endpoints::query_starknet_state_root,
             starknet::endpoints::query_starknet_contract_view,
             starknet::endpoints::query_starknet_get_storage_at,

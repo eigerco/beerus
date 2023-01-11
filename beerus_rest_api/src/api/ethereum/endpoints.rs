@@ -2,16 +2,16 @@ use crate::api::ethereum::resp::{
     QueryBalanceResponse, QueryBlockByHashResponse, QueryBlockByNumberResponse,
     QueryBlockNumberResponse, QueryBlockTxCountByBlockHashResponse,
     QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
-    QueryEstimateGasResponse, QueryGasPriceResponse, QueryNonceResponse, QueryPriorityFeeResponse,
-    QueryTransactionByHashResponse, SendRawTransactionResponse, TransactionObject,
+    QueryEstimateGasResponse, QueryGasPriceResponse, QueryLogsObject, QueryLogsResponse,
+    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse, ResponseLog,
+    SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::types::U256;
 
 use ethers::{
-    types::{Address, H256},
+    types::{Address, H256, U256},
     utils,
 };
 use eyre::Result;
@@ -145,6 +145,15 @@ pub async fn query_block_by_number(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryBlockByNumberResponse> {
     ApiResponse::from_result(query_block_by_number_inner(beerus, block, full_tx).await)
+}
+
+#[openapi]
+#[post("/ethereum/logs", data = "<query_logs_object>")]
+pub async fn query_logs(
+    beerus: &State<BeerusLightClient>,
+    query_logs_object: Json<QueryLogsObject>,
+) -> ApiResponse<QueryLogsResponse> {
+    ApiResponse::from_result(query_logs_inner(beerus, query_logs_object).await)
 }
 
 /// Query the balance of an Ethereum address.
@@ -503,4 +512,49 @@ pub async fn query_block_by_number_inner(
         None => None,
     };
     Ok(QueryBlockByNumberResponse { block })
+}
+
+/// Query logs.
+/// # Returns
+/// `Ok(logs_query)` - Vec<ResponseLog> (fetched lgos)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn query_logs_inner(
+    beerus: &State<BeerusLightClient>,
+    filter: Json<QueryLogsObject>,
+) -> Result<QueryLogsResponse> {
+    debug!("Querying logs");
+    let Json(QueryLogsObject {
+        address,
+        block_hash,
+        from_block,
+        to_block,
+        topics,
+    }) = filter;
+    let logs = beerus
+        .ethereum_lightclient
+        .get_logs(&from_block, &to_block, &address, &topics, &block_hash)
+        .await?
+        .into_iter()
+        .map(|log| ResponseLog {
+            address: format!("{:?}", log.address),
+            topics: log
+                .topics
+                .into_iter()
+                .map(|topic| format!("{topic:?}"))
+                .collect::<Vec<String>>(),
+            data: log.data.to_string(),
+            block_hash: log.block_hash.map(|hash| format!("{hash:?}")),
+            block_number: log.block_number.map(|num| num.as_u64()),
+            transaction_hash: log.transaction_hash.map(|hash| format!("{hash:?}")),
+            transaction_index: log.transaction_index.map(|num| num.as_u64()),
+            log_index: log.log_index.map(|index| index.to_string()),
+            transaction_log_index: log.transaction_log_index.map(|index| format!("{index:?}")),
+            log_type: log.log_type,
+            removed: log.removed,
+        })
+        .collect::<Vec<_>>();
+    Ok(QueryLogsResponse { logs })
 }

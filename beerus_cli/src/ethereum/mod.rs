@@ -1,5 +1,6 @@
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use core::str::FromStr;
 use ethers::types::U256;
 use ethers::utils::hex;
 use ethers::{
@@ -9,7 +10,6 @@ use ethers::{
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TransactionObject {
@@ -321,4 +321,18 @@ pub async fn query_block_by_number(
         .get_block_by_number(block, full_tx)
         .await?;
     Ok(CommandResponse::EthereumQueryBlockByNumber(block))
+}
+pub async fn query_logs(
+    beerus: BeerusLightClient,
+    from_block: &Option<String>,
+    to_block: &Option<String>,
+    address: &Option<String>,
+    topics: &Option<Vec<String>>,
+    block_hash: &Option<String>,
+) -> Result<CommandResponse> {
+    let logs = beerus
+        .ethereum_lightclient
+        .get_logs(from_block, to_block, address, topics, block_hash)
+        .await?;
+    Ok(CommandResponse::EthereumQueryLogs(logs))
 }
