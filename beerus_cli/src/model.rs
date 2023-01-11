@@ -116,13 +116,13 @@ pub enum EthereumSubCommands {
         /// Equivalent to from_block = to_block,
         /// only allowed if neither from_block or to_block
         /// is supplied.
-        #[arg(short, long, value_name = "BLOCKHASH")]
+        #[arg(short, long, value_name = "BLOCK_HASH")]
         blockhash: Option<String>,
         /// Starting block to filter from, defaults to "latest".
-        #[arg(short, long, value_name = "FROMBLOCK")]
+        #[arg(short, long, value_name = "FROM_BLOCK")]
         from_block: Option<String>,
         /// Ending block to filter to, defaults to "latest".
-        #[arg(short, long, value_name = "TOBLOCK")]
+        #[arg(short, long, value_name = "TO_BLOCK")]
         to_block: Option<String>,
         /// Topics to filter, up to 4 allowed.
         #[arg(short, long, value_name = "TOPICS", value_delimiter = ',')]
