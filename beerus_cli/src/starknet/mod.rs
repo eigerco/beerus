@@ -260,3 +260,25 @@ pub async fn get_class_at(
             .await?,
     ))
 }
+
+/// Query the number of transactions in a block given a block id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The number of transactions in a block.
+pub async fn get_block_transaction_count(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    Ok(CommandResponse::StarknetQueryGetBlockTransactionCount(
+        beerus
+            .starknet_lightclient
+            .get_block_transaction_count(&block_id)
+            .await?,
+    ))
+}

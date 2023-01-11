@@ -218,6 +218,17 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
         contract_address: String,
     },
+    // The number of transactions in a block given a block id of the StarkNet network
+    QueryGetBlockTransactionCount {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -246,6 +257,7 @@ pub enum CommandResponse {
     StarknetQueryBlockHashAndNumber(BlockHashAndNumber),
     StarknetQueryGetClass(ContractClass),
     StarknetQueryGetClassAt(ContractClass),
+    StarknetQueryGetBlockTransactionCount(u64),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -460,6 +472,11 @@ impl Display for CommandResponse {
                     }
                 );
                 write!(f, "{json_response}")
+            }
+            // Print the number of transactions in a block.
+            // Result looks like: `Block transaction count: 240`
+            CommandResponse::StarknetQueryGetBlockTransactionCount(block_transaction_count) => {
+                write!(f, "Block transaction count: {block_transaction_count}")
             }
         }
     }

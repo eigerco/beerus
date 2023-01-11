@@ -39,6 +39,7 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         contract_address: FieldElement,
     ) -> Result<ContractClass>;
+    async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -191,6 +192,24 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<ContractClass> {
         self.client
             .get_class_at(block_id, contract_address)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the number of transactions in a block given a block id.
+    /// The number of transactions in a block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(ContractClass)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64> {
+        self.client
+            .get_block_transaction_count(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
