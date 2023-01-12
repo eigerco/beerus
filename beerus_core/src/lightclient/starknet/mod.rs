@@ -5,7 +5,7 @@ use mockall::automock;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
-        models::FunctionCall,
+        models::{FunctionCall, StateUpdate},
         models::{BlockHashAndNumber, BlockId, ContractClass},
         HttpTransport, JsonRpcClient,
     },
@@ -40,6 +40,7 @@ pub trait StarkNetLightClient: Send + Sync {
         contract_address: FieldElement,
     ) -> Result<ContractClass>;
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
+    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -210,6 +211,22 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64> {
         self.client
             .get_block_transaction_count(block_id)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get information about the result of executing the requested block.
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(StateUpdate)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate> {
+        self.client
+            .get_state_update(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

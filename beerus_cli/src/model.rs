@@ -4,7 +4,7 @@ use ethers::types::{H256, U256};
 use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass, StateUpdate};
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -229,6 +229,16 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QueryGetStateUpdate {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -258,6 +268,7 @@ pub enum CommandResponse {
     StarknetQueryGetClass(ContractClass),
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
+    StarknetQueryGetStateUpdate(StateUpdate),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -477,6 +488,13 @@ impl Display for CommandResponse {
             // Result looks like: `Block transaction count: 240`
             CommandResponse::StarknetQueryGetBlockTransactionCount(block_transaction_count) => {
                 write!(f, "Block transaction count: {block_transaction_count}")
+            }
+
+            // Print the fetched state update for the matching block.
+            CommandResponse::StarknetQueryGetStateUpdate(state) => {
+                let json_response =
+                    serde_json::to_string_pretty(state).unwrap();
+                write!(f, "{json_response}")
             }
         }
     }

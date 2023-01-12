@@ -282,3 +282,24 @@ pub async fn get_block_transaction_count(
             .await?,
     ))
 }
+
+/// Query information about the result of executing the requested block.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The state update.
+pub async fn get_state_update(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    Ok(CommandResponse::StarknetQueryGetStateUpdate(
+        beerus
+            .starknet_lightclient
+            .get_state_update(&block_id)
+            .await?,
+    ))
+}
