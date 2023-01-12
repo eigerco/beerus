@@ -492,8 +492,7 @@ impl Display for CommandResponse {
 
             // Print the fetched state update for the matching block.
             CommandResponse::StarknetQueryGetStateUpdate(state) => {
-                let json_response =
-                    serde_json::to_string_pretty(state).unwrap();
+                let json_response = serde_json::to_string_pretty(state).unwrap();
                 write!(f, "{json_response}")
             }
         }
