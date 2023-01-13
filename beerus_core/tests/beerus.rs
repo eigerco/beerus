@@ -7,6 +7,7 @@ mod tests {
             ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
             starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
         },
+        starknet_helper::block_id_string_to_block_id_type,
     };
     use ethers::types::U256;
     use ethers::types::{Address, Log, Transaction, H256};
@@ -15,7 +16,7 @@ mod tests {
     use starknet::{
         core::types::FieldElement,
         macros::selector,
-        providers::jsonrpc::models::{BlockHashAndNumber, BlockId},
+        providers::jsonrpc::models::{BlockHashAndNumber, BlockId, StateDiff, StateUpdate},
     };
     use std::str::FromStr;
 
@@ -2361,5 +2362,94 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `get_logs` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test the `get_state_update` when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_state_update` method of the external dependencies.
+    /// It tests the `get_state_update` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_get_state_update_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let expected_result = StateUpdate {
+            block_hash: felt.clone(),
+            new_root: felt.clone(),
+            old_root: felt.clone(),
+            state_diff: StateDiff {
+                deployed_contracts: vec![],
+                storage_diffs: vec![],
+                declared_contract_hashes: vec![],
+                nonces: vec![],
+            },
+        };
+        let expected = expected_result.clone();
+        // Mock the `get_state_update` method of the Starknet light client.
+        // Given
+        // Mock dependencies
+        starknet_lightclient_mock
+            .expect_get_state_update()
+            .return_once(move |_| Ok(expected));
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        // Query the transaction data given a hash on Ethereum.
+        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .get_state_update(&block_id)
+            .await;
+
+        // Then
+        // Assert that the `get_state_update` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned by the `get_state_update` method of the Beerus light client is the expected code.
+        assert_eq!(
+            result.as_ref().unwrap().block_hash,
+            expected_result.block_hash
+        );
+        assert_eq!(result.as_ref().unwrap().new_root, expected_result.new_root);
+        assert_eq!(result.as_ref().unwrap().old_root, expected_result.old_root);
+    }
+
+    /// Test the `get_state_update` when starknet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_state_update` method of the external dependencies.
+    /// It tests the `get_state_update` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_get_state_update_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let expected = "error decoding response body: data did not match any variant of untagged enum JsonRpcResponse";
+        // Mock the `get_state` method of the Ethereum light client.
+        // Given
+        // Mock dependencies
+        starknet_lightclient_mock
+            .expect_get_state_update()
+            .return_once(move |_| Err(eyre::eyre!(expected)));
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .get_state_update(&block_id)
+            .await;
+
+        // Then
+        // Assert that the `get_state_update` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_state_update` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected.to_string());
     }
 }
