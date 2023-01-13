@@ -2409,6 +2409,9 @@ mod tests {
         // Assert that the `get_state_update` method of the Beerus light client returns `Ok`.
         assert!(result.is_ok());
         // Assert that the code returned by the `get_state_update` method of the Beerus light client is the expected code.
+
+        // Note:
+        // StateUpdate does not implement Eq, so I do the asserts this way.
         assert_eq!(
             result.as_ref().unwrap().block_hash,
             expected_result.block_hash
