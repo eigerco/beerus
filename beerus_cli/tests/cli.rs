@@ -2129,11 +2129,11 @@ mod test {
         }
     }
 
-    /// Test the `get_status_update` CLI command.
-    /// Given starknet lightclient returns an error, when query get_status_update, then the error is propagated.
+    /// Test the `get_state_update` CLI command.
+    /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_normal_conditions_when_starknet_get_status_update_then_ok() {
+    async fn given_normal_conditions_when_starknet_get_state_update_then_ok() {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -2180,11 +2180,11 @@ mod test {
         assert!(result.is_ok());
     }
 
-    /// Test the `get_status_update` CLI command.
-    /// Given starknet lightclient returns an error, when query get_status_update, then the error is propagated.
+    /// Test the `get_state_update` CLI command.
+    /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_starknet_lightclient_returns_error_when_starknet_get_status_update_then_error_is_propagated(
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_state_update_then_error_is_propagated(
     ) {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
