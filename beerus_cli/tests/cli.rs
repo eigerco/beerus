@@ -18,7 +18,10 @@ mod test {
     };
     use ethers::types::{Address, Transaction, H256, U256};
     use helios::types::{ExecutionBlock, Transactions};
-    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
+    use starknet::{
+        core::types::FieldElement,
+        providers::jsonrpc::models::{BlockHashAndNumber, StateDiff, StateUpdate},
+    };
 
     /// Test the `send_raw_transaction` CLI command.
     /// Given normal conditions, when sending raw transaction, then ok.
@@ -2126,6 +2129,97 @@ mod test {
         }
     }
 
+    /// Test the `get_status_update` CLI command.
+    /// Given starknet lightclient returns an error, when query get_status_update, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_status_update_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let expected_result = StateUpdate {
+            block_hash: felt.clone(),
+            new_root: felt.clone(),
+            old_root: felt.clone(),
+            state_diff: StateDiff {
+                deployed_contracts: vec![],
+                storage_diffs: vec![],
+                declared_contract_hashes: vec![],
+                nonces: vec![],
+            },
+        };
+        let expected = expected_result.clone();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_state_update()
+            .return_once(move |_block_id| Ok(expected));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let params = StarkNetSubCommands::QueryGetStateUpdate {
+            block_id: "latest".to_string(),
+            block_id_type: "tag".to_string(),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        assert!(result.is_ok());
+    }
+
+    /// Test the `get_status_update` CLI command.
+    /// Given starknet lightclient returns an error, when query get_status_update, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_status_update_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_state_update()
+            .return_once(move |_block_id| Err(eyre::eyre!("Error: Invalid Tag")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let params = StarkNetSubCommands::QueryGetStateUpdate {
+            block_id: "nonvalid".to_string(),
+            block_id_type: "tag".to_string(),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("Invalid Tag", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
