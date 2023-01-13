@@ -140,6 +140,32 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
     Ok(CommandResponse::EthereumQueryCode(code))
 }
 
+/// Query tx count of an Ethereum address from a given block.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `address` - The Ethereum address.
+/// * `block` - Latest, Finalized, or a block number
+/// # Returns
+/// * `Result<CommandResponse>` - u64 (txs counts)
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_transaction_count(
+    beerus: BeerusLightClient,
+    address: String,
+    block: String,
+) -> Result<CommandResponse> {
+    let block = beerus_core::ethers_helper::block_string_to_block_tag_type(block.as_str())?;
+
+    let address = Address::from_str(&address)?;
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_transaction_count(&address, block)
+        .await?;
+
+    Ok(CommandResponse::EthereumQueryTxCount(tx_count))
+}
+
 /// Query tx count of a given block Number
 /// # Arguments
 /// * `beerus` - The Beerus light client.

@@ -57,6 +57,11 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.get_code(address, block).await
     }
 
+    async fn get_transaction_count(&self, address: &Address, block: BlockTag) -> Result<u64> {
+        // TODO: Rename after it has been renamed https://github.com/a16z/helios/pull/166#issuecomment-1379587761
+        self.helios_light_client.get_nonce(address, block).await
+    }
+
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
         self.helios_light_client
             .get_block_transaction_count_by_number(block)
