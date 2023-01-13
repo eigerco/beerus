@@ -4,7 +4,7 @@ use ethers::types::{H256, U256};
 use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass, SyncStatusType};
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -229,6 +229,7 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QuerySyncing {},
 }
 
 /// The response from a CLI command.
@@ -258,6 +259,7 @@ pub enum CommandResponse {
     StarknetQueryGetClass(ContractClass),
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
+    StarknetQuerySyncing(SyncStatusType),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -478,6 +480,46 @@ impl Display for CommandResponse {
             CommandResponse::StarknetQueryGetBlockTransactionCount(block_transaction_count) => {
                 write!(f, "Block transaction count: {block_transaction_count}")
             }
+            // Print an object about the sync status of a node
+            // Result looks like:
+            // {
+            // "status": "Syncing",
+            // "data": {
+            //     "current_block_hash": "0x326fc63ee7013fba27182bc323b2aec846b0e459269fe23cb62f433ddcc2b7",
+            //     "current_block_num": "0x971d4",
+            //     "highest_block_hash": "0x326fc63ee7013fba27182bc323b2aec846b0e459269fe23cb62f433ddcc2b7",
+            //     "highest_block_num": "0x971d4",
+            //     "starting_block_hash": "0x5156662f793e667af6624e27e89e1fa49fdabb0b9ff77b56a83782367f2744d",
+            //     "starting_block_num": "0x95064"
+            //     }
+            // }
+            //
+            // or
+            //
+            // {
+            //     "status": "NotSyncing",
+            //     "data": null
+            // }
+            CommandResponse::StarknetQuerySyncing(response) => match response {
+                SyncStatusType::Syncing(status) => {
+                    let json_response = json!(
+                        {
+                            "status": "Syncing",
+                            "data": status,
+                        }
+                    );
+                    write!(f, "{json_response}")
+                }
+                SyncStatusType::NotSyncing => {
+                    let json_response = json!(
+                        {
+                            "status": "NotSyncing",
+                            "data": null,
+                        }
+                    );
+                    write!(f, "{json_response}")
+                }
+            },
         }
     }
 }

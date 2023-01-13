@@ -282,3 +282,14 @@ pub async fn get_block_transaction_count(
             .await?,
     ))
 }
+
+/// Query if the node is synchronized on the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// # Returns
+/// * `Result<CommandResponse>` - If the node is synchronized on the StarkNet network.
+pub async fn query_starknet_syncing(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    Ok(CommandResponse::StarknetQuerySyncing(
+        beerus.starknet_lightclient.syncing().await?,
+    ))
+}

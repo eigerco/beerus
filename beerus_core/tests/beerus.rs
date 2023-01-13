@@ -15,7 +15,7 @@ mod tests {
     use starknet::{
         core::types::FieldElement,
         macros::selector,
-        providers::jsonrpc::models::{BlockHashAndNumber, BlockId},
+        providers::jsonrpc::models::{BlockHashAndNumber, BlockId, SyncStatusType},
     };
     use std::str::FromStr;
 
@@ -2361,5 +2361,118 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `get_logs` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test the `syncing` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `syncing` method of the external dependencies.
+    /// It tests the `syncing` method of the Beerus light client.
+    /// Case: node starknet is syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_syncing_case_status_syncing_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `syncing` method of the Starknet light client.
+        let (expected_result, _, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_syncing_case_syncing();
+
+        starknet_lightclient_mock
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.starknet_lightclient.syncing().await.unwrap();
+
+        // Then
+        // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
+        // is the expected sync status type.
+        assert_eq!(
+            serde_json::value::to_value(result).unwrap(),
+            expected_result_value
+        )
+    }
+
+    /// Test the `syncing` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `syncing` method of the external dependencies.
+    /// It tests the `syncing` method of the Beerus light client.
+    /// Case: node starknet is not syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_syncing_case_status_not_syncing_then_should_return_ok(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `syncing` method of the Starknet light client.
+        let (expected_result, _) =
+            beerus_core::starknet_helper::create_mock_syncing_case_not_syncing();
+        let expected_result_value = SyncStatusType::NotSyncing;
+
+        starknet_lightclient_mock
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.starknet_lightclient.syncing().await.unwrap();
+
+        // Then
+        // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
+        // is the expected sync status type.
+        assert_eq!(
+            serde_json::value::to_value(result).unwrap(),
+            serde_json::value::to_value(expected_result_value).unwrap()
+        )
+    }
+
+    /// Test the `syncing` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `syncing` method of the external dependencies.
+    /// It tests the `syncing` method of the Beerus light client.
+    /// It tests the error handling of the `syncing` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_syncing_then_should_return_error() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `syncing` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_syncing()
+            .times(1)
+            .return_once(move || Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus.starknet_lightclient.syncing().await;
+
+        // Then
+        // Assert that the `get_class_at` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `syncing` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 }

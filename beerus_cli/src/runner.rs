@@ -160,6 +160,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QuerySyncing {} => starknet::query_starknet_syncing(beerus).await,
         },
     }
 }
