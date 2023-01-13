@@ -70,6 +70,15 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    /// Query the transaction of an Ethereum address from the given block.
+    QueryTxCount {
+        /// The ethereum address
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+        #[arg(short, long, value_name = "BLOCK")]
+        block: String,
+    },
     QueryBlockTxCountByNumber {
         /// The block from which to query the txs count
         #[arg(short, long, value_name = "BLOCK")]
@@ -262,6 +271,7 @@ pub enum CommandResponse {
     EthereumQueryBlockNumber(u64),
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
+    EthereumQueryTxCount(u64),
     EthereumQueryBlockTxCountByNumber(u64),
     EthereumQueryBlockTxCountByHash(u64),
     EthereumQueryTxByHash(String),
@@ -317,6 +327,11 @@ impl Display for CommandResponse {
             //TODO: Add Opt to save the file (ex: -o code.json)
             CommandResponse::EthereumQueryCode(code) => {
                 write!(f, "{code:?}")
+            }
+            // Print the transaction count of a given Ethereum address from a given block
+            // Result looks like: 123
+            CommandResponse::EthereumQueryTxCount(tx_count) => {
+                write!(f, "{tx_count:?}")
             }
             // Print the count of txs of a block
             // Result looks like: 150

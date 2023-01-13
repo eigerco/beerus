@@ -490,6 +490,85 @@ mod tests {
         // Assert that the error returned by the `get_code` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
+
+    /// Test the `get_transaction_count` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_count` method of the external dependencies.
+    /// It tests the `get_transaction_count` method of the Beerus light client.    
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_then_ok() {
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_transaction_count` method of the Ethereum light client.
+        let expected_result: u64 = 120;
+        ethereum_lightclient_mock
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Ok(expected_result));
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // Prepare variables
+        let address = Address::from_str("0xc24215226336d22238a20a72f8e489c005b44c4a").unwrap();
+        let block = BlockTag::Latest;
+
+        // When
+        let result = beerus
+            .ethereum_lightclient
+            .get_transaction_count(&address, block)
+            .await;
+
+        // Then
+        // Assert that the `get_transaction_count` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned byt `get_transaction_count` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), 120);
+    }
+
+    /// Test the `get_transaction_count` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_count` method of the external dependencies.
+    /// It tests the `get_transaction_count` method of the Beerus light client.
+    /// It tests the error handling of the `start` method of the Beerus light client.
+    #[tokio::test]
+    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "ethereum_lightclient_error";
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let address = Address::from_str("0xc24215226336d22238a20a72f8e489c005b44c4a").unwrap();
+        let block = BlockTag::Latest;
+
+        // Query the transaction of the Ethereum address from a given block.
+        let result = beerus
+            .ethereum_lightclient
+            .get_transaction_count(&address, block)
+            .await;
+
+        // Then
+        // Assert that the `get_transaction_count` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_transaction_count` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
     /// Test the `get_block_transaction_count_by_number` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_block_transaction_count_by_number` method of the external dependencies.

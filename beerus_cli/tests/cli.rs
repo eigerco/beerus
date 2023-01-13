@@ -510,6 +510,84 @@ mod test {
         }
     }
 
+    /// Test the `query-tx-count` CLI command.
+    /// Given normal conditions, when `query-tx-count`, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_then_ok() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_result: u64 = 123;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let block = "latest".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryTxCount { address, block },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        assert_eq!("123", result.to_string());
+    }
+
+    /// Test `query-tx-count` CLI command.
+    /// Given ethereum lightclient returns an error, when `query-tx-count`, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let block = "latest".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryTxCount { address, block },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error,got ok"),
+        }
+    }
+
     /// Test the `query_block_tx_count_by_hash` CLI command.
     /// Given normal conditions, when `query_block_tx_count_by_hash`, then ok.
     /// Success case.
