@@ -9,7 +9,7 @@ mod tests {
         },
     };
     use ethers::types::U256;
-    use ethers::types::{Address, Transaction, H256};
+    use ethers::types::{Address, Log, Transaction, H256};
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
@@ -2227,7 +2227,6 @@ mod tests {
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
-
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
@@ -2280,6 +2279,88 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `get_logs` when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_logs` method of the external dependencies.
+    /// It tests the `get_logs` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_get_logs_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_logs` method of the Ethereum light client.
+        // Given
+        // Mock dependencies
+        ethereum_lightclient_mock
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Ok(vec![Log::default()]));
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .ethereum_lightclient
+            .get_logs(
+                &Some("finalized".to_string()),
+                &Some("pending".to_string()),
+                &None,
+                &None,
+                &None,
+            )
+            .await;
+
+        // Then
+        // Assert that the `get_logs` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned by the `get_logs` method of the Beerus light client is the expected code.
+        assert_eq!(result.unwrap(), vec![Log::default()]);
+    }
+
+    /// Test the `get_logs` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_logs` method of the external dependencies.
+    /// It tests the `get_logs` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_get_logs_then_error_is_propagated()
+    {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = concat!(
+            "Non valid combination of from_block, to_block and blockhash. ",
+            "If you want to filter blocks, then ",
+            "you can only use either from_block and to_block or blockhash, not both",
+        );
+
+        // Mock dependencies.
+        ethereum_lightclient_mock
+            .expect_get_logs()
+            .return_once(move |_, _, _, _, _| Err(eyre::eyre!(expected_error.clone())));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .ethereum_lightclient
+            .get_logs(&None, &None, &None, &None, &None)
+            .await;
+
+        // Then
+        // Assert that the `get_logs` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_logs` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
     /// Test the `syncing` method when everything is fine.
