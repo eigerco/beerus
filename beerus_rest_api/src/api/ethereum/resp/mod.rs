@@ -53,6 +53,12 @@ pub struct QueryCodeResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryTxCountResponse {
+    pub tx_count: u64,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryBlockTxCountByBlockNumberResponse {
     pub tx_count: u64,
 }
