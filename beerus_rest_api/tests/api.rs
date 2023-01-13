@@ -2207,4 +2207,117 @@ mod test {
             "{\"error_message\":\"cannot query starknet block transaction count\"}"
         );
     }
+
+    /// Test the `get_class_at` endpoint.
+    /// `/starknet/contract/class_att/<class_hash>?<block_id>&<block_id_type>`
+    /// Given normal conditions, when query starknet syncing, then ok.
+    /// Case: Node Starknet is syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_syncing_case_status_syncing_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value, _) =
+            beerus_core::starknet_helper::create_mock_syncing_case_syncing();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/syncing")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `syncing` endpoint.
+    /// `/starknet/syncing`
+    /// Given normal conditions, when query starknet syncing, then ok.
+    /// Case: Node Starknet is not syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_syncing_case_status_not_syncing_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_syncing_case_not_syncing();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/syncing")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `syncing` endpoint.
+    /// `/starknet/syncing`
+    /// Given StarkNet light client returns error when query starknet syncing, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_syncing_then_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Err(eyre::eyre!("cannot query starknet syncing")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client.get(uri!("/starknet/syncing")).dispatch().await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet syncing\"}"
+        );
+    }
 }

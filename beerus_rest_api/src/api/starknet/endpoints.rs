@@ -3,7 +3,7 @@ use super::resp::{
     QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse,
+    QueryStateRootResponse, QuerySyncing,
 };
 use crate::api::ApiResponse;
 
@@ -15,6 +15,7 @@ use log::debug;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::SyncStatusType;
 use std::str::FromStr;
 
 /// Query the state root of StarkNet.
@@ -198,6 +199,23 @@ pub async fn get_block_transaction_count(
     ApiResponse::from_result(
         get_block_transaction_count_inner(beerus, block_id_type, block_id).await,
     )
+}
+
+/// Query an object about the node starknet sync status
+/// Aan object about the node starknet sync status.
+///
+/// # Arguments
+///
+/// # Returns
+///
+/// `Ok(QuerySyncing)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/syncing")]
+pub async fn query_starknet_syncing(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QuerySyncing> {
+    ApiResponse::from_result(query_syncing_inner(beerus).await)
 }
 
 /// Query the state root of StarkNet.
@@ -525,4 +543,23 @@ pub async fn get_block_transaction_count_inner(
             .await?
             .to_string(),
     })
+}
+
+/// Query an object about the node starknet sync status.
+/// # Returns
+/// `QuerySyncing` - An object about the node starknet sync status.
+pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<QuerySyncing> {
+    debug!("Querying syncing status");
+    let result = beerus.starknet_lightclient.syncing().await?;
+
+    match result {
+        SyncStatusType::Syncing(status) => Ok(QuerySyncing {
+            status: "Syncing".to_string(),
+            data: Option::from(serde_json::value::to_value(status).unwrap()),
+        }),
+        SyncStatusType::NotSyncing => Ok(QuerySyncing {
+            status: "NotSyncing".to_string(),
+            data: None,
+        }),
+    }
 }
