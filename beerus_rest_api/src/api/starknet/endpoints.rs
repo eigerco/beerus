@@ -1,20 +1,23 @@
 use super::resp::{
-    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
-    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    DeployedContractResponse, NonceResponse, QueryBlockHashAndNumberResponse,
+    QueryBlockNumberResponse, QueryChainIdResponse, QueryContractViewResponse,
+    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassResponse,
+    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse,
+    QueryStateRootResponse, QueryStateUpdateResponse, StateDiffResponse, StorageDiffResponse,
+    StorageEntryResponse,
 };
-use crate::api::ApiResponse;
-
 use crate::api::starknet::resp::QueryL2ToL1MessagesResponse;
-use beerus_core::lightclient::beerus::BeerusLightClient;
+use crate::api::ApiResponse;
+use beerus_core::{
+    lightclient::beerus::BeerusLightClient, starknet_helper::block_id_string_to_block_id_type,
+};
 use ethers::types::U256;
 use eyre::Result;
 use log::debug;
 use rocket::{get, State};
 use rocket_okapi::openapi;
-use starknet::core::types::FieldElement;
+use starknet::{core::types::FieldElement, providers::jsonrpc::models::StateUpdate};
 use std::str::FromStr;
 
 /// Query the state root of StarkNet.
@@ -200,6 +203,26 @@ pub async fn get_block_transaction_count(
     )
 }
 
+/// Query information about the result of executing the requested block.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+///
+/// # Returns
+///
+/// `Ok(ContractClass)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/state_update?<block_id_type>&<block_id>")]
+pub async fn get_state_update(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> ApiResponse<QueryStateUpdateResponse> {
+    ApiResponse::from_result(get_state_update_inner(beerus, block_id_type, block_id).await)
+}
 /// Query the state root of StarkNet.
 ///
 /// # Arguments
@@ -468,8 +491,7 @@ pub async fn get_class_inner(
     block_id: String,
     class_hash: String,
 ) -> Result<QueryGetClassResponse> {
-    let block_id =
-        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
     let class_hash = FieldElement::from_str(&class_hash)?;
     debug!("Querying Contract Class");
     let result = beerus
@@ -492,8 +514,7 @@ pub async fn get_class_at_inner(
     block_id: String,
     contract_address: String,
 ) -> Result<QueryGetClassAtResponse> {
-    let block_id =
-        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
     let contract_address = FieldElement::from_str(&contract_address)?;
     debug!("Querying Contract Class");
     let result = beerus
@@ -515,8 +536,7 @@ pub async fn get_block_transaction_count_inner(
     block_id_type: String,
     block_id: String,
 ) -> Result<QueryGetBlockTransactionCountResponse> {
-    let block_id =
-        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
     debug!("Querying block transaction count");
     Ok(QueryGetBlockTransactionCountResponse {
         block_transaction_count: beerus
@@ -524,5 +544,80 @@ pub async fn get_block_transaction_count_inner(
             .get_block_transaction_count(&block_id)
             .await?
             .to_string(),
+    })
+}
+
+/// Query information about the result of executing the requested block.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+///
+/// # Returns
+///
+/// `Ok(ContractClass)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+pub async fn get_state_update_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> Result<QueryStateUpdateResponse> {
+    let parsed_block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let StateUpdate {
+        block_hash,
+        new_root,
+        old_root,
+        state_diff,
+    } = beerus
+        .starknet_lightclient
+        .get_state_update(&parsed_block_id)
+        .await?;
+    let nonces: Vec<NonceResponse> = state_diff
+        .nonces
+        .into_iter()
+        .map(|nonce| NonceResponse {
+            contract_address: nonce.contract_address.to_string(),
+            nonce: nonce.nonce.to_string(),
+        })
+        .collect();
+    let storage_diffs: Vec<StorageDiffResponse> = state_diff
+        .storage_diffs
+        .into_iter()
+        .map(|diff| StorageDiffResponse {
+            address: diff.address.to_string(),
+            storage_entries: diff
+                .storage_entries
+                .into_iter()
+                .map(|entry| StorageEntryResponse {
+                    key: entry.key.to_string(),
+                    value: entry.value.to_string(),
+                })
+                .collect(),
+        })
+        .collect();
+    let declared_contract_hash: Vec<String> = state_diff
+        .declared_contract_hashes
+        .into_iter()
+        .map(|hash| hash.to_string())
+        .collect();
+    let deployed_contracts: Vec<DeployedContractResponse> = state_diff
+        .deployed_contracts
+        .into_iter()
+        .map(|contract| DeployedContractResponse {
+            class_hash: contract.class_hash.to_string(),
+            address: contract.address.to_string(),
+        })
+        .collect();
+    Ok(QueryStateUpdateResponse {
+        block_hash: block_hash.to_string(),
+        new_root: new_root.to_string(),
+        old_root: old_root.to_string(),
+        state_diff: StateDiffResponse {
+            storage_diffs,
+            declared_contract_hash,
+            deployed_contracts,
+            nonces,
+        },
     })
 }
