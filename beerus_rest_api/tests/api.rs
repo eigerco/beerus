@@ -2338,24 +2338,6 @@ mod test {
     async fn given_normal_conditions_when_query_starknet_state_update_count_then_ok() {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
-        // {
-        //     "block_hash": "0xd77d546f41d79151f9388d9bbc3cc72056e3f6672ae7437a83f8b14a79a2c5",
-        //     "new_root": "0x287e2cb941e02f769d077da710b24253038e0ce27133ecefb60e1e2a392132c",
-        //     "old_root": "0x736df5ac4d31c2206b6469bfd32aa9d797066cbc29042de65280058eb3f2e1d",
-        //     "state_diff": {
-        //         "storage_diffs": [
-        //             {
-        //                 "address": "0x5fdf5fc696175f27ba29899ae77a0bdbe19296378436269e5355c63cf393349",
-        //                 "storage_entries": [
-        //                     {
-        //                         "key": "0x1813aac5f5e7799684c6dc33e51f44d3627fd748c800724a184ed5be09b713e",
-        //                         "value": "0x1"
-        //                     },
-        //                 ]
-        //             }
-        //         ]
-        //     }
-        // }
         // Given
         let felt = FieldElement::from_hex_be("0x1").unwrap();
         let expected_result = StateUpdate {
