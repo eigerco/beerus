@@ -18,7 +18,10 @@ mod test {
     };
     use ethers::types::{Address, Transaction, H256, U256};
     use helios::types::{ExecutionBlock, Transactions};
-    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
+    use starknet::{
+        core::types::FieldElement,
+        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult},
+    };
 
     /// Test the `send_raw_transaction` CLI command.
     /// Given normal conditions, when sending raw transaction, then ok.
@@ -2232,6 +2235,94 @@ mod test {
             config: None,
             command: Commands::StarkNet(StarkNetCommands {
                 command: StarkNetSubCommands::QuerySyncing {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `add_invoke_transaction` CLI command.
+    /// Given normal conditions, when query add_invoke_transaction, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_add_invoke_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = InvokeTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+        };
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let params = StarkNetSubCommands::AddInvokeTransaction {
+            max_fee: "0".to_string(),
+            signature: vec![10.to_string()],
+            nonce: "0".to_string(),
+            contract_address: "0".to_string(),
+            entry_point_selector: "0".to_string(),
+            calldata: vec![10.to_string()],
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("InvokeTransactionResult { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 } }", result.to_string());
+    }
+
+    /// Test the `add_invoke_transaction` CLI command.
+    /// Given starknet lightclient returns an error, when query add_invoke_transaction, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_add_invoke_transaction_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::AddInvokeTransaction {
+                    max_fee: "0".to_string(),
+                    signature: vec![],
+                    nonce: "0".to_string(),
+                    contract_address: "0".to_string(),
+                    entry_point_selector: "0".to_string(),
+                    calldata: vec![],
+                },
             }),
         };
         // When
