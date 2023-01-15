@@ -44,12 +44,26 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             EthereumSubCommands::QueryBlockTxCountByHash { hash } => {
                 ethereum::query_block_transaction_count_by_hash(beerus, hash.to_string()).await
             }
+            EthereumSubCommands::QueryTxCount { address, block } => {
+                ethereum::query_transaction_count(beerus, address.to_string(), block.to_string())
+                    .await
+            }
             EthereumSubCommands::QueryTxByHash { hash } => {
                 ethereum::query_transaction_by_hash(beerus, hash.to_string()).await
             }
             EthereumSubCommands::QueryGasPrice {} => ethereum::query_gas_price(beerus).await,
             EthereumSubCommands::QueryEstimateGas { params } => {
                 ethereum::query_estimate_gas(beerus, params.to_owned()).await
+            }
+            EthereumSubCommands::QueryLogs {
+                from_block,
+                to_block,
+                address,
+                topics,
+                blockhash: block_hash,
+            } => {
+                ethereum::query_logs(beerus, from_block, to_block, address, topics, block_hash)
+                    .await
             }
             EthereumSubCommands::QueryBlockByHash { hash, full_tx } => {
                 ethereum::query_block_by_hash(beerus, hash.to_string(), *full_tx).await
@@ -164,6 +178,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QuerySyncing {} => starknet::query_starknet_syncing(beerus).await,
         },
     }
 }

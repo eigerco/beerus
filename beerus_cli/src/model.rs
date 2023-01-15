@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
+use ethers::prelude::Log;
 use ethers::types::{H256, U256};
 use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass};
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass, SyncStatusType};
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -67,6 +68,15 @@ pub enum EthereumSubCommands {
         #[arg(short, long, value_name = "ADDRESS")]
         address: String,
     },
+    /// Query the transaction of an Ethereum address from the given block.
+    QueryTxCount {
+        /// The ethereum address
+        /// The block from which to query the txs count
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
+        #[arg(short, long, value_name = "BLOCK")]
+        block: String,
+    },
     QueryBlockTxCountByNumber {
         /// The block from which to query the txs count
         #[arg(short, long, value_name = "BLOCK")]
@@ -105,6 +115,27 @@ pub enum EthereumSubCommands {
         /// Fetch full transaction objects or just the transaction hashes
         #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
         full_tx: bool,
+    },
+    /// Query Logs (blockchain events) that match
+    /// the given parameters.
+    QueryLogs {
+        /// Address from which the log comes from.
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: Option<String>,
+        /// Equivalent to from_block = to_block,
+        /// only allowed if neither from_block or to_block
+        /// is supplied.
+        #[arg(short, long, value_name = "BLOCK_HASH")]
+        blockhash: Option<String>,
+        /// Starting block to filter from, defaults to "latest".
+        #[arg(short, long, value_name = "FROM_BLOCK")]
+        from_block: Option<String>,
+        /// Ending block to filter to, defaults to "latest".
+        #[arg(short, long, value_name = "TO_BLOCK")]
+        to_block: Option<String>,
+        /// Topics to filter, up to 4 allowed.
+        #[arg(short, long, value_name = "TOPICS", value_delimiter = ',')]
+        topics: Option<Vec<String>>,
     },
 }
 
@@ -224,6 +255,7 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QuerySyncing {},
 }
 
 /// The response from a CLI command.
@@ -234,11 +266,13 @@ pub enum CommandResponse {
     EthereumQueryBlockNumber(u64),
     EthereumQueryChainId(u64),
     EthereumQueryCode(Vec<u8>),
+    EthereumQueryTxCount(u64),
     EthereumQueryBlockTxCountByNumber(u64),
     EthereumQueryBlockTxCountByHash(u64),
     EthereumQueryTxByHash(String),
     EthereumQueryGasPrice(U256),
     EthereumQueryEstimateGas(u64),
+    EthereumQueryLogs(Vec<Log>),
     EthereumQueryBlockByHash(Option<ExecutionBlock>),
     EthereumQueryGetPriorityFee(U256),
     EthereumQueryBlockByNumber(Option<ExecutionBlock>),
@@ -253,6 +287,7 @@ pub enum CommandResponse {
     StarknetQueryGetClassHash(FieldElement),
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
+    StarknetQuerySyncing(SyncStatusType),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -288,6 +323,11 @@ impl Display for CommandResponse {
             CommandResponse::EthereumQueryCode(code) => {
                 write!(f, "{code:?}")
             }
+            // Print the transaction count of a given Ethereum address from a given block
+            // Result looks like: 123
+            CommandResponse::EthereumQueryTxCount(tx_count) => {
+                write!(f, "{tx_count:?}")
+            }
             // Print the count of txs of a block
             // Result looks like: 150
             CommandResponse::EthereumQueryBlockTxCountByNumber(tx_count) => {
@@ -307,6 +347,15 @@ impl Display for CommandResponse {
             // Result looks like: 15000
             CommandResponse::EthereumQueryEstimateGas(gas) => {
                 write!(f, "{gas}")
+            }
+
+            CommandResponse::EthereumQueryLogs(logs) => {
+                let logs = logs
+                    .iter()
+                    .map(|log| serde_json::to_string(&log).unwrap())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                write!(f, "[{logs}]")
             }
             // Print Block given a block hash
             // Result looks like:
@@ -470,6 +519,46 @@ impl Display for CommandResponse {
             CommandResponse::StarknetQueryGetBlockTransactionCount(block_transaction_count) => {
                 write!(f, "Block transaction count: {block_transaction_count}")
             }
+            // Print an object about the sync status of a node
+            // Result looks like:
+            // {
+            // "status": "Syncing",
+            // "data": {
+            //     "current_block_hash": "0x326fc63ee7013fba27182bc323b2aec846b0e459269fe23cb62f433ddcc2b7",
+            //     "current_block_num": "0x971d4",
+            //     "highest_block_hash": "0x326fc63ee7013fba27182bc323b2aec846b0e459269fe23cb62f433ddcc2b7",
+            //     "highest_block_num": "0x971d4",
+            //     "starting_block_hash": "0x5156662f793e667af6624e27e89e1fa49fdabb0b9ff77b56a83782367f2744d",
+            //     "starting_block_num": "0x95064"
+            //     }
+            // }
+            //
+            // or
+            //
+            // {
+            //     "status": "NotSyncing",
+            //     "data": null
+            // }
+            CommandResponse::StarknetQuerySyncing(response) => match response {
+                SyncStatusType::Syncing(status) => {
+                    let json_response = json!(
+                        {
+                            "status": "Syncing",
+                            "data": status,
+                        }
+                    );
+                    write!(f, "{json_response}")
+                }
+                SyncStatusType::NotSyncing => {
+                    let json_response = json!(
+                        {
+                            "status": "NotSyncing",
+                            "data": null,
+                        }
+                    );
+                    write!(f, "{json_response}")
+                }
+            },
         }
     }
 }

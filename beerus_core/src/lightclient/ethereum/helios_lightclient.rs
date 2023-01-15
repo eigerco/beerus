@@ -1,9 +1,10 @@
 use async_trait::async_trait;
-use ethers::types::{Address, Transaction, H256, U256};
-use eyre::Result;
+use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
+use eyre::{eyre, Result};
 use helios::client::{Client, ClientBuilder, FileDB};
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use std::primitive::u64;
+use std::str::FromStr;
 
 use crate::config::Config;
 
@@ -56,6 +57,11 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.get_code(address, block).await
     }
 
+    async fn get_transaction_count(&self, address: &Address, block: BlockTag) -> Result<u64> {
+        // TODO: Rename after it has been renamed https://github.com/a16z/helios/pull/166#issuecomment-1379587761
+        self.helios_light_client.get_nonce(address, block).await
+    }
+
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
         self.helios_light_client
             .get_block_transaction_count_by_number(block)
@@ -104,6 +110,21 @@ impl EthereumLightClient for HeliosLightClient {
             .get_block_by_number(block, full_tx)
             .await
     }
+
+    async fn get_logs(
+        &self,
+        from_block: &Option<String>,
+        to_block: &Option<String>,
+        address: &Option<String>,
+        topics: &Option<Vec<String>>,
+        block_hash: &Option<String>,
+    ) -> Result<Vec<Log>> {
+        self.helios_light_client
+            .get_logs(&build_logs_filter(
+                from_block, to_block, address, topics, block_hash,
+            )?)
+            .await
+    }
 }
 
 /// HeliosLightClient non-trait functions.
@@ -125,4 +146,65 @@ impl HeliosLightClient {
             helios_light_client,
         })
     }
+}
+
+fn build_logs_filter(
+    from_block: &Option<String>,
+    to_block: &Option<String>,
+    address: &Option<String>,
+    topics: &Option<Vec<String>>,
+    block_hash: &Option<String>,
+) -> Result<Filter> {
+    let mut filter = Filter::new();
+    match (from_block, to_block, block_hash) {
+        (Some(from), Some(to), None) => {
+            let from_block = BlockNumber::from_str(from)
+                .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
+            let to_block = BlockNumber::from_str(to)
+                .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
+            filter = filter.select(from_block..to_block);
+        }
+        (Some(from), None, None) => {
+            let from_block = BlockNumber::from_str(from)
+                .map_err(|err| eyre!("Non valid format for from_block: {}", err))?;
+            let to_block = BlockNumber::Latest;
+            filter = filter.select(from_block..to_block);
+        }
+        (None, Some(to), None) => {
+            let from_block = BlockNumber::Latest;
+            let to_block = BlockNumber::from_str(to)
+                .map_err(|err| eyre!("Non valid format for to_block: {}", err))?;
+            filter = filter.select(from_block..to_block);
+        }
+        (None, None, Some(ref hash)) => {
+            filter = filter.at_block_hash(H256::from_str(hash)?);
+        }
+        (None, None, _) => {
+            let from_block = BlockNumber::Latest;
+            let to_block = BlockNumber::Latest;
+            filter = filter.select(from_block..to_block);
+        }
+        _ => {
+            let error_msg = concat!(
+                "Non valid combination of from_block, to_block and blockhash. ",
+                "If you want to filter blocks, then ",
+                "you can only use either from_block and to_block or blockhash, not both",
+            );
+            Err(eyre!(error_msg))?
+        }
+    }
+    if let Some(address) = address {
+        filter = filter.address(ethers::types::H160::from_str(address)?);
+    }
+
+    if let Some(topics) = topics {
+        for (index, topic) in topics.iter().enumerate() {
+            *(filter
+                .topics
+                .get_mut(index)
+                .ok_or(eyre!("Too many topics, expected 4 at most"))?) =
+                Some(Topic::from(H256::from_str(topic)?))
+        }
+    }
+    Ok(filter)
 }

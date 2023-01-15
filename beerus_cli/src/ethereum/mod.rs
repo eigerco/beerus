@@ -1,5 +1,6 @@
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use core::str::FromStr;
 use ethers::types::U256;
 use ethers::utils::hex;
 use ethers::{
@@ -9,7 +10,6 @@ use ethers::{
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TransactionObject {
@@ -138,6 +138,32 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 
     Ok(CommandResponse::EthereumQueryCode(code))
+}
+
+/// Query tx count of an Ethereum address from a given block.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `address` - The Ethereum address.
+/// * `block` - Latest, Finalized, or a block number
+/// # Returns
+/// * `Result<CommandResponse>` - u64 (txs counts)
+/// # Errors
+/// * If the block number query fails.
+pub async fn query_transaction_count(
+    beerus: BeerusLightClient,
+    address: String,
+    block: String,
+) -> Result<CommandResponse> {
+    let block = beerus_core::ethers_helper::block_string_to_block_tag_type(block.as_str())?;
+
+    let address = Address::from_str(&address)?;
+
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_transaction_count(&address, block)
+        .await?;
+
+    Ok(CommandResponse::EthereumQueryTxCount(tx_count))
 }
 
 /// Query tx count of a given block Number
@@ -321,4 +347,18 @@ pub async fn query_block_by_number(
         .get_block_by_number(block, full_tx)
         .await?;
     Ok(CommandResponse::EthereumQueryBlockByNumber(block))
+}
+pub async fn query_logs(
+    beerus: BeerusLightClient,
+    from_block: &Option<String>,
+    to_block: &Option<String>,
+    address: &Option<String>,
+    topics: &Option<Vec<String>>,
+    block_hash: &Option<String>,
+) -> Result<CommandResponse> {
+    let logs = beerus
+        .ethereum_lightclient
+        .get_logs(from_block, to_block, address, topics, block_hash)
+        .await?;
+    Ok(CommandResponse::EthereumQueryLogs(logs))
 }

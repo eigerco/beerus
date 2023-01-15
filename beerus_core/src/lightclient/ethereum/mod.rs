@@ -1,7 +1,7 @@
 pub mod helios_lightclient;
 
 use async_trait::async_trait;
-use ethers::types::{Address, Transaction, H256, U256};
+use ethers::types::{Address, Log, Transaction, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use mockall::automock;
@@ -101,6 +101,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// Add examples.
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>>;
 
+    /// Get the txs counts of an Ethereum address from a given block.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The transaction count of a given address from a given block.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_transaction_count(&self, address: &Address, block: BlockTag) -> Result<u64>;
+
     /// Get the txs counts of a given block number.
     /// This function should be called after `start`.
     /// # Returns
@@ -188,4 +198,26 @@ pub trait EthereumLightClient: Send + Sync {
         block: BlockTag,
         full_tx: bool,
     ) -> Result<Option<ExecutionBlock>>;
+
+    /// Get logs (blockchain events), based on the given filter.
+    /// # Arguments
+    /// * `from_block` - Either the hex value of a block number OR block tags.
+    /// * `to_block` - Either the hex value of a block number OR block tags (e.g. 'latest').
+    /// * `address` - Address from which logs come from. (e.g. 'latest').
+    /// * `topics` - Array of 32 Bytes DATA topics. Topics are order-dependent. Each topic can also be an array of DATA with "or" options.
+    /// * `block_hash` - Equivalent to using from_block = to_block. If provided, neither to_block or from_block are allowed.
+    /// # Returns
+    /// Vector of logs, matching the given filter params.
+    /// # Errors
+    /// If the call fails, or if there are more than 5 logs.
+    /// # TODO
+    /// Add examples.
+    async fn get_logs(
+        &self,
+        from_block: &Option<String>,
+        to_block: &Option<String>,
+        address: &Option<String>,
+        topics: &Option<Vec<String>>,
+        block_hash: &Option<String>,
+    ) -> Result<Vec<Log>>;
 }
