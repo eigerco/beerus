@@ -3,8 +3,7 @@ use super::resp::{
     QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
     QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
     QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
-    QuerySyncing
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse, QuerySyncing,
 };
 use crate::api::ApiResponse;
 
