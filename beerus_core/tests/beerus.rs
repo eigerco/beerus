@@ -2096,7 +2096,7 @@ mod tests {
     /// It tests the `get_class` method of the Beerus light client.
     /// It tests the error handling of the `get_class` method of the Beerus light client.
     #[tokio::test]
-    async fn given_starknet_lightclient_error_when_call_get_call_then_should_return_error() {
+    async fn given_starknet_lightclient_error_when_call_get_class_then_should_return_error() {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
