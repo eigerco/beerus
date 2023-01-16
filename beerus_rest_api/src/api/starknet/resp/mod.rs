@@ -178,3 +178,9 @@ pub struct AddDeployTransactionResponse {
     pub transaction_hash: String,
     pub contract_address: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockWithTxsResponse {
+    pub block_with_txs: String,
+}
