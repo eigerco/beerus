@@ -91,6 +91,13 @@ pub struct QueryGetBlockTransactionCountResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QuerySyncing {
+    pub data: Option<Value>,
+    pub status: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct NonceResponse {
     pub contract_address: String,
     pub nonce: String,

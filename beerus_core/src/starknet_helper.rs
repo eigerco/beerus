@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockId, BlockTag, ContractAbiEntry, ContractClass, ContractEntryPoint, EntryPointsByType,
-    StructAbiEntry, StructAbiType, StructMember,
+    StructAbiEntry, StructAbiType, StructMember, SyncStatus, SyncStatusType,
 };
 use std::str::FromStr;
 
@@ -111,6 +111,52 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
       }
     );
     (mock_contract_class, mock_contract_class_json)
+}
+
+/// Helper to create a  object for testing
+/// # Returns
+/// Tuple of a mock  object and its equivalent JSON Value
+pub fn create_mock_syncing_case_syncing() -> (SyncStatusType, Value, Value) {
+    let mock_syncing = SyncStatusType::Syncing(SyncStatus {
+        starting_block_hash: FieldElement::from_str("123").unwrap(),
+        starting_block_num: 123,
+        current_block_hash: FieldElement::from_str("456").unwrap(),
+        current_block_num: 456,
+        highest_block_hash: FieldElement::from_str("789").unwrap(),
+        highest_block_num: 789,
+    });
+    let mock_syncing_json = json!({
+        "status": "Syncing",
+        "data": {
+            "starting_block_hash": "0x7b",
+            "starting_block_num": "0x7b",
+            "current_block_hash": "0x1c8",
+            "current_block_num": "0x1c8",
+            "highest_block_hash": "0x315",
+            "highest_block_num": "0x315"
+        }
+    });
+    let mock_syncing_data_json = json!({
+        "starting_block_hash": "0x7b",
+        "starting_block_num": "0x7b",
+        "current_block_hash": "0x1c8",
+        "current_block_num": "0x1c8",
+        "highest_block_hash": "0x315",
+        "highest_block_num": "0x315"
+    });
+    (mock_syncing, mock_syncing_json, mock_syncing_data_json)
+}
+
+/// Helper to create a  object for testing
+/// # Returns
+/// Tuple of a mock  object and its equivalent JSON Value
+pub fn create_mock_syncing_case_not_syncing() -> (SyncStatusType, Value) {
+    let mock_syncing = SyncStatusType::NotSyncing;
+    let mock_syncing_json = json!({
+        "status": "NotSyncing",
+        "data": null
+    });
+    (mock_syncing, mock_syncing_json)
 }
 
 #[cfg(test)]

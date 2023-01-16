@@ -510,6 +510,84 @@ mod test {
         }
     }
 
+    /// Test the `query-tx-count` CLI command.
+    /// Given normal conditions, when `query-tx-count`, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_tx_count_then_ok() {
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        let expected_result: u64 = 123;
+        // Given
+        // Mock dependencies
+        ethereum_lightclient
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let block = "latest".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryTxCount { address, block },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        assert_eq!("123", result.to_string());
+    }
+
+    /// Test `query-tx-count` CLI command.
+    /// Given ethereum lightclient returns an error, when `query-tx-count`, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    {
+        // Build mocks.
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Mock dependencies.
+        ethereum_lightclient
+            .expect_get_transaction_count()
+            .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let address = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        let block = "latest".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::Ethereum(EthereumCommands {
+                command: EthereumSubCommands::QueryTxCount { address, block },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("ethereum_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error,got ok"),
+        }
+    }
+
     /// Test the `query_block_tx_count_by_hash` CLI command.
     /// Given normal conditions, when `query_block_tx_count_by_hash`, then ok.
     /// Success case.
@@ -2129,6 +2207,123 @@ mod test {
         }
     }
 
+    /// Test the `syncing` CLI command.
+    /// Given normal conditions, when query syncing, then ok.
+    /// Case: Nodo starknet is syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_syncing_case_status_syncing_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value, _) =
+            beerus_core::starknet_helper::create_mock_syncing_case_syncing();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QuerySyncing {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            result.to_string(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `syncing` CLI command.
+    /// Given normal conditions, when query syncing, then ok.
+    /// Case: Nodo starknet is not syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_syncing_case_status_not_syncing_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_syncing_case_not_syncing();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QuerySyncing {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            result.to_string(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `syncing` CLI command.
+    /// Given starknet lightclient returns an error, when query syncing, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_syncing_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_syncing()
+            .return_once(move || Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QuerySyncing {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
     /// Test the `get_state_update` CLI command.
     /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
     /// Error case.
@@ -2168,9 +2363,11 @@ mod test {
             block_id_type: "tag".to_string(),
         };
 
+
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
+
             command: Commands::StarkNet(StarkNetCommands { command: params }),
         };
         // When
@@ -2184,8 +2381,7 @@ mod test {
     /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_starknet_lightclient_returns_error_when_starknet_get_state_update_then_error_is_propagated(
-    ) {
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_state_update_then_error_is_propagated() {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -2194,6 +2390,7 @@ mod test {
         starknet_lightclient
             .expect_get_state_update()
             .return_once(move |_block_id| Err(eyre::eyre!("Error: Invalid Tag")));
+
 
         let beerus = BeerusLightClient::new(
             config,
@@ -2220,6 +2417,7 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),

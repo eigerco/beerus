@@ -44,6 +44,10 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             EthereumSubCommands::QueryBlockTxCountByHash { hash } => {
                 ethereum::query_block_transaction_count_by_hash(beerus, hash.to_string()).await
             }
+            EthereumSubCommands::QueryTxCount { address, block } => {
+                ethereum::query_transaction_count(beerus, address.to_string(), block.to_string())
+                    .await
+            }
             EthereumSubCommands::QueryTxByHash { hash } => {
                 ethereum::query_transaction_by_hash(beerus, hash.to_string()).await
             }
@@ -167,6 +171,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 starknet::get_state_update(beerus, block_id_type.to_string(), block_id.to_string())
                     .await
             }
+            StarkNetSubCommands::QuerySyncing {} => starknet::query_starknet_syncing(beerus).await,
         },
     }
 }

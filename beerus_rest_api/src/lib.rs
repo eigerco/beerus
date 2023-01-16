@@ -20,6 +20,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             ethereum::endpoints::query_block_number,
             ethereum::endpoints::query_chain_id,
             ethereum::endpoints::query_code,
+            ethereum::endpoints::get_transaction_count,
             ethereum::endpoints::get_block_transaction_count_by_number,
             ethereum::endpoints::get_block_transaction_count_by_hash,
             ethereum::endpoints::get_transaction_by_hash,
@@ -43,6 +44,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             starknet::endpoints::get_class,
             starknet::endpoints::get_class_at,
             starknet::endpoints::get_block_transaction_count,
+            starknet::endpoints::query_starknet_syncing,
             starknet::endpoints::get_state_update
         ],
     )

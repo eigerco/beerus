@@ -3,8 +3,8 @@ use crate::api::ethereum::resp::{
     QueryBlockNumberResponse, QueryBlockTxCountByBlockHashResponse,
     QueryBlockTxCountByBlockNumberResponse, QueryChainIdResponse, QueryCodeResponse,
     QueryEstimateGasResponse, QueryGasPriceResponse, QueryLogsObject, QueryLogsResponse,
-    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse, ResponseLog,
-    SendRawTransactionResponse, TransactionObject,
+    QueryNonceResponse, QueryPriorityFeeResponse, QueryTransactionByHashResponse,
+    QueryTxCountResponse, ResponseLog, SendRawTransactionResponse, TransactionObject,
 };
 use crate::api::ApiResponse;
 
@@ -72,6 +72,16 @@ pub async fn query_code(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QueryCodeResponse> {
     ApiResponse::from_result(query_code_inner(address, beerus).await)
+}
+
+#[openapi]
+#[get("/ethereum/tx_count/<address>/<block>")]
+pub async fn get_transaction_count(
+    address: &str,
+    block: &str,
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryTxCountResponse> {
+    ApiResponse::from_result(query_transaction_count_inner(address, block, beerus).await)
 }
 
 #[openapi]
@@ -259,6 +269,29 @@ pub async fn query_code_inner(
     let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
 
     Ok(QueryCodeResponse { code })
+}
+
+/// Query the Tx count of a given Ethereum Address on a given Block from the the Ethereum chain.
+/// # Returns
+/// `Ok(get_transaction_count)` - u64 (tx_count)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the code query fails.
+/// # Examples
+pub async fn query_transaction_count_inner(
+    address: &str,
+    block: &str,
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryTxCountResponse> {
+    debug!("Querying Tx count");
+    let address = Address::from_str(address)?;
+    let block = beerus_core::ethers_helper::block_string_to_block_tag_type(block)?;
+    let tx_count = beerus
+        .ethereum_lightclient
+        .get_transaction_count(&address, block)
+        .await?;
+
+    Ok(QueryTxCountResponse { tx_count })
 }
 
 /// Query the Tx count of a given Block Number from the the Ethereum chain.
