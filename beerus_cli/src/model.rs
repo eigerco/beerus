@@ -6,7 +6,7 @@ use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    StateUpdate, SyncStatusType,
+    MaybePendingBlockWithTxs, StateUpdate, SyncStatusType,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -313,6 +313,16 @@ pub enum StarkNetSubCommands {
         )]
         constructor_calldata: Vec<String>,
     },
+    QueryBlockWithTxs {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -348,6 +358,7 @@ pub enum CommandResponse {
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
+    StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -631,6 +642,11 @@ impl Display for CommandResponse {
 
             CommandResponse::StarknetAddDeployTransaction(response) => {
                 write!(f, "{response:?}")
+            }
+            // Print the block data with its transactions.
+            // Result looks like: `
+            CommandResponse::StarknetQueryBlockWithTxs(response) => {
+                write!(f, "Block hash: {response:?}")
             }
         }
     }

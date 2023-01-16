@@ -220,6 +220,17 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QueryBlockWithTxs {
+                block_id_type,
+                block_id,
+            } => {
+                starknet::query_block_with_txs(
+                    beerus,
+                    block_id_type.to_string(),
+                    block_id.to_string(),
+                )
+                .await
+            }
         },
     }
 }

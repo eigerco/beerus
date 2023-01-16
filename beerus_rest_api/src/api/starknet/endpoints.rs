@@ -1,12 +1,12 @@
 use super::resp::{
     AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
-    NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
-    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
-    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
-    QueryStateUpdateResponse, QuerySyncing, StateDiffResponse, StorageDiffResponse,
-    StorageEntryResponse,
+    NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
+    QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractViewResponse,
+    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
+    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing, StateDiffResponse,
+    StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -293,6 +293,16 @@ pub async fn add_deploy_transaction(
     deploy_transaction_data: Json<AddDeployTransactionJson>,
 ) -> ApiResponse<AddDeployTransactionResponse> {
     ApiResponse::from_result(deploy_transaction_inner(beerus, deploy_transaction_data).await)
+}
+
+#[openapi]
+#[get("/starknet/block_with_txs/<block_id>?<block_id_type>")]
+pub async fn get_block_with_txs(
+    beerus: &State<BeerusLightClient>,
+    block_id: String,
+    block_id_type: String,
+) -> ApiResponse<QueryBlockWithTxsResponse> {
+    ApiResponse::from_result(get_block_with_txs_inner(beerus, block_id_type, block_id).await)
 }
 
 /// Query the state root of StarkNet.
@@ -823,5 +833,25 @@ pub async fn deploy_transaction_inner(
     Ok(AddDeployTransactionResponse {
         transaction_hash: deploy_transaction_hash.transaction_hash.to_string(),
         contract_address: deploy_transaction_hash.contract_address.to_string(),
+    })
+}
+
+/// Query block with txs
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_block_with_txs_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> Result<QueryBlockWithTxsResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    debug!("Querying Block with Txs");
+    let result = beerus
+        .starknet_lightclient
+        .get_block_with_txs(&block_id)
+        .await?;
+    Ok(QueryBlockWithTxsResponse {
+        block_with_txs: format!("{result:?}"),
     })
 }

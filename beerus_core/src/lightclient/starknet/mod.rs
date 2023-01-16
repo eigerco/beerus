@@ -8,7 +8,7 @@ use starknet::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
             BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
-            InvokeTransactionResult, SyncStatusType,
+            InvokeTransactionResult, MaybePendingBlockWithTxs, SyncStatusType,
         },
         models::{FunctionCall, StateUpdate},
         HttpTransport, JsonRpcClient,
@@ -59,6 +59,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         deploy_transaction: &BroadcastedDeployTransaction,
     ) -> Result<DeployTransactionResult>;
+    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -327,6 +328,23 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<DeployTransactionResult> {
         self.client
             .add_deploy_transaction(deploy_transaction)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the transactions of a given block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
+        self.client
+            .get_block_with_txs(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

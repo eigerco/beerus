@@ -439,3 +439,25 @@ pub async fn add_deploy_transaction(
             .await?,
     ))
 }
+
+/// Query Block with Txs array
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The contract class definition.
+pub async fn query_block_with_txs(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    Ok(CommandResponse::StarknetQueryBlockWithTxs(
+        beerus
+            .starknet_lightclient
+            .get_block_with_txs(&block_id)
+            .await?,
+    ))
+}
