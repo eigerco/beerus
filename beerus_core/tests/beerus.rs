@@ -15,7 +15,10 @@ mod tests {
     use starknet::{
         core::types::FieldElement,
         macros::selector,
-        providers::jsonrpc::models::{BlockHashAndNumber, BlockId, SyncStatusType},
+        providers::jsonrpc::models::{
+            BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction,
+            BroadcastedInvokeTransactionV0, InvokeTransactionResult, SyncStatusType,
+        },
     };
     use std::str::FromStr;
 
@@ -2553,5 +2556,125 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `add_invoke_transaction` when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `add_invoke_transaction` method of the external dependencies.
+    /// It tests the `add_invoke_transaction` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_add_invoke_transaction_then_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_result = InvokeTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+        };
+        let expected_result_value = expected_result.clone();
+        // Mock the `add_invoke_transaction` method of the Ethereum light client.
+        // Given
+        // Mock dependencies
+        starknet_lightclient_mock
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Ok(expected_result));
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let max_fee: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let signature: Vec<FieldElement> = vec![];
+        let nonce: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let contract_address: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let calldata: Vec<FieldElement> = vec![];
+
+        let transaction_data = BroadcastedInvokeTransactionV0 {
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data);
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .starknet_lightclient
+            .add_invoke_transaction(&invoke_transaction)
+            .await;
+
+        // Then
+        // Assert that the `add_invoke_transaction` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        // Assert that the code returned by the `add_invoke_transaction` method of the Beerus light client is the expected code.
+        assert_eq!(
+            format!("{result:?}"),
+            format!("Ok({expected_result_value:?})")
+        );
+    }
+
+    /// Test the `add_invoke_transaction` method when the Ethereum light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `add_invoke_transaction` method of the external dependencies.
+    /// It tests the `add_invoke_transaction` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_ethereum_lightclient_returns_error_when_query_add_invoke_transaction_then_error_is_propagated(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = concat!(
+            "Non valid combination of from_block, to_block and blockhash. ",
+            "If you want to filter blocks, then ",
+            "you can only use either from_block and to_block or blockhash, not both",
+        );
+
+        // Mock dependencies.
+        starknet_lightclient_mock
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Err(eyre::eyre!(expected_error.clone())));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let max_fee: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let signature: Vec<FieldElement> = vec![];
+        let nonce: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let contract_address: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector: FieldElement = FieldElement::from_str("0x01").unwrap();
+        let calldata: Vec<FieldElement> = vec![];
+
+        let transaction_data = BroadcastedInvokeTransactionV0 {
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data);
+
+        // Query the transaction data given a hash on Ethereum.
+        let result = beerus
+            .starknet_lightclient
+            .add_invoke_transaction(&invoke_transaction)
+            .await;
+
+        // Then
+        // Assert that the `add_invoke_transaction` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `add_invoke_transaction` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 }

@@ -1,11 +1,13 @@
 use std::str::FromStr;
 
+use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use ethers::types::U256;
 use eyre::Result;
 use starknet::core::types::FieldElement;
-
-use crate::model::CommandResponse;
+use starknet::providers::jsonrpc::models::{
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+};
 
 /// Query the StarkNet state root.
 /// # Arguments
@@ -291,5 +293,59 @@ pub async fn get_block_transaction_count(
 pub async fn query_starknet_syncing(beerus: BeerusLightClient) -> Result<CommandResponse> {
     Ok(CommandResponse::StarknetQuerySyncing(
         beerus.starknet_lightclient.syncing().await?,
+    ))
+}
+
+/// Add an Invoke transaction to the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `max_fee` - The maximum fee.
+/// * `signature` - The signature.
+/// * `nonce` - The nonce.
+/// * `contract_address` - The contract address.
+/// * `entry_point_selector` - The entry point selector.
+/// * `calldata` - The calldata.
+///
+/// # Returns
+///
+/// * `Result<CommandResponse>` - If the node is synchronized on the StarkNet network.
+pub async fn add_invoke_transaction(
+    beerus: BeerusLightClient,
+    max_fee: String,
+    signature: Vec<String>,
+    nonce: String,
+    contract_address: String,
+    entry_point_selector: String,
+    calldata: Vec<String>,
+) -> Result<CommandResponse> {
+    let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+    let signature = signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+    let contract_address: FieldElement = FieldElement::from_str(&contract_address).unwrap();
+    let entry_point_selector: FieldElement = FieldElement::from_str(&entry_point_selector).unwrap();
+    let calldata = calldata
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+
+    let transaction_data = BroadcastedInvokeTransactionV0 {
+        max_fee,
+        signature,
+        nonce,
+        contract_address,
+        entry_point_selector,
+        calldata,
+    };
+
+    let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data);
+
+    Ok(CommandResponse::StarknetAddInvokeTransaction(
+        beerus
+            .starknet_lightclient
+            .add_invoke_transaction(&invoke_transaction)
+            .await?,
     ))
 }

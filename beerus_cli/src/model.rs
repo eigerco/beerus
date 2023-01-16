@@ -4,7 +4,9 @@ use ethers::types::{H256, U256};
 use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, ContractClass, SyncStatusType};
+use starknet::providers::jsonrpc::models::{
+    BlockHashAndNumber, ContractClass, InvokeTransactionResult, SyncStatusType,
+};
 use std::{fmt::Display, path::PathBuf};
 
 /// Main struct for the Beerus CLI args.
@@ -239,6 +241,26 @@ pub enum StarkNetSubCommands {
         block_id: String,
     },
     QuerySyncing {},
+    AddInvokeTransaction {
+        /// Max fee
+        #[arg(short, long, value_name = "MAX_FEE")]
+        max_fee: String,
+        /// The signature
+        #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
+        signature: Vec<String>,
+        /// The nonce
+        #[arg(short, long, value_name = "NONCE")]
+        nonce: String,
+        /// The contract address
+        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        contract_address: String,
+        // The entry point selector
+        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        entry_point_selector: String,
+        /// The calldata
+        #[arg(short, long, value_name = "CALLDATA", value_delimiter = ',')]
+        calldata: Vec<String>,
+    },
 }
 
 /// The response from a CLI command.
@@ -270,6 +292,7 @@ pub enum CommandResponse {
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQuerySyncing(SyncStatusType),
+    StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -535,6 +558,10 @@ impl Display for CommandResponse {
                     write!(f, "{json_response}")
                 }
             },
+
+            CommandResponse::StarknetAddInvokeTransaction(response) => {
+                write!(f, "{response:?}")
+            }
         }
     }
 }
