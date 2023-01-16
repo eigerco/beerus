@@ -20,7 +20,10 @@ mod test {
     use helios::types::{ExecutionBlock, Transactions};
     use starknet::{
         core::types::FieldElement,
-        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult},
+        providers::jsonrpc::models::{
+            BlockHashAndNumber, ContractClass, ContractEntryPoint, DeployTransactionResult,
+            EntryPointsByType, InvokeTransactionResult,
+        },
     };
 
     /// Test the `send_raw_transaction` CLI command.
@@ -2402,6 +2405,155 @@ mod test {
                     calldata: vec![],
                 },
             }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `add_deploy_transaction` CLI command.
+    /// Given normal conditions, when query add_deploy_transaction, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_add_deploy_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = DeployTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+            contract_address: FieldElement::from_str("0x01").unwrap(),
+        };
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_deploy_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let program = vec![];
+        let constructor = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type = EntryPointsByType {
+            constructor,
+            external,
+            l1_handler,
+        };
+        let abi = None;
+
+        let contract_class: ContractClass = ContractClass {
+            program,
+            entry_points_by_type,
+            abi,
+        };
+
+        let contract_class_string = serde_json::to_string(&contract_class).unwrap();
+
+        println!("Contract Class {contract_class_string:?}");
+
+        let params = StarkNetSubCommands::AddDeployTransaction {
+            contract_class: contract_class_string,
+            version: "10".to_string(),
+            contract_address_salt: "0".to_string(),
+            constructor_calldata: vec![10.to_string()],
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("DeployTransactionResult { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, contract_address: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 } }", result.to_string());
+    }
+
+    /// Test the `add_deploy_transaction` CLI command.
+    /// Given starknet lightclient returns an error, when query add_deploy_transaction, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_add_deploy_transaction_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_deploy_transaction()
+            .return_once(move |_| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let program = vec![];
+        let constructor = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type = EntryPointsByType {
+            constructor,
+            external,
+            l1_handler,
+        };
+        let abi = None;
+
+        let contract_class: ContractClass = ContractClass {
+            program,
+            entry_points_by_type,
+            abi,
+        };
+
+        let contract_class_string = serde_json::to_string(&contract_class).unwrap();
+
+        println!("Contract Class {contract_class_string:?}");
+
+        let params = StarkNetSubCommands::AddDeployTransaction {
+            contract_class: contract_class_string,
+            version: "10".to_string(),
+            contract_address_salt: "0".to_string(),
+            constructor_calldata: vec![10.to_string()],
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
         };
         // When
         let result = runner::run(beerus, cli).await;
