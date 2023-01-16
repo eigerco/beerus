@@ -1,11 +1,12 @@
 use super::resp::{
-    AddInvokeTransactionJson, AddInvokeTransactionResponse, QueryBlockHashAndNumberResponse,
-    QueryBlockNumberResponse, QueryChainIdResponse, QueryContractViewResponse,
-    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
-    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse, NonceResponse, DeployedContractResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing, StateDiffResponse,
-    StorageDiffResponse, StorageEntryResponse,
+    AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
+    NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
+    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
+    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
+    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse,
+    QueryStateUpdateResponse, QuerySyncing, StateDiffResponse, StorageDiffResponse,
+    StorageEntryResponse,
 };
 use crate::api::starknet::resp::QueryL2ToL1MessagesResponse;
 use crate::api::ApiResponse;
@@ -20,7 +21,7 @@ use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, SyncStatusType, StateUpdate
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, StateUpdate, SyncStatusType,
 };
 use std::str::FromStr;
 

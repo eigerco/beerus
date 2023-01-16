@@ -17,7 +17,9 @@ mod test {
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{
         core::types::FieldElement,
-        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult, StateDiff, StateUpdate},
+        providers::jsonrpc::models::{
+            BlockHashAndNumber, InvokeTransactionResult, StateDiff, StateUpdate,
+        },
     };
 
     /// Test the `send_raw_transaction` endpoint.

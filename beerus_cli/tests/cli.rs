@@ -20,7 +20,9 @@ mod test {
     use helios::types::{ExecutionBlock, Transactions};
     use starknet::{
         core::types::FieldElement,
-        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult, StateDiff, StateUpdate},
+        providers::jsonrpc::models::{
+            BlockHashAndNumber, InvokeTransactionResult, StateDiff, StateUpdate,
+        },
     };
 
     /// Test the `send_raw_transaction` CLI command.

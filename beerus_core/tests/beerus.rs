@@ -18,7 +18,8 @@ mod tests {
         macros::selector,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction,
-            BroadcastedInvokeTransactionV0, InvokeTransactionResult, SyncStatusType,
+            BroadcastedInvokeTransactionV0, InvokeTransactionResult, StateDiff, StateUpdate,
+            SyncStatusType,
         },
     };
     use std::str::FromStr;

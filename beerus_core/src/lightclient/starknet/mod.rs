@@ -5,11 +5,11 @@ use mockall::automock;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
-        models::{FunctionCall, StateUpdate},
         models::{
             BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction, ContractClass,
             InvokeTransactionResult, SyncStatusType,
         },
+        models::{FunctionCall, StateUpdate},
         HttpTransport, JsonRpcClient,
     },
 };
