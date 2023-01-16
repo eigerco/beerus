@@ -18,7 +18,8 @@ mod test {
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, DeployTransactionResult, InvokeTransactionResult,
+            BlockHashAndNumber, DeployTransactionResult, InvokeTransactionResult, StateDiff,
+            StateUpdate,
         },
     };
 
@@ -2566,6 +2567,97 @@ mod test {
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query starknet syncing\"}"
         );
+    }
+
+    /// Test the `state_update` endpoint.
+    /// `/starknet/state_update?<block_id>&<block_id_type>`
+    /// Given StarkNet light client returns error when query starknet state_update, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_update_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_state_update()
+            .return_once(move |_block_id| Err(eyre::eyre!("Invalid Tag")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/state_update?block_id=non_existent&block_id_type=tag"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Invalid Tag\"}"
+        );
+    }
+
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_state_update_count_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        // Given
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let expected_result = StateUpdate {
+            block_hash: felt.clone(),
+            new_root: felt.clone(),
+            old_root: felt.clone(),
+            state_diff: StateDiff {
+                deployed_contracts: vec![],
+                storage_diffs: vec![],
+                declared_contract_hashes: vec![],
+                nonces: vec![],
+            },
+        };
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_state_update()
+            .return_once(move |_block_id| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/state_update?block_id_type=tag&block_id=latest"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"block_hash\":\"1\",\"new_root\":\"1\",\"old_root\":\"1\",\"state_diff\":{\"storage_diffs\":[],\"declared_contract_hash\":[],\"deployed_contracts\":[],\"nonces\":[]}}"
+                )
     }
 
     /// Test the `/ethereum/add_invoke_transaction` endpoint.

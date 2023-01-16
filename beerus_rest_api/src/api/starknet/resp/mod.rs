@@ -103,6 +103,47 @@ pub struct QuerySyncing {
     pub status: String,
 }
 
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct NonceResponse {
+    pub contract_address: String,
+    pub nonce: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct DeployedContractResponse {
+    pub address: String,
+    pub class_hash: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct StorageEntryResponse {
+    pub key: String,
+    pub value: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct StorageDiffResponse {
+    pub address: String,
+    pub storage_entries: Vec<StorageEntryResponse>,
+}
+
+#[derive(Serialize, JsonSchema)]
+pub struct StateDiffResponse {
+    pub storage_diffs: Vec<StorageDiffResponse>,
+    pub declared_contract_hash: Vec<String>,
+    pub deployed_contracts: Vec<DeployedContractResponse>,
+    pub nonces: Vec<NonceResponse>,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryStateUpdateResponse {
+    pub block_hash: String,
+    pub new_root: String,
+    pub old_root: String,
+    pub state_diff: StateDiffResponse,
+}
+
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AddInvokeTransactionJson {
