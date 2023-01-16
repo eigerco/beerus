@@ -6,7 +6,8 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::{
-            BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction, ContractClass,
+            BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
+            BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
             InvokeTransactionResult, SyncStatusType,
         },
         models::{FunctionCall, StateUpdate},
@@ -54,6 +55,10 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         invoke_transaction: &BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult>;
+    async fn add_deploy_transaction(
+        &self,
+        deploy_transaction: &BroadcastedDeployTransaction,
+    ) -> Result<DeployTransactionResult>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -299,6 +304,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<InvokeTransactionResult> {
         self.client
             .add_invoke_transaction(invoke_transaction)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Add an invoke transaction
+    ///
+    /// # Arguments
+    ///
+    /// deploy_transaction : Transaction data
+    ///
+    ///
+    /// # Returns
+    ///
+    /// Result : Deploy Transaction Result
+    ///
+    /// `Ok(DeployTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn add_deploy_transaction(
+        &self,
+        deploy_transaction: &BroadcastedDeployTransaction,
+    ) -> Result<DeployTransactionResult> {
+        self.client
+            .add_deploy_transaction(deploy_transaction)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

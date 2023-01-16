@@ -6,9 +6,8 @@ use ethers::types::U256;
 use eyre::Result;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
 };
-
 /// Query the StarkNet state root.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -394,6 +393,49 @@ pub async fn add_invoke_transaction(
         beerus
             .starknet_lightclient
             .add_invoke_transaction(&invoke_transaction)
+            .await?,
+    ))
+}
+
+/// Add an Deploy transaction to the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `contract_class` - The contract class.
+/// * `version` - The version.
+/// * `contract_address_salt` - The contract address salt.
+/// * `constructor_calldata` - The constructor calldata.
+///
+/// # Returns
+///
+/// * `Result<CommandResponse>` - The deploy transaction.
+pub async fn add_deploy_transaction(
+    beerus: BeerusLightClient,
+    contract_class: String,
+    version: String,
+    contract_address_salt: String,
+    constructor_calldata: Vec<String>,
+) -> Result<CommandResponse> {
+    let contract_class_bytes = contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let version: u64 = version.parse().unwrap();
+    let contract_address_salt: FieldElement =
+        FieldElement::from_str(&contract_address_salt).unwrap();
+    let constructor_calldata = constructor_calldata
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+
+    let deploy_transaction = BroadcastedDeployTransaction {
+        contract_class,
+        version,
+        contract_address_salt,
+        constructor_calldata,
+    };
+
+    Ok(CommandResponse::StarknetAddDeployTransaction(
+        beerus
+            .starknet_lightclient
+            .add_deploy_transaction(&deploy_transaction)
             .await?,
     ))
 }

@@ -48,6 +48,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             starknet::endpoints::query_starknet_syncing,
             starknet::endpoints::get_state_update,
             starknet::endpoints::add_invoke_transaction,
+            starknet::endpoints::add_deploy_transaction,
         ],
     )
 }
