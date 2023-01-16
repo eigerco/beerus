@@ -29,7 +29,6 @@ mod test {
     /// Given normal conditions, when sending raw transaction, then ok.
     /// Success case.
     #[tokio::test]
-
     async fn given_normal_conditions_when_send_raw_transaction_ok() {
         // Build mocks.
         let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
@@ -2412,7 +2411,7 @@ mod test {
         }
     }
     /// Test the `get_state_update` CLI command.
-    /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
+    /// Given normal conditions, when query get_state_update, then ok.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_state_update_then_ok() {
         // Build mocks.
