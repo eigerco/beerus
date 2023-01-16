@@ -3,7 +3,8 @@ use super::resp::{
     QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
     QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
     QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse, QuerySyncing,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryStateRootResponse, QuerySyncing,AddInvokeTransactionJson, AddInvokeTransactionResponse
+
 };
 use crate::api::ApiResponse;
 
@@ -12,10 +13,13 @@ use beerus_core::lightclient::beerus::BeerusLightClient;
 use ethers::types::U256;
 use eyre::Result;
 use log::debug;
+use rocket::serde::json::Json;
 use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::SyncStatusType;
+use starknet::providers::jsonrpc::models::{
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, SyncStatusType,
+};
 use std::str::FromStr;
 
 /// Query the state root of StarkNet.
@@ -244,6 +248,15 @@ pub async fn query_starknet_syncing(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QuerySyncing> {
     ApiResponse::from_result(query_syncing_inner(beerus).await)
+}
+
+#[openapi]
+#[post("/starknet/add_invoke_transaction", data = "<invoke_transaction_data>")]
+pub async fn add_invoke_transaction(
+    beerus: &State<BeerusLightClient>,
+    invoke_transaction_data: Json<AddInvokeTransactionJson>,
+) -> ApiResponse<AddInvokeTransactionResponse> {
+    ApiResponse::from_result(invoke_transaction_inner(beerus, invoke_transaction_data).await)
 }
 
 /// Query the state root of StarkNet.
@@ -612,4 +625,55 @@ pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<Qu
             data: None,
         }),
     }
+}
+
+/// Query logs.
+/// # Returns
+/// `Ok(logs_query)` - Vec<ResponseLog> (fetched lgos)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn invoke_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_data: Json<AddInvokeTransactionJson>,
+) -> Result<AddInvokeTransactionResponse> {
+    debug!("Invoke Transaction");
+
+    let Json(transaction) = transaction_data;
+
+    let max_fee: FieldElement = FieldElement::from_str(&transaction.max_fee).unwrap();
+    let signature = transaction
+        .signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&transaction.nonce).unwrap();
+    let contract_address: FieldElement =
+        FieldElement::from_str(&transaction.contract_address).unwrap();
+    let entry_point_selector: FieldElement =
+        FieldElement::from_str(&transaction.entry_point_selector).unwrap();
+    let calldata = transaction
+        .calldata
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+
+    let transaction_data_value = BroadcastedInvokeTransactionV0 {
+        max_fee,
+        signature,
+        nonce,
+        contract_address,
+        entry_point_selector,
+        calldata,
+    };
+
+    let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data_value);
+    let invoke_transaction_hash = beerus
+        .starknet_lightclient
+        .add_invoke_transaction(&invoke_transaction)
+        .await?;
+    Ok(AddInvokeTransactionResponse {
+        transaction_hash: invoke_transaction_hash.transaction_hash.to_string(),
+    })
 }

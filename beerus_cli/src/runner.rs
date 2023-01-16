@@ -179,6 +179,25 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 .await
             }
             StarkNetSubCommands::QuerySyncing {} => starknet::query_starknet_syncing(beerus).await,
+            StarkNetSubCommands::AddInvokeTransaction {
+                max_fee,
+                signature,
+                nonce,
+                contract_address,
+                entry_point_selector,
+                calldata,
+            } => {
+                starknet::add_invoke_transaction(
+                    beerus,
+                    max_fee.to_string(),
+                    signature.to_owned(),
+                    nonce.to_string(),
+                    contract_address.to_string(),
+                    entry_point_selector.to_string(),
+                    calldata.to_owned(),
+                )
+                .await
+            }
         },
     }
 }

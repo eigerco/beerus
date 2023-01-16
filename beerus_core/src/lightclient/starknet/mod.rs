@@ -6,7 +6,10 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::FunctionCall,
-        models::{BlockHashAndNumber, BlockId, ContractClass, SyncStatusType},
+        models::{
+            BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction, ContractClass,
+            InvokeTransactionResult, SyncStatusType,
+        },
         HttpTransport, JsonRpcClient,
     },
 };
@@ -46,6 +49,10 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<ContractClass>;
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
     async fn syncing(&self) -> Result<SyncStatusType>;
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: &BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -254,5 +261,28 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// `Err(eyre::Report)` if the operation failed.
     async fn syncing(&self) -> Result<SyncStatusType> {
         self.client.syncing().await.map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Add an invoke transaction
+    ///
+    /// # Arguments
+    ///
+    /// invoke_transaction : Transaction data
+    ///  
+    ///
+    /// # Returns
+    ///
+    /// Result : Invoke Transaction Result
+    ///
+    /// `Ok(InvokeTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: &BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult> {
+        self.client
+            .add_invoke_transaction(invoke_transaction)
+            .await
+            .map_err(|e| eyre::eyre!(e))
     }
 }
