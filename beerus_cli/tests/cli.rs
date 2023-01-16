@@ -2326,7 +2326,6 @@ mod test {
     }
     /// Test the `get_state_update` CLI command.
     /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
-    /// Error case.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_state_update_then_ok() {
         // Build mocks.
@@ -2363,7 +2362,6 @@ mod test {
             block_id_type: "tag".to_string(),
         };
 
-
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
@@ -2381,7 +2379,8 @@ mod test {
     /// Given starknet lightclient returns an error, when query get_state_update, then the error is propagated.
     /// Error case.
     #[tokio::test]
-    async fn given_starknet_lightclient_returns_error_when_starknet_get_state_update_then_error_is_propagated() {
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_state_update_then_error_is_propagated(
+    ) {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -2390,7 +2389,6 @@ mod test {
         starknet_lightclient
             .expect_get_state_update()
             .return_once(move |_block_id| Err(eyre::eyre!("Error: Invalid Tag")));
-
 
         let beerus = BeerusLightClient::new(
             config,
