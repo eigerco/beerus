@@ -1,4 +1,4 @@
-use rocket::serde::Serialize;
+use rocket::serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 use serde_json::Value;
 #[derive(Serialize, JsonSchema)]
@@ -77,6 +77,13 @@ pub struct QueryGetClassResponse {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryGetClassHashResponse {
+    pub class_hash: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+
 pub struct QueryGetClassAtResponse {
     pub abi: Value,
     pub entry_points_by_type: Value,
@@ -135,4 +142,23 @@ pub struct QueryStateUpdateResponse {
     pub new_root: String,
     pub old_root: String,
     pub state_diff: StateDiffResponse,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AddInvokeTransactionJson {
+    /// The maximal fee that can be charged for including the transaction
+    pub max_fee: String,
+    pub signature: Vec<String>,
+    pub nonce: String,
+    pub contract_address: String,
+    pub entry_point_selector: String,
+    /// The parameters passed to the function
+    pub calldata: Vec<String>,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct AddInvokeTransactionResponse {
+    pub transaction_hash: String,
 }

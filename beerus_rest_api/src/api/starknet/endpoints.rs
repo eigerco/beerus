@@ -1,9 +1,9 @@
 use super::resp::{
-    DeployedContractResponse, NonceResponse, QueryBlockHashAndNumberResponse,
+    AddInvokeTransactionJson, AddInvokeTransactionResponse, QueryBlockHashAndNumberResponse,
     QueryBlockNumberResponse, QueryChainIdResponse, QueryContractViewResponse,
-    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassResponse,
-    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
+    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse, NonceResponse, DeployedContractResponse,
     QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing, StateDiffResponse,
     StorageDiffResponse, StorageEntryResponse,
 };
@@ -15,10 +15,13 @@ use beerus_core::{
 use ethers::types::U256;
 use eyre::Result;
 use log::debug;
+use rocket::serde::json::Json;
 use rocket::{get, State};
 use rocket_okapi::openapi;
-use starknet::providers::jsonrpc::models::SyncStatusType;
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::StateUpdate};
+use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::{
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, SyncStatusType, StateUpdate
+};
 use std::str::FromStr;
 
 /// Query the state root of StarkNet.
@@ -154,6 +157,33 @@ pub async fn get_class(
     ApiResponse::from_result(get_class_inner(beerus, block_id_type, block_id, class_hash).await)
 }
 
+/// Query the contract class hash in the given block associated with the contract address.
+
+/// The contract class definition.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `contract_address` - The Contract Address
+///
+/// # Returns
+///
+/// `Ok(FieldElement)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/contract/class_hash/<contract_address>?<block_id>&<block_id_type>")]
+pub async fn get_class_hash(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    contract_address: String,
+) -> ApiResponse<QueryGetClassHashResponse> {
+    ApiResponse::from_result(
+        get_class_hash_inner(beerus, block_id_type, block_id, contract_address).await,
+    )
+}
+
 /// Query the contract class definition in the given block associated with the contract address.
 /// The contract class definition.
 ///
@@ -161,6 +191,7 @@ pub async fn get_class(
 ///
 /// * `block_id_type` - Type of block identifier. eg. hash, number, tag
 /// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+
 /// * `contract_address` - The contract address.
 ///
 /// # Returns
@@ -239,6 +270,15 @@ pub async fn query_starknet_syncing(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QuerySyncing> {
     ApiResponse::from_result(query_syncing_inner(beerus).await)
+}
+
+#[openapi]
+#[post("/starknet/add_invoke_transaction", data = "<invoke_transaction_data>")]
+pub async fn add_invoke_transaction(
+    beerus: &State<BeerusLightClient>,
+    invoke_transaction_data: Json<AddInvokeTransactionJson>,
+) -> ApiResponse<AddInvokeTransactionResponse> {
+    ApiResponse::from_result(invoke_transaction_inner(beerus, invoke_transaction_data).await)
 }
 
 /// Query the state root of StarkNet.
@@ -525,6 +565,28 @@ pub async fn get_class_inner(
 
 /// Query the contract class
 /// # Returns
+/// `ContractClassHash` - The contract class definition.
+pub async fn get_class_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    contract_address: String,
+) -> Result<QueryGetClassHashResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let contract_address = FieldElement::from_str(&contract_address)?;
+    debug!("Querying Contract Class");
+    let result = beerus
+        .starknet_lightclient
+        .get_class_hash_at(&block_id, contract_address)
+        .await?;
+    Ok(QueryGetClassHashResponse {
+        class_hash: result.to_string(),
+    })
+}
+
+/// Query the contract class
+/// # Returns
 /// `ContractClass` - The contract class definition.
 pub async fn get_class_at_inner(
     beerus: &State<BeerusLightClient>,
@@ -656,4 +718,55 @@ pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<Qu
             data: None,
         }),
     }
+}
+
+/// Query logs.
+/// # Returns
+/// `Ok(logs_query)` - Vec<ResponseLog> (fetched lgos)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn invoke_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_data: Json<AddInvokeTransactionJson>,
+) -> Result<AddInvokeTransactionResponse> {
+    debug!("Invoke Transaction");
+
+    let Json(transaction) = transaction_data;
+
+    let max_fee: FieldElement = FieldElement::from_str(&transaction.max_fee).unwrap();
+    let signature = transaction
+        .signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&transaction.nonce).unwrap();
+    let contract_address: FieldElement =
+        FieldElement::from_str(&transaction.contract_address).unwrap();
+    let entry_point_selector: FieldElement =
+        FieldElement::from_str(&transaction.entry_point_selector).unwrap();
+    let calldata = transaction
+        .calldata
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+
+    let transaction_data_value = BroadcastedInvokeTransactionV0 {
+        max_fee,
+        signature,
+        nonce,
+        contract_address,
+        entry_point_selector,
+        calldata,
+    };
+
+    let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data_value);
+    let invoke_transaction_hash = beerus
+        .starknet_lightclient
+        .add_invoke_transaction(&invoke_transaction)
+        .await?;
+    Ok(AddInvokeTransactionResponse {
+        transaction_hash: invoke_transaction_hash.transaction_hash.to_string(),
+    })
 }

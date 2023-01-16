@@ -17,7 +17,7 @@ mod test {
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{
         core::types::FieldElement,
-        providers::jsonrpc::models::{BlockHashAndNumber, StateDiff, StateUpdate},
+        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult, StateDiff, StateUpdate},
     };
 
     /// Test the `send_raw_transaction` endpoint.
@@ -2263,6 +2263,92 @@ mod test {
         );
     }
 
+    /// Test the `get_class_hash` endpoint.
+    /// `/starknet/contract/class_hash/<contract_address>?<block_id>&<block_id_type>`
+    /// Given normal conditions, when query starknet get_class, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_get_class_hash_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FieldElement::from_str("123").unwrap();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_class_hash_at()
+            .return_once(move |_block_id, _contract_address| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/contract/class_hash/0x123?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"class_hash\":\"123\"}".to_string()
+        );
+    }
+
+    /// Test the `get_class_hash` endpoint.
+    /// `/starknet/contract/class_hash/<contract_address>?<block_id>&<block_id_type>`
+    /// Given StarkNet light client returns error when query starknet get_class, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_get_class_hash_then_error_is_propagated()
+    {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient.expect_get_class_hash_at().return_once(
+            move |_block_id, _contract_address| {
+                Err(eyre::eyre!("cannot query starknet address class hash"))
+            },
+        );
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/contract/class_hash/0x123?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet address class hash\"}"
+        );
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
@@ -2569,5 +2655,80 @@ mod test {
             response.into_string().await.unwrap(),
             "{\"block_hash\":\"1\",\"new_root\":\"1\",\"old_root\":\"1\",\"state_diff\":{\"storage_diffs\":[],\"declared_contract_hash\":[],\"deployed_contracts\":[],\"nonces\":[]}}"
                 )
+    }
+
+    /// Test the `/ethereum/add_invoke_transaction` endpoint.
+    /// Given normal conditions, when query , then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_invoke_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let expected_result = InvokeTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+        };
+        let expected_result_value = expected_result.clone();
+        starknet_lightclient
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+        // When
+        let response = client
+            .post(uri!("/starknet/add_invoke_transaction"))
+            .body(r#"{"maxFee":"0","signature":[], "nonce":"10", "contractAddress":"0", "entryPointSelector":"0","calldata":[] }"#)
+            .dispatch()
+            .await;
+
+        let expected = "{\"transaction_hash\":\"1\"}";
+
+        assert_eq!(response.into_string().await.unwrap(), expected);
+    }
+
+    /// Test the `/ethereum/add_invoke_transaction` endpoint.
+    /// Given normal conditions, when query add_invoke_transaction, then errors is propagated.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_invoke_transaction_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let error_msg = concat!("Failed to send invoke transaction");
+        starknet_lightclient
+            .expect_add_invoke_transaction()
+            .return_once(move |_| Err(eyre::eyre!(error_msg)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/starknet/add_invoke_transaction"))
+            .body(r#"{"maxFee":"0","signature":[], "nonce":"10", "contractAddress":"0", "entryPointSelector":"0","calldata":[] }"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Failed to send invoke transaction\"}"
+        );
     }
 }

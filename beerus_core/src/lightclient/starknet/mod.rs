@@ -5,8 +5,11 @@ use mockall::automock;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
-        models::{BlockHashAndNumber, BlockId, ContractClass, SyncStatusType},
         models::{FunctionCall, StateUpdate},
+        models::{
+            BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction, ContractClass,
+            InvokeTransactionResult, SyncStatusType,
+        },
         HttpTransport, JsonRpcClient,
     },
 };
@@ -34,6 +37,11 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         class_hash: FieldElement,
     ) -> Result<ContractClass>;
+    async fn get_class_hash_at(
+        &self,
+        block_id: &BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement>;
     async fn get_class_at(
         &self,
         block_id: &BlockId,
@@ -42,6 +50,10 @@ pub trait StarkNetLightClient: Send + Sync {
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
     async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate>;
     async fn syncing(&self) -> Result<SyncStatusType>;
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: &BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -175,6 +187,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
+    /// Get the contract class hash given a block Id and contract_address;
+
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `contract_address` - The class hash.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FieldElement)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_class_hash_at(
+        &self,
+        block_id: &BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement> {
+        self.client
+            .get_class_hash_at(block_id, contract_address)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
     /// Get the contract class definition in the given block associated with the contract address.
     /// The contract class definition.
     ///
@@ -241,6 +276,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate> {
         self.client
             .get_state_update(block_id)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Add an invoke transaction
+    ///
+    /// # Arguments
+    ///
+    /// invoke_transaction : Transaction data
+    ///  
+    ///
+    /// # Returns
+    ///
+    /// Result : Invoke Transaction Result
+    ///
+    /// `Ok(InvokeTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: &BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult> {
+        self.client
+            .add_invoke_transaction(invoke_transaction)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
