@@ -1,3 +1,4 @@
+use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
 use ethers::{
     abi::Abi,
@@ -6,10 +7,7 @@ use ethers::{
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::FunctionCall;
-
-use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
+use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
