@@ -5,7 +5,8 @@ use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, InvokeTransactionResult, SyncStatusType,
+    BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
+    SyncStatusType,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -275,8 +276,32 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
         entry_point_selector: String,
         /// The calldata
-        #[arg(short, long, value_name = "CALLDATA", value_delimiter = ',')]
+        #[arg(
+            short,
+            long,
+            value_name = "CONSTRUCTOR_CALLDATA",
+            value_delimiter = ','
+        )]
         calldata: Vec<String>,
+    },
+    AddDeployTransaction {
+        /// The contract class
+        #[arg(short, long, value_name = "CONTRACT_CLASS")]
+        contract_class: String,
+        /// The version
+        #[arg(short, long, value_name = "VERSION")]
+        version: String,
+        /// The contract address salt
+        #[arg(short, long, value_name = "CONTRACT_ADDRESS_SALT")]
+        contract_address_salt: String,
+        /// The constructor calldata
+        #[arg(
+            short,
+            long,
+            value_name = "CONSTRUCTOR_CALLDATA",
+            value_delimiter = ','
+        )]
+        constructor_calldata: Vec<String>,
     },
 }
 
@@ -311,6 +336,7 @@ pub enum CommandResponse {
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
+    StarknetAddDeployTransaction(DeployTransactionResult),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
@@ -584,6 +610,10 @@ impl Display for CommandResponse {
             },
 
             CommandResponse::StarknetAddInvokeTransaction(response) => {
+                write!(f, "{response:?}")
+            }
+
+            CommandResponse::StarknetAddDeployTransaction(response) => {
                 write!(f, "{response:?}")
             }
         }

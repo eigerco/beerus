@@ -17,7 +17,9 @@ mod test {
     use rocket::{http::Status, local::asynchronous::Client, uri};
     use starknet::{
         core::types::FieldElement,
-        providers::jsonrpc::models::{BlockHashAndNumber, InvokeTransactionResult},
+        providers::jsonrpc::models::{
+            BlockHashAndNumber, DeployTransactionResult, InvokeTransactionResult,
+        },
     };
 
     /// Test the `send_raw_transaction` endpoint.
@@ -2638,6 +2640,97 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"Failed to send invoke transaction\"}"
+        );
+    }
+
+    /// Test the `/starknet/add_deploy_transaction` endpoint.
+    /// Given normal conditions, when query , then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_deploy_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let expected_result = DeployTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+            contract_address: FieldElement::from_str("0x02").unwrap(),
+        };
+        let expected_result_value = expected_result.clone();
+        starknet_lightclient
+            .expect_add_deploy_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let body = r#"{
+                "contractClass": "{\"program\":\"\",\"entry_points_by_type\":{\"CONSTRUCTOR\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"EXTERNAL\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"L1_HANDLER\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}]}}",
+                "version": "10",
+                "contractAddressSalt": "0",
+                "constructorCalldata": ["10"]
+        }"#;
+
+        // When
+        let response = client
+            .post(uri!("/starknet/add_deploy_transaction"))
+            .body(body)
+            .dispatch()
+            .await;
+
+        let expected = "{\"transaction_hash\":\"1\",\"contract_address\":\"2\"}";
+
+        assert_eq!(response.into_string().await.unwrap(), expected);
+    }
+
+    /// Test the `/starknet/add_deploy_transaction` endpoint.
+    /// Given normal conditions, when query add_deploy_transaction, then errors is propagated.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_deploy_transaction_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let error_msg = concat!("Failed to send deploy transaction");
+        starknet_lightclient
+            .expect_add_deploy_transaction()
+            .return_once(move |_| Err(eyre::eyre!(error_msg)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let body = r#"{
+                "contractClass": "{\"program\":\"\",\"entry_points_by_type\":{\"CONSTRUCTOR\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"EXTERNAL\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"L1_HANDLER\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}]}}",
+                "version": "10",
+                "contractAddressSalt": "0",
+                "constructorCalldata": ["10"]
+            }"#;
+
+        // When
+        let response = client
+            .post(uri!("/starknet/add_deploy_transaction"))
+            .body(body)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Failed to send deploy transaction\"}"
         );
     }
 }

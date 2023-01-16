@@ -8,7 +8,9 @@ use super::resp::{
 };
 use crate::api::ApiResponse;
 
-use crate::api::starknet::resp::QueryL2ToL1MessagesResponse;
+use crate::api::starknet::resp::{
+    AddDeployTransactionJson, AddDeployTransactionResponse, QueryL2ToL1MessagesResponse,
+};
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use ethers::types::U256;
 use eyre::Result;
@@ -18,7 +20,8 @@ use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, SyncStatusType,
+    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+    SyncStatusType,
 };
 use std::str::FromStr;
 
@@ -257,6 +260,15 @@ pub async fn add_invoke_transaction(
     invoke_transaction_data: Json<AddInvokeTransactionJson>,
 ) -> ApiResponse<AddInvokeTransactionResponse> {
     ApiResponse::from_result(invoke_transaction_inner(beerus, invoke_transaction_data).await)
+}
+
+#[openapi]
+#[post("/starknet/add_deploy_transaction", data = "<deploy_transaction_data>")]
+pub async fn add_deploy_transaction(
+    beerus: &State<BeerusLightClient>,
+    deploy_transaction_data: Json<AddDeployTransactionJson>,
+) -> ApiResponse<AddDeployTransactionResponse> {
+    ApiResponse::from_result(deploy_transaction_inner(beerus, deploy_transaction_data).await)
 }
 
 /// Query the state root of StarkNet.
@@ -675,5 +687,47 @@ pub async fn invoke_transaction_inner(
         .await?;
     Ok(AddInvokeTransactionResponse {
         transaction_hash: invoke_transaction_hash.transaction_hash.to_string(),
+    })
+}
+
+/// Deploy transaction.
+/// # Returns
+/// `Ok(deploy_transaction)` - DeployTransactionResponse
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn deploy_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_data: Json<AddDeployTransactionJson>,
+) -> Result<AddDeployTransactionResponse> {
+    debug!("Deploy Transaction");
+
+    let Json(transaction) = transaction_data;
+
+    let contract_class_bytes = transaction.contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let version: u64 = transaction.version.parse().unwrap();
+    let contract_address_salt: FieldElement =
+        FieldElement::from_str(&transaction.contract_address_salt).unwrap();
+    let constructor_calldata = transaction
+        .constructor_calldata
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+
+    let deploy_transaction = BroadcastedDeployTransaction {
+        contract_class,
+        version,
+        contract_address_salt,
+        constructor_calldata,
+    };
+    let deploy_transaction_hash = beerus
+        .starknet_lightclient
+        .add_deploy_transaction(&deploy_transaction)
+        .await?;
+    Ok(AddDeployTransactionResponse {
+        transaction_hash: deploy_transaction_hash.transaction_hash.to_string(),
+        contract_address: deploy_transaction_hash.contract_address.to_string(),
     })
 }

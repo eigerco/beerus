@@ -198,6 +198,21 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::AddDeployTransaction {
+                contract_class,
+                version,
+                contract_address_salt,
+                constructor_calldata,
+            } => {
+                starknet::add_deploy_transaction(
+                    beerus,
+                    contract_class.to_string(),
+                    version.to_string(),
+                    contract_address_salt.to_string(),
+                    constructor_calldata.to_owned(),
+                )
+                .await
+            }
         },
     }
 }

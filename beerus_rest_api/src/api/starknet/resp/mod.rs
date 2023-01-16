@@ -121,3 +121,19 @@ pub struct AddInvokeTransactionJson {
 pub struct AddInvokeTransactionResponse {
     pub transaction_hash: String,
 }
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AddDeployTransactionJson {
+    pub contract_class: String,
+    pub version: String,
+    pub contract_address_salt: String,
+    pub constructor_calldata: Vec<String>,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct AddDeployTransactionResponse {
+    pub transaction_hash: String,
+    pub contract_address: String,
+}
