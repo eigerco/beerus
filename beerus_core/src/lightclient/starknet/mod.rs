@@ -359,11 +359,8 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
 
     ///
     /// # Arguments
-    ///
-    /// * `block_id` - The block identifier.
-    /// * `index` - Transaction index
+    /// * `hash` - Transaction hash.
     /// # Returns
-    ///
     /// `Ok(Transaction)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
     async fn get_transaction_by_hash(&self, hash: FieldElement) -> Result<Transaction> {
