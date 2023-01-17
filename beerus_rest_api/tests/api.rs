@@ -19,7 +19,8 @@ mod test {
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxs, DeployTransactionResult,
-            InvokeTransactionResult, MaybePendingBlockWithTxs, StateDiff, StateUpdate,
+            InvokeTransaction, InvokeTransactionResult, InvokeTransactionV0,
+            MaybePendingBlockWithTxs, StateDiff, StateUpdate, Transaction as StarknetTransaction,
         },
     };
 
@@ -2921,6 +2922,109 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query starknet block with txs\"}"
+        );
+    }
+
+    /// Test the `get_transaction_by_block_id_and_index` endpoint.
+    /// `/starknet/transaction_by_block_and_index/<index>?<block_id>&<block_id_type>"`
+    /// Given normal conditions, when query starknet transaction_by_block_id_and_index, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_get_transaction_by_block_id_and_index_then_ok(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Mock the `get_transaction_by_block_id_and_index` method of the Starknet light client.
+        let transaction_hash = FieldElement::from_str("0x01").unwrap();
+        let max_fee = FieldElement::from_str("0x01").unwrap();
+        let signature = vec![];
+        let nonce = FieldElement::from_str("0x01").unwrap();
+        let contract_address = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector = FieldElement::from_str("0x01").unwrap();
+        let calldata = vec![];
+
+        let invoke_transaction = InvokeTransactionV0 {
+            transaction_hash,
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let expected_result =
+            StarknetTransaction::Invoke(InvokeTransaction::V0(invoke_transaction));
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_block_id_and_index()
+            .return_once(move |_block_id, _index| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/transaction_by_block_and_index/0?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        let expected_result_value = "{\"transaction_data\":\"Invoke(V0(InvokeTransactionV0 { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, max_fee: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, signature: [], nonce: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, contract_address: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, entry_point_selector: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, calldata: [] }))\"}".to_string();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), expected_result_value);
+    }
+
+    /// Test the `transaction_by_block_id_and_index` endpoint.
+    /// `/starknet/transaction_by_block_and_index/<index>?<block_id>&<block_id_type>"`
+    /// Given StarkNet light client returns error when query starknet transaction_by_block_id_and_index, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_get_transaction_by_block_id_and_index_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_block_id_and_index()
+            .return_once(move |_block_id, _index| {
+                Err(eyre::eyre!("cannot query starknet transaction"))
+            });
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/transaction_by_block_and_index/0?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet transaction\"}"
         );
     }
 }
