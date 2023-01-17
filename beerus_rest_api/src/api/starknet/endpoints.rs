@@ -5,8 +5,9 @@ use super::resp::{
     QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing, StateDiffResponse,
-    StorageDiffResponse, StorageEntryResponse,
+    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
+    QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse,
+    StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -303,6 +304,32 @@ pub async fn get_block_with_txs(
     block_id_type: String,
 ) -> ApiResponse<QueryBlockWithTxsResponse> {
     ApiResponse::from_result(get_block_with_txs_inner(beerus, block_id_type, block_id).await)
+}
+
+/// Query the number of transactions in a block given a block id.
+/// The number of transactions in a block.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `index` - The index of the transaction.
+///
+/// # Returns
+///
+/// `Ok(Transaction)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/transaction_by_block_and_index/<index>?<block_id>&<block_id_type>")]
+pub async fn get_transaction_by_block_id_and_index(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    index: String,
+) -> ApiResponse<QueryTransactionByBlockIdAndIndex> {
+    ApiResponse::from_result(
+        get_transaction_by_block_id_and_index_inner(beerus, block_id_type, block_id, index).await,
+    )
 }
 
 /// Query the state root of StarkNet.
@@ -853,5 +880,27 @@ pub async fn get_block_with_txs_inner(
         .await?;
     Ok(QueryBlockWithTxsResponse {
         block_with_txs: format!("{result:?}"),
+    })
+}
+
+/// Query the number of transactions in a block given a block id.
+/// # Returns
+/// `transaction data` - The number of transactions in a block.
+pub async fn get_transaction_by_block_id_and_index_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    index: String,
+) -> Result<QueryTransactionByBlockIdAndIndex> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let index = u64::from_str(&index)?;
+    debug!("Querying block transaction count");
+    let transaction_data = beerus
+        .starknet_lightclient
+        .get_transaction_by_block_id_and_index(&block_id, index)
+        .await?;
+    Ok(QueryTransactionByBlockIdAndIndex {
+        transaction_data: format!("{transaction_data:?}"),
     })
 }
