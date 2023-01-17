@@ -59,6 +59,9 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         deploy_transaction: &BroadcastedDeployTransaction,
     ) -> Result<DeployTransactionResult>;
+
+    async fn get_transaction_by_hash(&self, hash: FieldElement) -> Result<Transaction>;
+
     async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs>;
     async fn get_transaction_by_block_id_and_index(
         &self,
@@ -354,6 +357,21 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `index` - Transaction index
+    /// # Returns
+    ///
+    /// `Ok(Transaction)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_transaction_by_hash(&self, hash: FieldElement) -> Result<Transaction> {
+        self.client
+            .get_transaction_by_hash(hash)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
     /// Get the transaction given a block id and index
     /// The number of transactions in a block.
     ///
