@@ -313,6 +313,13 @@ pub enum StarkNetSubCommands {
         )]
         constructor_calldata: Vec<String>,
     },
+    // Get a transaction by its hash
+    QueryTransactionByHash {
+        /// The transaction's hash,
+        /// as a hex-string, eg. 0x1234.
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
+    },
     QueryBlockWithTxs {
         /// Type of block identifier
         /// eg. hash, number, tag
@@ -369,6 +376,7 @@ pub enum CommandResponse {
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQueryGetStateUpdate(StateUpdate),
+    StarknetQueryTransactionByHash(Transaction),
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
@@ -662,6 +670,32 @@ impl Display for CommandResponse {
             // Result looks like: `
             CommandResponse::StarknetQueryBlockWithTxs(response) => {
                 write!(f, "Block hash: {response:?}")
+            }
+            // Print the Transaction data
+            // Result looks like:
+            //  {
+            //  "calldata": [
+            //      "0x2",
+            //      "0x23c",
+            //      "0x219",
+            //      ...
+            //      ],
+            //  "max_fee": "0x84...",
+            //  "nonce": "0x30",
+            //  "sender_address": "0x1b...",
+            //  "signature": [
+            //      "0x2bd...",
+            //      "0x349..."
+            //  ],
+            //  "transaction_hash": "0x11...",
+            //  "type": "INVOKE",
+            //  "version": "0x1"
+            //  }
+            CommandResponse::StarknetQueryTransactionByHash(transaction) => {
+                let formatted_transaction = serde_json::to_value(transaction)
+                    .expect("Error parsing the received transaction")
+                    .to_string();
+                write!(f, "{formatted_transaction}")
             }
             // Print the Transaction data
             // Result looks like:

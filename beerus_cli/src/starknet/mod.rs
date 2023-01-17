@@ -462,6 +462,24 @@ pub async fn query_block_with_txs(
     ))
 }
 
+/// Query a transaction by its hash.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `hash` - The hash, in hex-string format.
+/// # Returns
+/// * `Result<CommandResponse>` - The matching transaction, if it exists.
+pub async fn get_transaction_by_hash(
+    beerus: BeerusLightClient,
+    hash: String,
+) -> Result<CommandResponse> {
+    let tx_hash = FieldElement::from_str(&hash);
+    Ok(CommandResponse::StarknetQueryTransactionByHash(
+        beerus
+            .starknet_lightclient
+            .get_transaction_by_hash(tx_hash?)
+            .await?,
+    ))
+}
 /// Query the number of transactions in a block given a block id of the StarkNet network.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
