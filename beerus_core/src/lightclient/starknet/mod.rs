@@ -357,7 +357,8 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
-    ///
+    /// Get the transaction that matches the
+    /// given hash.
     /// # Arguments
     /// * `hash` - Transaction hash.
     /// # Returns
