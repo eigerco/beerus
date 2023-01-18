@@ -17,11 +17,12 @@ mod tests {
         core::types::FieldElement,
         macros::selector,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, BlockId, BlockStatus, BlockWithTxs, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
-            ContractEntryPoint, DeployTransactionResult, EntryPointsByType, InvokeTransaction,
-            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxs, StateDiff,
-            StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+            BlockHashAndNumber, BlockId, BlockStatus, BlockWithTxHashes, BlockWithTxs,
+            BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+            BroadcastedInvokeTransactionV0, ContractClass, ContractEntryPoint,
+            DeployTransactionResult, EntryPointsByType, InvokeTransaction, InvokeTransactionResult,
+            InvokeTransactionV0, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            StateDiff, StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
         },
     };
     use std::str::FromStr;
@@ -3253,6 +3254,103 @@ mod tests {
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `pending_transactions` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `get_block_with_tx_hashes` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_block_with_tx_hashes` method of the external dependencies.
+    /// It tests the `get_block_with_tx_hashes` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_block_with_tx_hashes_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_dec_str("01").unwrap();
+        let parent_hash = FieldElement::from_dec_str("01").unwrap();
+        let block_number = 0;
+        let new_root = FieldElement::from_dec_str("01").unwrap();
+        let timestamp: u64 = 10;
+        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
+        let transactions = vec![];
+        let block = BlockWithTxHashes {
+            status,
+            block_hash,
+            parent_hash,
+            block_number,
+            new_root,
+            timestamp,
+            sequencer_address,
+            transactions,
+        };
+        // Mock the `get_block_with_tx_hashes` method of the Starknet light client.
+        let expected_result = MaybePendingBlockWithTxHashes::Block(block);
+        let expected_value_value = expected_result.clone();
+
+        starknet_lightclient_mock
+            .expect_get_block_with_tx_hashes()
+            .return_once(move |_block_id| Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+        let result = beerus
+            .starknet_lightclient
+            .get_block_with_tx_hashes(&block_id)
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the block data returned by the `get_block_with_tx_hashes` method of the Beerus light client
+        assert_eq!(format!("{result:?}"), format!("{expected_value_value:?}"))
+    }
+
+    /// Test the `get_block_with_tx_hashes` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_block_with_tx_hashes` method of the external dependencies.
+    /// It tests the `get_block_with_tx_hashes` method of the Beerus light client.
+    /// It tests the error handling of the `get_block_with_tx_hashes` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_get_block_with_tx_hashes_then_should_return_error(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `get_block_with_tx_hashes` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_get_block_with_tx_hashes()
+            .times(1)
+            .return_once(move |_block_id| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+        let result = beerus
+            .starknet_lightclient
+            .get_block_with_tx_hashes(&block_id)
+            .await;
+
+        // Then
+        // Assert that the `get_block_with_tx_hashes` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_block_with_tx_hashes` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
