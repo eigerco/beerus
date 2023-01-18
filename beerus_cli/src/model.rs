@@ -672,7 +672,9 @@ impl Display for CommandResponse {
                 write!(f, "Block hash: {response:?}")
             }
             // Print the Transaction data
-            // Result looks like:
+            // Result varies dependening on the
+            // transaction type, but
+            // here's what an invoke looks like:
             //  {
             //  "calldata": [
             //      "0x2",
