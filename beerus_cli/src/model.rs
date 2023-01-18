@@ -6,7 +6,8 @@ use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    MaybePendingBlockWithTxs, StateUpdate, SyncStatusType, Transaction,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate, SyncStatusType,
+    Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -344,6 +345,19 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "INDEX")]
         index: String,
     },
+    // Pending transactions
+    QueryPendingTransactions {},
+
+    QueryBlockWithTxHashes {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+    },
 }
 
 /// The response from a CLI command.
@@ -381,11 +395,13 @@ pub enum CommandResponse {
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
     StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
+    StarknetQueryBlockWithTxHashes(MaybePendingBlockWithTxHashes),
     StarkNetL1ToL2MessageCancellations(U256),
     StarkNetL1ToL2Messages(U256),
     StarkNetL1ToL2MessageNonce(U256),
     StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
+    StarknetQueryPendingTransactions(Vec<Transaction>),
 }
 
 /// Display implementation for the CLI command response.
@@ -703,6 +719,16 @@ impl Display for CommandResponse {
             // Result looks like:
             CommandResponse::StarknetQueryTransactionByBlockIdAndIndex(transaction) => {
                 write!(f, "Transaction: {transaction:?}")
+            }
+            // Print the pending transactions.
+            // Result looks like:
+            CommandResponse::StarknetQueryPendingTransactions(response) => {
+                write!(f, "{response:?}")
+            }
+            // Print the block data with its transactions hashes
+            // Result looks like: `
+            CommandResponse::StarknetQueryBlockWithTxHashes(response) => {
+                write!(f, "Block : {response:?}")
             }
         }
     }

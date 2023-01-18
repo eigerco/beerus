@@ -503,3 +503,38 @@ pub async fn get_transaction_by_block_id_and_index(
             .await?,
     ))
 }
+
+/// Query the number of transactions in a block given a block id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The number of transactions in a block.
+pub async fn query_pending_transactions(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    Ok(CommandResponse::StarknetQueryPendingTransactions(
+        beerus.starknet_lightclient.pending_transactions().await?,
+    ))
+}
+
+/// Query Block with Txs Hashes
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The contract class definition.
+pub async fn query_block_with_tx_hashes(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    Ok(CommandResponse::StarknetQueryBlockWithTxHashes(
+        beerus
+            .starknet_lightclient
+            .get_block_with_tx_hashes(&block_id)
+            .await?,
+    ))
+}

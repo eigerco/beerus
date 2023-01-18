@@ -248,6 +248,20 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QueryPendingTransactions {} => {
+                starknet::query_pending_transactions(beerus).await
+            }
+            StarkNetSubCommands::QueryBlockWithTxHashes {
+                block_id_type,
+                block_id,
+            } => {
+                starknet::query_block_with_tx_hashes(
+                    beerus,
+                    block_id_type.to_string(),
+                    block_id.to_string(),
+                )
+                .await
+            }
         },
     }
 }
