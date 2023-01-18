@@ -485,3 +485,16 @@ pub async fn get_transaction_by_block_id_and_index(
             .await?,
     ))
 }
+
+/// Query the number of transactions in a block given a block id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The number of transactions in a block.
+pub async fn query_pending_transactions(beerus: BeerusLightClient) -> Result<CommandResponse> {
+    Ok(CommandResponse::StarknetQueryPendingTransactions(
+        beerus.starknet_lightclient.pending_transactions().await?,
+    ))
+}
