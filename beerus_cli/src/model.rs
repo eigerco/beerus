@@ -337,6 +337,8 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "INDEX")]
         index: String,
     },
+    // Pending transactions
+    QueryPendingTransactions {},
 }
 
 /// The response from a CLI command.
@@ -378,6 +380,7 @@ pub enum CommandResponse {
     StarkNetL1ToL2MessageNonce(U256),
     StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
+    StarknetQueryPendingTransactions(Vec<Transaction>),
 }
 
 /// Display implementation for the CLI command response.
@@ -667,6 +670,11 @@ impl Display for CommandResponse {
             // Result looks like:
             CommandResponse::StarknetQueryTransactionByBlockIdAndIndex(transaction) => {
                 write!(f, "Transaction: {transaction:?}")
+            }
+            // Print the pending transactions.
+            // Result looks like:
+            CommandResponse::StarknetQueryPendingTransactions(response) => {
+                write!(f, "{response:?}")
             }
         }
     }

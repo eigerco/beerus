@@ -190,3 +190,9 @@ pub struct QueryBlockWithTxsResponse {
 pub struct QueryTransactionByBlockIdAndIndex {
     pub transaction_data: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryPendingTransactionsResponse {
+    pub pending_transactions: String,
+}

@@ -244,6 +244,9 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+            StarkNetSubCommands::QueryPendingTransactions {} => {
+                starknet::query_pending_transactions(beerus).await
+            }
         },
     }
 }

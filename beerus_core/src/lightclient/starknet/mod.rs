@@ -65,6 +65,7 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         index: u64,
     ) -> Result<Transaction>;
+    async fn pending_transactions(&self) -> Result<Vec<Transaction>>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -372,6 +373,20 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<Transaction> {
         self.client
             .get_transaction_by_block_id_and_index(block_id, index)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the pending transactions.
+    ///
+    /// # Arguments
+    /// # Returns
+    ///
+    /// Ok(Vec<Transaction>) if the operation was successful.
+    /// Err(eyre::Report) if the operation failed.
+    async fn pending_transactions(&self) -> Result<Vec<Transaction>> {
+        self.client
+            .pending_transactions()
             .await
             .map_err(|e| eyre::eyre!(e))
     }
