@@ -258,6 +258,22 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
+
+            StarkNetSubCommands::QueryContractStorageProof {
+                block_id_type,
+                block_id,
+                contract_address,
+                keys,
+            } => {
+                starknet::query_contract_storage_proof(
+                    beerus,
+                    block_id_type.to_string(),
+                    block_id.to_string(),
+                    contract_address.to_string(),
+                    keys,
+                )
+                .await
+            }
         },
     }
 }
