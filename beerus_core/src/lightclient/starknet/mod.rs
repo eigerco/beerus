@@ -9,7 +9,7 @@ use starknet::{
             BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
             BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
             InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            SyncStatusType, Transaction,
+            MaybePendingTransactionReceipt, SyncStatusType, Transaction,
         },
         models::{FunctionCall, StateUpdate},
         HttpTransport, JsonRpcClient,
@@ -65,6 +65,12 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         block_id: &BlockId,
     ) -> Result<MaybePendingBlockWithTxHashes>;
+
+    async fn get_transaction_receipt(
+        &self,
+        hash: FieldElement,
+    ) -> Result<MaybePendingTransactionReceipt>;
+
     async fn get_transaction_by_block_id_and_index(
         &self,
         block_id: &BlockId,
@@ -395,6 +401,27 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| eyre::eyre!(e))
     }
+
+    /// Get a transaction's receipt, querying
+    /// the transaction by its hash.
+    /// # Arguments
+    ///
+    /// * `hash` - Hash of the transaction.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(TransactionReceipt)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_transaction_receipt(
+        &self,
+        hash: FieldElement,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        self.client
+            .get_transaction_receipt(hash)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
     /// Get the block with tx hashes of a given block.
     ///
     /// # Arguments

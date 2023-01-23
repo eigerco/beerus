@@ -520,3 +520,19 @@ pub async fn query_block_with_tx_hashes(
             .await?,
     ))
 }
+
+/// Query Tx Receipt
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `hash` - The transaction's hash, as a hex-string.
+/// # Returns
+/// * `Result<CommandResponse>` - The receipt.
+pub async fn query_tx_receipt(beerus: BeerusLightClient, hash: String) -> Result<CommandResponse> {
+    let hash = FieldElement::from_str(&hash)?;
+    Ok(CommandResponse::StarknetQueryTxReceipt(
+        beerus
+            .starknet_lightclient
+            .get_transaction_receipt(hash)
+            .await?,
+    ))
+}
