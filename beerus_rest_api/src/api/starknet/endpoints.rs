@@ -7,7 +7,7 @@ use super::resp::{
     QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
     QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
     QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
-    QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse,
+    QueryTransactionByBlockIdAndIndex, QueryTxReceipt, StateDiffResponse, StorageDiffResponse,
     StorageEntryResponse,
 };
 use crate::api::ApiResponse;
@@ -350,6 +350,14 @@ pub async fn get_block_with_tx_hashes(
     block_id_type: String,
 ) -> ApiResponse<QueryBlockWithTxHashesResponse> {
     ApiResponse::from_result(get_block_with_tx_hashes_inner(beerus, block_id_type, block_id).await)
+}
+#[openapi]
+#[get("/starknet/transaction_receipt/<tx_hash>")]
+pub async fn get_tx_receipt(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> ApiResponse<QueryTxReceipt> {
+    ApiResponse::from_result(get_transaction_receipt_inner(beerus, tx_hash).await)
 }
 
 /// Query the state root of StarkNet.
@@ -936,6 +944,24 @@ pub async fn query_pending_transactions_inner(
     let pending_transactions = format!("{pending_transactions:?}");
     Ok(QueryPendingTransactionsResponse {
         pending_transactions,
+    })
+}
+
+/// Query a transaction's receipt
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_transaction_receipt_inner(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> Result<QueryTxReceipt> {
+    let tx_hash = FieldElement::from_str(&tx_hash)?;
+    debug!("Query a transaction's receipt");
+    let receipt = beerus
+        .starknet_lightclient
+        .get_transaction_receipt(tx_hash)
+        .await?;
+    Ok(QueryTxReceipt {
+        tx_receipt: format!("{receipt:?}"),
     })
 }
 
