@@ -23,8 +23,10 @@ mod test {
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
             ContractEntryPoint, DeployTransactionResult, EntryPointsByType, InvokeTransaction,
-            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, StateDiff, StateUpdate, Transaction as StarknetTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
 
@@ -666,20 +668,33 @@ mod test {
         }
     }
 
-    /// Test the `query_transaction_by_hash` CLI command.
-    /// Given normal conditions, when `query_transaction_by_hash`, then ok.
+    /// Test the `query_tx_receipt` CLI command.
+    /// Given normal conditions, when `query_tx_receipt`, then ok.
     /// Success case.
     #[tokio::test]
-    async fn given_normal_conditions_when_query_transaction_by_hash_then_ok() {
-        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+    async fn given_normal_conditions_when_query_tx_receipt_then_ok() {
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
-        let transaction = Transaction::default();
-        let _transaction = transaction.clone();
+        let felt = FieldElement::from_str("0x1").unwrap();
+        // Mock the `get_transaction_receipt` method of the Starknet light client.
+        let transaction_receipt = InvokeTransactionReceipt {
+            transaction_hash: felt.clone(),
+            actual_fee: felt.clone(),
+            status: TransactionStatus::AcceptedOnL2,
+            block_hash: felt.clone(),
+            block_number: 0xFFF_u64,
+            messages_sent: vec![],
+            events: vec![],
+        };
+        let expected_result = MaybePendingTransactionReceipt::Receipt(TransactionReceipt::Invoke(
+            transaction_receipt,
+        ));
+        let closure_return = expected_result.clone();
         // Given
         // Mock dependencies
-        ethereum_lightclient
-            .expect_get_transaction_by_hash()
-            .return_once(move |_| Ok(Some(_transaction)));
+        starknet_lightclient
+            .expect_get_transaction_receipt()
+            .return_once(move |_| Ok(closure_return));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -687,21 +702,68 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-        let hash = "0xc9bb964b3fe087354bc1c1904518acc2b9df7ebedcb89215e9f3b41f47b6c31d".to_string();
+        let hash = "0xc9bb9".to_string();
 
         // Mock the command line arguments.
         let cli = Cli {
             config: None,
-            command: Commands::Ethereum(EthereumCommands {
-                command: EthereumSubCommands::QueryTxByHash { hash },
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTxReceipt { tx_hash: hash },
             }),
         };
 
         let result = runner::run(beerus, cli).await.unwrap();
 
-        assert_eq!(result.to_string(), "Transaction Data: \"Some(Transaction { hash: 0x0000000000000000000000000000000000000000000000000000000000000000, nonce: 0, block_hash: None, block_number: None, transaction_index: None, from: 0x0000000000000000000000000000000000000000, to: None, value: 0, gas_price: None, gas: 0, input: Bytes(0x), v: 0, r: 0, s: 0, transaction_type: None, access_list: None, max_priority_fee_per_gas: None, max_fee_per_gas: None, chain_id: None, other: OtherFields { inner: {} } })\"");
+        assert_eq!(
+            result.to_string(),
+            serde_json::to_value(expected_result).unwrap().to_string()
+        );
     }
 
+    /// Test `query_tx_receipt` CLI command.
+    /// Given ethereum lightclient returns an error, when `query_tx_receipt`, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let expected_error =
+            r#"Error: JSON-RPC error: code=25, message="Transaction hash not found""#;
+
+        // Given
+        // Mock dependencies.
+        starknet_lightclient
+            .expect_get_transaction_receipt()
+            .return_once(move |_| Err(eyre::eyre!(expected_error)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let tx_hash = "0xc24215226336d22238a20a72f8e489c005b44c4a".to_string();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTxReceipt { tx_hash },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+        // Then
+        match result {
+            Err(e) => assert_eq!(
+                r#"Error: JSON-RPC error: code=25, message="Transaction hash not found""#,
+                e.to_string()
+            ),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
     /// Test `query_query_transaction_by_hash` CLI command.
     /// Given ethereum lightclient returns an error, when `query_transaction_by_hash`, then the error is propagated.
     /// Error case.
