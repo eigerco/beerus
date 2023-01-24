@@ -53,6 +53,7 @@ pub async fn build_rocket_server(beerus: BeerusLightClient) -> Rocket<Build> {
             starknet::endpoints::get_transaction_by_block_id_and_index,
             starknet::endpoints::query_pending_transactions,
             starknet::endpoints::get_block_with_tx_hashes,
+            starknet::endpoints::get_contract_storage_proof,
         ],
     )
 }

@@ -1,6 +1,8 @@
+use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use rocket::serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 use serde_json::Value;
+
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryStateRootResponse {
@@ -201,4 +203,20 @@ pub struct QueryPendingTransactionsResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryBlockWithTxHashesResponse {
     pub block_with_tx_hashes: String,
+}
+
+#[derive(Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryContractStorageProofResponse {
+    pub proof: GetProofOutput,
+}
+
+impl JsonSchema for QueryContractStorageProofResponse {
+    fn schema_name() -> String {
+        "QueryContractStorageProofResponse".to_string()
+    }
+
+    fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
+        gen.subschema_for::<QueryContractStorageProofResponse>()
+    }
 }
