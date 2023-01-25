@@ -8,7 +8,8 @@ use starknet::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
             BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
-            InvokeTransactionResult, MaybePendingBlockWithTxs, SyncStatusType,
+            InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            SyncStatusType, Transaction,
         },
         models::{FunctionCall, StateUpdate},
         HttpTransport, JsonRpcClient,
@@ -60,6 +61,16 @@ pub trait StarkNetLightClient: Send + Sync {
         deploy_transaction: &BroadcastedDeployTransaction,
     ) -> Result<DeployTransactionResult>;
     async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs>;
+    async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes>;
+    async fn get_transaction_by_block_id_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction>;
+    async fn pending_transactions(&self) -> Result<Vec<Transaction>>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -345,6 +356,61 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
         self.client
             .get_block_with_txs(block_id)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the transaction given a block id and index
+    /// The number of transactions in a block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `index` - Transaction index
+    /// # Returns
+    ///
+    /// `Ok(Transaction)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_transaction_by_block_id_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction> {
+        self.client
+            .get_transaction_by_block_id_and_index(block_id, index)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the pending transactions.
+    ///
+    /// # Arguments
+    /// # Returns
+    ///
+    /// Ok(Vec<Transaction>) if the operation was successful.
+    /// Err(eyre::Report) if the operation failed.
+    async fn pending_transactions(&self) -> Result<Vec<Transaction>> {
+        self.client
+            .pending_transactions()
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+    /// Get the block with tx hashes of a given block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(MaybePendingBlockWithTxHashes)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes> {
+        self.client
+            .get_block_with_tx_hashes(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

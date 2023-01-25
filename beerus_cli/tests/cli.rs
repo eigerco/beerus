@@ -21,9 +21,10 @@ mod test {
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, BlockStatus, BlockWithTxs, ContractClass, ContractEntryPoint,
-            DeployTransactionResult, EntryPointsByType, InvokeTransactionResult,
-            MaybePendingBlockWithTxs, StateDiff, StateUpdate,
+            BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
+            ContractEntryPoint, DeployTransactionResult, EntryPointsByType, InvokeTransaction,
+            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
+            MaybePendingBlockWithTxs, StateDiff, StateUpdate, Transaction as StarknetTransaction,
         },
     };
 
@@ -2844,6 +2845,282 @@ mod test {
         }
     }
 
+    /// Test the `get_transaction_by_block_id_and_index` CLI command.
+    /// Given normal conditions, when query get_transaction_by_block_id_and_index, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_transaction_by_block_id_and_index_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Mock the `get_transaction_by_block_id_and_index` method of the Starknet light client.
+        let transaction_hash = FieldElement::from_str("0x01").unwrap();
+        let max_fee = FieldElement::from_str("0x01").unwrap();
+        let signature = vec![];
+        let nonce = FieldElement::from_str("0x01").unwrap();
+        let contract_address = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector = FieldElement::from_str("0x01").unwrap();
+        let calldata = vec![];
+
+        let invoke_transaction = InvokeTransactionV0 {
+            transaction_hash,
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let expected_result =
+            StarknetTransaction::Invoke(InvokeTransaction::V0(invoke_transaction));
+        let expected_result_value = expected_result.clone();
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_block_id_and_index()
+            .return_once(move |_block_id, _index| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTransactionByBlockIdAndIndex {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    index: "0".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            format!("Transaction: {expected_result_value:?}"),
+            result.to_string()
+        );
+    }
+
+    /// Test the `get_transaction_by_block_id_and_index` CLI command.
+    /// Given starknet lightclient returns an error, when query get_transaction_by_block_id_and_index, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_transaction_by_block_id_and_index_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_block_id_and_index()
+            .return_once(move |_block_id, _index| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTransactionByBlockIdAndIndex {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    index: "0".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `pending_transactions` CLI command.
+    /// Given normal conditions, when query pending_transactions, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_pending_transactions_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = vec![];
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_pending_transactions()
+            .return_once(move || Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryPendingTransactions {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("[]", result.to_string());
+    }
+
+    /// Test the `pending_transactions` CLI command.
+    /// Given starknet lightclient returns an error, when query pending_transactions, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_pending_transactions_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_pending_transactions()
+            .return_once(move || Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryPendingTransactions {},
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `get_block_with_tx_hashes` CLI command.
+    /// Given normal conditions, when query get_block_with_tx_hashes, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_block_with_tx_hashes_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_dec_str("01").unwrap();
+        let parent_hash = FieldElement::from_dec_str("01").unwrap();
+        let block_number = 0;
+        let new_root = FieldElement::from_dec_str("01").unwrap();
+        let timestamp: u64 = 10;
+        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
+        let transactions = vec![];
+        let block = BlockWithTxHashes {
+            status,
+            block_hash,
+            parent_hash,
+            block_number,
+            new_root,
+            timestamp,
+            sequencer_address,
+            transactions,
+        };
+        // Mock the `get_block_with_tx_hashes` method of the Starknet light client.
+        let expected_result = MaybePendingBlockWithTxHashes::Block(block);
+        let expected_result_value = expected_result.clone();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_block_with_tx_hashes()
+            .return_once(move |_block_id| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryBlockWithTxHashes {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            result.to_string(),
+            format!("Block : {expected_result_value:?}")
+        );
+    }
+
+    /// Test the `get_block_with_tx_hashes` CLI command.
+    /// Given starknet lightclient returns an error, when query get_block_with_tx_hashes, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_block_with_tx_hashes_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_block_with_tx_hashes()
+            .return_once(move |_block_id| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryBlockWithTxHashes {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),

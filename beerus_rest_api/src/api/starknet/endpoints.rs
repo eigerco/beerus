@@ -1,12 +1,14 @@
 use super::resp::{
     AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
     NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
-    QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractViewResponse,
-    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
-    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
-    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing, StateDiffResponse,
-    StorageDiffResponse, StorageEntryResponse,
+    QueryBlockWithTxHashesResponse, QueryBlockWithTxsResponse, QueryChainIdResponse,
+    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
+    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
+    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
+    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
+    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
+    QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse,
+    StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -303,6 +305,51 @@ pub async fn get_block_with_txs(
     block_id_type: String,
 ) -> ApiResponse<QueryBlockWithTxsResponse> {
     ApiResponse::from_result(get_block_with_txs_inner(beerus, block_id_type, block_id).await)
+}
+
+/// Query the number of transactions in a block given a block id.
+/// The number of transactions in a block.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `index` - The index of the transaction.
+///
+/// # Returns
+///
+/// `Ok(Transaction)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/transaction_by_block_and_index/<index>?<block_id>&<block_id_type>")]
+pub async fn get_transaction_by_block_id_and_index(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    index: String,
+) -> ApiResponse<QueryTransactionByBlockIdAndIndex> {
+    ApiResponse::from_result(
+        get_transaction_by_block_id_and_index_inner(beerus, block_id_type, block_id, index).await,
+    )
+}
+
+/// Query the current block hash and number.
+#[openapi]
+#[get("/starknet/pending_transactions")]
+pub async fn query_pending_transactions(
+    beerus: &State<BeerusLightClient>,
+) -> ApiResponse<QueryPendingTransactionsResponse> {
+    ApiResponse::from_result(query_pending_transactions_inner(beerus).await)
+}
+
+#[openapi]
+#[get("/starknet/block_with_tx_hashes/<block_id>?<block_id_type>")]
+pub async fn get_block_with_tx_hashes(
+    beerus: &State<BeerusLightClient>,
+    block_id: String,
+    block_id_type: String,
+) -> ApiResponse<QueryBlockWithTxHashesResponse> {
+    ApiResponse::from_result(get_block_with_tx_hashes_inner(beerus, block_id_type, block_id).await)
 }
 
 /// Query the state root of StarkNet.
@@ -853,5 +900,61 @@ pub async fn get_block_with_txs_inner(
         .await?;
     Ok(QueryBlockWithTxsResponse {
         block_with_txs: format!("{result:?}"),
+    })
+}
+
+/// Query the number of transactions in a block given a block id.
+/// # Returns
+/// `transaction data` - The number of transactions in a block.
+pub async fn get_transaction_by_block_id_and_index_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    index: String,
+) -> Result<QueryTransactionByBlockIdAndIndex> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let index = u64::from_str(&index)?;
+    debug!("Querying block transaction count");
+    let transaction_data = beerus
+        .starknet_lightclient
+        .get_transaction_by_block_id_and_index(&block_id, index)
+        .await?;
+    Ok(QueryTransactionByBlockIdAndIndex {
+        transaction_data: format!("{transaction_data:?}"),
+    })
+}
+
+/// Query pending transactions
+/// # Returns
+/// `pending_transactions` - All transactions that are pending.
+pub async fn query_pending_transactions_inner(
+    beerus: &State<BeerusLightClient>,
+) -> Result<QueryPendingTransactionsResponse> {
+    debug!("Querying pending transactions");
+    let pending_transactions = beerus.starknet_lightclient.pending_transactions().await?;
+    let pending_transactions = format!("{pending_transactions:?}");
+    Ok(QueryPendingTransactionsResponse {
+        pending_transactions,
+    })
+}
+
+/// Query block with txs
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_block_with_tx_hashes_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> Result<QueryBlockWithTxHashesResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    debug!("Querying Block with Txs");
+    let result = beerus
+        .starknet_lightclient
+        .get_block_with_tx_hashes(&block_id)
+        .await?;
+    Ok(QueryBlockWithTxHashesResponse {
+        block_with_tx_hashes: format!("{result:?}"),
     })
 }

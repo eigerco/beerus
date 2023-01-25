@@ -184,3 +184,21 @@ pub struct AddDeployTransactionResponse {
 pub struct QueryBlockWithTxsResponse {
     pub block_with_txs: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryTransactionByBlockIdAndIndex {
+    pub transaction_data: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryPendingTransactionsResponse {
+    pub pending_transactions: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockWithTxHashesResponse {
+    pub block_with_tx_hashes: String,
+}

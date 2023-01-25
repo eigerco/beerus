@@ -5,9 +5,16 @@ use ethers::{
     types::{H160, U256},
 };
 use eyre::Result;
-use helios::types::BlockTag;
-use helios::types::CallOpts;
+use helios::types::{BlockTag, CallOpts};
 use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
+
+use starknet::providers::jsonrpc::models::{
+    BlockId, BlockTag as StarknetBlockTag, BlockWithTxs, MaybePendingBlockWithTxs,
+};
+use std::collections::BTreeMap;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tokio;
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
@@ -15,6 +22,29 @@ pub enum SyncStatus {
     NotSynced,
     Syncing,
     Synced,
+}
+
+#[derive(Clone, Debug)]
+pub struct NodeData {
+    pub block_number: u64,
+    pub block_root: String,
+    pub payload: BTreeMap<u64, BlockWithTxs>,
+}
+
+impl NodeData {
+    pub fn new() -> Self {
+        NodeData {
+            block_number: 0,
+            block_root: "".to_string(),
+            payload: BTreeMap::new(),
+        }
+    }
+}
+
+impl Default for NodeData {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// Beerus Light Client service.
@@ -31,6 +61,8 @@ pub struct BeerusLightClient {
     pub starknet_core_abi: Abi,
     /// StarkNet core contract address.
     pub starknet_core_contract_address: H160,
+
+    pub node_data: Arc<Mutex<NodeData>>,
 }
 
 impl BeerusLightClient {
@@ -53,17 +85,80 @@ impl BeerusLightClient {
             sync_status: SyncStatus::NotSynced,
             starknet_core_abi,
             starknet_core_contract_address,
+            node_data: Arc::new(Mutex::new(NodeData::new())),
         }
     }
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
-    pub async fn start(&mut self) -> Result<()> {
+    pub async fn start(
+        &mut self,
+        config: Config,
+        ethereum_lightclient: Box<dyn EthereumLightClient>,
+        starknet_lightclient: Box<dyn StarkNetLightClient>,
+    ) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
             self.ethereum_lightclient.start().await?;
+
             // Start the StarkNet light client.
             self.starknet_lightclient.start().await?;
+
             self.sync_status = SyncStatus::Synced;
+
+            let node = self.node_data.clone();
+            let mut beerus_client =
+                BeerusLightClient::new(config, ethereum_lightclient, starknet_lightclient);
+            beerus_client.ethereum_lightclient.start().await?;
+            println!("Ethereum Light Client Started!");
+
+            let task = async move {
+                loop {
+                    //TODO: Fix last_proven_block and implement if condition
+                    // let last_proven_block = beerus_client
+                    //     .starknet_last_proven_block()
+                    //     .await
+                    //     .unwrap()
+                    //     .as_u64();
+
+                    //TODO: Fix starknet_state_root and implement if condition
+                    // let last_starknet_state =
+                    //     beerus_client.starknet_state_root().await.unwrap().as_u64();
+
+                    match beerus_client
+                        .starknet_lightclient
+                        .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
+                        .await
+                    {
+                        Ok(block) => {
+                            let mut data = node.lock().unwrap();
+                            match block {
+                                MaybePendingBlockWithTxs::Block(block) => {
+                                    // TODO: change "0 < block.block_number" to "block.block_number == last_proven_block"
+                                    if block.block_number > data.block_number
+                                        && 0 < block.block_number
+                                    {
+                                        data.block_number = block.block_number;
+                                        data.block_root = block.new_root.to_string();
+                                        data.payload.insert(block.block_number, block);
+                                        println!("New Block Added to Payload");
+                                        println!("Block Number {:?}", &data.block_number);
+                                        println!("Block Root {:?}", &data.block_root);
+                                    }
+                                }
+                                MaybePendingBlockWithTxs::PendingBlock(_) => {
+                                    println!("Pending Block");
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            eprintln!("Error getting block: {err:?}");
+                        }
+                    }
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                }
+            };
+
+            tokio::spawn(task);
         }
         Ok(())
     }

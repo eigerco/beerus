@@ -17,11 +17,16 @@ async fn rocket() -> Rocket<Build> {
     info!("starting Beerus Rest API...");
     // Create config.
     let config = Config::default();
+    let config_clone = config.clone();
 
     // Create a new Ethereum light client.
     let ethereum_lightclient = HeliosLightClient::new(config.clone()).await.unwrap();
+    let ethereum_lightclient_clone = HeliosLightClient::new(config.clone()).await.unwrap();
+
     // Create a new StarkNet light client.
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
+    let starknet_lightclient_clone = StarkNetLightClientImpl::new(&config).unwrap();
+
     // Create a new Beerus light client.
     let mut beerus = BeerusLightClient::new(
         config,
@@ -29,7 +34,14 @@ async fn rocket() -> Rocket<Build> {
         Box::new(starknet_lightclient),
     );
     info!("starting the Beerus light client...");
-    beerus.start().await.unwrap();
+    beerus
+        .start(
+            config_clone,
+            Box::new(ethereum_lightclient_clone),
+            Box::new(starknet_lightclient_clone),
+        )
+        .await
+        .unwrap();
     info!("Beerus light client started and synced.");
 
     build_rocket_server(beerus).await
