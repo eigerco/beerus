@@ -3,15 +3,18 @@ mod test {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
-            starknet::StarkNetLightClientImpl,
+            beerus::BeerusLightClient,
+            ethereum::MockEthereumLightClient,
+            starknet::{storage_proof::GetProofOutput, StarkNetLightClientImpl},
         },
     };
     use ethers::types::Address;
     use eyre::eyre;
     use httpmock::{prelude::*, Mock};
+    use serde::{Deserialize, Serialize};
     use serde_json::json;
-    use starknet::core::types::FieldElement;
+    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
+    use std::fs;
     use std::str::FromStr;
 
     #[tokio::test]
@@ -124,6 +127,65 @@ mod test {
         assert_eq!(mock_request.hits(), 0);
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_storage_proof_should_work() {
+        // Start a lightweight mock server.
+        let server = MockServer::start();
+        let config = mock_config(&server);
+
+        let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
+        let helios_lightclient = MockEthereumLightClient::new();
+
+        let beerus =
+            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+
+        let (mock, expected_proof) = get_contract_storage_proof_mock(&server);
+
+        let keys = [FieldElement::ONE];
+        let contract_address = FieldElement::from_hex_be(
+            "0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153",
+        )
+        .unwrap();
+
+        let proof = beerus
+            .starknet_lightclient
+            .get_contract_storage_proof(contract_address, Vec::from(keys), &BlockId::Number(1))
+            .await;
+
+        mock.assert();
+        assert_eq!(proof.unwrap(), expected_proof);
+    }
+
+    fn get_contract_storage_proof_mock(server: &MockServer) -> (Mock, GetProofOutput) {
+        let path = "tests/data.json";
+        let s = fs::read_to_string(path).unwrap();
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct JsonOutput {
+            result: GetProofOutput,
+        }
+        let output: JsonOutput = serde_json::from_str(&s).unwrap();
+
+        let mock = server.mock(|when, then| {
+            when.method(POST).path("/").json_body(json!({
+                "id":1,
+                "jsonrpc":"2.0",
+                "method":"pathfinder_getProof",
+                "params":[
+                    {
+                        "block_number":1
+                    },
+                    "0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153",
+                    ["0x1"]
+                ]
+            }));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body_from_file(path);
+        });
+        (mock, output.result)
     }
 
     fn get_storage_at_mock(server: &MockServer) -> Mock {

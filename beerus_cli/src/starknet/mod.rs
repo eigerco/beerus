@@ -520,3 +520,34 @@ pub async fn query_block_with_tx_hashes(
             .await?,
     ))
 }
+
+
+/// Query Contract Storage proof for a given contract and keys
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// * `contract_address` - The contract address.
+/// * `keys` - The contract's storage slots.
+/// # Returns
+/// * `Result<CommandResponse>` - The contract & keys storage proofs
+pub async fn query_contract_storage_proof(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+    contract_address: String,
+    keys: &[String],
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let contract_address = FieldElement::from_str(&contract_address)?;
+    let keys: Result<Vec<FieldElement>, _> =
+        keys.iter().map(|k| FieldElement::from_str(k)).collect();
+
+    let proof = beerus
+        .starknet_lightclient
+        .get_contract_storage_proof(contract_address, keys?, &block_id)
+        .await?;
+
+    Ok(CommandResponse::StarknetQueryContractStorageProof(proof))
+}

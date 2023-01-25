@@ -1,3 +1,4 @@
+use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use clap::{Parser, Subcommand};
 use ethers::prelude::Log;
 use ethers::types::{H256, U256};
@@ -351,6 +352,26 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+
+
+    QueryContractStorageProof {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+
+        /// The contract address
+        #[arg(long, value_name = "CONTRACT_ADDRESS")]
+        contract_address: String,
+
+        /// Storage keys
+        #[arg(short, long, value_name = "KEYS", value_delimiter = ',')]
+        keys: Vec<String>,
+    },
 }
 
 /// The response from a CLI command.
@@ -394,6 +415,7 @@ pub enum CommandResponse {
     StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
     StarknetQueryPendingTransactions(Vec<Transaction>),
+    StarknetQueryContractStorageProof(GetProofOutput),
 }
 
 /// Display implementation for the CLI command response.
@@ -693,6 +715,12 @@ impl Display for CommandResponse {
             // Result looks like: `
             CommandResponse::StarknetQueryBlockWithTxHashes(response) => {
                 write!(f, "Block : {response:?}")
+            }
+
+
+            // Print the contract and storage keys proofs
+            CommandResponse::StarknetQueryContractStorageProof(response) => {
+                write!(f, "{response:?}")
             }
         }
     }

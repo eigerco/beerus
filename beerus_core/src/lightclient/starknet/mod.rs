@@ -1,7 +1,9 @@
-use crate::config::Config;
+use crate::{config::Config, lightclient::starknet::storage_proof::GetProofOutput};
 use async_trait::async_trait;
+use ethers::providers::{Http, Provider};
 use eyre::Result;
 use mockall::automock;
+use serde::Serialize;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
@@ -71,17 +73,28 @@ pub trait StarkNetLightClient: Send + Sync {
         index: u64,
     ) -> Result<Transaction>;
     async fn pending_transactions(&self) -> Result<Vec<Transaction>>;
+
+
+    async fn get_contract_storage_proof(
+        &self,
+        contract_address: FieldElement,
+        keys: Vec<FieldElement>,
+        block: &BlockId,
+    ) -> Result<GetProofOutput>;
 }
 
 pub struct StarkNetLightClientImpl {
     client: JsonRpcClient<HttpTransport>,
+    provider: Provider<Http>,
 }
 
 impl StarkNetLightClientImpl {
     pub fn new(config: &Config) -> Result<Self> {
         let url = Url::parse(config.starknet_rpc.clone().as_str())?;
+        let provider = Provider::try_from(config.starknet_rpc.clone().as_str())?;
         Ok(Self {
             client: JsonRpcClient::new(HttpTransport::new(url)),
+            provider,
         })
     }
 }
@@ -411,6 +424,50 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<MaybePendingBlockWithTxHashes> {
         self.client
             .get_block_with_tx_hashes(block_id)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+
+    /// Get a contract storage storage proof
+    ///
+    /// # Arguments
+    ///
+    /// contract_address: Address of the contract
+    /// keys: Storage slots of the contract keys that needs a proof
+    /// block_id : ID of the block the proof is needed for
+    ///
+    /// # Returns
+    ///
+    /// Result: Storage proof for each keys requested.
+    ///
+    /// `Ok(InvokeTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_contract_storage_proof(
+        &self,
+        contract_address: FieldElement,
+        keys: Vec<FieldElement>,
+        block_id: &BlockId,
+    ) -> Result<GetProofOutput> {
+        let contract_address_str = format!("0x{contract_address:x}");
+        let keys_str = keys.iter().map(|k| format!("0x{k:x}")).collect();
+
+        #[derive(Debug, Serialize)]
+        #[serde(untagged)]
+        enum Param<'a> {
+            Block(&'a BlockId),
+            ContractAddress(String),
+            Keys(Vec<String>),
+        }
+
+        let params = [
+            Param::Block(block_id),
+            Param::ContractAddress(contract_address_str),
+            Param::Keys(keys_str),
+        ];
+
+        self.provider
+            .request::<Vec<Param>, GetProofOutput>("pathfinder_getProof", Vec::from(params))
             .await
             .map_err(|e| eyre::eyre!(e))
     }

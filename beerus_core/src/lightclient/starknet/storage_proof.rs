@@ -1,28 +1,28 @@
-use serde::de;
-use serde::{Deserialize, Deserializer};
+use serde::{de, Serializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use starknet::core::crypto::pedersen_hash;
 use starknet::core::types::FieldElement;
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Path {
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     value: FieldElement,
     len: u8,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Edge {
     pub path: Path,
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub child: FieldElement,
 }
 
 /// Lightweight representation of [BinaryNode]. Only holds left and right hashes.
-#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Binary {
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub left: FieldElement,
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub right: FieldElement,
 }
 
@@ -43,7 +43,8 @@ impl Binary {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
 pub enum ProofNode {
     Binary(Binary),
     Edge(Edge),
@@ -67,22 +68,29 @@ where
     FieldElement::from_hex_be(s).map_err(de::Error::custom)
 }
 
+fn to_hex_ser<S>(v: &FieldElement, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&format!("0x{v:x}"))
+}
+
 /// Holds the data and proofs for a specific contract.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize, Clone)]
 pub struct ContractData {
     /// Required to verify the contract state hash to contract root calculation.
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub class_hash: FieldElement,
     /// Required to verify the contract state hash to contract root calculation.
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub nonce: FieldElement,
 
     /// Root of the Contract state tree
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub root: FieldElement,
 
     /// This is currently just a constant = 0, however it might change in the future.
-    #[serde(deserialize_with = "from_hex_deser")]
+    #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]
     pub contract_state_hash_version: FieldElement,
 
     /// The proofs associated with the queried storage values
@@ -90,7 +98,7 @@ pub struct ContractData {
 }
 
 /// Holds the membership/non-membership of a contract and its associated contract contract if the contract exists.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize, Clone)]
 pub struct GetProofOutput {
     /// Membership / Non-membership proof for the queried contract
     pub contract_proof: Vec<ProofNode>,
