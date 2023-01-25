@@ -205,7 +205,6 @@ pub struct QueryBlockWithTxHashesResponse {
     pub block_with_tx_hashes: String,
 }
 
-
 #[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryContractStorageProofResponse {

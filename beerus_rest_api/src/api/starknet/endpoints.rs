@@ -2,7 +2,6 @@ use super::resp::{
     AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
     NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
     QueryBlockWithTxHashesResponse, QueryBlockWithTxsResponse, QueryChainIdResponse,
-
     QueryContractStorageProofResponse, QueryContractViewResponse,
     QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
@@ -352,7 +351,6 @@ pub async fn get_block_with_tx_hashes(
 ) -> ApiResponse<QueryBlockWithTxHashesResponse> {
     ApiResponse::from_result(get_block_with_tx_hashes_inner(beerus, block_id_type, block_id).await)
 }
-
 
 #[openapi]
 #[get("/starknet/contract_storage_proof/<contract_address>/<key>?<block_id>&<block_id_type>")]
@@ -975,7 +973,6 @@ pub async fn get_block_with_tx_hashes_inner(
         block_with_tx_hashes: format!("{result:?}"),
     })
 }
-
 
 /// Query contract & keys storage proofs
 /// # Arguments

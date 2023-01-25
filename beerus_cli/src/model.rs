@@ -353,7 +353,6 @@ pub enum StarkNetSubCommands {
         block_id: String,
     },
 
-
     QueryContractStorageProof {
         /// Type of block identifier
         /// eg. hash, number, tag
@@ -716,7 +715,6 @@ impl Display for CommandResponse {
             CommandResponse::StarknetQueryBlockWithTxHashes(response) => {
                 write!(f, "Block : {response:?}")
             }
-
 
             // Print the contract and storage keys proofs
             CommandResponse::StarknetQueryContractStorageProof(response) => {

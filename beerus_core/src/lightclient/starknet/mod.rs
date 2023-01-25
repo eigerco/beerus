@@ -74,7 +74,6 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<Transaction>;
     async fn pending_transactions(&self) -> Result<Vec<Transaction>>;
 
-
     async fn get_contract_storage_proof(
         &self,
         contract_address: FieldElement,
@@ -427,7 +426,6 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| eyre::eyre!(e))
     }
-
 
     /// Get a contract storage storage proof
     ///

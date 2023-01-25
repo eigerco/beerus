@@ -521,7 +521,6 @@ pub async fn query_block_with_tx_hashes(
     ))
 }
 
-
 /// Query Contract Storage proof for a given contract and keys
 /// # Arguments
 /// * `beerus` - The Beerus light client.

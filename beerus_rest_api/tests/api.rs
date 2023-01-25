@@ -3212,7 +3212,6 @@ mod test {
         );
     }
 
-
     #[tokio::test]
     async fn given_normal_condition_when_query_starknet_contract_storage_proof_then_should_work() {
         // Build mocks.

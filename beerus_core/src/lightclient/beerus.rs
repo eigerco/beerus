@@ -109,7 +109,6 @@ impl BeerusLightClient {
             let mut beerus_client =
                 BeerusLightClient::new(config, ethereum_lightclient, starknet_lightclient);
             beerus_client.ethereum_lightclient.start().await?;
-            println!("Ethereum Light Client Started!");
 
             let task = async move {
                 loop {
