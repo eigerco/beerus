@@ -568,7 +568,7 @@ mod tests {
     /// It tests the `get_transaction_count` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
     {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -645,7 +645,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_number` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -818,7 +818,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -902,7 +902,7 @@ mod tests {
     /// It tests the `query_transaction_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -981,7 +981,7 @@ mod tests {
     /// It tests the `gas_price` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1056,7 +1056,7 @@ mod tests {
 
     /// Test the `estimate_gas` method when the Ethereum light client returns an error.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1237,7 +1237,7 @@ mod tests {
     /// It tests the `priority_fee` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
