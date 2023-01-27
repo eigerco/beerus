@@ -27,7 +27,7 @@ pub enum SyncStatus {
 #[derive(Clone, Debug)]
 pub struct NodeData {
     pub block_number: u64,
-    pub block_root: String,
+    pub state_root: String,
     pub payload: BTreeMap<u64, BlockWithTxs>,
 }
 
@@ -35,7 +35,7 @@ impl NodeData {
     pub fn new() -> Self {
         NodeData {
             block_number: 0,
-            block_root: "".to_string(),
+            state_root: "".to_string(),
             payload: BTreeMap::new(),
         }
     }
@@ -137,11 +137,11 @@ impl BeerusLightClient {
                                         && 0 < block.block_number
                                     {
                                         data.block_number = block.block_number;
-                                        data.block_root = block.new_root.to_string();
+                                        data.state_root = block.new_root.to_string();
                                         data.payload.insert(block.block_number, block);
                                         println!("New Block Added to Payload");
                                         println!("Block Number {:?}", &data.block_number);
-                                        println!("Block Root {:?}", &data.block_root);
+                                        println!("Block Root {:?}", &data.state_root);
                                     }
                                 }
                                 MaybePendingBlockWithTxs::PendingBlock(_) => {
@@ -450,5 +450,32 @@ impl BeerusLightClient {
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
+    }
+
+    /// Return block with transactions.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// BlockId
+    /// # Returns
+    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
+        // Get block_number from block_id
+        let block_number = match block_id {
+            BlockId::Number(number) => *number,
+            BlockId::Tag(_) => self.starknet_lightclient.block_number().await.unwrap(),
+            BlockId::Hash(_) => self.starknet_lightclient.block_number().await.unwrap(),
+        };
+        // Clone the node_data
+        let node_data = self.node_data.lock().unwrap().clone();
+
+        // Check if block_number its smaller or equal payload
+        if block_number <= node_data.block_number {
+            // Get state_root for current block_number
+            let payload_block = node_data.payload.get(&block_number).unwrap();
+            Ok(MaybePendingBlockWithTxs::Block(payload_block.to_owned()))
+        } else {
+            self.starknet_lightclient.get_block_with_txs(block_id).await
+        }
     }
 }
