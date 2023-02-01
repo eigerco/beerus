@@ -3,6 +3,7 @@ use std::str::FromStr;
 use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::{checkpoints, networks::Network};
+use std::path::PathBuf;
 
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.
@@ -24,6 +25,8 @@ pub struct Config {
     pub starknet_rpc: String,
     // StarkNet core contract address.
     pub starknet_core_contract_address: Address,
+
+    pub data_dir: Option<PathBuf>,
 }
 
 impl Config {
@@ -42,6 +45,7 @@ impl Config {
         let starknet_core_contract_address = std::env::var("STARKNET_CORE_CONTRACT_ADDRESS")
             .unwrap_or_else(|_| DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS.to_string());
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
+        let data_dir = PathBuf::from("/tmp");
 
         Ok(Self {
             ethereum_network,
@@ -49,6 +53,7 @@ impl Config {
             ethereum_execution_rpc,
             starknet_rpc,
             starknet_core_contract_address,
+            data_dir: Some(data_dir),
         })
     }
 

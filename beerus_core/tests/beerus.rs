@@ -25,7 +25,9 @@ mod tests {
             StateDiff, StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
         },
     };
+    use std::path::PathBuf;
     use std::str::FromStr;
+
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
         // Given
@@ -1674,6 +1676,7 @@ mod tests {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "mainnet".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )
@@ -3362,6 +3365,7 @@ mod tests {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )

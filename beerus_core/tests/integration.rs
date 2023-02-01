@@ -15,6 +15,7 @@ mod test {
     use serde_json::json;
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
     use std::fs;
+    use std::path::PathBuf;
     use std::str::FromStr;
 
     #[tokio::test]
@@ -244,6 +245,7 @@ mod test {
             ethereum_network: "mainnet".to_string(),
             ethereum_consensus_rpc: server.base_url(),
             ethereum_execution_rpc: server.base_url(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_rpc: server.base_url(),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
