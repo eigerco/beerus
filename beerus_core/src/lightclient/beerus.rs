@@ -6,10 +6,15 @@ use ethers::{
 };
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{FunctionCall, InvokeTransaction, Transaction},
+};
 
 use starknet::providers::jsonrpc::models::{
-    BlockId, BlockTag as StarknetBlockTag, BlockWithTxs, MaybePendingBlockWithTxs,
+    BlockHashAndNumber, BlockId, BlockTag as StarknetBlockTag, BlockWithTxHashes, BlockWithTxs,
+    DeclareTransaction, DeployAccountTransaction, DeployTransaction, L1HandlerTransaction,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
 };
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
@@ -476,6 +481,61 @@ impl BeerusLightClient {
             Ok(MaybePendingBlockWithTxs::Block(payload_block.to_owned()))
         } else {
             self.starknet_lightclient.get_block_with_txs(block_id).await
+        }
+    }
+
+    /// Return block with transaction hashes.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// BlockId
+    /// # Returns
+    /// `Ok(MaybePendingBlockWithTxHashes)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes> {
+        let block = self.get_block_with_txs(block_id).await?;
+        match block {
+            MaybePendingBlockWithTxs::Block(block) => {
+                let tx_hashes = block
+                    .transactions
+                    .into_iter()
+                    .map(|transaction| match transaction {
+                        Transaction::Invoke(tx) => match tx {
+                            InvokeTransaction::V0(v0_tx) => v0_tx.transaction_hash,
+                            InvokeTransaction::V1(v1_tx) => v1_tx.transaction_hash,
+                        },
+                        Transaction::L1Handler(L1HandlerTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::Declare(DeclareTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::Deploy(DeployTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::DeployAccount(DeployAccountTransaction {
+                            transaction_hash,
+                            ..
+                        }) => transaction_hash,
+                    })
+                    .collect();
+                let block_with_tx_hashes = BlockWithTxHashes {
+                    transactions: tx_hashes,
+                    status: block.status,
+                    block_hash: block.block_hash,
+                    parent_hash: block.parent_hash,
+                    block_number: block.block_number,
+                    new_root: block.new_root,
+                    timestamp: block.timestamp,
+                    sequencer_address: block.sequencer_address,
+                };
+                Ok(MaybePendingBlockWithTxHashes::Block(block_with_tx_hashes))
+            }
+            // todo update with get_block_with_txs_hashes RPC call when available
+            // self.starknet_lightclient.get_block_with_txs_hashes(block_id).await,
+            _ => unimplemented!(),
         }
     }
 }
