@@ -11,7 +11,7 @@ pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // For testing purpose use Goerli address until we make it configurable
 pub const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str =
     "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
-
+pub const DEFAULT_DATA_DIR: &str = "/tmp";
 /// Global configuration.
 #[derive(Clone, PartialEq)]
 pub struct Config {
@@ -25,7 +25,7 @@ pub struct Config {
     pub starknet_rpc: String,
     // StarkNet core contract address.
     pub starknet_core_contract_address: Address,
-
+    // Path to storage directory
     pub data_dir: Option<PathBuf>,
 }
 
@@ -45,7 +45,9 @@ impl Config {
         let starknet_core_contract_address = std::env::var("STARKNET_CORE_CONTRACT_ADDRESS")
             .unwrap_or_else(|_| DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS.to_string());
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
-        let data_dir = PathBuf::from("/tmp");
+        let data_dir_str =
+            std::env::var("DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
+        let data_dir = PathBuf::from(data_dir_str);
 
         Ok(Self {
             ethereum_network,

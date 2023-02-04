@@ -247,7 +247,7 @@ mod tests {
     #[test]
     fn given_ethereum_network_is_invalid_when_ethereum_network_then_returns_error() {
         let config = Config {
-            ethereum_network: "mainnet2".to_string(),
+            ethereum_network: "invalid".to_string(),
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
