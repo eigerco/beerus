@@ -12,7 +12,7 @@ use starknet::{
 };
 
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, BlockId, BlockTag as StarknetBlockTag, BlockWithTxHashes, BlockWithTxs,
+    BlockId, BlockTag as StarknetBlockTag, BlockWithTxHashes, BlockWithTxs,
     DeclareTransaction, DeployAccountTransaction, DeployTransaction, L1HandlerTransaction,
     MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
 };
