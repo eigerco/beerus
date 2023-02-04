@@ -478,4 +478,25 @@ impl BeerusLightClient {
             self.starknet_lightclient.get_block_with_txs(block_id).await
         }
     }
+
+    /// Return block hash and number of latest block.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// None
+    /// # Returns
+    /// `Ok(BlockHashAndNumber)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+        let latest_block = self
+            .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
+            .await?;
+
+        match latest_block {
+            MaybePendingBlockWithTxs::Block(block) => Ok(BlockHashAndNumber {
+                block_hash: block.block_hash,
+                block_number: block.block_number,
+            }),
+            _ => self.starknet_lightclient.block_hash_and_number().await,
+        }
+    }
 }
