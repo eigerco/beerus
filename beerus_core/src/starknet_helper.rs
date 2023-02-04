@@ -2,8 +2,9 @@ use eyre::{eyre, Result};
 use serde_json::{json, Value};
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockId, BlockTag, ContractAbiEntry, ContractClass, ContractEntryPoint, EntryPointsByType,
-    StructAbiEntry, StructAbiType, StructMember, SyncStatus, SyncStatusType,
+    BlockId, BlockTag, ContractAbiEntry, ContractClass, ContractEntryPoint, EmittedEvent,
+    EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
+    SyncStatusType,
 };
 use std::str::FromStr;
 
@@ -111,6 +112,58 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
       }
     );
     (mock_contract_class, mock_contract_class_json)
+}
+
+/// Helper to create a EventsPage object for testing
+/// # Returns
+/// Tuple of a mock EventsPage object and its equivalent JSON Value
+pub fn create_mock_get_events() -> (EventsPage, Value) {
+    let mock_get_events = EventsPage {
+        continuation_token: Some("6".to_string()),
+        events: vec![EmittedEvent {
+            from_address: FieldElement::from_str(
+                "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            )
+            .unwrap(),
+            keys: vec![FieldElement::from_str(
+                "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e",
+            )
+            .unwrap()],
+            data: vec![
+                FieldElement::from_str(
+                    "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+                )
+                .unwrap(),
+                FieldElement::from_str("0x61e7b068").unwrap(),
+            ],
+            block_hash: FieldElement::from_str(
+                "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            )
+            .unwrap(),
+            block_number: 47538,
+            transaction_hash: FieldElement::from_str(
+                "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14",
+            )
+            .unwrap(),
+        }],
+    };
+    let mock_get_events_json = json!({
+        "continuation_token": "6",
+        "events": [{
+            "block_hash": "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            "block_number": 47538,
+            "data": [
+                "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+                "0x61e7b068"
+            ],
+            "from_address": "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            "keys": [
+                "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e"
+                ],
+                "transaction_hash": "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14"
+        }]
+    });
+    (mock_get_events, mock_get_events_json)
 }
 
 /// Helper to create a  object for testing

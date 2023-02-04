@@ -6,9 +6,9 @@ use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate, SyncStatusType,
-    Transaction,
+    BlockHashAndNumber, ContractClass, DeployTransactionResult, EventsPage,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate,
+    SyncStatusType, Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -270,6 +270,10 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QueryGetEvents {
+        #[arg(short, long, value_name = "PARAMS")]
+        params: String,
+    },
     QuerySyncing {},
     AddInvokeTransaction {
         /// Max fee
@@ -403,6 +407,7 @@ pub enum CommandResponse {
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQueryGetStateUpdate(StateUpdate),
+    StarknetQueryGetEvents(EventsPage),
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
@@ -647,6 +652,35 @@ impl Display for CommandResponse {
                 let json_response = serde_json::to_string_pretty(state).unwrap();
                 write!(f, "{json_response}")
             }
+
+            // Print events
+            // Result looks like:
+            // {
+            //     "continuation_token": "6",
+            //     "events": [{
+            //         "block_hash": "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            //         "block_number": 47538,
+            //         "data": [
+            //             "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+            //             "0x61e7b068"
+            //         ],
+            //         "from_address": "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            //         "keys": [
+            //             "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e"
+            //         ],
+            //         "transaction_hash": "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14"
+            //     }]
+            // }
+            CommandResponse::StarknetQueryGetEvents(response) => {
+                let json_response = json!(
+                    {
+                        "events": response.events,
+                        "continuation_token": response.continuation_token,
+                    }
+                );
+                write!(f, "{json_response}")
+            }
+
             // Print an object about the sync status of a node
             // Result looks like:
             // {
