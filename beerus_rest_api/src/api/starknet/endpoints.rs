@@ -7,8 +7,8 @@ use super::resp::{
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
-        QuerySyncing, QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse, QueryTxReceipt
-    StorageEntryResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTxReceipt, StateDiffResponse,
+    StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
