@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
     use std::str::FromStr;
 
     use beerus_cli::{
@@ -9,6 +10,7 @@ mod test {
         },
         runner,
     };
+    use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
     use beerus_core::{
         config::Config,
         lightclient::{
@@ -3206,12 +3208,148 @@ mod test {
             Ok(_) => panic!("Expected an err but got an Ok"),
         }
     }
+
+    #[tokio::test]
+    async fn given_normal_condition_when_query_starknet_contract_storage_proof_then_should_work() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let proof: GetProofOutput = serde_json::from_str(
+            r#"{
+            "contract_proof": [
+            {
+                "binary": {
+                    "left": "0x15e7882b80e22844ca62d3e3260a21d0d45c2b0c1744328e2763b4b486de738",
+                    "right": "0x7779bcf84c8a6a4cca695c2d44d1455db0cb13d457ea7a01887676b9f779455"
+                }
+            },
+            {
+                "edge": {
+                    "path": {
+                        "value": "0x1",
+                        "len": 1
+                    },
+                    "child": "0x173d276dbe8497dd2d59b88aa7eaebeb760e450e7a34a1ae5d513a930a3bf9d"
+                }
+            }
+            ],
+            "contract_data": null
+        }"#,
+        )
+        .unwrap();
+
+        let return_value = proof.clone();
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(move |_contract_address, _keys, _block_id| Ok(return_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let contract_address = "0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153";
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryContractStorageProof {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    contract_address: contract_address.to_string(),
+                    keys: ["0x1".to_string()].to_vec(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        assert_eq!(result.unwrap().to_string(), format!("{proof:?}"));
+    }
+
+    #[tokio::test]
+    async fn given_invalid_contract_address_when_query_starknet_contract_storage_proof_then_should_fail(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(|_contract_address, _keys, _block_id| Err(eyre::eyre!("mocked error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let contract_address = "INVALID";
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryContractStorageProof {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    contract_address: contract_address.to_string(),
+                    keys: ["0x1".to_string()].to_vec(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        match result {
+            Err(e) => assert_eq!("invalid character", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    #[tokio::test]
+    async fn given_invalid_keys_when_query_starknet_contract_storage_proof_then_should_fail() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(|_contract_address, _keys, _block_id| Err(eyre::eyre!("mocked error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let contract_address = "0x123";
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryContractStorageProof {
+                    block_id_type: "number".to_string(),
+                    block_id: "123".to_string(),
+                    contract_address: contract_address.to_string(),
+                    keys: ["0x1".to_string(), "INVALID".to_string()].to_vec(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        match result {
+            Err(e) => assert_eq!("invalid character", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )

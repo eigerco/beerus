@@ -2,13 +2,13 @@ use super::resp::{
     AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
     NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
     QueryBlockWithTxHashesResponse, QueryBlockWithTxsResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
-    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
-    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
-    QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse, StateDiffResponse,
-    StorageDiffResponse, StorageEntryResponse,
+    QueryContractStorageProofResponse, QueryContractViewResponse,
+    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
+    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
+    StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -377,6 +377,21 @@ async fn get_tx_by_hash_inner(
         transaction: format!("{transaction:?}"),
     })
 }
+#[openapi]
+#[get("/starknet/contract_storage_proof/<contract_address>/<key>?<block_id>&<block_id_type>")]
+pub async fn get_contract_storage_proof(
+    beerus: &State<BeerusLightClient>,
+    block_id: String,
+    block_id_type: String,
+    contract_address: String,
+    key: String,
+) -> ApiResponse<QueryContractStorageProofResponse> {
+    ApiResponse::from_result(
+        get_contract_storage_proof_inner(beerus, block_id, block_id_type, contract_address, key)
+            .await,
+    )
+}
+
 /// Query the state root of StarkNet.
 ///
 /// # Arguments
@@ -982,4 +997,33 @@ pub async fn get_block_with_tx_hashes_inner(
     Ok(QueryBlockWithTxHashesResponse {
         block_with_tx_hashes: format!("{result:?}"),
     })
+}
+
+/// Query contract & keys storage proofs
+/// # Arguments
+/// * beerus - Beerus client
+/// * block_id - Block id
+/// * block_id_type - Type of block id
+/// * contract_address - Contract address
+/// * key - storage key
+/// # Returns
+/// `proof` - Storage proof for contract and keys
+async fn get_contract_storage_proof_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id: String,
+    block_id_type: String,
+    contract_address: String,
+    key: String,
+) -> Result<QueryContractStorageProofResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let contract_address = FieldElement::from_str(&contract_address)?;
+    let key = FieldElement::from_str(&key)?;
+
+    let proof = beerus
+        .starknet_lightclient
+        .get_contract_storage_proof(contract_address, Vec::from([key]), &block_id)
+        .await?;
+
+    Ok(QueryContractStorageProofResponse { proof })
 }

@@ -1,12 +1,11 @@
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
-
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
-            starknet::MockStarkNetLightClient,
+            beerus::BeerusLightClient,
+            ethereum::MockEthereumLightClient,
+            starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
         },
     };
     use beerus_rest_api::build_rocket_server;
@@ -24,6 +23,8 @@ mod test {
             StateDiff, StateUpdate, Transaction as StarknetTransaction,
         },
     };
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
     /// Test the `send_raw_transaction` endpoint.
     /// `/ethereum/send_raw_transaction/<bytes>`
@@ -2360,6 +2361,7 @@ mod test {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )
@@ -3304,5 +3306,135 @@ mod test {
         let expected_result_value = "{\"transaction\":\"Invoke(V0(InvokeTransactionV0 { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, max_fee: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, signature: [], nonce: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, contract_address: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, entry_point_selector: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, calldata: [] }))\"}".to_string();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().await.unwrap(), expected_result_value);
+    }
+
+    #[tokio::test]
+    async fn given_normal_condition_when_query_starknet_contract_storage_proof_then_should_work() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let proof: GetProofOutput = serde_json::from_str(
+            r#"{
+            "contract_proof": [
+            {
+                "binary": {
+                    "left": "0x15e7882b80e22844ca62d3e3260a21d0d45c2b0c1744328e2763b4b486de738",
+                    "right": "0x7779bcf84c8a6a4cca695c2d44d1455db0cb13d457ea7a01887676b9f779455"
+                }
+            },
+            {
+                "edge": {
+                    "path": {
+                        "value": "0x1",
+                        "len": 1
+                    },
+                    "child": "0x173d276dbe8497dd2d59b88aa7eaebeb760e450e7a34a1ae5d513a930a3bf9d"
+                }
+            }
+            ],
+            "contract_data": null
+        }"#,
+        )
+        .unwrap();
+
+        let return_value = proof.clone();
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(move |_contract_address, _keys, _block_id| Ok(return_value));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/contract_storage_proof/0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153/0x1?block_id_type=number&block_id=123"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"proof\":{\"contract_proof\":[{\"binary\":{\"left\":\"0x15e7882b80e22844ca62d3e3260a21d0d45c2b0c1744328e2763b4b486de738\",\"right\":\"0x7779bcf84c8a6a4cca695c2d44d1455db0cb13d457ea7a01887676b9f779455\"}},{\"edge\":{\"path\":{\"value\":\"0x1\",\"len\":1},\"child\":\"0x173d276dbe8497dd2d59b88aa7eaebeb760e450e7a34a1ae5d513a930a3bf9d\"}}],\"contract_data\":null}}"
+        );
+    }
+
+    #[tokio::test]
+    async fn given_invalid_contract_address_when_query_starknet_contract_storage_proof_then_should_fail(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(|_contract_address, _keys, _block_id| Err(eyre::eyre!("mocked error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+        let response = client
+            .get(uri!(
+                "/starknet/contract_storage_proof/INVALID/0x1?block_id_type=number&block_id=123"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"invalid character\"}"
+        );
+    }
+
+    #[tokio::test]
+    async fn given_invalid_key_when_query_starknet_contract_storage_proof_then_should_fail() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        starknet_lightclient
+            .expect_get_contract_storage_proof()
+            .return_once(|_contract_address, _keys, _block_id| Err(eyre::eyre!("mocked error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+        let response = client
+            .get(uri!(
+                "/starknet/contract_storage_proof/0x123/INVALID?block_id_type=number&block_id=123"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"invalid character\"}"
+        );
     }
 }

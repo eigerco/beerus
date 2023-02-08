@@ -131,15 +131,13 @@ impl EthereumLightClient for HeliosLightClient {
 impl HeliosLightClient {
     /// Create a new HeliosLightClient.
     pub async fn new(config: Config) -> eyre::Result<Self> {
-        // Fetch the current checkpoint.
-        let checkpoint_value = config.get_checkpoint().await.unwrap();
-
         // Build the Helios wrapped light client.
-        let helios_light_client = ClientBuilder::new()
+        let helios_light_client: Client<FileDB> = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .checkpoint(&checkpoint_value)
+            .load_external_fallback()
+            .data_dir(config.data_dir.unwrap())
             .build()?;
 
         Ok(Self {
