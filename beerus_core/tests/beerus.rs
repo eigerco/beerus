@@ -3358,6 +3358,66 @@ mod tests {
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
+    /// Test the `get_transaction_by_hash` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_by_hash` method of the external dependencies.
+    /// It tests the `get_transaction_by_hash` method of the Beerus light client.
+    /// It tests the error handling of the `get_transaction_by_hash` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_transaction_by_hash_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let transaction_hash = FieldElement::from_str("0x01").unwrap();
+        let max_fee = FieldElement::from_str("0x01").unwrap();
+        let signature = vec![];
+        let nonce = FieldElement::from_str("0x01").unwrap();
+        let contract_address = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector = FieldElement::from_str("0x01").unwrap();
+        let calldata = vec![];
+
+        let invoke_transaction = InvokeTransactionV0 {
+            transaction_hash: transaction_hash.clone(),
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let expected_result =
+            StarknetTransaction::Invoke(InvokeTransaction::V0(invoke_transaction));
+        let expected_result_value = serde_json::to_value(expected_result.clone())
+            .unwrap()
+            .to_string();
+
+        // Mock the `get_transaction_by_hash` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_get_transaction_by_hash()
+            .times(1)
+            .return_once(move |_| Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus
+            .starknet_lightclient
+            .get_transaction_by_hash(FieldElement::from_str(&"0x01".to_string()).unwrap())
+            .await;
+
+        // Then
+        // Assert that the `get_transaction_by_hash` method of the Beerus light client returns `Ok`.
+        assert!(result.is_ok());
+        let result = serde_json::to_value(result.unwrap()).unwrap().to_string();
+        // Assert that the value returned by the `get_transaction_by_hash` method of the Beerus light client is the expected value.
+        assert_eq!(result, expected_result_value);
+    }
 
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
