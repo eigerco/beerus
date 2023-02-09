@@ -203,7 +203,10 @@ pub struct QueryTransactionByHashResponse {
 pub struct QueryPendingTransactionsResponse {
     pub pending_transactions: String,
 }
-
+#[derive(Serialize, JsonSchema)]
+pub struct QueryTxReceipt {
+    pub tx_receipt: String,
+}
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryBlockWithTxHashesResponse {

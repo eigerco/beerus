@@ -20,9 +20,11 @@ mod tests {
             BlockHashAndNumber, BlockId, BlockStatus, BlockWithTxHashes, BlockWithTxs,
             BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
             BroadcastedInvokeTransactionV0, ContractClass, ContractEntryPoint,
-            DeployTransactionResult, EntryPointsByType, InvokeTransaction, InvokeTransactionResult,
-            InvokeTransactionV0, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            StateDiff, StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+            DeployTransactionResult, EntryPointsByType, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
     use std::path::PathBuf;
@@ -3257,6 +3259,92 @@ mod tests {
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `pending_transactions` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `get_transaction_receipt` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_receipt` method of the external dependencies.
+    /// It tests the `get_transaction_receipt` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_transaction_receipt_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let felt = FieldElement::from_str("0x1").unwrap();
+        // Mock the `get_transaction_receipt` method of the Starknet light client.
+        let transaction_receipt = InvokeTransactionReceipt {
+            transaction_hash: felt.clone(),
+            actual_fee: felt.clone(),
+            status: TransactionStatus::AcceptedOnL2,
+            block_hash: felt.clone(),
+            block_number: 0xFFF_u64,
+            messages_sent: vec![],
+            events: vec![],
+        };
+        let expected_result = MaybePendingTransactionReceipt::Receipt(TransactionReceipt::Invoke(
+            transaction_receipt,
+        ));
+        let closure_return = expected_result.clone();
+        starknet_lightclient_mock
+            .expect_get_transaction_receipt()
+            .return_once(move |_| Ok(closure_return));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        let result = beerus
+            .starknet_lightclient
+            .get_transaction_receipt(felt.clone())
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the number of transactions in a block returned by the `get_transaction_receipt` method of the Beerus light client is the expected number of transactions in a block.
+        assert_eq!(format!("{result:?}"), format!("{expected_result:?}"));
+    }
+    /// Test the `get_transaction_receipt` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_transaction_receipt` method of the external dependencies.
+    /// It tests the `get_transaction_receipt` method of the Beerus light client.
+    /// It tests the error handling of the `get_transaction_receipt` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_get_transaction_receipt_then_should_return_error(
+    ) {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error =
+            r#"Error: JSON-RPC error: code=25, message="Transaction hash not found""#;
+
+        // Mock the `get_transaction_receipt` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_get_transaction_receipt()
+            .times(1)
+            .return_once(move |_| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let result = beerus
+            .starknet_lightclient
+            .get_transaction_receipt(FieldElement::from_str("0x1").unwrap())
+            .await;
+
+        // Then
+        // Assert that the `get_transaction_receipt` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_transaction_receipt` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);

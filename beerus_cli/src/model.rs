@@ -7,8 +7,8 @@ use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate, SyncStatusType,
-    Transaction,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+    StateUpdate, SyncStatusType, Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -359,6 +359,12 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QueryTxReceipt {
+        /// The transaction hash, as
+        /// a hex-string.
+        #[arg(short, long, value_name = "TX_HASH")]
+        tx_hash: String,
+    },
 
     QueryContractStorageProof {
         /// Type of block identifier
@@ -422,6 +428,7 @@ pub enum CommandResponse {
     StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
     StarknetQueryPendingTransactions(Vec<Transaction>),
+    StarknetQueryTxReceipt(MaybePendingTransactionReceipt),
     StarknetQueryContractStorageProof(GetProofOutput),
 }
 
@@ -750,6 +757,12 @@ impl Display for CommandResponse {
             // Result looks like: `
             CommandResponse::StarknetQueryBlockWithTxHashes(response) => {
                 write!(f, "Block : {response:?}")
+            }
+            CommandResponse::StarknetQueryTxReceipt(maybe_receipt) => {
+                let response = serde_json::to_value(maybe_receipt)
+                    .expect("Error parsing the received transaction")
+                    .to_string();
+                write!(f, "{response}")
             }
 
             // Print the contract and storage keys proofs
