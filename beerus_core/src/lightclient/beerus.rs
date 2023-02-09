@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
 use ethers::{
@@ -7,7 +9,10 @@ use ethers::{
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{FunctionCall, Transaction},
+};
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
@@ -357,5 +362,23 @@ impl BeerusLightClient {
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
+    }
+
+    /// Return transaction by inputed hash
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// tx_hash: String
+    /// # Returns
+    /// Transaction
+    pub async fn get_transaction_by_hash(&self, tx_hash: String) -> Result<Transaction> {
+        let hash = FieldElement::from_str(&tx_hash)?;
+
+        let transaction = self
+            .starknet_lightclient
+            .get_transaction_by_hash(hash)
+            .await
+            .unwrap();
+
+        Ok(transaction)
     }
 }
