@@ -7,8 +7,8 @@ use super::resp::{
     QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
-    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTxReceipt, StateDiffResponse,
-    StorageDiffResponse, StorageEntryResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
+    QueryTxReceipt, StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -27,7 +27,7 @@ use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-    StateUpdate, SyncStatusType,
+    StateUpdate, SyncStatusType, Transaction,
 };
 use std::str::FromStr;
 
@@ -360,6 +360,31 @@ pub async fn get_tx_receipt(
     ApiResponse::from_result(get_transaction_receipt_inner(beerus, tx_hash).await)
 }
 
+/// Query a transaction by its hash.
+/// # Returns
+/// `hash` - The hash of a transaction.
+#[openapi]
+#[get("/starknet/transaction_by_hash/<hash>")]
+pub async fn get_transaction_by_hash(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> ApiResponse<QueryTransactionByHashResponse> {
+    ApiResponse::from_result(get_tx_by_hash_inner(beerus, hash).await)
+}
+
+async fn get_tx_by_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> Result<QueryTransactionByHashResponse> {
+    let hash = FieldElement::from_str(&hash)?;
+    let transaction: Transaction = beerus
+        .starknet_lightclient
+        .get_transaction_by_hash(hash)
+        .await?;
+    Ok(QueryTransactionByHashResponse {
+        transaction: format!("{transaction:?}"),
+    })
+}
 #[openapi]
 #[get("/starknet/contract_storage_proof/<contract_address>/<key>?<block_id>&<block_id_type>")]
 pub async fn get_contract_storage_proof(

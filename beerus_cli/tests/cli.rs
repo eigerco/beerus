@@ -26,7 +26,7 @@ mod test {
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
             ContractEntryPoint, DeployTransactionResult, EntryPointsByType, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            InvokeTransactionV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
@@ -3183,6 +3183,90 @@ mod test {
         match result {
             Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+    /// Test the starknet `query_transaction_by_hash` CLI command.
+    /// Given normal conditions, when `query_transaction_by_hash`, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_transaction_by_hash_then_ok() {
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let transaction = InvokeTransactionV1 {
+            transaction_hash: felt.clone(),
+            max_fee: felt.clone(),
+            signature: vec![felt.clone()],
+            nonce: felt.clone(),
+            sender_address: felt.clone(),
+            calldata: vec![felt.clone()],
+        };
+
+        let expected_result = StarknetTransaction::Invoke(InvokeTransaction::V1(transaction));
+        // let transaction = StarknetTransaction::Invoke(InvokeTransactionV0);
+        // let _transaction = transaction.clone();
+        // Given
+        // Mock dependencies
+        starknet_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let hash = "0x06986c739c4ab040c13a609d9f171ac4480e970dd6fe318eaeff5da9617bb854".to_string();
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTransactionByHash { hash },
+            }),
+        };
+
+        let result = runner::run(beerus, cli).await.unwrap();
+        assert_eq!(result.to_string(), "{\"calldata\":[\"0x1\"],\"max_fee\":\"0x1\",\"nonce\":\"0x1\",\"sender_address\":\"0x1\",\"signature\":[\"0x1\"],\"transaction_hash\":\"0x1\",\"type\":\"INVOKE\",\"version\":\"0x1\"}")
+    }
+
+    /// Test the starknet `query_transaction_by_hash` CLI command.
+    /// Given starknet lightclient returns an error, when `query_transaction_by_hash`, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+        let err_msg = r#"Error: JSON-RPC error: code=25, message="Transaction hash not found""#;
+        // Given
+        // Mock dependencies.
+        starknet_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Err(eyre::eyre!(err_msg.clone())));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let hash = "0x06".to_string();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryTransactionByHash { hash },
+            }),
+        };
+
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(msg) => assert_eq!(msg.to_string(), err_msg),
+            Ok(_) => panic!("Expected an err but got an Ok"),
         }
     }
 
