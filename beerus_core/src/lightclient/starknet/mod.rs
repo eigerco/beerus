@@ -8,9 +8,10 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::{
-            BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
-            InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, ContractClass,
+            DeclareTransactionResult, DeployTransactionResult, InvokeTransactionResult,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, SyncStatusType, Transaction,
         },
         models::{FunctionCall, StateUpdate},
@@ -89,6 +90,10 @@ pub trait StarkNetLightClient: Send + Sync {
         keys: Vec<FieldElement>,
         block: &BlockId,
     ) -> Result<GetProofOutput>;
+    async fn add_declare_transaction(
+        &self,
+        declare_transaction: &BroadcastedDeclareTransaction,
+    ) -> Result<DeclareTransactionResult>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -509,6 +514,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
 
         self.provider
             .request::<Vec<Param>, GetProofOutput>("pathfinder_getProof", Vec::from(params))
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Add an Declare transaction
+    ///
+    /// # Arguments
+    ///
+    /// declare_transaction : Transaction data
+    ///  
+    ///
+    /// # Returns
+    ///
+    /// Result : Declare Transaction Result
+    ///
+    /// `Ok(DeclareTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn add_declare_transaction(
+        &self,
+        declare_transaction: &BroadcastedDeclareTransaction,
+    ) -> Result<DeclareTransactionResult> {
+        self.client
+            .add_declare_transaction(declare_transaction)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
