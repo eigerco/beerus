@@ -65,6 +65,7 @@ impl BeerusLightClient {
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
         }
+
         Ok(())
     }
 

@@ -21,14 +21,17 @@ async fn main() -> Result<()> {
     let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
     // Create a new StarkNet light client.
     let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
+
     // Create a new Beerus light client.
     let mut beerus = BeerusLightClient::new(
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
+
     // Start the Beerus light client.
     beerus.start().await?;
+
     // Run the CLI command.
     let command_response = runner::run(beerus, cli).await?;
     // Print the command response.

@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
-
     use beerus_core::{
         config::Config,
         lightclient::{
@@ -20,11 +18,14 @@ mod test {
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
-            DeployTransactionResult, InvokeTransaction, InvokeTransactionResult,
-            InvokeTransactionV0, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            StateDiff, StateUpdate, Transaction as StarknetTransaction,
+            DeployTransactionResult, InvokeTransaction, InvokeTransactionReceipt,
+            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
+            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
     /// Test the `send_raw_transaction` endpoint.
     /// `/ethereum/send_raw_transaction/<bytes>`
@@ -2361,6 +2362,7 @@ mod test {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
                 "0x0000000000000000000000000000000000000000",
             )
@@ -3110,6 +3112,107 @@ mod test {
         );
     }
 
+    /// Test the `transaction_receipt` endpoint.
+    /// `/starknet/transaction_receipt/<tx_hash>`
+    /// Given normal conditions, when query starknet transaction_receipt, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_transaction_receipt_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let felt = FieldElement::from_str("0x1").unwrap();
+        // Mock the `get_transaction_receipt` method of the Starknet light client.
+        let transaction_receipt = InvokeTransactionReceipt {
+            transaction_hash: felt.clone(),
+            actual_fee: felt.clone(),
+            status: TransactionStatus::AcceptedOnL2,
+            block_hash: felt.clone(),
+            block_number: 0xFFF_u64,
+            messages_sent: vec![],
+            events: vec![],
+        };
+        let expected_result = MaybePendingTransactionReceipt::Receipt(TransactionReceipt::Invoke(
+            transaction_receipt,
+        ));
+        let closure_return = expected_result.clone();
+
+        starknet_lightclient
+            .expect_get_transaction_receipt()
+            .return_once(move |_| Ok(closure_return));
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_receipt()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/transaction_receipt/0x1"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"tx_receipt\":\"Receipt(Invoke(InvokeTransactionReceipt { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, actual_fee: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, status: AcceptedOnL2, block_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, block_number: 4095, messages_sent: [], events: [] }))\"}"
+        );
+    }
+
+    /// Test the `transaction_receipt` endpoint.
+    /// `/starknet/transaction_receipt/<tx_hash>`
+    /// Given StarkNet light client returns error when query starknet transaction_receipt, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_transaction_receipt_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_receipt()
+            .return_once(move |_| {
+                Err(eyre::eyre!(
+                    r#"{{"error_message":"JSON-RPC error: code=25, message=\"Transaction hash not found\""}}"#
+                ))
+            });
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/transaction_receipt/0xAF"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"{\\\"error_message\\\":\\\"JSON-RPC error: code=25, message=\\\\\\\"Transaction hash not found\\\\\\\"\\\"}\"}"
+        );
+    }
     /// Test the `pending_transactions` endpoint.
     /// `/starknet/block_transaction_count?<block_id>&<block_id_type>`
     /// Given normal conditions, when query starknet pending_transactions, then ok.
@@ -3290,6 +3393,101 @@ mod test {
             response.into_string().await.unwrap(),
             "{\"error_message\":\"cannot query starknet block with txs\"}"
         );
+    }
+    /// Test the `transaction_by_hash` endpoint.
+    /// `/starknet/transaction_by_hash>?<block_id>&<block_id_type>"`
+    /// Given StarkNet light client returns error when query starknet transaction_by_hash, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_starknet_get_transaction_by_hash_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_block_id| Err(eyre::eyre!("cannot query starknet transaction")));
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/transaction_by_hash/0x06986c739c4ab040"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet transaction\"}"
+        );
+    }
+    /// Test the `get_transaction_by_hash` endpoint.
+    /// `/starknet/transaction_by_hash>?<block_id>&<block_id_type>"`
+    /// Given normal conditions, when query starknet transaction_by_hash, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_get_transaction_by_hash_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Mock the `get_transaction_by_hash` method of the Starknet light client.
+        let transaction_hash = FieldElement::from_str("0x01").unwrap();
+        let max_fee = FieldElement::from_str("0x01").unwrap();
+        let signature = vec![];
+        let nonce = FieldElement::from_str("0x01").unwrap();
+        let contract_address = FieldElement::from_str("0x01").unwrap();
+        let entry_point_selector = FieldElement::from_str("0x01").unwrap();
+        let calldata = vec![];
+
+        let invoke_transaction = InvokeTransactionV0 {
+            transaction_hash,
+            max_fee,
+            signature,
+            nonce,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let expected_result =
+            StarknetTransaction::Invoke(InvokeTransaction::V0(invoke_transaction));
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_transaction_by_hash()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+        // When
+        let response = client
+            .get(uri!(
+                "/starknet/transaction_by_hash/0?block_id=123&block_id_type=number"
+            ))
+            .dispatch()
+            .await;
+
+        // Then
+        let expected_result_value = "{\"transaction\":\"Invoke(V0(InvokeTransactionV0 { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, max_fee: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, signature: [], nonce: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, contract_address: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, entry_point_selector: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, calldata: [] }))\"}".to_string();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().await.unwrap(), expected_result_value);
     }
 
     #[tokio::test]

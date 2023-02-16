@@ -7,8 +7,8 @@ use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, DeployTransactionResult, EventsPage,
-    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate,
-    SyncStatusType, Transaction,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -319,6 +319,13 @@ pub enum StarkNetSubCommands {
         )]
         constructor_calldata: Vec<String>,
     },
+    // Get a transaction by its hash
+    QueryTransactionByHash {
+        /// The transaction's hash,
+        /// as a hex-string, eg. 0x1234.
+        #[arg(short, long, value_name = "HASH")]
+        hash: String,
+    },
     QueryBlockWithTxs {
         /// Type of block identifier
         /// eg. hash, number, tag
@@ -355,6 +362,12 @@ pub enum StarkNetSubCommands {
         /// eg. 0x123, 123, pending, or latest
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
+    },
+    QueryTxReceipt {
+        /// The transaction hash, as
+        /// a hex-string.
+        #[arg(short, long, value_name = "TX_HASH")]
+        tx_hash: String,
     },
 
     QueryContractStorageProof {
@@ -407,6 +420,7 @@ pub enum CommandResponse {
     StarknetQueryGetClassAt(ContractClass),
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQueryGetStateUpdate(StateUpdate),
+    StarknetQueryTransactionByHash(Transaction),
     StarknetQueryGetEvents(EventsPage),
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
@@ -419,6 +433,7 @@ pub enum CommandResponse {
     StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
     StarknetQueryPendingTransactions(Vec<Transaction>),
+    StarknetQueryTxReceipt(MaybePendingTransactionReceipt),
     StarknetQueryContractStorageProof(GetProofOutput),
 }
 
@@ -735,6 +750,34 @@ impl Display for CommandResponse {
                 write!(f, "Block hash: {response:?}")
             }
             // Print the Transaction data
+            // Result varies dependening on the
+            // transaction type, but
+            // here's what an invoke looks like:
+            //  {
+            //  "calldata": [
+            //      "0x2",
+            //      "0x23c",
+            //      "0x219",
+            //      ...
+            //      ],
+            //  "max_fee": "0x84...",
+            //  "nonce": "0x30",
+            //  "sender_address": "0x1b...",
+            //  "signature": [
+            //      "0x2bd...",
+            //      "0x349..."
+            //  ],
+            //  "transaction_hash": "0x11...",
+            //  "type": "INVOKE",
+            //  "version": "0x1"
+            //  }
+            CommandResponse::StarknetQueryTransactionByHash(transaction) => {
+                let formatted_transaction = serde_json::to_value(transaction)
+                    .expect("Error parsing the received transaction")
+                    .to_string();
+                write!(f, "{formatted_transaction}")
+            }
+            // Print the Transaction data
             // Result looks like:
             CommandResponse::StarknetQueryTransactionByBlockIdAndIndex(transaction) => {
                 write!(f, "Transaction: {transaction:?}")
@@ -748,6 +791,12 @@ impl Display for CommandResponse {
             // Result looks like: `
             CommandResponse::StarknetQueryBlockWithTxHashes(response) => {
                 write!(f, "Block : {response:?}")
+            }
+            CommandResponse::StarknetQueryTxReceipt(maybe_receipt) => {
+                let response = serde_json::to_value(maybe_receipt)
+                    .expect("Error parsing the received transaction")
+                    .to_string();
+                write!(f, "{response}")
             }
 
             // Print the contract and storage keys proofs

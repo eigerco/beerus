@@ -8,8 +8,8 @@ use super::resp::{
     QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
     QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
     QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
-    QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse,
-    StorageEntryResponse,
+    QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse, QueryTxReceipt,
+    StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -28,7 +28,7 @@ use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-    EventFilter, StateUpdate, SyncStatusType,
+    EventFilter, StateUpdate, SyncStatusType, Transaction,
 };
 use std::str::FromStr;
 
@@ -371,7 +371,40 @@ pub async fn get_block_with_tx_hashes(
 ) -> ApiResponse<QueryBlockWithTxHashesResponse> {
     ApiResponse::from_result(get_block_with_tx_hashes_inner(beerus, block_id_type, block_id).await)
 }
+#[openapi]
+#[get("/starknet/transaction_receipt/<tx_hash>")]
+pub async fn get_tx_receipt(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> ApiResponse<QueryTxReceipt> {
+    ApiResponse::from_result(get_transaction_receipt_inner(beerus, tx_hash).await)
+}
 
+/// Query a transaction by its hash.
+/// # Returns
+/// `hash` - The hash of a transaction.
+#[openapi]
+#[get("/starknet/transaction_by_hash/<hash>")]
+pub async fn get_transaction_by_hash(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> ApiResponse<QueryTransactionByHashResponse> {
+    ApiResponse::from_result(get_tx_by_hash_inner(beerus, hash).await)
+}
+
+async fn get_tx_by_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> Result<QueryTransactionByHashResponse> {
+    let hash = FieldElement::from_str(&hash)?;
+    let transaction: Transaction = beerus
+        .starknet_lightclient
+        .get_transaction_by_hash(hash)
+        .await?;
+    Ok(QueryTransactionByHashResponse {
+        transaction: format!("{transaction:?}"),
+    })
+}
 #[openapi]
 #[get("/starknet/contract_storage_proof/<contract_address>/<key>?<block_id>&<block_id_type>")]
 pub async fn get_contract_storage_proof(
@@ -1042,6 +1075,24 @@ pub async fn query_pending_transactions_inner(
     let pending_transactions = format!("{pending_transactions:?}");
     Ok(QueryPendingTransactionsResponse {
         pending_transactions,
+    })
+}
+
+/// Query a transaction's receipt
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_transaction_receipt_inner(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> Result<QueryTxReceipt> {
+    let tx_hash = FieldElement::from_str(&tx_hash)?;
+    debug!("Query a transaction's receipt");
+    let receipt = beerus
+        .starknet_lightclient
+        .get_transaction_receipt(tx_hash)
+        .await?;
+    Ok(QueryTxReceipt {
+        tx_receipt: format!("{receipt:?}"),
     })
 }
 
