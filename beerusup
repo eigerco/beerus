@@ -70,8 +70,7 @@ install_beerus() {
     find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
     echo "Unpacking Beerus release...\n"
-    curl -sL $TARBALL_URL | tar -xzC $PROJECT_TMP
-    mv $PROJECT_TMP/$PLATFORM_RELEASE/* $PROJECT_BIN
+    curl -sL $TARBALL_URL | tar -xzC $PROJECT_BIN
 
     echo "$NAME installed at version: ${LATEST_VER}\n"
 }
