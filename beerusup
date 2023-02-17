@@ -8,8 +8,11 @@ PROJECT_BIN="$PROJECT_ROOT/bin"
 PROJECT_TMP="$PROJECT_ROOT/tmp"
 INSTALLER_PATH="$PROJECT_BIN/$INSTALLER"
 
-PROJECT_REPO="keep-starknet-strange/beerus/main"
-INSTALLER_URL="https://raw.githubusercontent.com/$PROJECT_REPO/$INSTALLER"
+PROJECT_REPO="keep-starknet-strange/beerus"
+INSTALLER_URL="https://raw.githubusercontent.com/$PROJECT_REPO/main/$INSTALLER"
+
+# check latest version
+LATEST_VER=$(curl -sL https://api.github.com/repos/$PROJECT_REPO/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
 
 # Store the correct profile file
 add_to_shell() {
@@ -59,25 +62,16 @@ install_beerus() {
     esac
 
     ARCHITECTURE="$(uname -m)"
-    if [ "${ARCHITECTURE}" = "x86_64" ]; then
-        if [ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" = "1" ]; then
-            ARCHITECTURE="arm64" # Rosetta.
-        else
-            ARCHITECTURE="amd64" # Intel.
-        fi
-    elif [ "${ARCHITECTURE}" = "arm64" ] ||[ "${ARCHITECTURE}" = "aarch64" ] ; then
-        ARCHITECTURE="arm64" # Arm.
-    else
-        ARCHITECTURE="amd64" # Amd.
-    fi
 
     echo "Pulling $NAME release..."
-    TARBALL_URL="https://github.com/$PROJECT_REPO/releases/download/${LATEST_VER}/${NAME}_${PLATFORM}_${ARCHITECTURE}.tar.gz"
+    PLATFORM_RELEASE="${NAME}_${PLATFORM}_${ARCHITECTURE}"
+    TARBALL_URL="https://github.com/$PROJECT_REPO/releases/download/${LATEST_VER}/${PLATFORM_RELEASE}.tar.gz"
     
     find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
     echo "Unpacking Beerus release...\n"
-    curl -L $TARBALL_URL | tar -xzC $PROJECT_BIN
+    curl -sL $TARBALL_URL | tar -xzC $PROJECT_TMP
+    mv $PROJECT_TMP/$PLATFORM_RELEASE/* $PROJECT_BIN
 
     echo "$NAME installed at version: ${LATEST_VER}\n"
 }
@@ -132,19 +126,13 @@ if [ ! -d "$PROJECT_ROOT" ]; then
     add_to_shell
 fi
 
-# check latest version
-LATEST_VER=$(curl -sL https://api.github.com/repos/$PROJECT_REPO/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
-
-# TODO:
-# remove ([ $? -ne 0 ]) after first release
-
 # Build latest dev version if directed
-if [ "$1" = "dev" ] || [ $? -ne 0 ]; then
+if [ "$1" = "dev" ] ; then
     install_beerus_manually
 else
     # Pull latest release if there is a new version
-    CURRENT_VER=$($PROJECT_BIN/beerus_cli --version | awk '{print $2}')
-    if [ "$LATEST_TAG" = "v$CURRENT_VER" ]; then
+    CURRENT_VER=$($PROJECT_BIN/beerus_cli --version  2> /dev/null | awk '{print $2}')
+    if [ "$LATEST_VER" = "v$CURRENT_VER" ]; then
         echo "$NAME is currently running the latest version: $LATEST_VER"
     else
         echo "$NAME being updated to $LATEST_VER"
