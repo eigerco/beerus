@@ -1,0 +1,38 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    name: Release for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: beerus_linux_x86_64.tar.gz
+            asset_name: beerus_linux_x86_64
+          - os: macos-latest
+            artifact_name: beerus_darwin_x86_64.tar.gz
+            asset_name: beerus_darwin_x86_64
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release --locked
+    - name: Create Tarball
+      run: |
+        mkdir -p target/release/${{ matrix.asset_name }}
+        mv target/release/beerus_cli target/release/beerus_rest_api target/release/${{ matrix.asset_name }}
+        tar -C target/release/ -czvf ${{ matrix.artifact_name }} ${{ matrix.asset_name }}
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
