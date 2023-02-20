@@ -21,7 +21,7 @@ mod tests {
             BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
             BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
             ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
-            EntryPointsByType, InvokeTransaction, InvokeTransactionReceipt,
+            EntryPointsByType, EventFilter, InvokeTransaction, InvokeTransactionReceipt,
             InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
             MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
@@ -2511,6 +2511,100 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `get_logs` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test the `get_events` when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_events` method of the external dependencies.
+    /// It tests the `get_events` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_get_events_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `get_events` method of the Starknet light client.
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_get_events();
+
+        starknet_lightclient_mock
+            .expect_get_events()
+            .return_once(move |_, _, _| Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let filter = EventFilter {
+            from_block: None,
+            to_block: None,
+            address: None,
+            keys: None,
+        };
+        let continuation_token = Some("5".to_string());
+        let chunk_size = 1;
+        let result = beerus
+            .starknet_lightclient
+            .get_events(filter, continuation_token, chunk_size)
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the code returned by the `get_events` method of the Beerus light client is the expected code.
+        assert_eq!(
+            serde_json::value::to_value(result).unwrap(),
+            expected_result_value
+        )
+    }
+
+    /// Test the `get_events` when starknet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `get_events` method of the external dependencies.
+    /// It tests the `get_events` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_get_events_then_should_return_error() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `get_events` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_get_events()
+            .times(1)
+            .return_once(move |_, _, _| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let filter = EventFilter {
+            from_block: None,
+            to_block: None,
+            address: None,
+            keys: None,
+        };
+        let continuation_token = Some("5".to_string());
+        let chunk_size = 1;
+        let result = beerus
+            .starknet_lightclient
+            .get_events(filter, continuation_token, chunk_size)
+            .await;
+
+        // Then
+        // Assert that the `get_events` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `get_events` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
+        assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
     /// Test the `syncing` method when everything is fine.

@@ -2462,6 +2462,86 @@ mod test {
         );
     }
 
+    /// Test the `get_events` endpoint.
+    /// `/starknet/events`
+    /// Given normal conditions, when query starknet get_events, then ok.
+    /// Case: Node Starknet is syncing.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_get_events_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_get_events();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_events()
+            .return_once(move |_, _, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/starknet/events"))
+            .body(r#"{"continuationToken": "5","chunkSize": 1}"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_get_events_then_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_events()
+            .return_once(move |_, _, _| Err(eyre::eyre!("cannot query starknet get events")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .post(uri!("/starknet/events"))
+            .body(r#"{"continuationToken": "5","chunkSize": 1}"#)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet get events\"}"
+        );
+    }
+
     /// Test the `get_class_at` endpoint.
     /// `/starknet/contract/class_att/<class_hash>?<block_id>&<block_id_type>`
     /// Given normal conditions, when query starknet syncing, then ok.

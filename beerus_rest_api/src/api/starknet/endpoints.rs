@@ -1,15 +1,15 @@
 use super::resp::{
     AddDeclareTransactionJson, AddDeclareTransactionResponse, AddInvokeTransactionJson,
-    AddInvokeTransactionResponse, DeployedContractResponse, NonceResponse,
+    AddInvokeTransactionResponse, DeployedContractResponse, EventsObject, NonceResponse,
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryBlockWithTxHashesResponse,
     QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractStorageProofResponse,
     QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
-    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
-    QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
-    QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse, QueryTxReceipt,
-    StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
+    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetEventsResponse,
+    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
+    QueryTxReceipt, StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -28,7 +28,7 @@ use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
-    BroadcastedInvokeTransactionV0, StateUpdate, SyncStatusType, Transaction,
+    BroadcastedInvokeTransactionV0, EventFilter, StateUpdate, SyncStatusType, Transaction,
 };
 use std::str::FromStr;
 
@@ -263,6 +263,25 @@ pub async fn get_state_update(
 ) -> ApiResponse<QueryStateUpdateResponse> {
     ApiResponse::from_result(get_state_update_inner(beerus, block_id_type, block_id).await)
 }
+
+/// Query an object about the events
+/// Aan object about the events.
+///
+/// # Arguments
+///
+/// # Returns
+///
+/// `Ok(QueryGetEventsResponse)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[post("/starknet/events", data = "<events_object>")]
+pub async fn get_events(
+    beerus: &State<BeerusLightClient>,
+    events_object: Json<EventsObject>,
+) -> ApiResponse<QueryGetEventsResponse> {
+    ApiResponse::from_result(get_events_inner(beerus, events_object).await)
+}
+
 /// Query an object about the node starknet sync status
 /// Aan object about the node starknet sync status.
 ///
@@ -832,6 +851,77 @@ pub async fn get_state_update_inner(
         },
     })
 }
+
+/// Query an object about the events.
+/// # Returns
+/// `QueryGetEventsResponse` - An object the events.
+pub async fn get_events_inner(
+    beerus: &State<BeerusLightClient>,
+    events_object: Json<EventsObject>,
+) -> Result<QueryGetEventsResponse> {
+    debug!("Querying Get Events");
+    let Json(EventsObject {
+        from_block_id_type,
+        from_block_id,
+        to_block_id_type,
+        to_block_id,
+        address,
+        keys,
+        continuation_token,
+        chunk_size,
+    }) = events_object;
+
+    let from_block = match (from_block_id_type, from_block_id) {
+        (Some(from_block_id_type_str), Some(from_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &from_block_id_type_str,
+                &from_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let to_block = match (to_block_id_type, to_block_id) {
+        (Some(to_block_id_type_str), Some(to_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &to_block_id_type_str,
+                &to_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let address = match address {
+        Some(address_str) => Some(FieldElement::from_str(&address_str)?),
+        _ => None,
+    };
+
+    let keys = keys.as_ref().map(|keys| {
+        keys.iter()
+            .map(|s| FieldElement::from_str(s).unwrap())
+            .collect()
+    });
+
+    let filter = EventFilter {
+        from_block,
+        to_block,
+        address,
+        keys,
+    };
+
+    let result = beerus
+        .starknet_lightclient
+        .get_events(filter, continuation_token, chunk_size)
+        .await?;
+
+    Ok(QueryGetEventsResponse {
+        events: serde_json::value::to_value(result.events).unwrap(),
+        continuation_token: result.continuation_token.unwrap(),
+    })
+}
+
 /// Query an object about the node starknet sync status.
 /// # Returns
 /// `QuerySyncing` - An object about the node starknet sync status.

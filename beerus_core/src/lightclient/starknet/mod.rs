@@ -10,8 +10,8 @@ use starknet::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
             BroadcastedDeployTransaction, BroadcastedInvokeTransaction, ContractClass,
-            DeclareTransactionResult, DeployTransactionResult, InvokeTransactionResult,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
+            InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, SyncStatusType, Transaction,
         },
         models::{FunctionCall, StateUpdate},
@@ -54,6 +54,12 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<ContractClass>;
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
     async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate>;
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage>;
     async fn syncing(&self) -> Result<SyncStatusType>;
     async fn add_invoke_transaction(
         &self,
@@ -294,6 +300,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
+    /// Get the events.
+    /// The list events.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - The query filters.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(EventsPage)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage> {
+        self.client
+            .get_events(filter, continuation_token, chunk_size)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
     /// Get an object about the sync status, or false if the node is not synching.
     /// An object about the sync status, or false if the node is not synching.
     ///
@@ -399,6 +428,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| eyre::eyre!(e))
     }
+
     /// Get the transaction given a block id and index
     /// The number of transactions in a block.
     ///
