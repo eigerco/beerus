@@ -7,8 +7,8 @@ use eyre::Result;
 use serde::{Deserialize, Serialize};
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-    EventFilter,
+    BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+    BroadcastedInvokeTransactionV0, EventFilter,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -663,4 +663,55 @@ pub async fn query_contract_storage_proof(
         .await?;
 
     Ok(CommandResponse::StarknetQueryContractStorageProof(proof))
+}
+
+/// Add an Declare transaction to the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `max_fee` - The maximum fee.
+/// * `signature` - The signature.
+/// * `nonce` - The nonce.
+/// * `contract_class` - The contract class.
+/// * `entry_point_selector` - The entry point selector.
+/// * `calldata` - The calldata.
+///
+/// # Returns
+///
+/// * `Result<CommandResponse>` - If the node is synchronized on the StarkNet network.
+pub async fn add_declare_transaction(
+    beerus: BeerusLightClient,
+    version: String,
+    max_fee: String,
+    signature: Vec<String>,
+    nonce: String,
+    contract_class: String,
+    sender_address: String,
+) -> Result<CommandResponse> {
+    let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+    let version: u64 = version.parse().unwrap();
+    let signature = signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+
+    let contract_class_bytes = contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+
+    let declare_transaction = BroadcastedDeclareTransaction {
+        max_fee,
+        version,
+        signature,
+        nonce,
+        contract_class,
+        sender_address,
+    };
+
+    Ok(CommandResponse::StarknetAddDeclareTransaction(
+        beerus
+            .starknet_lightclient
+            .add_declare_transaction(&declare_transaction)
+            .await?,
+    ))
 }

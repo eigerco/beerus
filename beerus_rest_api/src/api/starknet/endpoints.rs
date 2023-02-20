@@ -1,10 +1,10 @@
 use super::resp::{
-    AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse, EventsObject,
-    NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
-    QueryBlockWithTxHashesResponse, QueryBlockWithTxsResponse, QueryChainIdResponse,
-    QueryContractStorageProofResponse, QueryContractViewResponse,
-    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
-    QueryGetClassResponse, QueryGetEventsResponse, QueryGetStorageAtResponse,
+    AddDeclareTransactionJson, AddDeclareTransactionResponse, AddInvokeTransactionJson,
+    AddInvokeTransactionResponse, DeployedContractResponse, EventsObject, NonceResponse,
+    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryBlockWithTxHashesResponse,
+    QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractStorageProofResponse,
+    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
+    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetStorageAtResponse,
     QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
     QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
     QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
@@ -27,8 +27,8 @@ use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-    EventFilter, StateUpdate, SyncStatusType, Transaction,
+    BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+    BroadcastedInvokeTransactionV0, EventFilter, StateUpdate, SyncStatusType, Transaction,
 };
 use std::str::FromStr;
 
@@ -418,6 +418,18 @@ pub async fn get_contract_storage_proof(
         get_contract_storage_proof_inner(beerus, block_id, block_id_type, contract_address, key)
             .await,
     )
+}
+
+#[openapi]
+#[post(
+    "/starknet/add_declare_transaction",
+    data = "<declare_transaction_data>"
+)]
+pub async fn add_declare_transaction(
+    beerus: &State<BeerusLightClient>,
+    declare_transaction_data: Json<AddDeclareTransactionJson>,
+) -> ApiResponse<AddDeclareTransactionResponse> {
+    ApiResponse::from_result(declare_transaction_inner(beerus, declare_transaction_data).await)
 }
 
 /// Query the state root of StarkNet.
@@ -1143,4 +1155,49 @@ async fn get_contract_storage_proof_inner(
         .await?;
 
     Ok(QueryContractStorageProofResponse { proof })
+}
+
+/// Query logs.
+/// # Returns
+/// `Ok(logs_query)` - Vec<ResponseLog> (fetched lgos)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn declare_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_data: Json<AddDeclareTransactionJson>,
+) -> Result<AddDeclareTransactionResponse> {
+    debug!("Declare Transaction");
+    let Json(transaction) = transaction_data;
+
+    let max_fee: FieldElement = FieldElement::from_str(&transaction.max_fee).unwrap();
+    let version: u64 = 10;
+    let signature = transaction
+        .signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&transaction.nonce).unwrap();
+    let contract_class_bytes = transaction.contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let sender_address: FieldElement = FieldElement::from_str(&transaction.sender_address).unwrap();
+
+    let declare_transaction = BroadcastedDeclareTransaction {
+        max_fee,
+        version,
+        signature,
+        nonce,
+        contract_class,
+        sender_address,
+    };
+
+    let declare_transaction_hash = beerus
+        .starknet_lightclient
+        .add_declare_transaction(&declare_transaction)
+        .await?;
+    Ok(AddDeclareTransactionResponse {
+        transaction_hash: declare_transaction_hash.transaction_hash.to_string(),
+        class_hash: declare_transaction_hash.class_hash.to_string(),
+    })
 }
