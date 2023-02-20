@@ -5,11 +5,11 @@ use super::resp::{
     QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractStorageProofResponse,
     QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
     QueryGetClassHashResponse, QueryGetClassResponse, QueryGetEventsResponse,
-    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse, QueryL1ToL2MessageNonceResponse,
-    QueryL1ToL2MessagesResponse, QueryNonceResponse, QueryPendingTransactionsResponse,
-    QueryStateRootResponse, QueryStateUpdateResponse, QuerySyncing,
-    QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse, QueryTxReceipt,
-    StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
+    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
+    QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
+    QueryTxReceipt, StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
