@@ -6,8 +6,8 @@ use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage
-    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+    EventsPage, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
