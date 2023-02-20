@@ -18,9 +18,10 @@ mod test {
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
-            DeployTransactionResult, InvokeTransaction, InvokeTransactionReceipt,
-            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            DeclareTransactionResult, DeployTransactionResult, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
@@ -3537,6 +3538,101 @@ mod test {
         assert_eq!(
             response.into_string().await.unwrap(),
             "{\"error_message\":\"invalid character\"}"
+        );
+    }
+
+    /// Test the `/ethereum/add_declare_transaction` endpoint.
+    /// Given normal conditions, when query , then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_declare_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let expected_result = DeclareTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+            class_hash: FieldElement::from_str("0x02").unwrap(),
+        };
+        let expected_result_value = expected_result.clone();
+        starknet_lightclient
+            .expect_add_declare_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let body = r#"{
+                "maxFee": "0",
+                "version": "10",
+                "signature": ["10"],
+                "nonce": "0",
+                "contractClass": "{\"program\":\"\",\"entry_points_by_type\":{\"CONSTRUCTOR\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"EXTERNAL\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"L1_HANDLER\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}]}}",
+                "senderAddress": "0"
+            }"#;
+
+        // When
+        let response = client
+            .post(uri!("/starknet/add_declare_transaction"))
+            .body(body)
+            .dispatch()
+            .await;
+
+        let expected = "{\"transaction_hash\":\"1\",\"class_hash\":\"2\"}";
+
+        assert_eq!(response.into_string().await.unwrap(), expected);
+    }
+
+    /// Test the `/ethereum/add_declare_transaction` endpoint.
+    /// Given normal conditions, when query add_declare_transaction, then errors is propagated.
+    #[tokio::test]
+    async fn given_normal_conditions_when_add_declare_transaction_error_is_propagated() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        let error_msg = concat!("Failed to send declare transaction");
+        starknet_lightclient
+            .expect_add_declare_transaction()
+            .return_once(move |_| Err(eyre::eyre!(error_msg)));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        let body = r#"{
+                "maxFee": "0",
+                "version": "10",
+                "signature": ["10"],
+                "nonce": "0",
+                "contractClass": "{\"program\":\"\",\"entry_points_by_type\":{\"CONSTRUCTOR\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"EXTERNAL\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}],\"L1_HANDLER\":[{\"offset\":\"0xa\",\"selector\":\"0x0\"}]}}",
+                "senderAddress": "0"
+            }"#;
+
+        // When
+        let response = client
+            .post(uri!("/starknet/add_declare_transaction"))
+            .body(body)
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"Failed to send declare transaction\"}"
         );
     }
 }

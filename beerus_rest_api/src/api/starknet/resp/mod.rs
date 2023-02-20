@@ -219,6 +219,25 @@ pub struct QueryContractStorageProofResponse {
     pub proof: GetProofOutput,
 }
 
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AddDeclareTransactionJson {
+    /// The maximal fee that can be charged for including the transaction
+    pub max_fee: String,
+    pub version: String,
+    pub signature: Vec<String>,
+    pub nonce: String,
+    pub contract_class: String,
+    pub sender_address: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct AddDeclareTransactionResponse {
+    pub transaction_hash: String,
+    pub class_hash: String,
+}
+
 impl JsonSchema for QueryContractStorageProofResponse {
     fn schema_name() -> String {
         "QueryContractStorageProofResponse".to_string()

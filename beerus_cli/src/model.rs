@@ -6,9 +6,9 @@ use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-    StateUpdate, SyncStatusType, Transaction,
+    BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -315,6 +315,26 @@ pub enum StarkNetSubCommands {
         )]
         constructor_calldata: Vec<String>,
     },
+    AddDeclareTransaction {
+        /// Max fee
+        #[arg(short, long, value_name = "MAX_FEE")]
+        max_fee: String,
+        /// Declare tx version
+        #[arg(short, long, value_name = "VERSION")]
+        version: String,
+        /// The signature
+        #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
+        signature: Vec<String>,
+        /// The nonce
+        #[arg(short, long, value_name = "NONCE")]
+        nonce: String,
+        /// The contract class
+        #[arg(short, long, value_name = "CONTRACT_CLASS")]
+        contract_class: String,
+        // The entry point selector
+        #[arg(short, long, value_name = "SENDER_ADDRESS")]
+        sender_address: String,
+    },
     // Get a transaction by its hash
     QueryTransactionByHash {
         /// The transaction's hash,
@@ -420,6 +440,7 @@ pub enum CommandResponse {
     StarknetQuerySyncing(SyncStatusType),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
+    StarknetAddDeclareTransaction(DeclareTransactionResult),
     StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
     StarknetQueryBlockWithTxHashes(MaybePendingBlockWithTxHashes),
     StarkNetL1ToL2MessageCancellations(U256),
@@ -767,6 +788,10 @@ impl Display for CommandResponse {
 
             // Print the contract and storage keys proofs
             CommandResponse::StarknetQueryContractStorageProof(response) => {
+                write!(f, "{response:?}")
+            }
+
+            CommandResponse::StarknetAddDeclareTransaction(response) => {
                 write!(f, "{response:?}")
             }
         }
