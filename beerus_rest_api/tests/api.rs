@@ -2659,7 +2659,7 @@ mod test {
     /// `/starknet/fee?<broadcasted_transaction>&<block_id>&<block_id_type>`
     /// Given normal conditions, when query get_estimate_fee, then ok.
     #[tokio::test]
-    async fn given_normal_conditions_when_query_get_estimate_fee_syncing_then_ok() {
+    async fn given_normal_conditions_when_query_get_estimate_fee_then_ok() {
         // Build mocks.
         let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
 
@@ -2712,7 +2712,7 @@ mod test {
         // Set the expected return value for the StarkNet light client mock.
         starknet_lightclient
             .expect_estimate_fee()
-            .return_once(move |_, _| Err(eyre::eyre!("cannot query starknet syncing")));
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query starknet estimate fee")));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -2736,7 +2736,7 @@ mod test {
         assert_eq!(response.status(), Status::InternalServerError);
         assert_eq!(
             response.into_string().await.unwrap(),
-            "{\"error_message\":\"cannot query starknet syncing\"}"
+            "{\"error_message\":\"cannot query starknet estimate fee\"}"
         );
     }
 
@@ -3715,7 +3715,6 @@ mod test {
             transaction_hash: FieldElement::from_str("0x01").unwrap(),
             class_hash: FieldElement::from_str("0x02").unwrap(),
         };
-        let expected_result_value = expected_result.clone();
         starknet_lightclient
             .expect_add_declare_transaction()
             .return_once(move |_| Ok(expected_result));

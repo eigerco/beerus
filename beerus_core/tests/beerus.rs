@@ -2759,7 +2759,7 @@ mod tests {
             .unwrap();
 
         // Then
-        // Assert that the node starknet syncing returned by the `estimate_fee` method of the Beerus light client
+        // Assert that the estimated fee returned by the `estimate_fee` method of the Beerus light client
         // is the expected estimated gas fee
         assert_eq!(
             serde_json::to_string(&result).unwrap(),
