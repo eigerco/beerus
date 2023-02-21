@@ -14,8 +14,8 @@ use starknet::{
             InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, SyncStatusType, Transaction,
         },
-        models::{FunctionCall, StateUpdate},
-        HttpTransport, JsonRpcClient,
+        models::{BroadcastedTransaction, FeeEstimate, FunctionCall, StateUpdate},
+        {HttpTransport, JsonRpcClient},
     },
 };
 use url::Url;
@@ -27,6 +27,11 @@ pub mod storage_proof;
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
+    async fn estimate_fee(
+        &self,
+        tx: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate>;
     async fn get_storage_at(
         &self,
         address: FieldElement,
@@ -172,6 +177,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
                 request,
                 &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
             )
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Estimate the fee for a given StarkNet transaction
+    /// Returns the fee estimate.
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - The broadcasted transaction.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FeeEstimate)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn estimate_fee(
+        &self,
+        tx: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate> {
+        self.client
+            .estimate_fee(tx, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
