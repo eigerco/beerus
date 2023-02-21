@@ -153,6 +153,8 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .send_raw_transaction(bytes)
             .await
             .unwrap();
@@ -192,6 +194,8 @@ mod tests {
         // Send raw transaction.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .send_raw_transaction(bytes)
             .await;
 
@@ -233,6 +237,8 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_balance(&addr, block)
             .await
             .unwrap();
@@ -273,7 +279,12 @@ mod tests {
         let block = BlockTag::Latest;
 
         // Query the balance of the Ethereum address.
-        let result = beerus.ethereum_lightclient.get_balance(&addr, block).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_balance(&addr, block)
+            .await;
 
         // Then
         // Assert that the `get_balance` method of the Beerus light client returns `Err`.
@@ -313,6 +324,8 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_nonce(&addr, block)
             .await
             .unwrap();
@@ -353,7 +366,12 @@ mod tests {
         let block = BlockTag::Latest;
 
         // Query the balance of the Ethereum address.
-        let result = beerus.ethereum_lightclient.get_nonce(&addr, block).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_nonce(&addr, block)
+            .await;
 
         // Then
         // Assert that the `get_nonce` method of the Beerus light client returns `Err`.
@@ -385,7 +403,12 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.ethereum_lightclient.get_block_number().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_block_number()
+            .await;
 
         // Then
         // Assert that the `get_block_number` method of the Beerus light client returns `Ok`.
@@ -417,7 +440,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.ethereum_lightclient.chain_id().await;
+        let result = beerus.ethereum_lightclient.read().await.chain_id().await;
 
         // Then
         // Assert that the chain id returned by the `chain_id` method of the Beerus light client is the expected chain id.
@@ -449,7 +472,12 @@ mod tests {
         let block = BlockTag::Latest;
 
         // When
-        let result = beerus.ethereum_lightclient.get_code(&addr, block).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_code(&addr, block)
+            .await;
 
         // Then
         // Assert that the `get_code` method of the Beerus light client returns `Ok`.
@@ -490,7 +518,12 @@ mod tests {
         let block = BlockTag::Latest;
 
         // Query the balance of the Ethereum address.
-        let result = beerus.ethereum_lightclient.get_code(&addr, block).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_code(&addr, block)
+            .await;
 
         // Then
         // Assert that the `get_code` method of the Beerus light client returns `Err`.
@@ -525,6 +558,8 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_transaction_count(&address, block)
             .await;
 
@@ -567,6 +602,8 @@ mod tests {
         // Query the transaction of the Ethereum address from a given block.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_transaction_count(&address, block)
             .await;
 
@@ -602,6 +639,8 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_transaction_count_by_number(block)
             .await;
 
@@ -643,6 +682,8 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_transaction_count_by_number(block)
             .await;
 
@@ -702,6 +743,8 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_by_number(BlockTag::Number(expected_block_number), false)
             .await;
 
@@ -740,6 +783,8 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_by_number(BlockTag::Latest, false)
             .await;
 
@@ -775,6 +820,8 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_transaction_count_by_hash(&hash)
             .await;
 
@@ -816,6 +863,8 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_transaction_count_by_hash(&hash)
             .await;
 
@@ -859,6 +908,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_transaction_by_hash(&tx_hash)
             .await;
 
@@ -902,6 +953,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_transaction_by_hash(&tx_hash)
             .await;
 
@@ -939,7 +992,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.get_gas_price().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_gas_price()
+            .await;
 
         // Then
         // Assert that the `gas_price` method of the Beerus light client returns `Ok`.
@@ -976,7 +1034,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.get_gas_price().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_gas_price()
+            .await;
 
         // Then
         // Assert that the `gas_price` method of the Beerus light client returns `Err`.
@@ -1018,7 +1081,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.estimate_gas(&call_opts).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .estimate_gas(&call_opts)
+            .await;
 
         // Then
         // Assert that the `estimate_gas` method of the Beerus light client returns `Ok`.
@@ -1059,7 +1127,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.estimate_gas(&call_opts).await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .estimate_gas(&call_opts)
+            .await;
 
         // Then
         // Assert that the `estimate_gas` method of the Beerus light client returns `Err`.
@@ -1118,6 +1191,8 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_by_hash(hash.as_ref(), false)
             .await;
 
@@ -1158,6 +1233,8 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_block_by_hash(hash.as_ref(), false)
             .await;
 
@@ -1195,7 +1272,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.get_priority_fee().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_priority_fee()
+            .await;
 
         // Then
         // Assert that the `priority_fee` method of the Beerus light client returns `Ok`.
@@ -1232,7 +1314,12 @@ mod tests {
 
         // When
         // Query the transaction data given a hash on Ethereum.
-        let result = beerus.ethereum_lightclient.get_priority_fee().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_priority_fee()
+            .await;
 
         // Then
         // Assert that the `priority_fee` method of the Beerus light client returns `Err`.
@@ -1297,23 +1384,28 @@ mod tests {
                 .unwrap();
         // Convert to bytes because that's what the mock returns.
         let mut expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
-        expected_starknet_state_root.to_big_endian(&mut expected_starknet_state_root_bytes);
+        expected_starknet_state_root.to_big_endian(&mut expected_starknet_state_root_bytes.clone());
 
         // Set the expected return value for the Ethereum light client mock.
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_call_opts, _block_tag| Ok(expected_starknet_state_root_bytes));
+            .expect_starknet_state_root()
+            .return_once(move || Ok(expected_starknet_state_root));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config,
+            config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
 
         // Perform the test call.
-        let starknet_state_root = beerus.starknet_state_root().await.unwrap();
+        let starknet_state_root = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await
+            .unwrap();
 
         // Assert that the result is correct.
         assert_eq!(starknet_state_root, expected_starknet_state_root);
@@ -1329,19 +1421,23 @@ mod tests {
         // Set the expected return value for the Ethereum light client mock.
         let expected_error = "Ethereum client out of sync";
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .expect_starknet_state_root()
+            .return_once(move || Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config,
+            config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
 
         // Perform the test call.
-        let starknet_state_root_result = beerus.starknet_state_root().await;
+        let starknet_state_root_result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await;
 
         // Assert that the result is correct.
         assert!(starknet_state_root_result.is_err());
@@ -1365,19 +1461,25 @@ mod tests {
 
         // Set the expected return value for the Ethereum light client mock.
         ethereum_lightclient_mock
-            .expect_call()
+            .expect_starknet_last_proven_block()
             .times(1)
-            .return_once(move |_call_opts, _block_tag| Ok(expected_starknet_block_number_bytes));
+            .return_once(move || Ok(expected_starknet_block_number));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config,
+            config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
 
         // Perform the test call.
-        let starknet_block_number = beerus.starknet_last_proven_block().await.unwrap();
+        let starknet_block_number = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_last_proven_block()
+            .await
+            .unwrap();
 
         // Assert that the result is correct.
         assert_eq!(starknet_block_number, expected_starknet_block_number);
@@ -1392,20 +1494,27 @@ mod tests {
 
         // Set the expected return value for the Ethereum light client mock.
         let expected_error = "Ethereum client out of sync";
+        // ethereum_lightclient_mock
+        //     .expect_call()
+        //     .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .expect_starknet_state_root()
+            .return_once(move || Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config,
+            config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
 
         // Perform the test call.
-        let starknet_state_root_result = beerus.starknet_state_root().await;
+        let starknet_state_root_result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await;
 
         // Assert that the result is correct.
         assert!(starknet_state_root_result.is_err());
@@ -1433,10 +1542,10 @@ mod tests {
             .expect_call()
             .times(1)
             .return_once(move |_req, _block_nb| Ok(expected_result));
+
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_req, _block_nb| Ok(vec![2]));
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(10000)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1479,9 +1588,8 @@ mod tests {
             .times(1)
             .return_once(move |_req, _block_nb| Err(eyre!(expected_error)));
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_req, _block_nb| Ok(vec![2]));
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1521,9 +1629,8 @@ mod tests {
             .times(1)
             .return_once(move |_address, _key, _block_nb| Ok(expected_result));
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_req, _block_nb| Ok(vec![2]));
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1556,9 +1663,8 @@ mod tests {
             .times(1)
             .return_once(move |_address, _key, _block_nb| Err(eyre!(expected_error)));
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_req, _block_nb| Ok(vec![2]));
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(10)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -1593,8 +1699,10 @@ mod tests {
             .return_once(move |_block_nb, _address| Ok(expected_result));
         ethereum_lightclient_mock
             .expect_call()
-            .times(1)
             .return_once(move |_req, _block_nb| Ok(vec![2]));
+        ethereum_lightclient_mock
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(0)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1625,9 +1733,8 @@ mod tests {
             .expect_get_nonce()
             .return_once(move |_block_nb, _address| Err(eyre!(expected_error)));
         ethereum_lightclient_mock
-            .expect_call()
-            .times(1)
-            .return_once(move |_req, _block_nb| Ok(vec![2]));
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(10)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -1858,7 +1965,13 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.block_number().await.unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .block_number()
+            .await
+            .unwrap();
 
         // Then
         // Assert that the block number returned by the `block_number` method of the Beerus light client is the expected block number.
@@ -1891,7 +2004,12 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.block_number().await;
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .block_number()
+            .await;
 
         // Then
         // Assert that the `block_number` method of the Beerus light client returns `Err`.
@@ -1998,6 +2116,8 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .block_hash_and_number()
             .await
             .unwrap();
@@ -2036,7 +2156,12 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.block_hash_and_number().await;
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .block_hash_and_number()
+            .await;
 
         // Then
         // Assert that the `block_hash_and_number` method of the Beerus light client returns `Err`.
@@ -2076,6 +2201,8 @@ mod tests {
         let class_hash = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class(&block_id, class_hash)
             .await
             .unwrap();
@@ -2119,6 +2246,8 @@ mod tests {
         let class_hash = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class(&block_id, class_hash)
             .await;
 
@@ -2222,6 +2351,8 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class_hash_at(&block_id, contract_address)
             .await
             .unwrap();
@@ -2261,6 +2392,8 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class_hash_at(&block_id, contract_address)
             .await;
 
@@ -2299,6 +2432,8 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class_at(&block_id, contract_address)
             .await
             .unwrap();
@@ -2342,6 +2477,8 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_class_at(&block_id, contract_address)
             .await;
 
@@ -2379,6 +2516,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_transaction_count(&block_id)
             .await
             .unwrap();
@@ -2418,6 +2557,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_transaction_count(&block_id)
             .await;
 
@@ -2455,6 +2596,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_logs(
                 &Some("finalized".to_string()),
                 &Some("pending".to_string()),
@@ -2502,6 +2645,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
+            .read()
+            .await
             .get_logs(&None, &None, &None, &None, &None)
             .await;
 
@@ -2538,7 +2683,13 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.syncing().await.unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .syncing()
+            .await
+            .unwrap();
 
         // Then
         // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
@@ -2577,7 +2728,13 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.syncing().await.unwrap();
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .syncing()
+            .await
+            .unwrap();
 
         // Then
         // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
@@ -2614,7 +2771,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.syncing().await;
+        let result = beerus.starknet_lightclient.read().await.syncing().await;
 
         // Then
         // Assert that the `get_class_at` method of the Beerus light client returns `Err`.
@@ -2663,6 +2820,8 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_state_update(&block_id)
             .await;
 
@@ -2707,6 +2866,8 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_state_update(&block_id)
             .await;
 
@@ -2764,6 +2925,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_invoke_transaction(&invoke_transaction)
             .await;
 
@@ -2827,6 +2990,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_invoke_transaction(&invoke_transaction)
             .await;
 
@@ -2902,6 +3067,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_deploy_transaction(&deploy_transaction)
             .await;
 
@@ -2982,6 +3149,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_deploy_transaction(&deploy_transaction)
             .await;
 
@@ -3038,6 +3207,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_with_txs(&block_id)
             .await
             .unwrap();
@@ -3077,6 +3248,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_with_txs(&block_id)
             .await;
 
@@ -3138,6 +3311,8 @@ mod tests {
         let index: u64 = 0;
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await
             .unwrap();
@@ -3178,6 +3353,8 @@ mod tests {
         let index: u64 = 0;
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await;
 
@@ -3216,6 +3393,8 @@ mod tests {
         );
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .pending_transactions()
             .await
             .unwrap();
@@ -3253,7 +3432,12 @@ mod tests {
         );
 
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
-        let result = beerus.starknet_lightclient.pending_transactions().await;
+        let result = beerus
+            .starknet_lightclient
+            .read()
+            .await
+            .pending_transactions()
+            .await;
 
         // Then
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
@@ -3300,6 +3484,8 @@ mod tests {
         );
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_transaction_receipt(felt.clone())
             .await
             .unwrap();
@@ -3338,6 +3524,8 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_transaction_receipt(FieldElement::from_str("0x1").unwrap())
             .await;
 
@@ -3396,6 +3584,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_with_tx_hashes(&block_id)
             .await
             .unwrap();
@@ -3435,6 +3625,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_block_with_tx_hashes(&block_id)
             .await;
 
@@ -3496,6 +3688,8 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_transaction_by_hash(FieldElement::from_str(&"0x01".to_string()).unwrap())
             .await;
 

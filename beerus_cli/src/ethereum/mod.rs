@@ -45,6 +45,8 @@ pub async fn send_raw_transaction(
     // Query the balance of the Ethereum address.
     let transaction_response = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .send_raw_transaction(bytes_slice)
         .await?;
 
@@ -71,6 +73,8 @@ pub async fn query_balance(beerus: BeerusLightClient, address: String) -> Result
     // Query the balance of the Ethereum address.
     let balance = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_balance(&addr, block)
         .await?;
     // Format the balance in Ether.
@@ -95,7 +99,12 @@ pub async fn query_nonce(beerus: BeerusLightClient, address: String) -> Result<C
     let block = BlockTag::Latest;
 
     // Query the balance of the Ethereum address.
-    let nonce = beerus.ethereum_lightclient.get_nonce(&addr, block).await?;
+    let nonce = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_nonce(&addr, block)
+        .await?;
 
     Ok(CommandResponse::EthereumQueryNonce(nonce))
 }
@@ -108,7 +117,12 @@ pub async fn query_nonce(beerus: BeerusLightClient, address: String) -> Result<C
 /// # Errors
 /// * If the block number query fails.
 pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResponse> {
-    let block_number = beerus.ethereum_lightclient.get_block_number().await?;
+    let block_number = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_block_number()
+        .await?;
     Ok(CommandResponse::EthereumQueryBlockNumber(block_number))
 }
 
@@ -118,7 +132,7 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
 /// # Returns
 /// * `Result<CommandResponse>` - The chain id of the Ethereum network.
 pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
-    let chain_id = beerus.ethereum_lightclient.chain_id().await;
+    let chain_id = beerus.ethereum_lightclient.read().await.chain_id().await;
     Ok(CommandResponse::EthereumQueryChainId(chain_id))
 }
 
@@ -135,7 +149,12 @@ pub async fn query_code(beerus: BeerusLightClient, address: String) -> Result<Co
 
     let addr = Address::from_str(&address)?;
 
-    let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
+    let code = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_code(&addr, block)
+        .await?;
 
     Ok(CommandResponse::EthereumQueryCode(code))
 }
@@ -160,6 +179,8 @@ pub async fn query_transaction_count(
 
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_transaction_count(&address, block)
         .await?;
 
@@ -181,6 +202,8 @@ pub async fn query_block_transaction_count_by_number(
 
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_transaction_count_by_number(block)
         .await?;
 
@@ -207,6 +230,8 @@ pub async fn query_block_by_hash(
         .collect();
     let block = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_by_hash(&hash, full_tx)
         .await?;
     Ok(CommandResponse::EthereumQueryBlockByHash(block))
@@ -227,6 +252,8 @@ pub async fn query_transaction_by_hash(
 
     let unformatted_tx_data = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_transaction_by_hash(&hash)
         .await?;
     let tx_data = format!("{unformatted_tx_data:?}");
@@ -242,7 +269,12 @@ pub async fn query_transaction_by_hash(
 /// # Errors
 /// * If the block number query fails.
 pub async fn query_gas_price(beerus: BeerusLightClient) -> Result<CommandResponse> {
-    let gas_price = beerus.ethereum_lightclient.get_gas_price().await?;
+    let gas_price = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_gas_price()
+        .await?;
 
     Ok(CommandResponse::EthereumQueryGasPrice(gas_price))
 }
@@ -284,7 +316,12 @@ pub async fn query_estimate_gas(
             .and_then(|v| (hex::decode(v)).ok()),
     };
 
-    let gas = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
+    let gas = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .estimate_gas(&call_opts)
+        .await?;
 
     Ok(CommandResponse::EthereumQueryEstimateGas(gas))
 }
@@ -307,6 +344,8 @@ pub async fn query_block_transaction_count_by_hash(
 
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_transaction_count_by_hash(&hash)
         .await?;
 
@@ -321,7 +360,12 @@ pub async fn query_block_transaction_count_by_hash(
 /// # Errors
 /// * If the block number query fails.
 pub async fn query_get_priority_fee(beerus: BeerusLightClient) -> Result<CommandResponse> {
-    let get_priority_fee = beerus.ethereum_lightclient.get_priority_fee().await?;
+    let get_priority_fee = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_priority_fee()
+        .await?;
 
     Ok(CommandResponse::EthereumQueryGetPriorityFee(
         get_priority_fee,
@@ -344,6 +388,8 @@ pub async fn query_block_by_number(
 ) -> Result<CommandResponse> {
     let block = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_by_number(block, full_tx)
         .await?;
     Ok(CommandResponse::EthereumQueryBlockByNumber(block))
@@ -358,6 +404,8 @@ pub async fn query_logs(
 ) -> Result<CommandResponse> {
     let logs = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_logs(from_block, to_block, address, topics, block_hash)
         .await?;
     Ok(CommandResponse::EthereumQueryLogs(logs))

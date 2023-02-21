@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.
-//const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+// const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 // For testing purpose use Goerli address until we make it configurable
 pub const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str =
     "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";

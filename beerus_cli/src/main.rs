@@ -1,3 +1,5 @@
+use std::{thread, time};
+
 use beerus_cli::{model::Cli, runner};
 use beerus_core::{
     config::Config,
@@ -30,13 +32,17 @@ async fn main() -> Result<()> {
     );
 
     // Start the Beerus light client.
+    println!("Starting Beerus light client...");
     beerus.start().await?;
-
+    println!("Beerus light client started!");
     // Run the CLI command.
+    println!("Before Running command");
     let command_response = runner::run(beerus, cli).await?;
+    println!("After Command response");
     // Print the command response.
     // The handling of the command response is left to each `CommandResponse` implementation.
     println!("{command_response}");
+    thread::sleep(time::Duration::from_secs(200));
 
     Ok(())
 }

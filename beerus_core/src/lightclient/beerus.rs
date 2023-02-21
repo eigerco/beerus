@@ -1,3 +1,6 @@
+use std::{collections::BTreeMap, sync::Arc, thread, time};
+use tokio::sync::RwLock;
+
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
 use ethers::{
@@ -7,8 +10,13 @@ use ethers::{
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
-
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockId as StarknetBlockId, BlockTag as StarknetBlockTag, BlockWithTxs, FunctionCall,
+        MaybePendingBlockWithTxs,
+    },
+};
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
@@ -17,34 +25,65 @@ pub enum SyncStatus {
     Synced,
 }
 
+#[derive(Clone, Debug)]
+pub struct NodeData {
+    pub block_number: u64,
+    pub state_root: String,
+    pub payload: BTreeMap<u64, BlockWithTxs>,
+}
+
+impl NodeData {
+    pub fn new() -> Self {
+        NodeData {
+            block_number: 0,
+            state_root: "".to_string(),
+            payload: BTreeMap::new(),
+        }
+    }
+}
+
+impl Default for NodeData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Beerus Light Client service.
 pub struct BeerusLightClient {
     /// Global configuration.
     pub config: Config,
     /// Ethereum light client.
-    pub ethereum_lightclient: Box<dyn EthereumLightClient>,
+    pub ethereum_lightclient: Arc<RwLock<Box<dyn EthereumLightClient>>>,
     /// StarkNet light client.
-    pub starknet_lightclient: Box<dyn StarkNetLightClient>,
+    pub starknet_lightclient: Arc<RwLock<Box<dyn StarkNetLightClient>>>,
     /// Sync status.
     pub sync_status: SyncStatus,
     /// StarkNet core ABI.
     pub starknet_core_abi: Abi,
     /// StarkNet core contract address.
     pub starknet_core_contract_address: H160,
+    // TODO: Add Payload data
+    pub node: Arc<RwLock<NodeData>>,
 }
 
 impl BeerusLightClient {
-    /// Create a new Beerus Light Client service.
+    //     /// Create a new Beerus Light Client service.
     pub fn new(
         config: Config,
-        ethereum_lightclient: Box<dyn EthereumLightClient>,
-        starknet_lightclient: Box<dyn StarkNetLightClient>,
+        //TODO: Check if we should just have &str as arguments
+        ethereum_lightclient_raw: Box<dyn EthereumLightClient>,
+        starknet_lightclient_raw: Box<dyn StarkNetLightClient>,
     ) -> Self {
+        let ethereum_lightclient = Arc::new(RwLock::new(ethereum_lightclient_raw));
+        // Create a new StarkNet light client.
+        let starknet_lightclient = Arc::new(RwLock::new(starknet_lightclient_raw));
         let starknet_core_abi = include_str!("../resources/starknet_core_abi.json");
         // Deserialize the StarkNet core ABI.
         // For now we assume that the ABI is valid and that the deserialization will never fail.
         let starknet_core_abi: Abi = serde_json::from_str(starknet_core_abi).unwrap();
         let starknet_core_contract_address = config.starknet_core_contract_address;
+        let node_raw = NodeData::new();
+        let node = Arc::new(RwLock::new(node_raw));
 
         Self {
             config,
@@ -53,91 +92,95 @@ impl BeerusLightClient {
             sync_status: SyncStatus::NotSynced,
             starknet_core_abi,
             starknet_core_contract_address,
+            node,
         }
     }
 
-    /// Start Beerus light client and synchronize with Ethereum and StarkNet.
+    //     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
-            self.ethereum_lightclient.start().await?;
+            //TODO: Change unwrap
+            self.ethereum_lightclient.write().await.start().await?;
             // Start the StarkNet light client.
-            self.starknet_lightclient.start().await?;
+            //TODO: Change unwrap
+            self.starknet_lightclient.write().await.start().await?;
             self.sync_status = SyncStatus::Synced;
-        }
+            let ethereum_clone = self.ethereum_lightclient.clone();
+            let starknet_clone = self.starknet_lightclient.clone();
+            let node_clone = self.node.clone();
 
+            // Define function that will loop
+            let task = async move {
+                loop {
+                    //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
+                    // let state_root = ethereum_clone
+                    //     .read()
+                    //     .await
+                    //     .starknet_state_root(config_clone.clone())
+                    //     .await
+                    //     .unwrap();
+                    // let last_proven_block = ethereum_clone
+                    //     .read()
+                    //     .await
+                    //     .starknet_last_proven_block(config_clone.clone())
+                    //     .await
+                    //     .unwrap();
+
+                    //TODO:Remove this once starknet_state_root and last_proven_block call(This is just to valdiate that Helios Fetch are working fine within the thread)
+                    let block_number = ethereum_clone
+                        .read()
+                        .await
+                        .get_block_number()
+                        .await
+                        .unwrap();
+                    // println!("Loop State Root, {}", state_root);
+                    // println!("Loop Block Number, {}", last_proven_block);
+                    println!("Ethereum Block Number, {block_number}");
+
+                    match starknet_clone
+                        .read()
+                        .await
+                        .get_block_with_txs(&StarknetBlockId::Tag(StarknetBlockTag::Latest))
+                        .await
+                    {
+                        Ok(block) => {
+                            let mut data = node_clone.write().await;
+                            match block {
+                                MaybePendingBlockWithTxs::Block(block) => {
+                                    // TODO: change "0 < block.block_number" to "block.block_number == last_proven_block"
+                                    if block.block_number > data.block_number
+                                        && 0 < block.block_number
+                                    {
+                                        data.block_number = block.block_number;
+                                        data.state_root = block.new_root.to_string();
+                                        data.payload.insert(block.block_number, block);
+                                        println!("New Block Added to Payload");
+                                        println!("Block Number {:?}", &data.block_number);
+                                        println!("Block Root {:?}", &data.state_root);
+                                    }
+                                }
+                                MaybePendingBlockWithTxs::PendingBlock(_) => {
+                                    println!("Pending Block");
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            eprintln!("Error getting block: {err:?}");
+                        }
+                    }
+                    thread::sleep(time::Duration::from_secs(5));
+                }
+            };
+            // Spawn loop function
+            tokio::spawn(task);
+        };
         Ok(())
     }
 
     /// Return the current synchronization status.
     pub fn sync_status(&self) -> &SyncStatus {
         &self.sync_status
-    }
-
-    /// Get the StarkNet state root.
-    pub async fn starknet_state_root(&self) -> Result<U256> {
-        // Get the StarkNet core contract address.
-        let starknet_core_contract_address = &self.config.starknet_core_contract_address;
-
-        // Corresponds to the StarkNet core contract function `stateRoot`.
-        // The function signature is `stateRoot() -> (uint256)`.
-        // The function selector is `0x95d8ecA2`.
-        let data = vec![0x95, 0x88, 0xec, 0xa2];
-
-        // Build the call options.
-        let call_opts = CallOpts {
-            from: None,
-            to: *starknet_core_contract_address,
-            gas: None,
-            gas_price: None,
-            value: None,
-            data: Some(data),
-        };
-
-        // Call the StarkNet core contract.
-        let starknet_root = self
-            .ethereum_lightclient
-            .call(&call_opts, BlockTag::Latest)
-            .await?;
-
-        // Convert the response bytes to a U256.
-        let starknet_root = U256::from_big_endian(&starknet_root);
-
-        Ok(starknet_root)
-    }
-
-    /// Get the StarkNet last proven block number.
-    /// This function is used to get the last proven block number of the StarkNet network.
-    ///
-    /// # Returns
-    /// `Ok(U256)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_last_proven_block(&self) -> Result<U256> {
-        // Get the StarkNet core contract address.
-        let starknet_core_contract_address = &self.config.starknet_core_contract_address;
-
-        let data = vec![53, 190, 250, 93];
-
-        // Build the call options.
-        let call_opts = CallOpts {
-            from: None,
-            to: *starknet_core_contract_address,
-            gas: None,
-            gas_price: None,
-            value: None,
-            data: Some(data),
-        };
-
-        // Call the StarkNet core contract.
-        let starknet_root = self
-            .ethereum_lightclient
-            .call(&call_opts, BlockTag::Latest)
-            .await?;
-
-        // Convert the response bytes to a U256.
-        let starknet_root = U256::from_big_endian(&starknet_root);
-
-        Ok(starknet_root)
     }
 
     /// Get the storage at a given address/key.
@@ -157,8 +200,16 @@ impl BeerusLightClient {
         contract_address: FieldElement,
         storage_key: FieldElement,
     ) -> Result<FieldElement> {
-        let last_block = self.starknet_last_proven_block().await?.as_u64();
+        let last_block = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_last_proven_block()
+            .await?
+            .as_u64();
         self.starknet_lightclient
+            .read()
+            .await
             .get_storage_at(contract_address, storage_key, last_block)
             .await
     }
@@ -188,9 +239,19 @@ impl BeerusLightClient {
             calldata,
         };
 
-        let last_block = self.starknet_last_proven_block().await?.as_u64();
+        let last_block = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_last_proven_block()
+            .await?
+            .as_u64();
         // Call the StarkNet light client.
-        self.starknet_lightclient.call(opts, last_block).await
+        self.starknet_lightclient
+            .read()
+            .await
+            .call(opts, last_block)
+            .await
     }
 
     /// Get the nonce at a given address.
@@ -205,9 +266,17 @@ impl BeerusLightClient {
     /// `Ok(FieldElement)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
     pub async fn starknet_get_nonce(&self, address: FieldElement) -> Result<FieldElement> {
-        let last_block = self.starknet_last_proven_block().await?.as_u64();
+        let last_block = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_last_proven_block()
+            .await?
+            .as_u64();
 
         self.starknet_lightclient
+            .read()
+            .await
             .get_nonce(last_block, address)
             .await
     }
@@ -245,6 +314,8 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
+            .read()
+            .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
@@ -283,6 +354,8 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
+            .read()
+            .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
@@ -321,6 +394,8 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
+            .read()
+            .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
@@ -354,6 +429,8 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
+            .read()
+            .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
