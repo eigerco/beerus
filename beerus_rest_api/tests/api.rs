@@ -18,7 +18,7 @@ mod test {
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
-            DeclareTransactionResult, DeployTransactionResult, InvokeTransaction,
+            DeclareTransactionResult, DeployTransactionResult, FeeEstimate, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
@@ -2655,6 +2655,91 @@ mod test {
         );
     }
 
+    /// Test the `get_estimate_fee` endpoint.
+    /// `/starknet/fee?<broadcasted_transaction>&<block_id>&<block_id_type>`
+    /// Given normal conditions, when query get_estimate_fee, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_get_estimate_fee_syncing_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FeeEstimate {
+            gas_consumed: 5194,
+            gas_price: 25886605195,
+            overall_fee: 134455027382830,
+        };
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            .get(uri!("/starknet/fee?broadcasted_transaction=%7B%22type%22%3A%22INVOKE%22%2C%22max_fee%22%3A%220x0%22%2C%22version%22%3A%220x1%22%2C%22signature%22%3A%5B%220x156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0%22%2C%220x7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6%22%5D%2C%22nonce%22%3A%220x0%22%2C%22sender_address%22%3A%220x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0%22%2C%22calldata%22%3A%5B%220x1%22%2C%220x7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10%22%2C%220x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354%22%2C%220x0%22%2C%220x3%22%2C%220x3%22%2C%220x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0%22%2C%220x3635c9adc5dea00000%22%2C%220x0%22%5D%7D&block_id=latest&block_id_type=tag"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"gas_consumed\":\"5194\",\"gas_price\":\"25886605195\",\"overall_fee\":\"134455027382830\"}",
+        );
+    }
+
+    /// Test the `get_estimate_fee` endpoint.
+    /// `/starknet/fee?<broadcasted_transaction>&<block_id>&<block_id_type>`
+    /// Given StarkNet light client returns error when query starknet estimate fee, then error is propagated.
+    #[tokio::test]
+    async fn given_starknet_ligthclient_returns_error_when_query_get_estimate_fee_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Err(eyre::eyre!("cannot query starknet syncing")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Build the Rocket instance.
+        let client = Client::tracked(build_rocket_server(beerus).await)
+            .await
+            .expect("valid rocket instance");
+
+        // When
+        let response = client
+            // JSON URL encoded
+            .get(uri!("/starknet/fee?broadcasted_transaction=%7B%22type%22%3A%22INVOKE%22%2C%22max_fee%22%3A%220x0%22%2C%22version%22%3A%220x1%22%2C%22signature%22%3A%5B%220x156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0%22%2C%220x7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6%22%5D%2C%22nonce%22%3A%220x0%22%2C%22sender_address%22%3A%220x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0%22%2C%22calldata%22%3A%5B%220x1%22%2C%220x7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10%22%2C%220x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354%22%2C%220x0%22%2C%220x3%22%2C%220x3%22%2C%220x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0%22%2C%220x3635c9adc5dea00000%22%2C%220x0%22%5D%7D&block_id=latest&block_id_type=tag"))
+            .dispatch()
+            .await;
+
+        // Then
+        assert_eq!(response.status(), Status::InternalServerError);
+        assert_eq!(
+            response.into_string().await.unwrap(),
+            "{\"error_message\":\"cannot query starknet syncing\"}"
+        );
+    }
+
     /// Test the `state_update` endpoint.
     /// `/starknet/state_update?<block_id>&<block_id_type>`
     /// Given StarkNet light client returns error when query starknet state_update, then error is propagated.
@@ -2756,7 +2841,6 @@ mod test {
         let expected_result = InvokeTransactionResult {
             transaction_hash: FieldElement::from_str("0x01").unwrap(),
         };
-        let expected_result_value = expected_result.clone();
         starknet_lightclient
             .expect_add_invoke_transaction()
             .return_once(move |_| Ok(expected_result));
@@ -2832,7 +2916,6 @@ mod test {
             transaction_hash: FieldElement::from_str("0x01").unwrap(),
             contract_address: FieldElement::from_str("0x02").unwrap(),
         };
-        let expected_result_value = expected_result.clone();
         starknet_lightclient
             .expect_add_deploy_transaction()
             .return_once(move |_| Ok(expected_result));

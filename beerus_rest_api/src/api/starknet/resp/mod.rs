@@ -127,6 +127,14 @@ pub struct QuerySyncing {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryEstimateFeeResponse {
+    pub gas_consumed: String,
+    pub gas_price: String,
+    pub overall_fee: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct NonceResponse {
     pub contract_address: String,
     pub nonce: String,
