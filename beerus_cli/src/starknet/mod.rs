@@ -428,6 +428,8 @@ pub async fn get_events(beerus: BeerusLightClient, params: String) -> Result<Com
     Ok(CommandResponse::StarknetQueryGetEvents(
         beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_events(
                 filter,
                 events_object.continuation_token,
@@ -468,6 +470,8 @@ pub async fn query_starknet_estimate_fee(
     Ok(CommandResponse::StarknetQueryEstimateFee(
         beerus
             .starknet_lightclient
+            .read()
+            .await
             .estimate_fee(tx, &block_id)
             .await?,
     ))
@@ -782,6 +786,8 @@ pub async fn add_declare_transaction(
     Ok(CommandResponse::StarknetAddDeclareTransaction(
         beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_declare_transaction(&declare_transaction)
             .await?,
     ))

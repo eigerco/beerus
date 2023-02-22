@@ -2693,6 +2693,8 @@ mod tests {
         let chunk_size = 1;
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_events(filter, continuation_token, chunk_size)
             .await
             .unwrap();
@@ -2740,6 +2742,8 @@ mod tests {
         let chunk_size = 1;
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .get_events(filter, continuation_token, chunk_size)
             .await;
 
@@ -2911,6 +2915,8 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .estimate_fee(tx, &block_id)
             .await
             .unwrap();
@@ -2954,6 +2960,8 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .estimate_fee(tx, &block_id)
             .await;
 
@@ -3621,7 +3629,6 @@ mod tests {
             .pending_transactions()
             .await;
 
-
         // Then
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
@@ -3951,6 +3958,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_declare_transaction(&declare_transaction)
             .await;
 
@@ -4033,6 +4042,8 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
+            .read()
+            .await
             .add_declare_transaction(&declare_transaction)
             .await;
 

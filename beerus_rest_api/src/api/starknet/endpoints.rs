@@ -475,7 +475,12 @@ pub async fn query_starknet_state_root_inner(
 ) -> Result<QueryStateRootResponse> {
     debug!("Querying StarkNet state root");
     // Call the StarkNet contract to get the state root.
-    let state_root = beerus.ethereum_lightclient.read().await.starknet_state_root().await?;
+    let state_root = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .starknet_state_root()
+        .await?;
     Ok(QueryStateRootResponse {
         state_root: state_root.to_string(),
     })
@@ -965,6 +970,8 @@ pub async fn get_events_inner(
 
     let result = beerus
         .starknet_lightclient
+        .read()
+        .await
         .get_events(filter, continuation_token, chunk_size)
         .await?;
 
@@ -1007,6 +1014,8 @@ pub async fn get_estimate_fee_inner(
     debug!("Querying Estimate Fee");
     let result = beerus
         .starknet_lightclient
+        .read()
+        .await
         .estimate_fee(tx, &block_id)
         .await?;
     Ok(QueryEstimateFeeResponse {
@@ -1288,6 +1297,8 @@ pub async fn declare_transaction_inner(
 
     let declare_transaction_hash = beerus
         .starknet_lightclient
+        .read()
+        .await
         .add_declare_transaction(&declare_transaction)
         .await?;
     Ok(AddDeclareTransactionResponse {

@@ -13,8 +13,8 @@ use helios::types::CallOpts;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockId as StarknetBlockId, BlockTag as StarknetBlockTag, BlockWithTxs, FunctionCall,
-        MaybePendingBlockWithTxs, BroadcastedTransaction, FeeEstimate
+        BlockId, BlockTag as StarknetBlockTag, BlockWithTxs, BroadcastedTransaction, FeeEstimate,
+        FunctionCall, MaybePendingBlockWithTxs,
     },
 };
 
@@ -142,7 +142,7 @@ impl BeerusLightClient {
                     match starknet_clone
                         .read()
                         .await
-                        .get_block_with_txs(&StarknetBlockId::Tag(StarknetBlockTag::Latest))
+                        .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
                         .await
                     {
                         Ok(block) => {
@@ -273,6 +273,8 @@ impl BeerusLightClient {
     ) -> Result<FeeEstimate> {
         // Call the StarkNet light client.
         self.starknet_lightclient
+            .read()
+            .await
             .estimate_fee(request, block_id)
             .await
     }
