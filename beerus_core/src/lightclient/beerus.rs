@@ -56,7 +56,7 @@ pub struct BeerusLightClient {
     /// Ethereum light client.
     pub ethereum_lightclient: Arc<RwLock<Box<dyn EthereumLightClient>>>,
     /// StarkNet light client.
-    pub starknet_lightclient: Arc<RwLock<Box<dyn StarkNetLightClient>>>,
+    pub starknet_lightclient: Arc<Box<dyn StarkNetLightClient>>,
     /// Sync status.
     pub sync_status: SyncStatus,
     /// StarkNet core ABI.
@@ -77,7 +77,7 @@ impl BeerusLightClient {
     ) -> Self {
         let ethereum_lightclient = Arc::new(RwLock::new(ethereum_lightclient_raw));
         // Create a new StarkNet light client.
-        let starknet_lightclient = Arc::new(RwLock::new(starknet_lightclient_raw));
+        let starknet_lightclient = Arc::new(starknet_lightclient_raw);
         let starknet_core_abi = include_str!("../resources/starknet_core_abi.json");
         // Deserialize the StarkNet core ABI.
         // For now we assume that the ABI is valid and that the deserialization will never fail.
@@ -105,7 +105,7 @@ impl BeerusLightClient {
             self.ethereum_lightclient.write().await.start().await?;
             // Start the StarkNet light client.
             //TODO: Change unwrap
-            self.starknet_lightclient.write().await.start().await?;
+            self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
             let ethereum_clone = self.ethereum_lightclient.clone();
             let starknet_clone = self.starknet_lightclient.clone();
@@ -118,13 +118,13 @@ impl BeerusLightClient {
                     // let state_root = ethereum_clone
                     //     .read()
                     //     .await
-                    //     .starknet_state_root(config_clone.clone())
+                    //     .starknet_state_root()
                     //     .await
                     //     .unwrap();
                     // let last_proven_block = ethereum_clone
                     //     .read()
                     //     .await
-                    //     .starknet_last_proven_block(config_clone.clone())
+                    //     .starknet_last_proven_block()
                     //     .await
                     //     .unwrap();
 
@@ -135,13 +135,11 @@ impl BeerusLightClient {
                         .get_block_number()
                         .await
                         .unwrap();
-                    // println!("Loop State Root, {}", state_root);
-                    // println!("Loop Block Number, {}", last_proven_block);
+                    // println!("Loop State Root, {state_root}");
+                    // println!("Loop Block Number, {last_proven_block}");
                     println!("Ethereum Block Number, {block_number}");
 
                     match starknet_clone
-                        .read()
-                        .await
                         .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
                         .await
                     {
@@ -209,8 +207,6 @@ impl BeerusLightClient {
             .await?
             .as_u64();
         self.starknet_lightclient
-            .read()
-            .await
             .get_storage_at(contract_address, storage_key, last_block)
             .await
     }
@@ -248,11 +244,7 @@ impl BeerusLightClient {
             .await?
             .as_u64();
         // Call the StarkNet light client.
-        self.starknet_lightclient
-            .read()
-            .await
-            .call(opts, last_block)
-            .await
+        self.starknet_lightclient.call(opts, last_block).await
     }
 
     /// Estimate the fee for a given StarkNet transaction
@@ -273,8 +265,6 @@ impl BeerusLightClient {
     ) -> Result<FeeEstimate> {
         // Call the StarkNet light client.
         self.starknet_lightclient
-            .read()
-            .await
             .estimate_fee(request, block_id)
             .await
     }
@@ -300,8 +290,6 @@ impl BeerusLightClient {
             .as_u64();
 
         self.starknet_lightclient
-            .read()
-            .await
             .get_nonce(last_block, address)
             .await
     }

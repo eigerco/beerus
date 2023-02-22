@@ -1966,13 +1966,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .block_number()
-            .await
-            .unwrap();
+        let result = beerus.starknet_lightclient.block_number().await.unwrap();
 
         // Then
         // Assert that the block number returned by the `block_number` method of the Beerus light client is the expected block number.
@@ -2005,12 +1999,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .block_number()
-            .await;
+        let result = beerus.starknet_lightclient.block_number().await;
 
         // Then
         // Assert that the `block_number` method of the Beerus light client returns `Err`.
@@ -2117,8 +2106,6 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .block_hash_and_number()
             .await
             .unwrap();
@@ -2157,12 +2144,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .block_hash_and_number()
-            .await;
+        let result = beerus.starknet_lightclient.block_hash_and_number().await;
 
         // Then
         // Assert that the `block_hash_and_number` method of the Beerus light client returns `Err`.
@@ -2202,8 +2184,6 @@ mod tests {
         let class_hash = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class(&block_id, class_hash)
             .await
             .unwrap();
@@ -2247,8 +2227,6 @@ mod tests {
         let class_hash = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class(&block_id, class_hash)
             .await;
 
@@ -2352,8 +2330,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class_hash_at(&block_id, contract_address)
             .await
             .unwrap();
@@ -2393,8 +2369,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class_hash_at(&block_id, contract_address)
             .await;
 
@@ -2433,8 +2407,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class_at(&block_id, contract_address)
             .await
             .unwrap();
@@ -2478,8 +2450,6 @@ mod tests {
         let contract_address = FieldElement::from_str("0x0123").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_class_at(&block_id, contract_address)
             .await;
 
@@ -2517,8 +2487,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_transaction_count(&block_id)
             .await
             .unwrap();
@@ -2558,8 +2526,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_transaction_count(&block_id)
             .await;
 
@@ -2693,8 +2659,6 @@ mod tests {
         let chunk_size = 1;
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_events(filter, continuation_token, chunk_size)
             .await
             .unwrap();
@@ -2742,8 +2706,6 @@ mod tests {
         let chunk_size = 1;
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_events(filter, continuation_token, chunk_size)
             .await;
 
@@ -2782,13 +2744,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .syncing()
-            .await
-            .unwrap();
+        let result = beerus.starknet_lightclient.syncing().await.unwrap();
 
         // Then
         // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
@@ -2827,13 +2783,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .syncing()
-            .await
-            .unwrap();
+        let result = beerus.starknet_lightclient.syncing().await.unwrap();
 
         // Then
         // Assert that the node starknet syncing returned by the `syncing` method of the Beerus light client
@@ -2870,7 +2820,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.starknet_lightclient.read().await.syncing().await;
+        let result = beerus.starknet_lightclient.syncing().await;
 
         // Then
         // Assert that the `get_class_at` method of the Beerus light client returns `Err`.
@@ -2915,8 +2865,6 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .estimate_fee(tx, &block_id)
             .await
             .unwrap();
@@ -2960,8 +2908,6 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .estimate_fee(tx, &block_id)
             .await;
 
@@ -3010,8 +2956,6 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_state_update(&block_id)
             .await;
 
@@ -3056,8 +3000,6 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_state_update(&block_id)
             .await;
 
@@ -3115,8 +3057,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_invoke_transaction(&invoke_transaction)
             .await;
 
@@ -3180,8 +3120,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_invoke_transaction(&invoke_transaction)
             .await;
 
@@ -3257,8 +3195,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_deploy_transaction(&deploy_transaction)
             .await;
 
@@ -3339,8 +3275,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_deploy_transaction(&deploy_transaction)
             .await;
 
@@ -3397,8 +3331,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_with_txs(&block_id)
             .await
             .unwrap();
@@ -3438,8 +3370,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_with_txs(&block_id)
             .await;
 
@@ -3501,8 +3431,6 @@ mod tests {
         let index: u64 = 0;
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await
             .unwrap();
@@ -3543,8 +3471,6 @@ mod tests {
         let index: u64 = 0;
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await;
 
@@ -3583,8 +3509,6 @@ mod tests {
         );
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .pending_transactions()
             .await
             .unwrap();
@@ -3622,12 +3546,7 @@ mod tests {
         );
 
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
-        let result = beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .pending_transactions()
-            .await;
+        let result = beerus.starknet_lightclient.pending_transactions().await;
 
         // Then
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
@@ -3674,8 +3593,6 @@ mod tests {
         );
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_transaction_receipt(felt.clone())
             .await
             .unwrap();
@@ -3714,8 +3631,6 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_transaction_receipt(FieldElement::from_str("0x1").unwrap())
             .await;
 
@@ -3774,8 +3689,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_with_tx_hashes(&block_id)
             .await
             .unwrap();
@@ -3815,8 +3728,6 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_with_tx_hashes(&block_id)
             .await;
 
@@ -3878,8 +3789,6 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_transaction_by_hash(FieldElement::from_str(&"0x01".to_string()).unwrap())
             .await;
 
@@ -3958,8 +3867,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_declare_transaction(&declare_transaction)
             .await;
 
@@ -4042,8 +3949,6 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
-            .read()
-            .await
             .add_declare_transaction(&declare_transaction)
             .await;
 

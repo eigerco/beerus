@@ -42,6 +42,7 @@ async fn main() -> Result<()> {
     // Print the command response.
     // The handling of the command response is left to each `CommandResponse` implementation.
     println!("{command_response}");
+    //Thread sleep to test Node/Payload storage
     thread::sleep(time::Duration::from_secs(200));
 
     Ok(())

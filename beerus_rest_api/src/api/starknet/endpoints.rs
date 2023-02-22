@@ -426,8 +426,6 @@ async fn get_tx_by_hash_inner(
     let hash = FieldElement::from_str(&hash)?;
     let transaction: Transaction = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_transaction_by_hash(hash)
         .await?;
     Ok(QueryTransactionByHashResponse {
@@ -669,13 +667,7 @@ pub async fn query_chain_id_inner(
 ) -> Result<QueryChainIdResponse> {
     debug!("Querying chain ID");
     Ok(QueryChainIdResponse {
-        chain_id: beerus
-            .starknet_lightclient
-            .read()
-            .await
-            .chain_id()
-            .await?
-            .to_string(),
+        chain_id: beerus.starknet_lightclient.chain_id().await?.to_string(),
     })
 }
 
@@ -692,8 +684,6 @@ pub async fn query_starknet_block_number_inner(
     Ok(QueryBlockNumberResponse {
         block_number: beerus
             .starknet_lightclient
-            .read()
-            .await
             .block_number()
             .await?
             .to_string(),
@@ -711,12 +701,7 @@ pub async fn query_starknet_block_hash_and_number_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryBlockHashAndNumberResponse> {
     debug!("Querying current block hash and number");
-    let response = beerus
-        .starknet_lightclient
-        .read()
-        .await
-        .block_hash_and_number()
-        .await?;
+    let response = beerus.starknet_lightclient.block_hash_and_number().await?;
     Ok(QueryBlockHashAndNumberResponse {
         block_hash: response.block_hash.to_string(),
         block_number: response.block_number.to_string(),
@@ -752,8 +737,6 @@ pub async fn get_class_inner(
     debug!("Querying Contract Class");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_class(&block_id, class_hash)
         .await?;
     Ok(QueryGetClassResponse {
@@ -777,8 +760,6 @@ pub async fn get_class_hash_inner(
     debug!("Querying Contract Class");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_class_hash_at(&block_id, contract_address)
         .await?;
     Ok(QueryGetClassHashResponse {
@@ -800,8 +781,6 @@ pub async fn get_class_at_inner(
     debug!("Querying Contract Class");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_class_at(&block_id, contract_address)
         .await?;
     Ok(QueryGetClassAtResponse {
@@ -824,8 +803,6 @@ pub async fn get_block_transaction_count_inner(
     Ok(QueryGetBlockTransactionCountResponse {
         block_transaction_count: beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_block_transaction_count(&block_id)
             .await?
             .to_string(),
@@ -856,8 +833,6 @@ pub async fn get_state_update_inner(
         state_diff,
     } = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_state_update(&parsed_block_id)
         .await?;
     let nonces: Vec<NonceResponse> = state_diff
@@ -970,8 +945,6 @@ pub async fn get_events_inner(
 
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_events(filter, continuation_token, chunk_size)
         .await?;
 
@@ -986,7 +959,7 @@ pub async fn get_events_inner(
 /// `QuerySyncing` - An object about the node starknet sync status.
 pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<QuerySyncing> {
     debug!("Querying syncing status");
-    let result = beerus.starknet_lightclient.read().await.syncing().await?;
+    let result = beerus.starknet_lightclient.syncing().await?;
 
     match result {
         SyncStatusType::Syncing(status) => Ok(QuerySyncing {
@@ -1014,8 +987,6 @@ pub async fn get_estimate_fee_inner(
     debug!("Querying Estimate Fee");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .estimate_fee(tx, &block_id)
         .await?;
     Ok(QueryEstimateFeeResponse {
@@ -1069,8 +1040,6 @@ pub async fn invoke_transaction_inner(
     let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data_value);
     let invoke_transaction_hash = beerus
         .starknet_lightclient
-        .read()
-        .await
         .add_invoke_transaction(&invoke_transaction)
         .await?;
     Ok(AddInvokeTransactionResponse {
@@ -1112,8 +1081,6 @@ pub async fn deploy_transaction_inner(
     };
     let deploy_transaction_hash = beerus
         .starknet_lightclient
-        .read()
-        .await
         .add_deploy_transaction(&deploy_transaction)
         .await?;
     Ok(AddDeployTransactionResponse {
@@ -1135,8 +1102,6 @@ pub async fn get_block_with_txs_inner(
     debug!("Querying Block with Txs");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_block_with_txs(&block_id)
         .await?;
     Ok(QueryBlockWithTxsResponse {
@@ -1159,8 +1124,6 @@ pub async fn get_transaction_by_block_id_and_index_inner(
     debug!("Querying block transaction count");
     let transaction_data = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_transaction_by_block_id_and_index(&block_id, index)
         .await?;
     Ok(QueryTransactionByBlockIdAndIndex {
@@ -1175,12 +1138,7 @@ pub async fn query_pending_transactions_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryPendingTransactionsResponse> {
     debug!("Querying pending transactions");
-    let pending_transactions = beerus
-        .starknet_lightclient
-        .read()
-        .await
-        .pending_transactions()
-        .await?;
+    let pending_transactions = beerus.starknet_lightclient.pending_transactions().await?;
     let pending_transactions = format!("{pending_transactions:?}");
     Ok(QueryPendingTransactionsResponse {
         pending_transactions,
@@ -1198,8 +1156,6 @@ pub async fn get_transaction_receipt_inner(
     debug!("Query a transaction's receipt");
     let receipt = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_transaction_receipt(tx_hash)
         .await?;
     Ok(QueryTxReceipt {
@@ -1220,8 +1176,6 @@ pub async fn get_block_with_tx_hashes_inner(
     debug!("Querying Block with Txs");
     let result = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_block_with_tx_hashes(&block_id)
         .await?;
     Ok(QueryBlockWithTxHashesResponse {
@@ -1252,8 +1206,6 @@ async fn get_contract_storage_proof_inner(
 
     let proof = beerus
         .starknet_lightclient
-        .read()
-        .await
         .get_contract_storage_proof(contract_address, Vec::from([key]), &block_id)
         .await?;
 
@@ -1297,8 +1249,6 @@ pub async fn declare_transaction_inner(
 
     let declare_transaction_hash = beerus
         .starknet_lightclient
-        .read()
-        .await
         .add_declare_transaction(&declare_transaction)
         .await?;
     Ok(AddDeclareTransactionResponse {

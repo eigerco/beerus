@@ -154,8 +154,6 @@ mod test {
 
         let proof = beerus
             .starknet_lightclient
-            .read()
-            .await
             .get_contract_storage_proof(contract_address, Vec::from(keys), &BlockId::Number(1))
             .await;
 
