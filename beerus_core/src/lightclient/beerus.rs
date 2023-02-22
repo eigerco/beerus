@@ -14,9 +14,10 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockId as StarknetBlockId, BlockTag as StarknetBlockTag, BlockWithTxs, FunctionCall,
-        MaybePendingBlockWithTxs,
+        MaybePendingBlockWithTxs, BroadcastedTransaction, FeeEstimate
     },
 };
+
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
@@ -251,6 +252,28 @@ impl BeerusLightClient {
             .read()
             .await
             .call(opts, last_block)
+            .await
+    }
+
+    /// Estimate the fee for a given StarkNet transaction
+    /// This function is used to estimate the fee for a given StarkNet transaction.
+    ///
+    /// # Arguments
+    /// * `request` - The broadcasted transaction.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FeeEstimate)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_estimate_fee(
+        &self,
+        request: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate> {
+        // Call the StarkNet light client.
+        self.starknet_lightclient
+            .estimate_fee(request, block_id)
             .await
     }
 

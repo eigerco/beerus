@@ -6,9 +6,10 @@ use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, DeployTransactionResult, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-    StateUpdate, SyncStatusType, Transaction,
+    BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+    EventsPage, FeeEstimate, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+    MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+    Transaction,
 };
 use std::{fmt::Display, path::PathBuf};
 
@@ -270,7 +271,25 @@ pub enum StarkNetSubCommands {
         #[arg(short, long, value_name = "BLOCK_ID")]
         block_id: String,
     },
+    QueryGetEvents {
+        #[arg(short, long, value_name = "PARAMS")]
+        params: String,
+    },
     QuerySyncing {},
+    QueryEstimateFee {
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
+        /// Broadcasted transaction
+        /// eg. "{\"type\":\"INVOKE\",\"max_fee\":\"0x0\",\"version\":\"0x1\",\"signature\":[\"0x156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0\",\"0x7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6\"],\"nonce\":\"0x0\",\"sender_address\":\"0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0\",\"calldata\":[\"0x1\",\"0x7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10\",\"0x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354\",\"0x0\",\"0x3\",\"0x3\",\"0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0\",\"0x3635c9adc5dea00000\",\"0x0\"]}"
+        #[arg(short, long, value_name = "BROADCASTED_TX")]
+        broadcasted_transaction: String,
+    },
     AddInvokeTransaction {
         /// Max fee
         #[arg(short, long, value_name = "MAX_FEE")]
@@ -314,6 +333,26 @@ pub enum StarkNetSubCommands {
             value_delimiter = ','
         )]
         constructor_calldata: Vec<String>,
+    },
+    AddDeclareTransaction {
+        /// Max fee
+        #[arg(short, long, value_name = "MAX_FEE")]
+        max_fee: String,
+        /// Declare tx version
+        #[arg(short, long, value_name = "VERSION")]
+        version: String,
+        /// The signature
+        #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
+        signature: Vec<String>,
+        /// The nonce
+        #[arg(short, long, value_name = "NONCE")]
+        nonce: String,
+        /// The contract class
+        #[arg(short, long, value_name = "CONTRACT_CLASS")]
+        contract_class: String,
+        // The entry point selector
+        #[arg(short, long, value_name = "SENDER_ADDRESS")]
+        sender_address: String,
     },
     // Get a transaction by its hash
     QueryTransactionByHash {
@@ -417,9 +456,12 @@ pub enum CommandResponse {
     StarknetQueryGetBlockTransactionCount(u64),
     StarknetQueryGetStateUpdate(StateUpdate),
     StarknetQueryTransactionByHash(Transaction),
+    StarknetQueryGetEvents(EventsPage),
     StarknetQuerySyncing(SyncStatusType),
+    StarknetQueryEstimateFee(FeeEstimate),
     StarknetAddInvokeTransaction(InvokeTransactionResult),
     StarknetAddDeployTransaction(DeployTransactionResult),
+    StarknetAddDeclareTransaction(DeclareTransactionResult),
     StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
     StarknetQueryBlockWithTxHashes(MaybePendingBlockWithTxHashes),
     StarkNetL1ToL2MessageCancellations(U256),
@@ -662,6 +704,35 @@ impl Display for CommandResponse {
                 let json_response = serde_json::to_string_pretty(state).unwrap();
                 write!(f, "{json_response}")
             }
+
+            // Print events
+            // Result looks like:
+            // {
+            //     "continuation_token": "6",
+            //     "events": [{
+            //         "block_hash": "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            //         "block_number": 47538,
+            //         "data": [
+            //             "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+            //             "0x61e7b068"
+            //         ],
+            //         "from_address": "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            //         "keys": [
+            //             "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e"
+            //         ],
+            //         "transaction_hash": "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14"
+            //     }]
+            // }
+            CommandResponse::StarknetQueryGetEvents(response) => {
+                let json_response = json!(
+                    {
+                        "events": response.events,
+                        "continuation_token": response.continuation_token,
+                    }
+                );
+                write!(f, "{json_response}")
+            }
+
             // Print an object about the sync status of a node
             // Result looks like:
             // {
@@ -702,6 +773,13 @@ impl Display for CommandResponse {
                     write!(f, "{json_response}")
                 }
             },
+
+            // Print the gas cost estimate
+            // Result looks like:
+            // FeeEstimate { gas_consumed: 5194, gas_price: 25886605195, overall_fee: 134455027382830 }
+            CommandResponse::StarknetQueryEstimateFee(response) => {
+                write!(f, "{response:?}")
+            }
 
             CommandResponse::StarknetAddInvokeTransaction(response) => {
                 write!(f, "{response:?}")
@@ -767,6 +845,10 @@ impl Display for CommandResponse {
 
             // Print the contract and storage keys proofs
             CommandResponse::StarknetQueryContractStorageProof(response) => {
+                write!(f, "{response:?}")
+            }
+
+            CommandResponse::StarknetAddDeclareTransaction(response) => {
                 write!(f, "{response:?}")
             }
         }

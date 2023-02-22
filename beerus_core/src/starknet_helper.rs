@@ -2,8 +2,10 @@ use eyre::{eyre, Result};
 use serde_json::{json, Value};
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockId, BlockTag, ContractAbiEntry, ContractClass, ContractEntryPoint, EntryPointsByType,
-    StructAbiEntry, StructAbiType, StructMember, SyncStatus, SyncStatusType,
+    BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+    BroadcastedTransaction, ContractAbiEntry, ContractClass, ContractEntryPoint, EmittedEvent,
+    EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
+    SyncStatusType,
 };
 use std::str::FromStr;
 
@@ -113,6 +115,58 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
     (mock_contract_class, mock_contract_class_json)
 }
 
+/// Helper to create a EventsPage object for testing
+/// # Returns
+/// Tuple of a mock EventsPage object and its equivalent JSON Value
+pub fn create_mock_get_events() -> (EventsPage, Value) {
+    let mock_get_events = EventsPage {
+        continuation_token: Some("6".to_string()),
+        events: vec![EmittedEvent {
+            from_address: FieldElement::from_str(
+                "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            )
+            .unwrap(),
+            keys: vec![FieldElement::from_str(
+                "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e",
+            )
+            .unwrap()],
+            data: vec![
+                FieldElement::from_str(
+                    "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+                )
+                .unwrap(),
+                FieldElement::from_str("0x61e7b068").unwrap(),
+            ],
+            block_hash: FieldElement::from_str(
+                "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            )
+            .unwrap(),
+            block_number: 47538,
+            transaction_hash: FieldElement::from_str(
+                "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14",
+            )
+            .unwrap(),
+        }],
+    };
+    let mock_get_events_json = json!({
+        "continuation_token": "6",
+        "events": [{
+            "block_hash": "0x796ca96ef3c55c6e124f313c9252122248af6e754d31cd47579e0a9e5328409",
+            "block_number": 47538,
+            "data": [
+                "0x2c03d22f43898f146e026a72f4cf37b9e898b70a11c4731665e0d75ce87700d",
+                "0x61e7b068"
+            ],
+            "from_address": "0x47cfd9582fc4c7543d55d6853e8edee02ff72e233b4b2d4d42568ed4a68f9c0",
+            "keys": [
+                "0xa46e8cb36cba031930583bca557e67f6b89b525640d324bc2208cc04b8ca8e"
+                ],
+                "transaction_hash": "0x76f1260a26ed41a350a432395c73043489cde7db85b8b16897e7a734aca5f14"
+        }]
+    });
+    (mock_get_events, mock_get_events_json)
+}
+
 /// Helper to create a  object for testing
 /// # Returns
 /// Tuple of a mock  object and its equivalent JSON Value
@@ -157,6 +211,75 @@ pub fn create_mock_syncing_case_not_syncing() -> (SyncStatusType, Value) {
         "data": null
     });
     (mock_syncing, mock_syncing_json)
+}
+
+/// Helper to create an object for testing
+/// # Returns
+/// Tuple of a mock BroadcastedTransaction object and its equivalent JSON Value
+pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) {
+    let mock_broadcasted_tx = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+        BroadcastedInvokeTransactionV1 {
+            max_fee: FieldElement::ZERO,
+            signature: vec![
+                FieldElement::from_hex_be(
+                    "156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0",
+                )
+                .unwrap(),
+                FieldElement::from_hex_be(
+                    "7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6",
+                )
+                .unwrap(),
+            ],
+            nonce: FieldElement::ZERO,
+            sender_address: FieldElement::from_hex_be(
+                "5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
+            )
+            .unwrap(),
+            calldata: vec![
+                FieldElement::from_hex_be("1").unwrap(),
+                FieldElement::from_hex_be(
+                    "7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10",
+                )
+                .unwrap(),
+                FieldElement::from_hex_be(
+                    "2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354",
+                )
+                .unwrap(),
+                FieldElement::from_hex_be("0").unwrap(),
+                FieldElement::from_hex_be("3").unwrap(),
+                FieldElement::from_hex_be("3").unwrap(),
+                FieldElement::from_hex_be(
+                    "5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
+                )
+                .unwrap(),
+                FieldElement::from_hex_be("3635c9adc5dea00000").unwrap(),
+                FieldElement::from_hex_be("0").unwrap(),
+            ],
+        },
+    ));
+    let mock_broadcasted_tx_json = json!({
+        "type": "INVOKE",
+        "max_fee": "0x0",
+        "version": "0x1",
+        "signature": [
+            "0x156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0",
+            "0x7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6"
+        ],
+        "nonce": "0x0",
+        "sender_address": "0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
+        "calldata": [
+            "0x1",
+            "0x7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10",
+            "0x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354",
+            "0x0",
+            "0x3",
+            "0x3",
+            "0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
+            "0x3635c9adc5dea00000",
+            "0x0"
+        ]
+    });
+    (mock_broadcasted_tx, mock_broadcasted_tx_json)
 }
 
 #[cfg(test)]

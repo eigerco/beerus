@@ -185,7 +185,23 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 starknet::get_state_update(beerus, block_id_type.to_string(), block_id.to_string())
                     .await
             }
+            StarkNetSubCommands::QueryGetEvents { params } => {
+                starknet::get_events(beerus, params.to_owned()).await
+            }
             StarkNetSubCommands::QuerySyncing {} => starknet::query_starknet_syncing(beerus).await,
+            StarkNetSubCommands::QueryEstimateFee {
+                block_id,
+                block_id_type,
+                broadcasted_transaction,
+            } => {
+                starknet::query_starknet_estimate_fee(
+                    beerus,
+                    block_id.to_string(),
+                    block_id_type.to_string(),
+                    broadcasted_transaction.to_string(),
+                )
+                .await
+            }
             StarkNetSubCommands::AddInvokeTransaction {
                 max_fee,
                 signature,
@@ -279,6 +295,26 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                     block_id.to_string(),
                     contract_address.to_string(),
                     keys,
+                )
+                .await
+            }
+
+            StarkNetSubCommands::AddDeclareTransaction {
+                max_fee,
+                version,
+                signature,
+                nonce,
+                contract_class,
+                sender_address,
+            } => {
+                starknet::add_declare_transaction(
+                    beerus,
+                    version.to_string(),
+                    max_fee.to_string(),
+                    signature.to_owned(),
+                    nonce.to_string(),
+                    contract_class.to_string(),
+                    sender_address.to_string(),
                 )
                 .await
             }

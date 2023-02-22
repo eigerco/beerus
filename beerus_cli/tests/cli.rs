@@ -1,4 +1,5 @@
 #[cfg(test)]
+
 mod test {
     use std::path::PathBuf;
     use std::str::FromStr;
@@ -10,7 +11,6 @@ mod test {
         },
         runner,
     };
-    use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
     use beerus_core::{
         config::Config,
         lightclient::{
@@ -18,15 +18,20 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
-    use ethers::types::{Address, Transaction, H256, U256};
+    use beerus_core::{
+        lightclient::starknet::storage_proof::GetProofOutput,
+        starknet_helper::create_mock_broadcasted_transaction,
+    };
+    use ethers::types::{Address, H256, U256};
     use helios::types::{ExecutionBlock, Transactions};
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
-            ContractEntryPoint, DeployTransactionResult, EntryPointsByType, InvokeTransaction,
-            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            InvokeTransactionV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
+            EntryPointsByType, FeeEstimate, InvokeTransaction, InvokeTransactionReceipt,
+            InvokeTransactionResult, InvokeTransactionV0, InvokeTransactionV1,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
@@ -2367,6 +2372,95 @@ mod test {
         }
     }
 
+    /// Test the `get_events` CLI command.
+    /// Given normal conditions, when query get_events, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_get_status_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let (expected_result, expected_result_value) =
+            beerus_core::starknet_helper::create_mock_get_events();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_events()
+            .return_once(move |_, _, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryGetEvents {
+                    params: r#"{
+                        "continuation_token": "5",
+                        "chunk_size": 1
+                    }"#
+                    .to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!(
+            result.to_string(),
+            serde_json::to_string(&expected_result_value).unwrap()
+        );
+    }
+
+    /// Test the `get_events` CLI command.
+    /// Given starknet lightclient returns an error, when query get_events, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_events_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_get_events()
+            .return_once(move |_, _, _| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryGetEvents {
+                    params: r#"{
+                        "continuation_token": "5",
+                        "chunk_size": 1
+                    }"#
+                    .to_string(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     /// Test the `syncing` CLI command.
     /// Given normal conditions, when query syncing, then ok.
     /// Case: Nodo starknet is syncing.
@@ -2484,6 +2578,95 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
+
+    /// Test the `query-estimate-fee` CLI command.
+    /// Given normal conditions, when query estimate fee, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_estimate_fee_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FeeEstimate {
+            gas_consumed: 5194,
+            gas_price: 25886605195,
+            overall_fee: 134455027382830,
+        };
+        let (_, tx_json) = create_mock_broadcasted_transaction();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryEstimateFee {
+                    block_id_type: "tag".to_string(),
+                    block_id: "latest".to_string(),
+                    broadcasted_transaction: serde_json::to_string(&tx_json).unwrap(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("FeeEstimate { gas_consumed: 5194, gas_price: 25886605195, overall_fee: 134455027382830 }", result.to_string());
+    }
+
+    /// Test the `query-estimate-fee` CLI command.
+    /// Given starknet lightclient returns an error, when query estimate fee, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_query_estimate_fee_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let (_, tx_json) = create_mock_broadcasted_transaction();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryEstimateFee {
+                    block_id_type: "tag".to_string(),
+                    block_id: "latest".to_string(),
+                    broadcasted_transaction: serde_json::to_string(&tx_json).unwrap(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     /// Test the `get_state_update` CLI command.
     /// Given normal conditions, when query get_state_update, then ok.
     #[tokio::test]
@@ -3407,6 +3590,159 @@ mod test {
 
         match result {
             Err(e) => assert_eq!("invalid character", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
+    /// Test the `add_declare_transaction` CLI command.
+    /// Given normal conditions, when query add_declare_transaction, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_add_declare_transaction_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = DeclareTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+            class_hash: FieldElement::from_str("0x01").unwrap(),
+        };
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_declare_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let program = vec![];
+        let constructor = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type = EntryPointsByType {
+            constructor,
+            external,
+            l1_handler,
+        };
+        let abi = None;
+
+        let contract_class: ContractClass = ContractClass {
+            program,
+            entry_points_by_type,
+            abi,
+        };
+
+        let contract_class_string = serde_json::to_string(&contract_class).unwrap();
+
+        // let contract_class_string = contract_class.to_string();
+
+        let params = StarkNetSubCommands::AddDeclareTransaction {
+            max_fee: "0".to_string(),
+            version: "10".to_string(),
+            signature: vec![10.to_string()],
+            nonce: "0".to_string(),
+            contract_class: contract_class_string,
+            sender_address: "0".to_string(),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("DeclareTransactionResult { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, class_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 } }", result.to_string());
+    }
+
+    /// Test the `add_declare_transaction` CLI command.
+    /// Given starknet lightclient returns an error, when query add_declare_transaction, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_add_declare_transaction_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_declare_transaction()
+            .return_once(move |_| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let program = vec![];
+        let constructor = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler = vec![ContractEntryPoint {
+            offset: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type = EntryPointsByType {
+            constructor,
+            external,
+            l1_handler,
+        };
+        let abi = None;
+
+        let contract_class: ContractClass = ContractClass {
+            program,
+            entry_points_by_type,
+            abi,
+        };
+
+        let contract_class_string = serde_json::to_string(&contract_class).unwrap();
+
+        println!("Contract Class {contract_class_string:?}");
+
+        let params = StarkNetSubCommands::AddDeclareTransaction {
+            max_fee: "0".to_string(),
+            version: "10".to_string(),
+            signature: vec![10.to_string()],
+            nonce: "0".to_string(),
+            contract_class: contract_class_string,
+            sender_address: "0".to_string(),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
             Ok(_) => panic!("Expected error, got ok"),
         }
     }

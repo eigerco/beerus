@@ -4,10 +4,25 @@ use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use ethers::types::U256;
 use eyre::Result;
+use serde::{Deserialize, Serialize};
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+    BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+    BroadcastedInvokeTransactionV0, EventFilter,
 };
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EventsObject {
+    pub from_block_id_type: Option<String>,
+    pub from_block_id: Option<String>,
+    pub to_block_id_type: Option<String>,
+    pub to_block_id: Option<String>,
+    pub address: Option<String>,
+    pub keys: Option<Vec<String>>,
+    pub continuation_token: Option<String>,
+    pub chunk_size: u64,
+}
+
 /// Query the StarkNet state root.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -357,6 +372,71 @@ pub async fn get_state_update(
             .await?,
     ))
 }
+
+/// Query events on the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `params` - The query filters.
+/// # Returns
+/// * `Result<CommandResponse>` - The events.
+pub async fn get_events(beerus: BeerusLightClient, params: String) -> Result<CommandResponse> {
+    let events_object: EventsObject = serde_json::from_str(&params)?;
+
+    let from_block = match (
+        events_object.from_block_id_type,
+        events_object.from_block_id,
+    ) {
+        (Some(from_block_id_type_str), Some(from_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &from_block_id_type_str,
+                &from_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let to_block = match (events_object.to_block_id_type, events_object.to_block_id) {
+        (Some(to_block_id_type_str), Some(to_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &to_block_id_type_str,
+                &to_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let address = match events_object.address {
+        Some(address_str) => Some(FieldElement::from_str(&address_str)?),
+        _ => None,
+    };
+
+    let keys = events_object.keys.as_ref().map(|keys| {
+        keys.iter()
+            .map(|s| FieldElement::from_str(s).unwrap())
+            .collect()
+    });
+
+    let filter = EventFilter {
+        from_block,
+        to_block,
+        address,
+        keys,
+    };
+
+    Ok(CommandResponse::StarknetQueryGetEvents(
+        beerus
+            .starknet_lightclient
+            .get_events(
+                filter,
+                events_object.continuation_token,
+                events_object.chunk_size,
+            )
+            .await?,
+    ))
+}
+
 /// Query if the node is synchronized on the StarkNet network.
 /// # Arguments
 /// * `beerus` - The Beerus light client.
@@ -365,6 +445,31 @@ pub async fn get_state_update(
 pub async fn query_starknet_syncing(beerus: BeerusLightClient) -> Result<CommandResponse> {
     Ok(CommandResponse::StarknetQuerySyncing(
         beerus.starknet_lightclient.read().await.syncing().await?,
+    ))
+}
+
+/// Query the estimated fee for the broadcasted transaction.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// * `broadcasted_transaction` - The broadcasted transaction to be estimated
+/// # Returns
+/// * `Result<CommandResponse>` - The estimated gas fee
+pub async fn query_starknet_estimate_fee(
+    beerus: BeerusLightClient,
+    block_id: String,
+    block_id_type: String,
+    broadcasted_transaction: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let tx = serde_json::from_str(broadcasted_transaction.as_str())?;
+    Ok(CommandResponse::StarknetQueryEstimateFee(
+        beerus
+            .starknet_lightclient
+            .estimate_fee(tx, &block_id)
+            .await?,
     ))
 }
 
@@ -629,4 +734,55 @@ pub async fn query_contract_storage_proof(
         .await?;
 
     Ok(CommandResponse::StarknetQueryContractStorageProof(proof))
+}
+
+/// Add an Declare transaction to the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `max_fee` - The maximum fee.
+/// * `signature` - The signature.
+/// * `nonce` - The nonce.
+/// * `contract_class` - The contract class.
+/// * `entry_point_selector` - The entry point selector.
+/// * `calldata` - The calldata.
+///
+/// # Returns
+///
+/// * `Result<CommandResponse>` - If the node is synchronized on the StarkNet network.
+pub async fn add_declare_transaction(
+    beerus: BeerusLightClient,
+    version: String,
+    max_fee: String,
+    signature: Vec<String>,
+    nonce: String,
+    contract_class: String,
+    sender_address: String,
+) -> Result<CommandResponse> {
+    let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+    let version: u64 = version.parse().unwrap();
+    let signature = signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+
+    let contract_class_bytes = contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+
+    let declare_transaction = BroadcastedDeclareTransaction {
+        max_fee,
+        version,
+        signature,
+        nonce,
+        contract_class,
+        sender_address,
+    };
+
+    Ok(CommandResponse::StarknetAddDeclareTransaction(
+        beerus
+            .starknet_lightclient
+            .add_declare_transaction(&declare_transaction)
+            .await?,
+    ))
 }

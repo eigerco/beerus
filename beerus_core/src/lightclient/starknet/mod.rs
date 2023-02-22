@@ -8,13 +8,14 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::{
-            BlockHashAndNumber, BlockId, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, ContractClass, DeployTransactionResult,
+            BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, ContractClass,
+            DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
             InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, SyncStatusType, Transaction,
         },
-        models::{FunctionCall, StateUpdate},
-        HttpTransport, JsonRpcClient,
+        models::{BroadcastedTransaction, FeeEstimate, FunctionCall, StateUpdate},
+        {HttpTransport, JsonRpcClient},
     },
 };
 use url::Url;
@@ -26,6 +27,11 @@ pub mod storage_proof;
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
+    async fn estimate_fee(
+        &self,
+        tx: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate>;
     async fn get_storage_at(
         &self,
         address: FieldElement,
@@ -53,6 +59,12 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<ContractClass>;
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
     async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate>;
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage>;
     async fn syncing(&self) -> Result<SyncStatusType>;
     async fn add_invoke_transaction(
         &self,
@@ -89,6 +101,10 @@ pub trait StarkNetLightClient: Send + Sync {
         keys: Vec<FieldElement>,
         block: &BlockId,
     ) -> Result<GetProofOutput>;
+    async fn add_declare_transaction(
+        &self,
+        declare_transaction: &BroadcastedDeclareTransaction,
+    ) -> Result<DeclareTransactionResult>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -161,6 +177,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
                 request,
                 &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
             )
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Estimate the fee for a given StarkNet transaction
+    /// Returns the fee estimate.
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - The broadcasted transaction.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FeeEstimate)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn estimate_fee(
+        &self,
+        tx: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate> {
+        self.client
+            .estimate_fee(tx, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
@@ -289,6 +328,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| eyre::eyre!(e))
     }
 
+    /// Get the events.
+    /// The list events.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - The query filters.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(EventsPage)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage> {
+        self.client
+            .get_events(filter, continuation_token, chunk_size)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
     /// Get an object about the sync status, or false if the node is not synching.
     /// An object about the sync status, or false if the node is not synching.
     ///
@@ -394,6 +456,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| eyre::eyre!(e))
     }
+
     /// Get the transaction given a block id and index
     /// The number of transactions in a block.
     ///
@@ -509,6 +572,29 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
 
         self.provider
             .request::<Vec<Param>, GetProofOutput>("pathfinder_getProof", Vec::from(params))
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Add an Declare transaction
+    ///
+    /// # Arguments
+    ///
+    /// declare_transaction : Transaction data
+    ///  
+    ///
+    /// # Returns
+    ///
+    /// Result : Declare Transaction Result
+    ///
+    /// `Ok(DeclareTransactionResult)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn add_declare_transaction(
+        &self,
+        declare_transaction: &BroadcastedDeclareTransaction,
+    ) -> Result<DeclareTransactionResult> {
+        self.client
+            .add_declare_transaction(declare_transaction)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
