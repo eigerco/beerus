@@ -423,6 +423,31 @@ pub async fn query_starknet_syncing(beerus: BeerusLightClient) -> Result<Command
     ))
 }
 
+/// Query the estimated fee for the broadcasted transaction.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// * `broadcasted_transaction` - The broadcasted transaction to be estimated
+/// # Returns
+/// * `Result<CommandResponse>` - The estimated gas fee
+pub async fn query_starknet_estimate_fee(
+    beerus: BeerusLightClient,
+    block_id: String,
+    block_id_type: String,
+    broadcasted_transaction: String,
+) -> Result<CommandResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let tx = serde_json::from_str(broadcasted_transaction.as_str())?;
+    Ok(CommandResponse::StarknetQueryEstimateFee(
+        beerus
+            .starknet_lightclient
+            .estimate_fee(tx, &block_id)
+            .await?,
+    ))
+}
+
 /// Add an Invoke transaction to the StarkNet network.
 /// # Arguments
 /// * `beerus` - The Beerus light client.

@@ -3,9 +3,9 @@ use super::resp::{
     AddInvokeTransactionResponse, DeployedContractResponse, EventsObject, NonceResponse,
     QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryBlockWithTxHashesResponse,
     QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractStorageProofResponse,
-    QueryContractViewResponse, QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse,
-    QueryGetClassHashResponse, QueryGetClassResponse, QueryGetEventsResponse,
-    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryContractViewResponse, QueryEstimateFeeResponse, QueryGetBlockTransactionCountResponse,
+    QueryGetClassAtResponse, QueryGetClassHashResponse, QueryGetClassResponse,
+    QueryGetEventsResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
     QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
@@ -297,6 +297,33 @@ pub async fn query_starknet_syncing(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QuerySyncing> {
     ApiResponse::from_result(query_syncing_inner(beerus).await)
+}
+
+/// Query the estimated gas fees for a StarkNet Transaction.
+
+/// The estimated gas fees.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `broadcasted_transaction` - The broadcasted transaction to be estimated (URLencoded)
+///
+/// # Returns
+///
+/// `Ok(FeeEstimate)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/fee?<broadcasted_transaction>&<block_id>&<block_id_type>")]
+pub async fn get_estimate_fee(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    broadcasted_transaction: String,
+) -> ApiResponse<QueryEstimateFeeResponse> {
+    ApiResponse::from_result(
+        get_estimate_fee_inner(beerus, block_id_type, block_id, broadcasted_transaction).await,
+    )
 }
 
 #[openapi]
@@ -939,6 +966,29 @@ pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<Qu
             data: None,
         }),
     }
+}
+
+/// Query the estimated fee
+/// # Returns
+/// `FeeEstimate` - The estimated gas fee for a StarkNet Transaction.
+pub async fn get_estimate_fee_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    broadcasted_transaction: String,
+) -> Result<QueryEstimateFeeResponse> {
+    let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let tx = serde_json::from_str(broadcasted_transaction.as_str())?;
+    debug!("Querying Estimate Fee");
+    let result = beerus
+        .starknet_lightclient
+        .estimate_fee(tx, &block_id)
+        .await?;
+    Ok(QueryEstimateFeeResponse {
+        gas_consumed: result.gas_consumed.to_string(),
+        gas_price: result.gas_price.to_string(),
+        overall_fee: result.overall_fee.to_string(),
+    })
 }
 
 /// Query logs.

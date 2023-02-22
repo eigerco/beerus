@@ -7,7 +7,7 @@ mod tests {
             ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
             starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
         },
-        starknet_helper::block_id_string_to_block_id_type,
+        starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
     use ethers::types::U256;
     use ethers::types::{Address, Log, Transaction, H256};
@@ -21,11 +21,11 @@ mod tests {
             BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
             BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
             ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
-            EntryPointsByType, EventFilter, InvokeTransaction, InvokeTransactionReceipt,
-            InvokeTransactionResult, InvokeTransactionV0, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
-            SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
-            TransactionStatus,
+            EntryPointsByType, EventFilter, FeeEstimate, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
     use std::path::PathBuf;
@@ -2096,7 +2096,7 @@ mod tests {
     /// It tests the `get_class` method of the Beerus light client.
     /// It tests the error handling of the `get_class` method of the Beerus light client.
     #[tokio::test]
-    async fn given_starknet_lightclient_error_when_call_get_call_then_should_return_error() {
+    async fn given_starknet_lightclient_error_when_call_get_class_then_should_return_error() {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
@@ -2718,6 +2718,93 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
+    }
+
+    /// Test the `estimate_fee` method when everything is fine.
+    /// This test mocks external dependencies.
+    /// It does not test the `estimate_fee` method of the external dependencies.
+    /// It tests the `estimate_fee` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_normal_conditions_when_call_estimate_fee_then_should_return_ok() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock the `estimate_fee` method of the Starknet light client.
+        let expected_result = FeeEstimate {
+            gas_consumed: 5194,
+            gas_price: 25886605195,
+            overall_fee: 134455027382830,
+        };
+        let expected_result_string = serde_json::to_string(&expected_result).unwrap();
+
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .return_once(move |_, _| Ok(expected_result));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let (tx, _) = create_mock_broadcasted_transaction();
+
+        let result = beerus
+            .starknet_lightclient
+            .estimate_fee(tx, &block_id)
+            .await
+            .unwrap();
+
+        // Then
+        // Assert that the estimated fee returned by the `estimate_fee` method of the Beerus light client
+        // is the expected estimated gas fee
+        assert_eq!(
+            serde_json::to_string(&result).unwrap(),
+            expected_result_string,
+        )
+    }
+
+    /// Test the `estimate_fee` method when the StarkNet light client returns an error.
+    /// This test mocks external dependencies.
+    /// It does not test the `estimate_fee` method of the external dependencies.
+    /// It tests the `estimate_fee` method of the Beerus light client.
+    /// It tests the error handling of the `estimate_fee` method of the Beerus light client.
+    #[tokio::test]
+    async fn given_starknet_lightclient_error_when_call_estimate_fee_then_should_return_error() {
+        // Given
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_error = "StarkNet light client error";
+
+        // Mock the `estimate_fee` method of the StarkNet light client.
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .times(1)
+            .return_once(move |_, _| Err(eyre!(expected_error)));
+
+        // When
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let (tx, _) = create_mock_broadcasted_transaction();
+
+        let result = beerus
+            .starknet_lightclient
+            .estimate_fee(tx, &block_id)
+            .await;
+
+        // Then
+        // Assert that the `estimate_fee` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `estimate_fee` method of the Beerus light client is the expected error.
+        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
     /// Test the `get_state_update` when everything is fine.
@@ -3347,7 +3434,6 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus.starknet_lightclient.pending_transactions().await;
 
         // Then

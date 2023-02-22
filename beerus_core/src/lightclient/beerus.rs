@@ -7,7 +7,10 @@ use ethers::{
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::FunctionCall};
+use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::{
+    BlockId, BroadcastedTransaction, FeeEstimate, FunctionCall,
+};
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
@@ -191,6 +194,28 @@ impl BeerusLightClient {
         let last_block = self.starknet_last_proven_block().await?.as_u64();
         // Call the StarkNet light client.
         self.starknet_lightclient.call(opts, last_block).await
+    }
+
+    /// Estimate the fee for a given StarkNet transaction
+    /// This function is used to estimate the fee for a given StarkNet transaction.
+    ///
+    /// # Arguments
+    /// * `request` - The broadcasted transaction.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(FeeEstimate)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_estimate_fee(
+        &self,
+        request: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate> {
+        // Call the StarkNet light client.
+        self.starknet_lightclient
+            .estimate_fee(request, block_id)
+            .await
     }
 
     /// Get the nonce at a given address.

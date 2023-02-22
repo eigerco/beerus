@@ -11,7 +11,6 @@ mod test {
         },
         runner,
     };
-    use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
     use beerus_core::{
         config::Config,
         lightclient::{
@@ -19,14 +18,18 @@ mod test {
             starknet::MockStarkNetLightClient,
         },
     };
-    use ethers::types::{Address, Transaction, H256, U256};
+    use beerus_core::{
+        lightclient::starknet::storage_proof::GetProofOutput,
+        starknet_helper::create_mock_broadcasted_transaction,
+    };
+    use ethers::types::{Address, H256, U256};
     use helios::types::{ExecutionBlock, Transactions};
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
             ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
-            EntryPointsByType, InvokeTransaction, InvokeTransactionReceipt,
+            EntryPointsByType, FeeEstimate, InvokeTransaction, InvokeTransactionReceipt,
             InvokeTransactionResult, InvokeTransactionV0, InvokeTransactionV1,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
@@ -2568,6 +2571,95 @@ mod test {
             Ok(_) => panic!("Expected error, got ok"),
         }
     }
+
+    /// Test the `query-estimate-fee` CLI command.
+    /// Given normal conditions, when query estimate fee, then ok.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_query_estimate_fee_then_ok() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = FeeEstimate {
+            gas_consumed: 5194,
+            gas_price: 25886605195,
+            overall_fee: 134455027382830,
+        };
+        let (_, tx_json) = create_mock_broadcasted_transaction();
+
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryEstimateFee {
+                    block_id_type: "tag".to_string(),
+                    block_id: "latest".to_string(),
+                    broadcasted_transaction: serde_json::to_string(&tx_json).unwrap(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("FeeEstimate { gas_consumed: 5194, gas_price: 25886605195, overall_fee: 134455027382830 }", result.to_string());
+    }
+
+    /// Test the `query-estimate-fee` CLI command.
+    /// Given starknet lightclient returns an error, when query estimate fee, then the error is propagated.
+    /// Error case.
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_query_estimate_fee_then_error_is_propagated(
+    ) {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_estimate_fee()
+            .return_once(move |_, _| Err(eyre::eyre!("starknet_lightclient_error")));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let (_, tx_json) = create_mock_broadcasted_transaction();
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::QueryEstimateFee {
+                    block_id_type: "tag".to_string(),
+                    block_id: "latest".to_string(),
+                    broadcasted_transaction: serde_json::to_string(&tx_json).unwrap(),
+                },
+            }),
+        };
+        // When
+        let result = runner::run(beerus, cli).await;
+
+        // Then
+        match result {
+            Err(e) => assert_eq!("starknet_lightclient_error", e.to_string()),
+            Ok(_) => panic!("Expected error, got ok"),
+        }
+    }
+
     /// Test the `get_state_update` CLI command.
     /// Given normal conditions, when query get_state_update, then ok.
     #[tokio::test]
