@@ -30,7 +30,3 @@ features = [
     "run-cargo-clippy",
     "run-cargo-fmt",
 ]
-
-[[bin]]
-name = "beerus_cli"
-path = "src/main.rs"
