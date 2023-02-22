@@ -498,14 +498,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "beerus"
-version = "0.1.0"
-dependencies = [
- "beerus_core",
- "cargo-husky",
-]
-
-[[package]]
 name = "beerus-rpc"
 version = "0.1.0"
 dependencies = [
@@ -529,6 +521,7 @@ version = "0.1.0"
 dependencies = [
  "base64 0.20.0",
  "beerus_core",
+ "cargo-husky",
  "clap",
  "env_logger 0.10.0",
  "ethers",
@@ -547,6 +540,7 @@ name = "beerus_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "cargo-husky",
  "ethers",
  "eyre",
  "helios",
@@ -568,6 +562,7 @@ version = "0.1.0"
 dependencies = [
  "base64 0.20.0",
  "beerus_core",
+ "cargo-husky",
  "env_logger 0.9.3",
  "ethers",
  "eyre",
