@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["beerus_core", "beerus_cli", "beerus_rest_api"]
+members = ["beerus_core", "beerus_cli", "beerus_rest_api", "beerus-json-rpc"]
 
 [workspace.package]
 edition = "2021"
