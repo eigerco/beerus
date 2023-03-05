@@ -506,7 +506,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "beerus-json-rpc"
+name = "beerus-rpc"
 version = "0.1.0"
 dependencies = [
  "beerus_core",

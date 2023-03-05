@@ -5,7 +5,7 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-use beerus_json_rpc::run_server;
+use beerus_rpc::run_server;
 use dotenv::dotenv;
 use eyre::Result;
 

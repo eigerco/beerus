@@ -2,9 +2,9 @@ use eyre::Result;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 use std::net::{AddrParseError, SocketAddr};
 use thiserror::Error;
-mod beerus_rpc;
+mod beerus_rpc_server;
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use beerus_rpc::{BeerusApiServer, BeerusRpc};
+use beerus_rpc_server::{BeerusApiServer, BeerusRpc};
 
 #[derive(Error, Debug)]
 pub enum RpcError {
