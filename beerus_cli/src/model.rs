@@ -157,6 +157,7 @@ pub struct StarkNetCommands {
 #[derive(Subcommand, Debug)]
 pub enum StarkNetSubCommands {
     /// Query the state root of StarkNet.
+    //TODO: Fix QueryStateRoot
     // QueryStateRoot {},
     /// Query a StarkNet contract view.
     QueryContract {

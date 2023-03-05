@@ -79,6 +79,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
         },
         // StarkNet commands.
         Commands::StarkNet(starknet_commands) => match &starknet_commands.command {
+            //TODO: Fix QueryStateRoot
             // StarkNetSubCommands::QueryStateRoot {} => {
             //     starknet::query_starknet_state_root(beerus).await
             // }

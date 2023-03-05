@@ -43,6 +43,7 @@ async fn main() -> Result<()> {
     // The handling of the command response is left to each `CommandResponse` implementation.
     println!("{command_response}");
     //Thread sleep to test Node/Payload storage
+    //TODO: Remove once data/payload is stable
     thread::sleep(time::Duration::from_secs(200));
 
     Ok(())

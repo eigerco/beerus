@@ -1468,7 +1468,7 @@ mod tests {
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config.clone(),
+            config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
@@ -1495,16 +1495,14 @@ mod tests {
 
         // Set the expected return value for the Ethereum light client mock.
         let expected_error = "Ethereum client out of sync";
-        // ethereum_lightclient_mock
-        //     .expect_call()
-        //     .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+
         ethereum_lightclient_mock
             .expect_starknet_state_root()
             .return_once(move || Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
-            config.clone(),
+            config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
@@ -1961,7 +1959,7 @@ mod tests {
 
         // When
         let beerus = BeerusLightClient::new(
-            config.clone(),
+            config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );

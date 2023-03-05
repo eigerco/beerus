@@ -75,6 +75,7 @@ impl BeerusLightClient {
         ethereum_lightclient_raw: Box<dyn EthereumLightClient>,
         starknet_lightclient_raw: Box<dyn StarkNetLightClient>,
     ) -> Self {
+        // Create a new Ethereum light client.
         let ethereum_lightclient = Arc::new(RwLock::new(ethereum_lightclient_raw));
         // Create a new StarkNet light client.
         let starknet_lightclient = Arc::new(starknet_lightclient_raw);
@@ -168,6 +169,7 @@ impl BeerusLightClient {
                             eprintln!("Error getting block: {err:?}");
                         }
                     }
+                    //TODO: Make this configurable
                     thread::sleep(time::Duration::from_secs(5));
                 }
             };
