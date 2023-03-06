@@ -473,7 +473,12 @@ pub async fn query_starknet_state_root_inner(
 ) -> Result<QueryStateRootResponse> {
     debug!("Querying StarkNet state root");
     // Call the StarkNet contract to get the state root.
-    let state_root = beerus.starknet_state_root().await?;
+    let state_root = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .starknet_state_root()
+        .await?;
     Ok(QueryStateRootResponse {
         state_root: state_root.to_string(),
     })

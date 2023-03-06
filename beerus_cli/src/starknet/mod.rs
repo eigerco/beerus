@@ -33,7 +33,12 @@ pub struct EventsObject {
 pub async fn query_starknet_state_root(beerus: BeerusLightClient) -> Result<CommandResponse> {
     // Call the StarkNet contract to get the state root.
     Ok(CommandResponse::StarkNetQueryStateRoot(
-        beerus.starknet_state_root().await?,
+        beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await?,
     ))
 }
 
