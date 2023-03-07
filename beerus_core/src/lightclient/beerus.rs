@@ -1,5 +1,35 @@
+#[cfg(not(feature = "std"))]
+use alloc::{collections::BTreeMap, sync::Arc};
+#[cfg(feature = "std")]
 use std::{collections::BTreeMap, sync::Arc, thread, time};
+
+#[cfg(not(feature = "std"))]
+use core::time::Duration;
+
 use tokio::sync::RwLock;
+
+// #[cfg(not(feature = "std"))]
+// #[allow(unused_imports)]
+// #[macro_use]
+// extern crate alloc;
+
+#[cfg(feature = "std")]
+use std::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+
+#[cfg(feature = "std")]
+use std::boxed::Box;
+
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
+
+#[cfg(feature = "std")]
+use std::string::String;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
@@ -136,9 +166,9 @@ impl BeerusLightClient {
                         .get_block_number()
                         .await
                         .unwrap();
-                    // println!("Loop State Root, {state_root}");
-                    // println!("Loop Block Number, {last_proven_block}");
-                    println!("Ethereum Block Number, {block_number}");
+                    // log::info!("Loop State Root, {state_root}");
+                    // log::info!("Loop Block Number, {last_proven_block}");
+                    log::info!("Ethereum Block Number, {block_number}");
 
                     match starknet_clone
                         .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
@@ -155,18 +185,18 @@ impl BeerusLightClient {
                                         data.block_number = block.block_number;
                                         data.state_root = block.new_root.to_string();
                                         data.payload.insert(block.block_number, block);
-                                        println!("New Block Added to Payload");
-                                        println!("Block Number {:?}", &data.block_number);
-                                        println!("Block Root {:?}", &data.state_root);
+                                        log::info!("New Block Added to Payload");
+                                        log::info!("Block Number {:?}", &data.block_number);
+                                        log::info!("Block Root {:?}", &data.state_root);
                                     }
                                 }
                                 MaybePendingBlockWithTxs::PendingBlock(_) => {
-                                    println!("Pending Block");
+                                    log::info!("Pending Block");
                                 }
                             }
                         }
                         Err(err) => {
-                            eprintln!("Error getting block: {err:?}");
+                            log::info!("Error getting block: {err:?}");
                         }
                     }
                     //TODO: Make this configurable
@@ -305,7 +335,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
+    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<Vec<u8>> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -333,7 +363,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(U256::from_big_endian(&call_response))
+        Ok(call_response)
     }
 
     /// Return the msg_fee + 1 from the L1ToL2Message hash'. 0 if there is no matching msg_hash
@@ -345,7 +375,10 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: ethers::types::U256) -> Result<U256> {
+    pub async fn starknet_l1_to_l2_messages(
+        &self,
+        msg_hash: ethers::types::U256,
+    ) -> Result<Vec<u8>> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -373,7 +406,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(U256::from_big_endian(&call_response))
+        Ok(call_response)
     }
 
     ///  Returns the msg_fee + 1 for the message with the given 'msgHash', or 0 if no message with such a hash is pending.
@@ -385,7 +418,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L2ToL1Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no matching message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
+    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<Vec<u8>> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -413,7 +446,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(U256::from_big_endian(&call_response))
+        Ok(call_response)
     }
 
     /// Return the nonce for the L1ToL2Message bridge.
@@ -422,7 +455,7 @@ impl BeerusLightClient {
     /// # Returns
     /// `Ok(U256)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
+    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<Vec<u8>> {
         // Encode the function data.
         let data = ethers_helper::encode_function_data(
             (),
@@ -448,6 +481,6 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(U256::from_big_endian(&call_response))
+        Ok(call_response)
     }
 }

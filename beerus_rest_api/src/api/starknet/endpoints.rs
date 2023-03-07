@@ -598,8 +598,7 @@ pub async fn query_l1_to_l2_message_cancellations_inner(
     Ok(QueryL1ToL2MessageCancellationsResponse {
         result: beerus
             .starknet_l1_to_l2_message_cancellations(msg_hash)
-            .await?
-            .to_string(),
+            .await?,
     })
 }
 
@@ -623,10 +622,7 @@ pub async fn query_l1_to_l2_messages_inner(
     let msg_hash = U256::from_str(&msg_hash)?;
 
     Ok(QueryL1ToL2MessagesResponse {
-        result: beerus
-            .starknet_l1_to_l2_messages(msg_hash)
-            .await?
-            .to_string(),
+        result: beerus.starknet_l1_to_l2_messages(msg_hash).await?,
     })
 }
 
@@ -649,10 +645,7 @@ pub async fn query_l2_to_l1_messages_inner(
     debug!("Querying Starknet contract nonce");
     let msg_hash = U256::from_str(&msg_hash)?;
     Ok(QueryL2ToL1MessagesResponse {
-        result: beerus
-            .starknet_l2_to_l1_messages(msg_hash)
-            .await?
-            .to_string(),
+        result: beerus.starknet_l2_to_l1_messages(msg_hash).await?,
     })
 }
 
@@ -719,7 +712,7 @@ pub async fn query_l1_to_l2_message_nonce_inner(
 ) -> Result<QueryL1ToL2MessageNonceResponse> {
     debug!("Querying l1 to l2 message nonce");
     Ok(QueryL1ToL2MessageNonceResponse {
-        result: beerus.starknet_l1_to_l2_message_nonce().await?.to_string(),
+        result: beerus.starknet_l1_to_l2_message_nonce().await?,
     })
 }
 

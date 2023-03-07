@@ -26,13 +26,13 @@ async fn main() -> Result<()> {
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
-    println!("starting the Beerus light client...");
+    log::info!("starting the Beerus light client...");
     beerus.start().await.unwrap();
-    println!("Beerus light client started and synced.");
+    log::info!("Beerus light client started and synced.");
 
     let (addr, server_handle) = run_server(beerus).await.unwrap();
     let url = format!("http://{addr}");
-    println!("Server started, listening on {url}");
+    log::info!("Server started, listening on {url}");
 
     server_handle.stopped().await;
 

@@ -1,4 +1,33 @@
 use crate::{config::Config, lightclient::starknet::storage_proof::GetProofOutput};
+
+// #[allow(unused_imports)]
+// #[macro_use]
+// extern crate alloc;
+
+#[cfg(feature = "std")]
+use std::boxed::Box;
+
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
+
+#[cfg(feature = "std")]
+use std::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+
+#[cfg(feature = "std")]
+use std::string::String;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+
+#[cfg(feature = "std")]
+use std::format;
+
+#[cfg(not(feature = "std"))]
+use alloc::format;
+
 use async_trait::async_trait;
 use ethers::providers::{Http, Provider};
 use eyre::Result;
@@ -22,6 +51,7 @@ use url::Url;
 
 pub mod storage_proof;
 
+// #[cfg(feature="std")]
 #[automock]
 #[async_trait]
 pub trait StarkNetLightClient: Send + Sync {

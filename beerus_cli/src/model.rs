@@ -465,10 +465,10 @@ pub enum CommandResponse {
     StarknetAddDeclareTransaction(DeclareTransactionResult),
     StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
     StarknetQueryBlockWithTxHashes(MaybePendingBlockWithTxHashes),
-    StarkNetL1ToL2MessageCancellations(U256),
-    StarkNetL1ToL2Messages(U256),
-    StarkNetL1ToL2MessageNonce(U256),
-    StarkNetL2ToL1Messages(U256),
+    StarkNetL1ToL2MessageCancellations(Vec<u8>),
+    StarkNetL1ToL2Messages(Vec<u8>),
+    StarkNetL1ToL2MessageNonce(Vec<u8>),
+    StarkNetL2ToL1Messages(Vec<u8>),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
     StarknetQueryPendingTransactions(Vec<Transaction>),
     StarknetQueryTxReceipt(MaybePendingTransactionReceipt),
@@ -587,22 +587,22 @@ impl Display for CommandResponse {
             // Result looks like: 123456
             // If the message was not cancelled, the timestamp will be 0.
             CommandResponse::StarkNetL1ToL2MessageCancellations(timestamp) => {
-                write!(f, "{timestamp}")
+                write!(f, "{timestamp:?}")
             }
             // Print  msg_fee + 1 for the message with the given 'msgHash',
             // Result looks like: 123456
             CommandResponse::StarkNetL1ToL2Messages(fee) => {
-                write!(f, "{fee}")
+                write!(f, "{fee:?}")
             }
             // Print the (msg_fee +1) for the message with the given 'msgHash',
             // Result looks like: 123456
             CommandResponse::StarkNetL2ToL1Messages(fee) => {
-                write!(f, "{fee}")
+                write!(f, "{fee:?}")
             }
             // Print the current nonce of the L1 to L2 message bridge,
             // Result looks like: 123456
             CommandResponse::StarkNetL1ToL2MessageNonce(nonce) => {
-                write!(f, "L1 to L2 Message Nonce: {nonce}")
+                write!(f, "L1 to L2 Message Nonce: {nonce:?}")
             }
             // Print the chain id.
             // Result looks like: `Chain id: 1`

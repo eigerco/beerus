@@ -1,9 +1,23 @@
-use std::str::FromStr;
+use core::str::FromStr;
 
 use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::{checkpoints, networks::Network};
+
+#[cfg(feature = "std")]
 use std::path::PathBuf;
+
+#[cfg(feature = "std")]
+use std::string::String;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
+
+#[cfg(feature = "std")]
+use std::format;
+
+#[cfg(not(feature = "std"))]
+use alloc::format;
 
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 // By default, we use the Ethereum Mainnet value.

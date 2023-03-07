@@ -7,7 +7,30 @@ use starknet::providers::jsonrpc::models::{
     EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
     SyncStatusType,
 };
+// use std::str::FromStr;
+
+// #[cfg(not(feature = "std"))]
+// #[allow(unused_imports)]
+// #[macro_use]
+// extern crate alloc;
+
+#[cfg(feature = "std")]
+use std::vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::{format, vec};
+
+#[cfg(feature = "std")]
 use std::str::FromStr;
+
+#[cfg(not(feature = "std"))]
+use alloc::str::FromStr;
+
+#[cfg(default = "std")]
+use std::string::ToString;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::ToString;
 
 /// Helper converting block identifier string with corresponding type to a BlockId Type
 /// # Arguments
