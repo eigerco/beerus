@@ -24,10 +24,10 @@ starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 tokio = { version = "1.21.2", features = ["macros"] }
 clippy = "0.0.302"
 log = "0.4"
-standback = "0.4.4"
-
+futures = { version = "0.3", default-features = false }
+gloo-timers = "0.2.6"
+wasm-bindgen-futures = "0.4.33"
 
 [dev-dependencies]
 httpmock = "0.6.7"
 temp-env = "0.3.1"
-

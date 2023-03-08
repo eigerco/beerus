@@ -40,11 +40,13 @@ pub struct Config {
     // StarkNet core contract address.
     pub starknet_core_contract_address: Address,
     // Path to storage directory
+    #[cfg(feature = "std")]
     pub data_dir: Option<PathBuf>,
 }
 
 impl Config {
     /// Create a new global configuration from environment variables.
+    #[cfg(feature = "std")]
     pub fn new_from_env() -> Result<Self> {
         let ethereum_network = std::env::var("ETHEREUM_NETWORK")
             .unwrap_or_else(|_| DEFAULT_ETHEREUM_NETWORK.to_string());
@@ -61,6 +63,7 @@ impl Config {
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
         let data_dir_str =
             std::env::var("DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
+        #[cfg(feature = "std")]
         let data_dir = PathBuf::from(data_dir_str);
 
         Ok(Self {
@@ -69,6 +72,31 @@ impl Config {
             ethereum_execution_rpc,
             starknet_rpc,
             starknet_core_contract_address,
+            #[cfg(feature = "std")]
+            data_dir: Some(data_dir),
+        })
+    }
+
+    #[cfg(not(feature = "std"))]
+    pub fn new_from_env() -> Result<Self> {
+        let ethereum_network = "Ethereum_network".to_string();
+        let ethereum_consensus_rpc = "Ethereum_consensus_rpc".to_string();
+        let ethereum_execution_rpc = "Ethereum_execution_rpc".to_string();
+        let starknet_rpc = "Starknet_rpc".to_string();
+        let starknet_core_contract_address = "Starknet_core_contract_address".to_string();
+        let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
+        #[cfg(feature = "std")]
+        let data_dir_str = "data_dir";
+        #[cfg(feature = "std")]
+        let data_dir = PathBuf::from(data_dir_str);
+
+        Ok(Self {
+            ethereum_network,
+            ethereum_consensus_rpc,
+            ethereum_execution_rpc,
+            starknet_rpc,
+            starknet_core_contract_address,
+            #[cfg(feature = "std")]
             data_dir: Some(data_dir),
         })
     }

@@ -3,15 +3,7 @@ use alloc::{collections::BTreeMap, sync::Arc};
 #[cfg(feature = "std")]
 use std::{collections::BTreeMap, sync::Arc, thread, time};
 
-#[cfg(not(feature = "std"))]
-use core::time::Duration;
-
 use tokio::sync::RwLock;
-
-// #[cfg(not(feature = "std"))]
-// #[allow(unused_imports)]
-// #[macro_use]
-// extern crate alloc;
 
 #[cfg(feature = "std")]
 use std::vec::Vec;
@@ -30,6 +22,11 @@ use std::string::String;
 
 #[cfg(not(feature = "std"))]
 use alloc::string::{String, ToString};
+
+#[cfg(not(feature = "std"))]
+use gloo_timers::callback::Interval;
+#[cfg(not(feature = "std"))]
+use wasm_bindgen_futures::spawn_local;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
@@ -93,7 +90,7 @@ pub struct BeerusLightClient {
     pub starknet_core_abi: Abi,
     /// StarkNet core contract address.
     pub starknet_core_contract_address: H160,
-    // TODO: Add Payload data
+    /// Payload data
     pub node: Arc<RwLock<NodeData>>,
 }
 
@@ -138,11 +135,13 @@ impl BeerusLightClient {
             //TODO: Change unwrap
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
+
             let ethereum_clone = self.ethereum_lightclient.clone();
             let starknet_clone = self.starknet_lightclient.clone();
             let node_clone = self.node.clone();
 
             // Define function that will loop
+            #[cfg(feature = "std")]
             let task = async move {
                 loop {
                     //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
@@ -204,7 +203,75 @@ impl BeerusLightClient {
                 }
             };
             // Spawn loop function
+            #[cfg(feature = "std")]
             tokio::spawn(task);
+
+            #[cfg(not(feature = "std"))]
+            Interval::new(12000, move || {
+                let ethereum_clone = ethereum_clone.clone();
+                let starknet_clone = starknet_clone.clone();
+                let node_clone = node_clone.clone();
+
+                spawn_local(async move {
+                    loop {
+                        //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
+                        // let state_root = ethereum_clone
+                        //     .read()
+                        //     .await
+                        //     .starknet_state_root()
+                        //     .await
+                        //     .unwrap();
+                        // let last_proven_block = ethereum_clone
+                        //     .read()
+                        //     .await
+                        //     .starknet_last_proven_block()
+                        //     .await
+                        //     .unwrap();
+
+                        //TODO:Remove this once starknet_state_root and last_proven_block call(This is just to valdiate that Helios Fetch are working fine within the thread)
+                        let block_number = ethereum_clone
+                            .read()
+                            .await
+                            .get_block_number()
+                            .await
+                            .unwrap();
+                        // log::info!("Loop State Root, {state_root}");
+                        // log::info!("Loop Block Number, {last_proven_block}");
+                        log::info!("Ethereum Block Number, {block_number}");
+
+                        match starknet_clone
+                            .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
+                            .await
+                        {
+                            Ok(block) => {
+                                let mut data = node_clone.write().await;
+                                match block {
+                                    MaybePendingBlockWithTxs::Block(block) => {
+                                        // TODO: change "0 < block.block_number" to "block.block_number == last_proven_block"
+                                        if block.block_number > data.block_number
+                                            && 0 < block.block_number
+                                        {
+                                            data.block_number = block.block_number;
+                                            data.state_root = block.new_root.to_string();
+                                            data.payload.insert(block.block_number, block);
+                                            log::info!("New Block Added to Payload");
+                                            log::info!("Block Number {:?}", &data.block_number);
+                                            log::info!("Block Root {:?}", &data.state_root);
+                                        }
+                                    }
+                                    MaybePendingBlockWithTxs::PendingBlock(_) => {
+                                        log::info!("Pending Block");
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                log::info!("Error getting block: {err:?}");
+                            }
+                        }
+                    }
+                });
+            })
+            .forget();
         };
         Ok(())
     }
