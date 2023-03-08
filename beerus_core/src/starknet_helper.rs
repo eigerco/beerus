@@ -18,7 +18,7 @@ use starknet::providers::jsonrpc::models::{
 use std::vec;
 
 #[cfg(not(feature = "std"))]
-use alloc::{format, vec};
+use alloc::vec;
 
 #[cfg(feature = "std")]
 use std::str::FromStr;

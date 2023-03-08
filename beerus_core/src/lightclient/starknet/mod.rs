@@ -28,10 +28,12 @@ use std::format;
 #[cfg(not(feature = "std"))]
 use alloc::format;
 
+#[cfg(feature = "std")]
+use mockall::automock;
+
 use async_trait::async_trait;
 use ethers::providers::{Http, Provider};
 use eyre::Result;
-use mockall::automock;
 use serde::Serialize;
 use starknet::{
     core::types::FieldElement,

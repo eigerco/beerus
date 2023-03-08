@@ -23,6 +23,7 @@ use core::u8;
 use ethers::types::{Address, Log, Transaction, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
+#[cfg(feature = "std")]
 use mockall::automock;
 
 /// Ethereum light client trait.
