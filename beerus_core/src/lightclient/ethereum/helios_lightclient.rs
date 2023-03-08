@@ -31,7 +31,11 @@ use alloc::str::FromStr;
 
 use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
 use eyre::{eyre, Result};
+#[cfg(not(feature = "std"))]
+use helios::client::{Client, ClientBuilder, ConfigDB};
+#[cfg(feature = "std")]
 use helios::client::{Client, ClientBuilder, FileDB};
+
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 
 #[cfg(feature = "std")]
@@ -47,11 +51,15 @@ use super::EthereumLightClient;
 /// Helios implementation of `EthereumLightClient`.
 pub struct HeliosLightClient {
     /// The wrapped Helios client.
+    #[cfg(feature = "std")]
     pub helios_light_client: Client<FileDB>,
+    #[cfg(not(feature = "std"))]
+    pub helios_light_client: Client<ConfigDB>,
 }
 
 /// Implementation of `EthereumLightClient` for Helios.
-#[async_trait]
+#[cfg_attr(feature = "std", async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 impl EthereumLightClient for HeliosLightClient {
     async fn start(&mut self) -> eyre::Result<()> {
         // Start the Helios light client.
@@ -228,12 +236,21 @@ impl HeliosLightClient {
     /// Create a new HeliosLightClient.
     pub async fn new(config: Config) -> eyre::Result<Self> {
         // Build the Helios wrapped light client.
+        #[cfg(feature = "std")]
         let helios_light_client: Client<FileDB> = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
             .load_external_fallback()
             .data_dir(config.data_dir.unwrap())
+            .build()?;
+
+        #[cfg(not(feature = "std"))]
+        let helios_light_client: Client<ConfigDB> = ClientBuilder::new()
+            .network(config.ethereum_network()?)
+            .consensus_rpc(config.ethereum_consensus_rpc.as_str())
+            .execution_rpc(config.ethereum_execution_rpc.as_str())
+            .load_external_fallback()
             .build()?;
 
         Ok(Self {

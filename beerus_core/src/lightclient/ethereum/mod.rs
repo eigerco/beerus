@@ -31,8 +31,8 @@ use mockall::automock;
 // TODO: Maybe we can let the possibility to get access to the underlying light client anyway.
 
 // #[cfg(feature="std")]
-#[automock]
-#[async_trait]
+#[cfg_attr(feature = "std", automock, async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait EthereumLightClient: Send + Sync {
     /// Start and synchronize the Ethereum light client.
     /// This function should be called before any other function.

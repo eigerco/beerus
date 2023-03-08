@@ -52,8 +52,9 @@ use url::Url;
 pub mod storage_proof;
 
 // #[cfg(feature="std")]
-#[automock]
-#[async_trait]
+// #[automock]
+#[cfg_attr(feature = "std", automock, async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
@@ -153,7 +154,8 @@ impl StarkNetLightClientImpl {
     }
 }
 
-#[async_trait]
+#[cfg_attr(feature = "std", async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn start(&self) -> Result<()> {
         Ok(())
