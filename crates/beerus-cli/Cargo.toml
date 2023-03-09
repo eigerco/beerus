@@ -1,5 +1,5 @@
 [package]
-name = "beerus_cli"
+name = "beerus-cli"
 description = "CLI for interacting with the Beerus Light Client"
 version.workspace = true
 edition.workspace = true
@@ -7,16 +7,16 @@ repository.workspace = true
 license-file.workspace = true
 
 [dependencies]
-beerus_core.workspace = true
-helios = { git = "https://github.com/a16z/helios" }
-ethers = "1.0.2"
+beerus-core.workspace = true
+helios.workspace = true
+starknet.workspace = true
+ethers.workspace = true
+eyre.workspace = true
 primitive-types = "0.11.1"
-eyre = "0.6.8"
 clap = { version = "4.0.22", features = ["derive"] }
 tokio = { version = "1.21.2", features = ["macros"] }
 log = "0.4.17"
 env_logger = "0.10.0"
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 serde_json = "1.0.91"
 base64 = "0.20.0"
 serde = "1.0.152"
@@ -30,3 +30,7 @@ features = [
     "run-cargo-clippy",
     "run-cargo-fmt",
 ]
+
+[[bin]]
+name = "beerus"
+path = "src/main.rs"
