@@ -1,22 +1,10 @@
 pub mod helios_lightclient;
 
-#[cfg(feature = "std")]
-use std::boxed::Box;
+use crate::stdlib::boxed::Box;
 
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
+use crate::stdlib::string::String;
 
-#[cfg(feature = "std")]
-use std::string::String;
-
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use crate::stdlib::vec::Vec;
 
 use async_trait::async_trait;
 use core::u8;

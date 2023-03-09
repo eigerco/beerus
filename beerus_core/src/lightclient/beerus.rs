@@ -1,32 +1,17 @@
-#[cfg(not(feature = "std"))]
-use alloc::{collections::BTreeMap, sync::Arc};
 #[cfg(feature = "std")]
-use std::{collections::BTreeMap, sync::Arc, thread, time};
-
-use tokio::sync::RwLock;
-
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
-
-#[cfg(feature = "std")]
-use std::boxed::Box;
-
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
-
-#[cfg(feature = "std")]
-use std::string::String;
-
-#[cfg(not(feature = "std"))]
-use alloc::string::{String, ToString};
+use std::{thread, time};
 
 #[cfg(not(feature = "std"))]
 use gloo_timers::callback::Interval;
 #[cfg(not(feature = "std"))]
 use wasm_bindgen_futures::spawn_local;
+
+use tokio::sync::RwLock;
+
+use crate::stdlib::boxed::Box;
+use crate::stdlib::string::{String, ToString};
+use crate::stdlib::vec::Vec;
+use crate::stdlib::{collections::BTreeMap, sync::Arc};
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};

@@ -1,32 +1,9 @@
 use crate::{config::Config, lightclient::starknet::storage_proof::GetProofOutput};
 
-// #[allow(unused_imports)]
-// #[macro_use]
-// extern crate alloc;
-
-#[cfg(feature = "std")]
-use std::boxed::Box;
-
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
-
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
-
-#[cfg(feature = "std")]
-use std::string::String;
-
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-
-#[cfg(feature = "std")]
-use std::format;
-
-#[cfg(not(feature = "std"))]
-use alloc::format;
+use crate::stdlib::boxed::Box;
+use crate::stdlib::format;
+use crate::stdlib::string::String;
+use crate::stdlib::vec::Vec;
 
 #[cfg(feature = "std")]
 use mockall::automock;

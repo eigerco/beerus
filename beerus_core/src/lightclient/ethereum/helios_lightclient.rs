@@ -5,48 +5,28 @@ use async_trait::async_trait;
 // #[macro_use]
 // extern crate alloc;
 
-#[cfg(feature = "std")]
-use std::boxed::Box;
+use crate::stdlib::boxed::Box;
 
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
+use crate::stdlib::string::String;
 
-#[cfg(feature = "std")]
-use std::string::String;
+use crate::stdlib::vec::Vec;
 
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
-
-#[cfg(feature = "std")]
-use std::str::FromStr;
-
-#[cfg(not(feature = "std"))]
-use alloc::str::FromStr;
+use crate::stdlib::primitive::u64;
+use crate::stdlib::str::FromStr;
 
 use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
 use eyre::{eyre, Result};
-#[cfg(not(feature = "std"))]
-use helios::client::{Client, ClientBuilder, ConfigDB};
-#[cfg(feature = "std")]
-use helios::client::{Client, ClientBuilder, FileDB};
 
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
-
-#[cfg(feature = "std")]
-use std::primitive::u64;
-
-#[cfg(not(feature = "std"))]
-use core::primitive::u64;
 
 use crate::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
 
 use super::EthereumLightClient;
+
+#[cfg(not(feature = "std"))]
+use helios::client::{Client, ClientBuilder, ConfigDB};
+#[cfg(feature = "std")]
+use helios::client::{Client, ClientBuilder, FileDB};
 
 /// Helios implementation of `EthereumLightClient`.
 pub struct HeliosLightClient {

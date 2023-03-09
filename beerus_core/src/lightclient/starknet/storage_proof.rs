@@ -3,16 +3,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use starknet::core::crypto::pedersen_hash;
 use starknet::core::types::FieldElement;
 
-// #[cfg(not(feature = "std"))]
-// #[allow(unused_imports)]
-// #[macro_use]
-// extern crate alloc;
-
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use crate::stdlib::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Path {
