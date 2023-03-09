@@ -5,6 +5,8 @@ use jsonrpsee::{
     proc_macros::rpc,
 };
 
+use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
 }
@@ -13,12 +15,24 @@ pub struct BeerusRpc {
 trait BeerusApi {
     #[method(name = "hello_world")]
     async fn hello_world(&self) -> Result<String>;
+
+    #[method(name = "stark_blockHashAndNumber")]
+    async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
 }
 
 #[async_trait]
 impl BeerusApiServer for BeerusRpc {
     async fn hello_world(&self) -> Result<String> {
         Ok("Hello World!".to_string())
+    }
+
+    async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .block_hash_and_number()
+            .await
+            .unwrap())
     }
 }
 
