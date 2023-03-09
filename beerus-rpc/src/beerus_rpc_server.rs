@@ -36,7 +36,9 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap()
             .to_string();
+
         Ok(chain_id)
+    }
 
     async fn stark_block_number(&self) -> Result<u64> {
         let block_number = self
