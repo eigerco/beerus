@@ -27,7 +27,6 @@ impl BeerusApiServer for BeerusRpc {
         Ok("Hello World!".to_string())
     }
 
-
     async fn stark_chain_id(&self) -> Result<String> {
         let chain_id = self
             ._beerus
