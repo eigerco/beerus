@@ -5,6 +5,7 @@ use jsonrpsee::{
     proc_macros::rpc,
 };
 
+use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
 }
@@ -19,6 +20,13 @@ trait BeerusApi {
 
     #[method(name = "stark_blockNumber")]
     async fn stark_block_number(&self) -> Result<u64>;
+
+    #[method(name = "stark_blockTransactionCount")]
+    async fn stark_block_transaction_count(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<u64>;
 }
 
 #[async_trait]
@@ -48,6 +56,21 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap();
 
         Ok(block_number)
+    }
+
+    async fn stark_block_transaction_count(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<u64> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let block_transaction_count = self
+            ._beerus
+            .starknet_lightclient
+            .get_block_transaction_count(&block_id)
+            .await
+            .unwrap();
+        Ok(block_transaction_count)
     }
 }
 
