@@ -146,6 +146,18 @@ Meanwhile you can just use unit tests to dev.
 cargo test --all
 ```
 
+Run binary:
+
+```bash
+source .env && cargo run --bin beerus_rest_api
+```
+
+Run binary verbose:
+
+```bash
+source .env && RUST_LOG=info cargo run --bin beerus_rest_api
+```
+
 Build from source:
 
 ```bash

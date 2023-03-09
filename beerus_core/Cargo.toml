@@ -1,9 +1,11 @@
 [package]
 name = "beerus_core"
-version = "0.1.0"
+description = "Core utilities of the Beerus Light Client"
+version.workspace = true
 edition.workspace = true
-description.workspace = true
-homepage.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
 
 [dependencies]
 async-trait = "0.1.58"
@@ -22,3 +24,13 @@ tokio = { version = "1.21.2", features = ["macros"] }
 [dev-dependencies]
 httpmock = "0.6.7"
 temp-env = "0.3.1"
+
+[dev-dependencies.cargo-husky]
+version = "1.5.0"
+default-features = false
+features = [
+    "precommit-hook",
+    "run-for-all",
+    "run-cargo-clippy",
+    "run-cargo-fmt",
+]
