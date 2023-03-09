@@ -30,10 +30,8 @@ use wasm_bindgen_futures::spawn_local;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
-use ethers::{
-    abi::Abi,
-    types::{H160, U256},
-};
+use ethabi::Uint as U256;
+use ethers::{abi::Abi, types::H160};
 use eyre::Result;
 use helios::types::BlockTag;
 use helios::types::CallOpts;
@@ -125,7 +123,8 @@ impl BeerusLightClient {
         }
     }
 
-    //     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
+    /// Start Beerus light client and synchronize with Ethereum and StarkNet.
+    #[cfg(feature = "std")]
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
@@ -141,7 +140,6 @@ impl BeerusLightClient {
             let node_clone = self.node.clone();
 
             // Define function that will loop
-            #[cfg(feature = "std")]
             let task = async move {
                 loop {
                     //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
@@ -205,8 +203,25 @@ impl BeerusLightClient {
             // Spawn loop function
             #[cfg(feature = "std")]
             tokio::spawn(task);
+        };
+        Ok(())
+    }
 
-            #[cfg(not(feature = "std"))]
+    #[cfg(not(feature = "std"))]
+    pub async fn start(&mut self) -> Result<()> {
+        if let SyncStatus::NotSynced = self.sync_status {
+            // Start the Ethereum light client.
+            //TODO: Change unwrap
+            self.ethereum_lightclient.write().await.start().await?;
+            // Start the StarkNet light client.
+            //TODO: Change unwrap
+            self.starknet_lightclient.start().await?;
+            self.sync_status = SyncStatus::Synced;
+
+            let ethereum_clone = self.ethereum_lightclient.clone();
+            let starknet_clone = self.starknet_lightclient.clone();
+            let node_clone = self.node.clone();
+
             Interval::new(12000, move || {
                 let ethereum_clone = ethereum_clone.clone();
                 let starknet_clone = starknet_clone.clone();
@@ -402,7 +417,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<Vec<u8>> {
+    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -430,7 +445,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(call_response)
+        Ok(U256::from_big_endian(&call_response))
     }
 
     /// Return the msg_fee + 1 from the L1ToL2Message hash'. 0 if there is no matching msg_hash
@@ -442,10 +457,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_messages(
-        &self,
-        msg_hash: ethers::types::U256,
-    ) -> Result<Vec<u8>> {
+    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -473,7 +485,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(call_response)
+        Ok(U256::from_big_endian(&call_response))
     }
 
     ///  Returns the msg_fee + 1 for the message with the given 'msgHash', or 0 if no message with such a hash is pending.
@@ -485,7 +497,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L2ToL1Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no matching message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<Vec<u8>> {
+    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -513,7 +525,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(call_response)
+        Ok(U256::from_big_endian(&call_response))
     }
 
     /// Return the nonce for the L1ToL2Message bridge.
@@ -522,7 +534,7 @@ impl BeerusLightClient {
     /// # Returns
     /// `Ok(U256)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<Vec<u8>> {
+    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
         // Encode the function data.
         let data = ethers_helper::encode_function_data(
             (),
@@ -548,6 +560,6 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
-        Ok(call_response)
+        Ok(U256::from_big_endian(&call_response))
     }
 }

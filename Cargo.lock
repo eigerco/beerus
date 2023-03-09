@@ -531,6 +531,7 @@ dependencies = [
  "beerus_core",
  "clap",
  "env_logger 0.10.0",
+ "ethabi",
  "ethers",
  "eyre",
  "helios",
@@ -548,21 +549,24 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "clippy",
+ "ethabi",
  "ethers",
  "eyre",
+ "futures",
+ "gloo-timers",
  "helios",
  "hex",
  "httpmock",
  "log",
  "mockall",
- "primitive-types 0.11.1",
+ "primitive-types 0.12.1",
  "serde",
  "serde_json",
- "standback",
  "starknet",
  "temp-env",
  "tokio",
  "url",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -572,6 +576,7 @@ dependencies = [
  "base64 0.20.0",
  "beerus_core",
  "env_logger 0.9.3",
+ "ethabi",
  "ethers",
  "eyre",
  "helios",
@@ -916,7 +921,7 @@ dependencies = [
 [[package]]
 name = "client"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "common",
  "config",
@@ -1015,7 +1020,7 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "ethers",
  "eyre",
@@ -1037,7 +1042,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "common",
  "ethers",
@@ -1058,7 +1063,7 @@ dependencies = [
 [[package]]
 name = "consensus"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1067,6 +1072,7 @@ dependencies = [
  "config",
  "ethers",
  "eyre",
+ "futures",
  "hex",
  "log",
  "milagro_bls",
@@ -1504,12 +1510,6 @@ name = "dyn-clone"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9b0705efd4599c15a38151f4721f7bc388306f61084d3bfd50bd07fbca5cb60"
-
-[[package]]
-name = "easy-ext"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49457524c7e65648794c98283282a0b7c73b10018e7091f1cdcfff314fd7ae59"
 
 [[package]]
 name = "ecdsa"
@@ -1960,7 +1960,7 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 [[package]]
 name = "execution"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2474,7 +2474,7 @@ checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
 [[package]]
 name = "helios"
 version = "0.2.0"
-source = "git+https://github.com/a16z/helios#5b9e90436ab808dcde4fabd91186a4985a3e2bfd"
+source = "git+https://github.com/a16z/helios#0e20b5f783cf71f483149798daf596933f7ea080"
 dependencies = [
  "client",
  "common",
@@ -5320,17 +5320,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4564168c00635f88eaed410d5efa8131afa8d8699a612c80c455a0ba05c21045"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "standback"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65830fc2f5e53e904a5e2ffc75c5a6582019563bbba103145d4decada88c13ef"
-dependencies = [
- "easy-ext",
- "libc",
- "version_check",
 ]
 
 [[package]]

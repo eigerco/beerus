@@ -1,4 +1,4 @@
-use ethers::types::U256;
+use ethabi::Uint as U256;
 use ethers::{
     abi::{Abi, AbiError, Token, Tokenize},
     types::Bytes,

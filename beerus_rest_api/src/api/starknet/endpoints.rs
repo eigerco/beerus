@@ -19,7 +19,7 @@ use crate::api::starknet::resp::{
 use beerus_core::{
     lightclient::beerus::BeerusLightClient, starknet_helper::block_id_string_to_block_id_type,
 };
-use ethers::types::U256;
+use ethabi::Uint as U256;
 use eyre::Result;
 use log::debug;
 use rocket::serde::json::Json;
@@ -598,7 +598,8 @@ pub async fn query_l1_to_l2_message_cancellations_inner(
     Ok(QueryL1ToL2MessageCancellationsResponse {
         result: beerus
             .starknet_l1_to_l2_message_cancellations(msg_hash)
-            .await?,
+            .await?
+            .to_string(),
     })
 }
 
@@ -622,7 +623,10 @@ pub async fn query_l1_to_l2_messages_inner(
     let msg_hash = U256::from_str(&msg_hash)?;
 
     Ok(QueryL1ToL2MessagesResponse {
-        result: beerus.starknet_l1_to_l2_messages(msg_hash).await?,
+        result: beerus
+            .starknet_l1_to_l2_messages(msg_hash)
+            .await?
+            .to_string(),
     })
 }
 
@@ -645,7 +649,10 @@ pub async fn query_l2_to_l1_messages_inner(
     debug!("Querying Starknet contract nonce");
     let msg_hash = U256::from_str(&msg_hash)?;
     Ok(QueryL2ToL1MessagesResponse {
-        result: beerus.starknet_l2_to_l1_messages(msg_hash).await?,
+        result: beerus
+            .starknet_l2_to_l1_messages(msg_hash)
+            .await?
+            .to_string(),
     })
 }
 
@@ -712,7 +719,7 @@ pub async fn query_l1_to_l2_message_nonce_inner(
 ) -> Result<QueryL1ToL2MessageNonceResponse> {
     debug!("Querying l1 to l2 message nonce");
     Ok(QueryL1ToL2MessageNonceResponse {
-        result: beerus.starknet_l1_to_l2_message_nonce().await?,
+        result: beerus.starknet_l1_to_l2_message_nonce().await?.to_string(),
     })
 }
 

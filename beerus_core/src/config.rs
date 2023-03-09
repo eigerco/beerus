@@ -63,7 +63,6 @@ impl Config {
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
         let data_dir_str =
             std::env::var("DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
-        #[cfg(feature = "std")]
         let data_dir = PathBuf::from(data_dir_str);
 
         Ok(Self {
@@ -72,7 +71,6 @@ impl Config {
             ethereum_execution_rpc,
             starknet_rpc,
             starknet_core_contract_address,
-            #[cfg(feature = "std")]
             data_dir: Some(data_dir),
         })
     }
@@ -85,10 +83,6 @@ impl Config {
         let starknet_rpc = "Starknet_rpc".to_string();
         let starknet_core_contract_address = "Starknet_core_contract_address".to_string();
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
-        #[cfg(feature = "std")]
-        let data_dir_str = "data_dir";
-        #[cfg(feature = "std")]
-        let data_dir = PathBuf::from(data_dir_str);
 
         Ok(Self {
             ethereum_network,
@@ -96,8 +90,6 @@ impl Config {
             ethereum_execution_rpc,
             starknet_rpc,
             starknet_core_contract_address,
-            #[cfg(feature = "std")]
-            data_dir: Some(data_dir),
         })
     }
 

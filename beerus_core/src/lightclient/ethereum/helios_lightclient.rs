@@ -75,11 +75,7 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.send_raw_transaction(bytes).await
     }
 
-    async fn get_balance(
-        &self,
-        address: &Address,
-        block: BlockTag,
-    ) -> eyre::Result<ethers::types::U256> {
+    async fn get_balance(&self, address: &Address, block: BlockTag) -> eyre::Result<U256> {
         self.helios_light_client.get_balance(address, block).await
     }
 

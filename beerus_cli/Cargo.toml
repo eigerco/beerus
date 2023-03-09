@@ -19,3 +19,4 @@ starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 serde_json = "1.0.91"
 base64 = "0.20.0"
 serde = "1.0.152"
+ethabi = "18.0.0"

@@ -1,7 +1,8 @@
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use clap::{Parser, Subcommand};
+use ethabi::Uint as U256;
 use ethers::prelude::Log;
-use ethers::types::{H256, U256};
+use ethers::types::H256;
 use helios::types::ExecutionBlock;
 use serde_json::json;
 use starknet::core::types::FieldElement;
@@ -465,10 +466,10 @@ pub enum CommandResponse {
     StarknetAddDeclareTransaction(DeclareTransactionResult),
     StarknetQueryBlockWithTxs(MaybePendingBlockWithTxs),
     StarknetQueryBlockWithTxHashes(MaybePendingBlockWithTxHashes),
-    StarkNetL1ToL2MessageCancellations(Vec<u8>),
-    StarkNetL1ToL2Messages(Vec<u8>),
-    StarkNetL1ToL2MessageNonce(Vec<u8>),
-    StarkNetL2ToL1Messages(Vec<u8>),
+    StarkNetL1ToL2MessageCancellations(U256),
+    StarkNetL1ToL2Messages(U256),
+    StarkNetL1ToL2MessageNonce(U256),
+    StarkNetL2ToL1Messages(U256),
     StarknetQueryTransactionByBlockIdAndIndex(Transaction),
     StarknetQueryPendingTransactions(Vec<Transaction>),
     StarknetQueryTxReceipt(MaybePendingTransactionReceipt),

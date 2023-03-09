@@ -1969,45 +1969,44 @@ mod test {
         }
     }
 
-    //TODO: Fix for no_std
-    // /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
-    // /// Given normal conditions, when query starknet l2 to l1 messages, then ok.
-    // /// Success case.
-    // #[tokio::test]
-    // async fn given_normal_conditions_when_query_starknet_l2_to_l1_messages_then_ok() {
-    //     // Given
-    //     let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+    /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
+    /// Given normal conditions, when query starknet l2 to l1 messages, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_query_starknet_l2_to_l1_messages_then_ok() {
+        // Given
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-    //     // Expected block number.
-    //     let expected_fee = U256::from(1234);
-    //     // Convert to bytes because that's what the mock returns.
-    //     let mut expected_fee_bytes: Vec<u8> = vec![0; 32];
-    //     expected_fee.to_big_endian(&mut expected_fee_bytes);
+        // Expected block number.
+        let expected_fee = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_fee_bytes: Vec<u8> = vec![0; 32];
+        expected_fee.to_big_endian(&mut expected_fee_bytes);
 
-    //     ethereum_lightclient
-    //         .expect_call()
-    //         .return_once(move |_call_opts, _block_tag| Ok(expected_fee_bytes));
+        ethereum_lightclient
+            .expect_call()
+            .return_once(move |_call_opts, _block_tag| Ok(expected_fee_bytes));
 
-    //     let beerus = BeerusLightClient::new(
-    //         config,
-    //         Box::new(ethereum_lightclient),
-    //         Box::new(starknet_lightclient),
-    //     );
-    //     let cli = Cli {
-    //         config: None,
-    //         command: Commands::StarkNet(StarkNetCommands {
-    //             command: StarkNetSubCommands::L2ToL1Messages {
-    //                 msg_hash: "0".to_string(),
-    //             },
-    //         }),
-    //     };
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::L2ToL1Messages {
+                    msg_hash: "0".to_string(),
+                },
+            }),
+        };
 
-    //     // When
-    //     let result = runner::run(beerus, cli).await.unwrap();
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
 
-    //     // Then
-    //     assert_eq!(expected_fee.to_string(), result.to_string());
-    // }
+        // Then
+        assert_eq!(expected_fee.to_string(), result.to_string());
+    }
 
     /// Test the `query_starknet_l2_to_l1_messages ` CLI command.
     /// Given starknet lightclient returns an error, when query starknet l2 to l1 messages, then the error is propagated.
@@ -2047,45 +2046,44 @@ mod test {
         }
     }
 
-    //TODO: Fix for no_std
-    // /// Test the `starknet_l1_to_l2_message_nonce` CLI command.
-    // /// Given normal conditions, when query nonce, then ok.
-    // /// Success case.
-    // #[tokio::test]
-    // async fn given_normal_conditions_when_starknet_l1_to_l2_message_nonce_then_ok() {
-    //     // Given
-    //     let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
+    /// Test the `starknet_l1_to_l2_message_nonce` CLI command.
+    /// Given normal conditions, when query nonce, then ok.
+    /// Success case.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_l1_to_l2_message_nonce_then_ok() {
+        // Given
+        let (config, mut ethereum_lightclient, starknet_lightclient) = config_and_mocks();
 
-    //     // Expected block number.
-    //     let expected_nonce = U256::from(1234);
-    //     // Convert to bytes because that's what the mock returns.
-    //     let mut expected_nonce_bytes: Vec<u8> = vec![0; 32];
-    //     expected_nonce.to_big_endian(&mut expected_nonce_bytes);
+        // Expected block number.
+        let expected_nonce = U256::from(1234);
+        // Convert to bytes because that's what the mock returns.
+        let mut expected_nonce_bytes: Vec<u8> = vec![0; 32];
+        expected_nonce.to_big_endian(&mut expected_nonce_bytes);
 
-    //     // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
-    //     ethereum_lightclient
-    //         .expect_call()
-    //         .times(1)
-    //         .return_once(move |_call_opts, _block_tag| Ok(expected_nonce_bytes));
+        // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
+        ethereum_lightclient
+            .expect_call()
+            .times(1)
+            .return_once(move |_call_opts, _block_tag| Ok(expected_nonce_bytes));
 
-    //     let beerus = BeerusLightClient::new(
-    //         config,
-    //         Box::new(ethereum_lightclient),
-    //         Box::new(starknet_lightclient),
-    //     );
-    //     let cli = Cli {
-    //         config: None,
-    //         command: Commands::StarkNet(StarkNetCommands {
-    //             command: StarkNetSubCommands::L1ToL2MessageNonce {},
-    //         }),
-    //     };
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands {
+                command: StarkNetSubCommands::L1ToL2MessageNonce {},
+            }),
+        };
 
-    //     // When
-    //     let result = runner::run(beerus, cli).await.unwrap();
+        // When
+        let result = runner::run(beerus, cli).await.unwrap();
 
-    //     // Then
-    //     assert_eq!("L1 to L2 Message Nonce: 1234", result.to_string());
-    // }
+        // Then
+        assert_eq!("L1 to L2 Message Nonce: 1234", result.to_string());
+    }
 
     /// Test the `starknet_l1_to_l2_message_nonce` CLI command.
     /// Given normal conditions, when query nonce, then ok.

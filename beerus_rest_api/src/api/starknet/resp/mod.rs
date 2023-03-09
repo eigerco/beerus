@@ -29,25 +29,25 @@ pub struct QueryNonceResponse {
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryL1ToL2MessageCancellationsResponse {
-    pub result: Vec<u8>,
+    pub result: String,
 }
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryL1ToL2MessagesResponse {
-    pub result: Vec<u8>,
+    pub result: String,
 }
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryL2ToL1MessagesResponse {
-    pub result: Vec<u8>,
+    pub result: String,
 }
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryL1ToL2MessageNonceResponse {
-    pub result: Vec<u8>,
+    pub result: String,
 }
 
 #[derive(Serialize, JsonSchema)]
