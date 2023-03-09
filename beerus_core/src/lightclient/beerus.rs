@@ -13,8 +13,8 @@ use helios::types::CallOpts;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockId, BlockTag as StarknetBlockTag, BlockWithTxs, BroadcastedTransaction, FeeEstimate,
-        FunctionCall, MaybePendingBlockWithTxs,
+        BlockHashAndNumber, BlockId, BlockTag as StarknetBlockTag, BlockWithTxs,
+        BroadcastedTransaction, FeeEstimate, FunctionCall, MaybePendingBlockWithTxs,
     },
 };
 
@@ -449,5 +449,26 @@ impl BeerusLightClient {
             .call(&call_opts, BlockTag::Latest)
             .await?;
         Ok(U256::from_big_endian(&call_response))
+    }
+
+    /// Return block hash and number of latest block.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// None
+    /// # Returns
+    /// `Ok(BlockHashAndNumber)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+        let cloned_node = self.node.read().await;
+        let payload = cloned_node.payload.clone();
+
+        let block = payload.get(&cloned_node.block_number);
+        match block {
+            Some(block) => Ok(BlockHashAndNumber {
+                block_hash: block.block_hash,
+                block_number: block.block_number,
+            }),
+            _ => Err(eyre::eyre!("Block not found")),
+        }
     }
 }
