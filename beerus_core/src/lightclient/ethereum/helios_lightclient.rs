@@ -6,7 +6,7 @@ use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use std::primitive::u64;
 use std::str::FromStr;
 
-use crate::config::Config;
+use crate::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
 
 use super::EthereumLightClient;
 
@@ -125,21 +125,81 @@ impl EthereumLightClient for HeliosLightClient {
             )?)
             .await
     }
+
+    /// Get the StarkNet state root.
+    async fn starknet_state_root(&self) -> Result<U256> {
+        // Get the StarkNet core contract address.
+        let starknet_core_contract_address =
+            Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS)?;
+
+        // Corresponds to the StarkNet core contract function `stateRoot`.
+        // The function signature is `stateRoot() -> (uint256)`.
+        // The function selector is `0x95d8ecA2`.
+        let data = vec![0x95, 0x88, 0xec, 0xa2];
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let starknet_root = self.call(&call_opts, BlockTag::Latest).await?;
+
+        // Convert the response bytes to a U256.
+        let starknet_root = U256::from_big_endian(&starknet_root);
+
+        Ok(starknet_root)
+    }
+
+    /// Get the StarkNet last proven block number.
+    /// This function is used to get the last proven block number of the StarkNet network.
+    ///
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn starknet_last_proven_block(&self) -> Result<U256> {
+        // Get the StarkNet core contract address.
+        let starknet_core_contract_address =
+            Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS)?;
+
+        let data = vec![53, 190, 250, 93];
+
+        // Build the call options.
+        let call_opts = CallOpts {
+            from: None,
+            to: starknet_core_contract_address,
+            gas: None,
+            gas_price: None,
+            value: None,
+            data: Some(data),
+        };
+
+        // Call the StarkNet core contract.
+        let starknet_root = self.call(&call_opts, BlockTag::Latest).await?;
+
+        // Convert the response bytes to a U256.
+        let starknet_root = U256::from_big_endian(&starknet_root);
+
+        Ok(starknet_root)
+    }
 }
 
 /// HeliosLightClient non-trait functions.
 impl HeliosLightClient {
     /// Create a new HeliosLightClient.
     pub async fn new(config: Config) -> eyre::Result<Self> {
-        // Fetch the current checkpoint.
-        let checkpoint_value = config.get_checkpoint().await.unwrap();
-
         // Build the Helios wrapped light client.
-        let helios_light_client = ClientBuilder::new()
+        let helios_light_client: Client<FileDB> = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .checkpoint(&checkpoint_value)
+            .load_external_fallback()
+            .data_dir(config.data_dir.unwrap())
             .build()?;
 
         Ok(Self {

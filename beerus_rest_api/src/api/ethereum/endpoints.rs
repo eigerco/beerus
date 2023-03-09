@@ -187,6 +187,8 @@ pub async fn query_balance_inner(
     // Query the balance of the Ethereum address.
     let balance = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_balance(&addr, block)
         .await?;
     // Format the balance in Ether.
@@ -215,7 +217,12 @@ pub async fn query_nonce_inner(
     debug!("Querying nonce of address: {}", address);
     let addr = Address::from_str(address)?;
     let block = BlockTag::Latest;
-    let nonce = beerus.ethereum_lightclient.get_nonce(&addr, block).await?;
+    let nonce = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_nonce(&addr, block)
+        .await?;
 
     Ok(QueryNonceResponse {
         address: address.to_string(),
@@ -234,7 +241,12 @@ pub async fn query_block_number_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryBlockNumberResponse> {
     debug!("Querying block number");
-    let block_number = beerus.ethereum_lightclient.get_block_number().await?;
+    let block_number = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_block_number()
+        .await?;
     Ok(QueryBlockNumberResponse { block_number })
 }
 
@@ -248,7 +260,7 @@ pub async fn query_chain_id_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryChainIdResponse> {
     debug!("Querying chain ID");
-    let chain_id = beerus.ethereum_lightclient.chain_id().await;
+    let chain_id = beerus.ethereum_lightclient.read().await.chain_id().await;
     Ok(QueryChainIdResponse { chain_id })
 }
 
@@ -266,7 +278,12 @@ pub async fn query_code_inner(
     debug!("Querying contract code");
     let addr = Address::from_str(address)?;
     let block = BlockTag::Latest;
-    let code = beerus.ethereum_lightclient.get_code(&addr, block).await?;
+    let code = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_code(&addr, block)
+        .await?;
 
     Ok(QueryCodeResponse { code })
 }
@@ -288,6 +305,8 @@ pub async fn query_transaction_count_inner(
     let block = beerus_core::ethers_helper::block_string_to_block_tag_type(block)?;
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_transaction_count(&address, block)
         .await?;
 
@@ -310,6 +329,8 @@ pub async fn query_block_transaction_count_by_number_inner(
     let block = BlockTag::Latest;
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_transaction_count_by_number(block)
         .await?;
 
@@ -336,6 +357,8 @@ pub async fn query_block_transaction_count_by_hash_inner(
 
     let tx_count = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_transaction_count_by_hash(&hash)
         .await?;
 
@@ -358,6 +381,8 @@ pub async fn query_transaction_by_hash_inner(
 
     let unformatted_tx_data = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_transaction_by_hash(&h256_hash)
         .await?;
     let tx_data = format!("{unformatted_tx_data:?}");
@@ -376,7 +401,12 @@ pub async fn query_gas_price_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryGasPriceResponse> {
     debug!("Querying Gas Price");
-    let unformatted_tx_data = beerus.ethereum_lightclient.get_gas_price().await?;
+    let unformatted_tx_data = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_gas_price()
+        .await?;
     let gas_price = format!("{unformatted_tx_data:?}");
     Ok(QueryGasPriceResponse { gas_price })
 }
@@ -417,7 +447,12 @@ pub async fn query_estimate_gas_inner(
             .and_then(|v| (ethers::utils::hex::decode(v)).ok()),
     };
 
-    let quantity = beerus.ethereum_lightclient.estimate_gas(&call_opts).await?;
+    let quantity = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .estimate_gas(&call_opts)
+        .await?;
     Ok(QueryEstimateGasResponse { quantity })
 }
 
@@ -443,6 +478,8 @@ pub async fn send_raw_transaction_inner(
     // Send Raw Transaction.
     let response = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .send_raw_transaction(bytes_slice)
         .await?;
 
@@ -479,6 +516,8 @@ pub async fn query_block_by_hash_inner(
     let full_tx = bool::from_str(full_tx)?;
     let block_details = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_by_hash(&hash, full_tx)
         .await?;
     let block = match block_details {
@@ -504,7 +543,12 @@ pub async fn query_priority_fee_inner(
     beerus: &State<BeerusLightClient>,
 ) -> Result<QueryPriorityFeeResponse> {
     debug!("Querying Gas Price");
-    let unformatted_tx_data = beerus.ethereum_lightclient.get_priority_fee().await?;
+    let unformatted_tx_data = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_priority_fee()
+        .await?;
     let priority_fee = format!("{unformatted_tx_data:?}");
     Ok(QueryPriorityFeeResponse { priority_fee })
 }
@@ -533,6 +577,8 @@ pub async fn query_block_by_number_inner(
     let block_tag: BlockTag = serde_json::from_str(block_tag.as_str())?;
     let block_details = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_block_by_number(block_tag, full_tx)
         .await?;
     let block = match block_details {
@@ -568,6 +614,8 @@ pub async fn query_logs_inner(
     }) = filter;
     let logs = beerus
         .ethereum_lightclient
+        .read()
+        .await
         .get_logs(&from_block, &to_block, &address, &topics, &block_hash)
         .await?
         .into_iter()

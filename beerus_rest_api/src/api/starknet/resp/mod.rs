@@ -98,11 +98,39 @@ pub struct QueryGetBlockTransactionCountResponse {
     pub block_transaction_count: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EventsObject {
+    pub from_block_id_type: Option<String>,
+    pub from_block_id: Option<String>,
+    pub to_block_id_type: Option<String>,
+    pub to_block_id: Option<String>,
+    pub address: Option<String>,
+    pub keys: Option<Vec<String>>,
+    pub continuation_token: Option<String>,
+    pub chunk_size: u64,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryGetEventsResponse {
+    pub continuation_token: String,
+    pub events: Value,
+}
+
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QuerySyncing {
     pub data: Option<Value>,
     pub status: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryEstimateFeeResponse {
+    pub gas_consumed: String,
+    pub gas_price: String,
+    pub overall_fee: String,
 }
 
 #[derive(Serialize, JsonSchema)]
@@ -195,10 +223,18 @@ pub struct QueryTransactionByBlockIdAndIndex {
 
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
+pub struct QueryTransactionByHashResponse {
+    pub transaction: String,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
 pub struct QueryPendingTransactionsResponse {
     pub pending_transactions: String,
 }
-
+#[derive(Serialize, JsonSchema)]
+pub struct QueryTxReceipt {
+    pub tx_receipt: String,
+}
 #[derive(Serialize, JsonSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct QueryBlockWithTxHashesResponse {
@@ -209,6 +245,25 @@ pub struct QueryBlockWithTxHashesResponse {
 #[serde(crate = "rocket::serde")]
 pub struct QueryContractStorageProofResponse {
     pub proof: GetProofOutput,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AddDeclareTransactionJson {
+    /// The maximal fee that can be charged for including the transaction
+    pub max_fee: String,
+    pub version: String,
+    pub signature: Vec<String>,
+    pub nonce: String,
+    pub contract_class: String,
+    pub sender_address: String,
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct AddDeclareTransactionResponse {
+    pub transaction_hash: String,
+    pub class_hash: String,
 }
 
 impl JsonSchema for QueryContractStorageProofResponse {
