@@ -59,6 +59,9 @@ trait BeerusApi {
 
     #[method(name = "starknet_l1_to_l2_message_nonce")]
     async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256>;
+
+    #[method(name = "starknet_l1_to_l2_message_cancellations")]
+    async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256>;
 }
 
 #[async_trait]
@@ -157,6 +160,14 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap();
         Ok(nonce)
+    }
+
+    async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
+        Ok(self
+            ._beerus
+            .starknet_l1_to_l2_message_cancellations(msg_hash)
+            .await
+            .unwrap())
     }
 }
 
