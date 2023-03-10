@@ -25,9 +25,9 @@ pub fn block_id_string_to_block_id_type(block_id_type: &str, block_id: &str) -> 
         "tag" => match block_id.to_lowercase().as_str() {
             "pending" => Ok(BlockId::Tag(BlockTag::Pending)),
             "latest" => Ok(BlockId::Tag(BlockTag::Latest)),
-            _ => return Err(eyre!("Invalid Tag")),
+            _ => Err(eyre!("Invalid Tag")),
         },
-        _ => return Err(eyre!("Invalid BlockId Type")),
+        _ => Err(eyre!("Invalid BlockId Type")),
     }
 }
 

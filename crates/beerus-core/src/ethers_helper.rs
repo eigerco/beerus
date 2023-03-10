@@ -58,7 +58,7 @@ pub fn block_string_to_block_tag_type(block: &str) -> Result<BlockTag> {
         "latest" => Ok(BlockTag::Latest),
         _ => match block.parse::<u64>() {
             Ok(number) => Ok(BlockTag::Number(number)),
-            Err(_) => return Err(eyre!("Invalid BlockTag")),
+            Err(_) => Err(eyre!("Invalid BlockTag")),
         },
     }
 }
