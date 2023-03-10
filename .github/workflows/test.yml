@@ -11,7 +11,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: stable
-          override: true
+          override: false
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
