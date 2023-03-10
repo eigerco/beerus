@@ -57,6 +57,9 @@ trait BeerusApi {
     #[method(name = "starknet_syncing")]
     async fn starknet_syncing(&self) -> Result<SyncStatusType>;
 
+    #[method(name = "starknet_l1_to_l2_messages")]
+    async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256>;
+
     #[method(name = "starknet_l1_to_l2_message_nonce")]
     async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256>;
 
@@ -151,6 +154,14 @@ impl BeerusApiServer for BeerusRpc {
     async fn starknet_syncing(&self) -> Result<SyncStatusType> {
         let sync_status_type = self._beerus.starknet_lightclient.syncing().await.unwrap();
         Ok(sync_status_type)
+    }
+
+    async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
+        Ok(self
+            ._beerus
+            .starknet_l1_to_l2_messages(msg_hash)
+            .await
+            .unwrap())
     }
 
     async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
