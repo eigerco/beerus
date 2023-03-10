@@ -506,7 +506,19 @@ impl BeerusLightClient {
             }
             BlockId::Tag(tag) => match tag {
                 StarknetBlockTag::Latest => payload.get(&cloned_node.block_number),
-                StarknetBlockTag::Pending => None,
+                StarknetBlockTag::Pending => {
+                    let block = payload
+                        .values()
+                        .find(|block| block.status == BlockStatus::Pending);
+                    match block {
+                        Some(block) => Some(block),
+                        None => {
+                            return Err(eyre::eyre!(
+                                "Block with pending status not found in the payload."
+                            ))
+                        }
+                    }
+                }
             },
         };
 
