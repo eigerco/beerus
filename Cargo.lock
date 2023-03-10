@@ -496,6 +496,7 @@ dependencies = [
 name = "beerus-rpc"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "beerus-core",
  "dotenv",
  "env_logger",

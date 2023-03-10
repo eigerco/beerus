@@ -3,10 +3,11 @@ use beerus_core::lightclient::beerus::BeerusLightClient;
 use jsonrpsee::{
     core::{async_trait, RpcResult as Result},
     proc_macros::rpc,
+    types::error::CallError,
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, MaybePendingBlockWithTxs};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -32,6 +33,13 @@ trait BeerusApi {
 
     #[method(name = "stark_blockHashAndNumber")]
     async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "stark_getBlockWithTxs")]
+    async fn get_block_with_txs(
+        &self,
+        block_id: &str,
+        block_id_type: &str,
+    ) -> Result<MaybePendingBlockWithTxs>;
 }
 
 #[async_trait]
@@ -86,6 +94,29 @@ impl BeerusApiServer for BeerusRpc {
             .block_hash_and_number()
             .await
             .unwrap())
+    }
+
+    async fn get_block_with_txs(
+        &self,
+        block_id: &str,
+        block_id_type: &str,
+    ) -> Result<MaybePendingBlockWithTxs> {
+        let block_id =
+            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
+                .map_err(|e| {
+                    jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(
+                        e.to_string()
+                    )))
+                })?;
+        let result = self
+            ._beerus
+            .starknet_lightclient
+            .get_block_with_txs(&block_id)
+            .await
+            .map_err(|e| {
+                jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
+            })?;
+        Ok(result)
     }
 }
 
