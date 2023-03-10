@@ -1,4 +1,5 @@
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use ethers::types::U256;
 /// The RPC module for the Ethereum protocol required by Kakarot.
 use jsonrpsee::{
     core::{async_trait, RpcResult as Result},
@@ -32,6 +33,9 @@ trait BeerusApi {
 
     #[method(name = "stark_blockHashAndNumber")]
     async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "l2_to_l1_messages")]
+    async fn l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256>;
 }
 
 #[async_trait]
@@ -84,6 +88,14 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .block_hash_and_number()
+            .await
+            .unwrap())
+    }
+
+    async fn l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
+        Ok(self
+            ._beerus
+            .starknet_l2_to_l1_messages(msg_hash)
             .await
             .unwrap())
     }
