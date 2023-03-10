@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use beerus_core::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
     use ethers::types::Address;
     use helios::config::networks::Network;
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
     /// Test `new_from_env` function.
     #[test]
@@ -209,8 +209,9 @@ mod tests {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
-                "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4",
+                "0x0000000000000000000000000000000000000000",
             )
             .unwrap(),
         };
@@ -229,8 +230,9 @@ mod tests {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
-                "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4",
+                "0x0000000000000000000000000000000000000000",
             )
             .unwrap(),
         };
@@ -249,8 +251,9 @@ mod tests {
             ethereum_consensus_rpc: "http://localhost:8545".to_string(),
             ethereum_execution_rpc: "http://localhost:8545".to_string(),
             starknet_rpc: "http://localhost:8545".to_string(),
+            data_dir: Some(PathBuf::from("/tmp")),
             starknet_core_contract_address: Address::from_str(
-                "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4",
+                "0x0000000000000000000000000000000000000000",
             )
             .unwrap(),
         };

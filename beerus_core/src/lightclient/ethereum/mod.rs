@@ -220,4 +220,7 @@ pub trait EthereumLightClient: Send + Sync {
         topics: &Option<Vec<String>>,
         block_hash: &Option<String>,
     ) -> Result<Vec<Log>>;
+
+    async fn starknet_last_proven_block(&self) -> Result<U256>;
+    async fn starknet_state_root(&self) -> Result<U256>;
 }

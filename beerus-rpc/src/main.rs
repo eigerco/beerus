@@ -5,16 +5,14 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-use beerus_rest_api::build_rocket_server;
-use rocket::{Build, Rocket};
-#[macro_use]
-extern crate rocket;
+use beerus_rpc::run_server;
+use dotenv::dotenv;
+use eyre::Result;
 
-#[launch]
-async fn rocket() -> Rocket<Build> {
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv().ok();
     env_logger::init();
-
-    info!("starting Beerus Rest API...");
     // Create config.
     let config = Config::default();
 
@@ -28,9 +26,15 @@ async fn rocket() -> Rocket<Build> {
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
-    info!("starting the Beerus light client...");
+    println!("starting the Beerus light client...");
     beerus.start().await.unwrap();
-    info!("Beerus light client started and synced.");
+    println!("Beerus light client started and synced.");
 
-    build_rocket_server(beerus).await
+    let (addr, server_handle) = run_server(beerus).await.unwrap();
+    let url = format!("http://{addr}");
+    println!("Server started, listening on {url}");
+
+    server_handle.stopped().await;
+
+    Ok(())
 }

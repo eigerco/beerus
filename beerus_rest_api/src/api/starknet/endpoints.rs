@@ -1,14 +1,15 @@
 use super::resp::{
-    AddInvokeTransactionJson, AddInvokeTransactionResponse, DeployedContractResponse,
-    NonceResponse, QueryBlockHashAndNumberResponse, QueryBlockNumberResponse,
-    QueryBlockWithTxHashesResponse, QueryBlockWithTxsResponse, QueryChainIdResponse,
-    QueryContractStorageProofResponse, QueryContractViewResponse,
-    QueryGetBlockTransactionCountResponse, QueryGetClassAtResponse, QueryGetClassHashResponse,
-    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    AddDeclareTransactionJson, AddDeclareTransactionResponse, AddInvokeTransactionJson,
+    AddInvokeTransactionResponse, DeployedContractResponse, EventsObject, NonceResponse,
+    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryBlockWithTxHashesResponse,
+    QueryBlockWithTxsResponse, QueryChainIdResponse, QueryContractStorageProofResponse,
+    QueryContractViewResponse, QueryEstimateFeeResponse, QueryGetBlockTransactionCountResponse,
+    QueryGetClassAtResponse, QueryGetClassHashResponse, QueryGetClassResponse,
+    QueryGetEventsResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryPendingTransactionsResponse, QueryStateRootResponse, QueryStateUpdateResponse,
-    QuerySyncing, QueryTransactionByBlockIdAndIndex, StateDiffResponse, StorageDiffResponse,
-    StorageEntryResponse,
+    QuerySyncing, QueryTransactionByBlockIdAndIndex, QueryTransactionByHashResponse,
+    QueryTxReceipt, StateDiffResponse, StorageDiffResponse, StorageEntryResponse,
 };
 use crate::api::ApiResponse;
 
@@ -26,8 +27,8 @@ use rocket::{get, State};
 use rocket_okapi::openapi;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-    StateUpdate, SyncStatusType,
+    BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+    BroadcastedInvokeTransactionV0, EventFilter, StateUpdate, SyncStatusType, Transaction,
 };
 use std::str::FromStr;
 
@@ -262,6 +263,25 @@ pub async fn get_state_update(
 ) -> ApiResponse<QueryStateUpdateResponse> {
     ApiResponse::from_result(get_state_update_inner(beerus, block_id_type, block_id).await)
 }
+
+/// Query an object about the events
+/// Aan object about the events.
+///
+/// # Arguments
+///
+/// # Returns
+///
+/// `Ok(QueryGetEventsResponse)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[post("/starknet/events", data = "<events_object>")]
+pub async fn get_events(
+    beerus: &State<BeerusLightClient>,
+    events_object: Json<EventsObject>,
+) -> ApiResponse<QueryGetEventsResponse> {
+    ApiResponse::from_result(get_events_inner(beerus, events_object).await)
+}
+
 /// Query an object about the node starknet sync status
 /// Aan object about the node starknet sync status.
 ///
@@ -277,6 +297,33 @@ pub async fn query_starknet_syncing(
     beerus: &State<BeerusLightClient>,
 ) -> ApiResponse<QuerySyncing> {
     ApiResponse::from_result(query_syncing_inner(beerus).await)
+}
+
+/// Query the estimated gas fees for a StarkNet Transaction.
+
+/// The estimated gas fees.
+///
+/// # Arguments
+///
+/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
+/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
+/// * `broadcasted_transaction` - The broadcasted transaction to be estimated (URLencoded)
+///
+/// # Returns
+///
+/// `Ok(FeeEstimate)` if the operation was successful.
+/// `Err(eyre::Report)` if the operation failed.
+#[openapi]
+#[get("/starknet/fee?<broadcasted_transaction>&<block_id>&<block_id_type>")]
+pub async fn get_estimate_fee(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    broadcasted_transaction: String,
+) -> ApiResponse<QueryEstimateFeeResponse> {
+    ApiResponse::from_result(
+        get_estimate_fee_inner(beerus, block_id_type, block_id, broadcasted_transaction).await,
+    )
 }
 
 #[openapi]
@@ -351,7 +398,40 @@ pub async fn get_block_with_tx_hashes(
 ) -> ApiResponse<QueryBlockWithTxHashesResponse> {
     ApiResponse::from_result(get_block_with_tx_hashes_inner(beerus, block_id_type, block_id).await)
 }
+#[openapi]
+#[get("/starknet/transaction_receipt/<tx_hash>")]
+pub async fn get_tx_receipt(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> ApiResponse<QueryTxReceipt> {
+    ApiResponse::from_result(get_transaction_receipt_inner(beerus, tx_hash).await)
+}
 
+/// Query a transaction by its hash.
+/// # Returns
+/// `hash` - The hash of a transaction.
+#[openapi]
+#[get("/starknet/transaction_by_hash/<hash>")]
+pub async fn get_transaction_by_hash(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> ApiResponse<QueryTransactionByHashResponse> {
+    ApiResponse::from_result(get_tx_by_hash_inner(beerus, hash).await)
+}
+
+async fn get_tx_by_hash_inner(
+    beerus: &State<BeerusLightClient>,
+    hash: String,
+) -> Result<QueryTransactionByHashResponse> {
+    let hash = FieldElement::from_str(&hash)?;
+    let transaction: Transaction = beerus
+        .starknet_lightclient
+        .get_transaction_by_hash(hash)
+        .await?;
+    Ok(QueryTransactionByHashResponse {
+        transaction: format!("{transaction:?}"),
+    })
+}
 #[openapi]
 #[get("/starknet/contract_storage_proof/<contract_address>/<key>?<block_id>&<block_id_type>")]
 pub async fn get_contract_storage_proof(
@@ -365,6 +445,18 @@ pub async fn get_contract_storage_proof(
         get_contract_storage_proof_inner(beerus, block_id, block_id_type, contract_address, key)
             .await,
     )
+}
+
+#[openapi]
+#[post(
+    "/starknet/add_declare_transaction",
+    data = "<declare_transaction_data>"
+)]
+pub async fn add_declare_transaction(
+    beerus: &State<BeerusLightClient>,
+    declare_transaction_data: Json<AddDeclareTransactionJson>,
+) -> ApiResponse<AddDeclareTransactionResponse> {
+    ApiResponse::from_result(declare_transaction_inner(beerus, declare_transaction_data).await)
 }
 
 /// Query the state root of StarkNet.
@@ -381,7 +473,12 @@ pub async fn query_starknet_state_root_inner(
 ) -> Result<QueryStateRootResponse> {
     debug!("Querying StarkNet state root");
     // Call the StarkNet contract to get the state root.
-    let state_root = beerus.starknet_state_root().await?;
+    let state_root = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .starknet_state_root()
+        .await?;
     Ok(QueryStateRootResponse {
         state_root: state_root.to_string(),
     })
@@ -786,6 +883,77 @@ pub async fn get_state_update_inner(
         },
     })
 }
+
+/// Query an object about the events.
+/// # Returns
+/// `QueryGetEventsResponse` - An object the events.
+pub async fn get_events_inner(
+    beerus: &State<BeerusLightClient>,
+    events_object: Json<EventsObject>,
+) -> Result<QueryGetEventsResponse> {
+    debug!("Querying Get Events");
+    let Json(EventsObject {
+        from_block_id_type,
+        from_block_id,
+        to_block_id_type,
+        to_block_id,
+        address,
+        keys,
+        continuation_token,
+        chunk_size,
+    }) = events_object;
+
+    let from_block = match (from_block_id_type, from_block_id) {
+        (Some(from_block_id_type_str), Some(from_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &from_block_id_type_str,
+                &from_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let to_block = match (to_block_id_type, to_block_id) {
+        (Some(to_block_id_type_str), Some(to_block_id_str)) => {
+            let result = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+                &to_block_id_type_str,
+                &to_block_id_str,
+            );
+            Some(result?)
+        }
+        _ => None,
+    };
+
+    let address = match address {
+        Some(address_str) => Some(FieldElement::from_str(&address_str)?),
+        _ => None,
+    };
+
+    let keys = keys.as_ref().map(|keys| {
+        keys.iter()
+            .map(|s| FieldElement::from_str(s).unwrap())
+            .collect()
+    });
+
+    let filter = EventFilter {
+        from_block,
+        to_block,
+        address,
+        keys,
+    };
+
+    let result = beerus
+        .starknet_lightclient
+        .get_events(filter, continuation_token, chunk_size)
+        .await?;
+
+    Ok(QueryGetEventsResponse {
+        events: serde_json::value::to_value(result.events).unwrap(),
+        continuation_token: result.continuation_token.unwrap(),
+    })
+}
+
 /// Query an object about the node starknet sync status.
 /// # Returns
 /// `QuerySyncing` - An object about the node starknet sync status.
@@ -803,6 +971,29 @@ pub async fn query_syncing_inner(beerus: &State<BeerusLightClient>) -> Result<Qu
             data: None,
         }),
     }
+}
+
+/// Query the estimated fee
+/// # Returns
+/// `FeeEstimate` - The estimated gas fee for a StarkNet Transaction.
+pub async fn get_estimate_fee_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+    broadcasted_transaction: String,
+) -> Result<QueryEstimateFeeResponse> {
+    let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    let tx = serde_json::from_str(broadcasted_transaction.as_str())?;
+    debug!("Querying Estimate Fee");
+    let result = beerus
+        .starknet_lightclient
+        .estimate_fee(tx, &block_id)
+        .await?;
+    Ok(QueryEstimateFeeResponse {
+        gas_consumed: result.gas_consumed.to_string(),
+        gas_price: result.gas_price.to_string(),
+        overall_fee: result.overall_fee.to_string(),
+    })
 }
 
 /// Query logs.
@@ -954,6 +1145,24 @@ pub async fn query_pending_transactions_inner(
     })
 }
 
+/// Query a transaction's receipt
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_transaction_receipt_inner(
+    beerus: &State<BeerusLightClient>,
+    tx_hash: String,
+) -> Result<QueryTxReceipt> {
+    let tx_hash = FieldElement::from_str(&tx_hash)?;
+    debug!("Query a transaction's receipt");
+    let receipt = beerus
+        .starknet_lightclient
+        .get_transaction_receipt(tx_hash)
+        .await?;
+    Ok(QueryTxReceipt {
+        tx_receipt: format!("{receipt:?}"),
+    })
+}
+
 /// Query block with txs
 /// # Returns
 /// `Block With Txs` - Block data with transactions list
@@ -1001,4 +1210,49 @@ async fn get_contract_storage_proof_inner(
         .await?;
 
     Ok(QueryContractStorageProofResponse { proof })
+}
+
+/// Query logs.
+/// # Returns
+/// `Ok(logs_query)` - Vec<ResponseLog> (fetched lgos)
+/// `Err(error)` - An error occurred.
+/// # Errors
+/// If the query fails, or if there are more than 5 logs.
+/// # Examples
+pub async fn declare_transaction_inner(
+    beerus: &State<BeerusLightClient>,
+    transaction_data: Json<AddDeclareTransactionJson>,
+) -> Result<AddDeclareTransactionResponse> {
+    debug!("Declare Transaction");
+    let Json(transaction) = transaction_data;
+
+    let max_fee: FieldElement = FieldElement::from_str(&transaction.max_fee).unwrap();
+    let version: u64 = 10;
+    let signature = transaction
+        .signature
+        .iter()
+        .map(|x| FieldElement::from_str(x).unwrap())
+        .collect();
+    let nonce: FieldElement = FieldElement::from_str(&transaction.nonce).unwrap();
+    let contract_class_bytes = transaction.contract_class.as_bytes();
+    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    let sender_address: FieldElement = FieldElement::from_str(&transaction.sender_address).unwrap();
+
+    let declare_transaction = BroadcastedDeclareTransaction {
+        max_fee,
+        version,
+        signature,
+        nonce,
+        contract_class,
+        sender_address,
+    };
+
+    let declare_transaction_hash = beerus
+        .starknet_lightclient
+        .add_declare_transaction(&declare_transaction)
+        .await?;
+    Ok(AddDeclareTransactionResponse {
+        transaction_hash: declare_transaction_hash.transaction_hash.to_string(),
+        class_hash: declare_transaction_hash.class_hash.to_string(),
+    })
 }

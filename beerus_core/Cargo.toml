@@ -19,7 +19,6 @@ url = "2.3.1"
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 tokio = { version = "1.21.2", features = ["macros"] }
 
-
 [dev-dependencies]
 httpmock = "0.6.7"
 temp-env = "0.3.1"
