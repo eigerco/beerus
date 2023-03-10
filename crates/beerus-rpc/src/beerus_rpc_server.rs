@@ -10,7 +10,7 @@ use jsonrpsee::{
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes,
 };
 
 pub struct BeerusRpc {
