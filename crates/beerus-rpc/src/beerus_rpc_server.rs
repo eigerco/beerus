@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use beerus_core::lightclient::beerus::BeerusLightClient;
 /// The RPC module for the Ethereum protocol required by Kakarot.
 use jsonrpsee::{
@@ -6,7 +8,10 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, MaybePendingBlockWithTxHashes};
+use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::{
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes,
+};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -29,6 +34,14 @@ trait BeerusApi {
         block_id_type: String,
         block_id: String,
     ) -> Result<u64>;
+
+    #[method(name = "starknet_getClassAt")]
+    async fn starknet_get_class_at(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+    ) -> Result<ContractClass>;
 
     #[method(name = "starknet_blockHashAndNumber")]
     async fn starknet_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
@@ -91,6 +104,22 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .block_hash_and_number()
+            .await
+            .unwrap())
+    }
+
+    async fn starknet_get_class_at(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+    ) -> Result<ContractClass> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let contract_address = FieldElement::from_str(&contract_address).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_class_at(&block_id, contract_address)
             .await
             .unwrap())
     }
