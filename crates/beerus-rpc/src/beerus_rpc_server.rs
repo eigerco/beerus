@@ -37,8 +37,8 @@ trait BeerusApi {
     #[method(name = "stark_getBlockWithTxs")]
     async fn get_block_with_txs(
         &self,
-        block_id: &str,
         block_id_type: &str,
+        block_id: &str,
     ) -> Result<MaybePendingBlockWithTxs>;
 }
 
@@ -98,8 +98,8 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_block_with_txs(
         &self,
-        block_id: &str,
         block_id_type: &str,
+        block_id: &str,
     ) -> Result<MaybePendingBlockWithTxs> {
         let block_id =
             beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
