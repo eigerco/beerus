@@ -8,6 +8,7 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
+use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, SyncStatusType,
@@ -55,6 +56,9 @@ trait BeerusApi {
 
     #[method(name = "starknet_syncing")]
     async fn starknet_syncing(&self) -> Result<SyncStatusType>;
+
+    #[method(name = "starknet_l1_to_l2_message_nonce")]
+    async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256>;
 }
 
 #[async_trait]
@@ -144,6 +148,15 @@ impl BeerusApiServer for BeerusRpc {
     async fn starknet_syncing(&self) -> Result<SyncStatusType> {
         let sync_status_type = self._beerus.starknet_lightclient.syncing().await.unwrap();
         Ok(sync_status_type)
+    }
+
+    async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
+        let nonce = self
+            ._beerus
+            .starknet_l1_to_l2_message_nonce()
+            .await
+            .unwrap();
+        Ok(nonce)
     }
 }
 
