@@ -1,6 +1,6 @@
 name: test
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   check:
@@ -11,11 +11,13 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          override: true
+          toolchain: stable
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
-          command: check
+          command: fmt
+          args: --all -- --check
 
   test:
     name: test
@@ -26,8 +28,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
+          toolchain: stable
           components: llvm-tools-preview
-          override: true
       - name: Retreive cached dependecies
         uses: Swatinem/rust-cache@v2
       - name: Setup coverage env
@@ -43,18 +45,3 @@ jobs:
         with:
           files: lcov.info
           fail_ci_if_error: false
-
-  fmt:
-    name: fmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check

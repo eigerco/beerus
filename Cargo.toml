@@ -1,5 +1,5 @@
 [workspace]
-members = ["beerus_core", "beerus_cli", "beerus_rest_api", "beerus-rpc"]
+members = ["crates/beerus-core", "crates/beerus-cli", "crates/beerus-rpc"]
 
 [workspace.package]
 version = "0.1.0"
@@ -9,4 +9,8 @@ license = "MIT"
 license-file = "LICENSE"
 
 [workspace.dependencies]
-beerus_core = { path = "./beerus_core" }
+beerus-core = { path = "./crates/beerus-core" }
+helios = { git = "https://github.com/a16z/helios" }
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
+ethers = "1.0.2"
+eyre = "0.6.8"
