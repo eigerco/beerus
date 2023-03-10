@@ -23,6 +23,9 @@ trait BeerusApi {
     #[method(name = "hello_world")]
     async fn hello_world(&self) -> Result<String>;
 
+    #[method(name = "starknet_l2_to_l1_messages")]
+    async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256>;
+
     #[method(name = "starknet_chainId")]
     async fn starknet_chain_id(&self) -> Result<String>;
 
@@ -78,6 +81,14 @@ trait BeerusApi {
 impl BeerusApiServer for BeerusRpc {
     async fn hello_world(&self) -> Result<String> {
         Ok("Hello World!".to_string())
+    }
+
+    async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
+        Ok(self
+            ._beerus
+            .starknet_l2_to_l1_messages(msg_hash)
+            .await
+            .unwrap())
     }
 
     async fn starknet_chain_id(&self) -> Result<String> {
