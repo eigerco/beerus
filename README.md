@@ -196,6 +196,18 @@ source .env && ./target/release/beerus
 
 Beerus is configurable through environment variables.
 
+For the execution and  RPC url, you may use [helios](https://github.com/a16z/helios#configuration-files) as a reference
+
+```toml
+[mainnet]
+consensus_rpc = "https://www.lightclientdata.org"
+execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/XXXXX"
+
+[goerli]
+consensus_rpc = "http://testing.prater.beacon-api.nimbus.team"
+execution_rpc = "https://eth-goerli.g.alchemy.com/v2/XXXXX"
+```
+
 Here is the list of all the available environment variables:
 
 | Name                       | Default value | Description                                                                                                 |
