@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: cargo build --release --locked
     - name: Create Tarball
-      run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus_cli beerus_rest_api
+      run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus beerus-rpc
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:

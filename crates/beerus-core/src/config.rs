@@ -76,14 +76,14 @@ impl Config {
         match self.ethereum_network.to_lowercase().as_str() {
             "mainnet" => {
                 let _checkpoint = cf.fetch_latest_checkpoint(&Network::MAINNET).await?;
-                return Ok(format!("{_checkpoint:x}"));
+                Ok(format!("{_checkpoint:x}"))
             }
             "goerli" => {
                 let _checkpoint = cf.fetch_latest_checkpoint(&Network::GOERLI).await?;
-                return Ok(format!("{_checkpoint:x}"));
+                Ok(format!("{_checkpoint:x}"))
             }
-            _ => return Err(eyre!("Invalid network")),
-        };
+            _ => Err(eyre!("Invalid network")),
+        }
     }
 }
 

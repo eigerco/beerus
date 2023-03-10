@@ -108,10 +108,10 @@ install_beerus_manually() {
 
     find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
-    mv ./target/release/beerus_cli $PROJECT_BIN
-    mv ./target/release/beerus_rest_api $PROJECT_BIN
+    mv ./target/release/beerus $PROJECT_BIN
+    mv ./target/release/beerus-rpc $PROJECT_BIN
 
-    BEERUS_VER=$($PROJECT_BIN/beerus_cli --version | awk '{print $2}')
+    BEERUS_VER=$($PROJECT_BIN/beerus --version | awk '{print $2}')
 
     cd $WRK_DIR
     rm -rf $PROJECT_TMP/beerus
@@ -130,7 +130,7 @@ if [ "$1" = "dev" ] ; then
     install_beerus_manually
 else
     # Pull latest release if there is a new version
-    CURRENT_VER=$($PROJECT_BIN/beerus_cli --version  2> /dev/null | awk '{print $2}')
+    CURRENT_VER=$($PROJECT_BIN/beerus --version  2> /dev/null | awk '{print $2}')
     if [ "$LATEST_VER" = "v$CURRENT_VER" ]; then
         echo "$NAME is currently running the latest version: $LATEST_VER"
     else
@@ -142,7 +142,7 @@ fi
 echo "$NAME root installed at: $PROJECT_ROOT"
 if [ ! -z "$PROFILE" ]; then
     echo "Run 'source $PROFILE' to activate path or start a new terminal session to use Beerus."
-    echo "Then, run 'beerus_cli --help'."
+    echo "Then, run 'beerus --help'."
 fi
 
 echo "\nSet config:"

@@ -146,6 +146,18 @@ Meanwhile you can just use unit tests to dev.
 cargo test --all
 ```
 
+Run binary:
+
+```bash
+source .env && cargo run --bin beerus-rpc
+```
+
+Run binary verbose:
+
+```bash
+source .env && RUST_LOG=info cargo run --bin beerus-rpc
+```
+
 Build from source:
 
 ```bash
@@ -153,15 +165,15 @@ cargo build --all --release
 ```
 
 The binaries will be located in `target/release/`. Specifically, the binary for
-the CLI is `target/release/beerus_cli` and the binary for the API is
-`target/release/beerus_rest_api`.
+the CLI is `target/release/beerus` and the binary for the API is
+`target/release/beerus-rpc`.
 
 Specify the environment variables and run the binary.
 
 For example to query the state root of the StarkNet network using the CLI:
 
 ```bash
-source .env && ./target/release/beerus_cli starknet query-state-root
+source .env && ./target/release/beerus starknet query-state-root
 # Should output something like:
 # 3018024614248707887030376849268409283849258987090518998455999582305744756580
 ```
@@ -169,7 +181,7 @@ source .env && ./target/release/beerus_cli starknet query-state-root
 To do the same using the API:
 
 ```bash
-source .env && ./target/release/beerus_rest_api
+source .env && ./target/release/beerus
 # Then go to http://127.0.0.1:8000/starknet/state/root
 # Should output something like:
 ```
@@ -198,7 +210,7 @@ Here is the list of all the available environment variables:
 ### CLI
 
 ```bash
-Usage: beerus_cli [OPTIONS] <COMMAND>
+Usage: beerus [OPTIONS] <COMMAND>
 
 Commands:
   ethereum  Ethereum related subcommands
@@ -215,7 +227,7 @@ Options:
 ##### Query balance
 
 ```bash
-beerus_cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
+beerus ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
 # 2011.286832686010020640 ETH
 ```
 
@@ -224,14 +236,14 @@ beerus_cli ethereum query-balance --address 0x00000000219ab540356cBB839Cbe05303d
 ##### Query contract view
 
 ```bash
-beerus_cli starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
+beerus starknet query-contract --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --selector 0x1e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe1 --calldata 0x00,0x01
 [FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }, FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000000 }]
 ```
 
 ##### Query get storage at
 
 ```bash
-beerus_cli starknet query-get-storage-at --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --key 0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1
+beerus starknet query-get-storage-at --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --key 0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1
 298305742194
 ```
 
