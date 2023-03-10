@@ -11,7 +11,7 @@ use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, SyncStatusType,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
 };
 
 pub struct BeerusRpc {
@@ -53,6 +53,13 @@ trait BeerusApi {
         block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes>;
+
+    #[method(name = "starknet_getStateUpdate")]
+    async fn starknet_get_state_update(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<StateUpdate>;
 
     #[method(name = "starknet_syncing")]
     async fn starknet_syncing(&self) -> Result<SyncStatusType>;
@@ -147,6 +154,20 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .get_block_with_tx_hashes(&block_id)
+            .await
+            .unwrap())
+    }
+
+    async fn starknet_get_state_update(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<StateUpdate> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_state_update(&block_id)
             .await
             .unwrap())
     }
