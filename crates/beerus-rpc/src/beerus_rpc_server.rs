@@ -6,7 +6,7 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, MaybePendingBlockWithTxHashes};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -31,7 +31,14 @@ trait BeerusApi {
     ) -> Result<u64>;
 
     #[method(name = "stark_blockHashAndNumber")]
-    async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+    async fn stark_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "stark_blockWithTxHashes")]
+    async fn stark_block_with_tx_hashes(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<MaybePendingBlockWithTxHashes>;
 }
 
 #[async_trait]
@@ -79,11 +86,25 @@ impl BeerusApiServer for BeerusRpc {
         Ok(block_transaction_count)
     }
 
-    async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+    async fn stark_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
         Ok(self
             ._beerus
             .starknet_lightclient
             .block_hash_and_number()
+            .await
+            .unwrap())
+    }
+
+    async fn stark_block_with_tx_hashes(
+        &self,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<MaybePendingBlockWithTxHashes> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_block_with_tx_hashes(&block_id)
             .await
             .unwrap())
     }
