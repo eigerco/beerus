@@ -10,7 +10,7 @@ use jsonrpsee::{
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, SyncStatusType,
 };
 
 pub struct BeerusRpc {
@@ -52,6 +52,9 @@ trait BeerusApi {
         block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes>;
+
+    #[method(name = "starknet_syncing")]
+    async fn starknet_syncing(&self) -> Result<SyncStatusType>;
 }
 
 #[async_trait]
@@ -136,6 +139,11 @@ impl BeerusApiServer for BeerusRpc {
             .get_block_with_tx_hashes(&block_id)
             .await
             .unwrap())
+    }
+
+    async fn starknet_syncing(&self) -> Result<SyncStatusType> {
+        let sync_status_type = self._beerus.starknet_lightclient.syncing().await.unwrap();
+        Ok(sync_status_type)
     }
 }
 
