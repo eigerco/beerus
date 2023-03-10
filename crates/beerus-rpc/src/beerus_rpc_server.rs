@@ -6,6 +6,7 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
+use ethers::types::U256;
 use starknet::providers::jsonrpc::models::BlockHashAndNumber;
 
 pub struct BeerusRpc {
@@ -32,6 +33,9 @@ trait BeerusApi {
 
     #[method(name = "stark_blockHashAndNumber")]
     async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "starknet_l1_to_l2_message_nonce")]
+    async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256>;
 }
 
 #[async_trait]
@@ -86,6 +90,15 @@ impl BeerusApiServer for BeerusRpc {
             .block_hash_and_number()
             .await
             .unwrap())
+    }
+
+    async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
+        let nonce = self
+            ._beerus
+            .starknet_l1_to_l2_message_nonce()
+            .await
+            .unwrap();
+        Ok(nonce)
     }
 }
 
