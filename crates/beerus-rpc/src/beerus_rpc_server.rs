@@ -6,7 +6,7 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+use starknet::providers::jsonrpc::models::{BlockHashAndNumber, SyncStatusType};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -32,6 +32,9 @@ trait BeerusApi {
 
     #[method(name = "stark_blockHashAndNumber")]
     async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "starknet_syncing")]
+    async fn starknet_syncing(&self) -> Result<SyncStatusType>;
 }
 
 #[async_trait]
@@ -86,6 +89,11 @@ impl BeerusApiServer for BeerusRpc {
             .block_hash_and_number()
             .await
             .unwrap())
+    }
+
+    async fn starknet_syncing(&self) -> Result<SyncStatusType> {
+        let sync_status_type = self._beerus.starknet_lightclient.syncing().await.unwrap();
+        Ok(sync_status_type)
     }
 }
 
