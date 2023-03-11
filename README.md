@@ -31,6 +31,10 @@
 - [Architecture](#architecture)
   - [Simple usage overview](#simple-usage-overview)
 - [Getting Started](#getting-started)
+  - [Beerus CLI](#beerus-cli)
+    - [Debug Beerus CLI](#debug-beerus-cli)
+  - [Beerus RPC](#beerus-rpc)
+    - [Debug Beerus RPC](#debug-beerus-rpc)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Beerusup](#beerusup)
@@ -38,10 +42,6 @@
     - [Configuration](#configuration)
     - [Build](#build)
     - [Test](#test)
-    - [Beerus CLI](#beerus-cli)
-      - [Debug Beerus CLI](#debug-beerus-cli)
-    - [Beerus RPC](#beerus-rpc)
-      - [Debug Beerus RPC](#debug-beerus-rpc)
 - [Roadmap](#roadmap)
 - [Report a bug](#report-a-bug-1)
 - [Request a feature](#request-a-feature-1)
@@ -84,6 +84,22 @@ storage value of a StarkNet contract.
 [![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
 
 ## Getting Started
+
+#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-cli/README.md)
+
+##### Debug Beerus CLI
+
+```bash
+RUST_LOG=info cargo run --bin beerus-cli
+```
+
+#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/README.md)
+
+##### Debug Beerus RPC
+
+```bash
+RUST_LOG=info cargo run --bin beerus-rpc
+```
 
 ### Prerequisites
 
@@ -156,22 +172,6 @@ cargo build --release
 
 ```bash
 cargo test
-```
-
-#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-cli/README.md)
-
-##### Debug Beerus CLI
-
-```bash
-RUST_LOG=info cargo run --bin beerus-cli
-```
-
-#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/README.md)
-
-##### Debug Beerus RPC
-
-```bash
-RUST_LOG=info cargo run --bin beerus-rpc
 ```
 
 ## Roadmap
