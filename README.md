@@ -38,7 +38,10 @@
     - [Configuration](#configuration)
     - [Build](#build)
     - [Test](#test)
-    - [Debug](#debug)
+    - [Beerus CLI](#beerus-cli)
+      - [Debug Beerus CLI](#debug-beerus-cli)
+    - [Beerus RPC](#beerus-rpc)
+      - [Debug Beerus RPC](#debug-beerus-rpc)
 - [Roadmap](#roadmap)
 - [Report a bug](#report-a-bug-1)
 - [Request a feature](#request-a-feature-1)
@@ -155,7 +158,17 @@ cargo build --release
 cargo test
 ```
 
-#### Debug
+#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-cli/README.md)
+
+##### Debug Beerus CLI
+
+```bash
+RUST_LOG=info cargo run --bin beerus-cli
+```
+
+#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/README.md)
+
+##### Debug Beerus RPC
 
 ```bash
 RUST_LOG=info cargo run --bin beerus-rpc

@@ -1,4 +1,4 @@
-# Beerus Usage
+# Beerus CLI Usage
 
 Beerus CLI provides a variety of endpoints to interact with via the
 StarkNet and Ethereum Networks
