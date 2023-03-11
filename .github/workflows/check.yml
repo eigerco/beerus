@@ -16,8 +16,6 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          components: rustfmt, clippy
-
 
       - name: Cache Deps
         uses: Swatinem/rust-cache@v2
