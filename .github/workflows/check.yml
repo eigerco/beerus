@@ -1,32 +1,24 @@
-name: test
+name: check
 
 on: [pull_request]
 
 # TODO: removed llvm codecov until we have beerus-rpc testing 
 jobs:
   check:
-    name: Clippy + FMT + Test
+    name: check
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
       - name: Setup Toolchain
         uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
-          components: rustfmt, clippy
 
       - name: Cache Deps
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: Swatinem/rust-cache@v2
 
       - name: Clippy
         uses: actions-rs/cargo@v1
