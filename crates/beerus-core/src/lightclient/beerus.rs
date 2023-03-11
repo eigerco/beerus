@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, sync::Arc, thread, time};
+use std::{collections::BTreeMap, str::FromStr, sync::Arc, thread, time};
 use tokio::sync::RwLock;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
@@ -606,5 +606,23 @@ impl BeerusLightClient {
         let transactions = self.starknet_lightclient.pending_transactions().await?;
         
         Ok(transactions)
+    }
+
+    /// Return transaction by inputed hash
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// tx_hash: String
+    /// # Returns
+    /// Transaction
+    pub async fn get_transaction_by_hash(&self, tx_hash: String) -> Result<Transaction> {
+        let hash = FieldElement::from_str(&tx_hash)?;
+
+        let transaction = self
+            .starknet_lightclient
+            .get_transaction_by_hash(hash)
+            .await
+            .unwrap();
+
+        Ok(transaction)
     }
 }
