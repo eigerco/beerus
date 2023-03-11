@@ -3,19 +3,19 @@
     <img src="docs/images/beerus.png" height="200">
   <br />
   <br />
-  <a href="https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
+  <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
   -
-  <a href="https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
+  <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
   -
-  <a href="https://github.com/starknet-exploration/beerus/discussions">Ask a Question</a>
+  <a href="https://github.com/keep-starknet-strange/beerus/discussions">Ask a Question</a>
 </div>
 
 <div align="center">
 <br />
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/starknet-exploration/beerus/test?style=flat-square&logo=github)
-[![Project license](https://img.shields.io/github/license/starknet-exploration/beerus.svg?style=flat-square)](LICENSE)
-[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/starknet-exploration/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![GitHub Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
+[![Project license](https://img.shields.io/github/license/keep-starknet-strange/beerus.svg?style=flat-square)](LICENSE)
+[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 </div>
 
@@ -151,38 +151,38 @@ RUST_LOG=info cargo run --bin beerus-rpc
 
 ## Roadmap
 
-See the [open issues](https://github.com/starknet-exploration/beerus/issues) for
+See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
 a list of proposed features (and known issues).
 
-- [Top Feature Requests](https://github.com/starknet-exploration/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc)
+- [Top Feature Requests](https://github.com/keep-starknet-strange/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc)
   (Add your votes using the 👍 reaction)
-- [Top Bugs](https://github.com/starknet-exploration/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc)
+- [Top Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc)
   (Add your votes using the 👍 reaction)
-- [Newest Bugs](https://github.com/starknet-exploration/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+- [Newest Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Report a bug
 
 If you find a bug, please open a
-[GitHub issue](https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)!
+[GitHub issue](https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)!
 
 ## Request a feature
 
 To request a new feature, please open an issue following
-[this template](https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+).
+[this template](https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+).
 
 ## Support
 
 Reach out to the maintainer at one of the following places:
 
-- [GitHub Discussions](https://github.com/starknet-exploration/beerus/discussions)
+- [GitHub Discussions](https://github.com/keep-starknet-strange/beerus/discussions)
 - Contact options listed on
-  [this GitHub profile](https://github.com/starknet-exploration)
+  [this GitHub profile](https://github.com/keep-starknet-strange)
 
 ## Project assistance
 
 If you want to say **thank you** or/and support active development of Beerus:
 
-- Add a [GitHub Star](https://github.com/starknet-exploration/beerus) to the
+- Add a [GitHub Star](https://github.com/keep-starknet-strange/beerus) to the
   project.
 - Tweet about the Beerus.
 - Write interesting articles about the project on [Dev.to](https://dev.to/),
@@ -203,7 +203,7 @@ for being involved!
 ## Authors & contributors
 
 For a full list of all authors and contributors, see
-[the contributors page](https://github.com/starknet-exploration/beerus/contributors).
+[the contributors page](https://github.com/keep-starknet-strange/beerus/contributors).
 
 ## Security
 
