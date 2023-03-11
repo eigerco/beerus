@@ -10,12 +10,12 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-        
+
       - name: Setup Toolchain
         uses: actions-rs/toolchain@v1
 
       - name: Cache Deps
-        uses: uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2
 
       - name: Clippy
         uses: actions-rs/cargo@v1
