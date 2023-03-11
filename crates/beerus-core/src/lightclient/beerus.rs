@@ -550,6 +550,33 @@ impl BeerusLightClient {
         Ok(U256::from_big_endian(&call_response))
     }
 
+    /// Return block with transactions.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// BlockId
+    /// # Returns
+    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
+        // Get block_number from block_id
+        let block_number = match block_id {
+            BlockId::Number(number) => *number,
+            BlockId::Tag(_) => self.starknet_lightclient.block_number().await.unwrap(),
+            BlockId::Hash(_) => self.starknet_lightclient.block_number().await.unwrap(),
+        };
+        // Clone the node_data
+        let node_data = self.node.read().await.clone();
+
+        // Check if block_number its smaller or equal payload
+        if block_number <= node_data.block_number {
+            // Get state_root for current block_number
+            let payload_block = node_data.payload.get(&block_number).unwrap();
+            Ok(MaybePendingBlockWithTxs::Block(payload_block.to_owned()))
+        } else {
+            self.starknet_lightclient.get_block_with_txs(block_id).await
+        }
+    }
+
     /// Return block hash and number of latest block.
     /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
     /// # Arguments
@@ -724,5 +751,26 @@ impl BeerusLightClient {
         };
 
         Ok(transactions)
+    }
+
+    /// Return transaction by block number and index of transaction.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// block_id: &BlockId, index: u64
+    /// # Returns
+    /// Transaction
+    pub async fn get_transaction_by_block_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction> {
+        let block_with_txs = self.get_block_with_txs(block_id).await.unwrap();
+
+        let transactions = match block_with_txs {
+            MaybePendingBlockWithTxs::Block(block) => block.transactions,
+            MaybePendingBlockWithTxs::PendingBlock(block) => block.transactions,
+        };
+
+        Ok(transactions[index as usize].clone())
     }
 }
