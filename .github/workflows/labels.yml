@@ -1,5 +1,5 @@
 ---
-name: Sync labels
+name: labels
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   labels:
-    name: ♻️ Sync labels
+    name: labels
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub

@@ -2,46 +2,45 @@ name: test
 
 on: [pull_request]
 
+# TODO: removed llvm codecov until we have beerus-rpc testing 
 jobs:
   check:
-    name: check
+    name: Clippy + FMT + Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  test:
-    name: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup rust env
+      - name: Setup Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          components: llvm-tools-preview
-      - name: Retreive cached dependecies
-        uses: Swatinem/rust-cache@v2
-      - name: Setup coverage env
-        uses: taiki-e/install-action@cargo-llvm-cov
-      - name: Generate code coverage
-        env:
-          ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
-          ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
-          STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+          components: rustfmt, clippy
+
+      - name: Cache Deps
+        uses: actions/cache@v3
         with:
-          files: lcov.info
-          fail_ci_if_error: false
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+      - name: Format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
