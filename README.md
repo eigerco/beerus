@@ -39,14 +39,10 @@
     - [Beerus RPC](#beerus-rpc)
       - [Debug Beerus RPC](#debug-beerus-rpc)
 - [Roadmap](#roadmap)
-- [Report a bug](#report-a-bug-1)
-- [Request a feature](#request-a-feature-1)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
-- [Authors \& contributors](#authors--contributors)
 - [Security](#security)
-- [License](#license)
 - [Acknowledgements](#acknowledgements)
 - [Contributors ✨](#contributors-)
 
@@ -114,8 +110,10 @@ source .env
 
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
+
 Ethereum execution layer RPC URL (must be an Ethereum provider that supports
-the eth_getProof endpoint)
+the eth_getProof endpoint).
+
 Ethereum consensus layer RPC URL (must be a consensus node that supports the
 light client beacon chain api)
 
@@ -131,7 +129,6 @@ well.
 | ETHEREUM_CONSENSUS_RPC_URL | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
 | STARKNET_RPC_URL  | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX>
 | STARKNET_CORE_CONTRACT_ADDRESS | 0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4 | 0xde29d060D45901Fb19ED6C6e959EB22d8626708e |
-
 
 #### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
 
@@ -159,16 +156,6 @@ a list of proposed features (and known issues).
 - [Top Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc)
   (Add your votes using the 👍 reaction)
 - [Newest Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
-
-## Report a bug
-
-If you find a bug, please open a
-[GitHub issue](https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)!
-
-## Request a feature
-
-To request a new feature, please open an issue following
-[this template](https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+).
 
 ## Support
 
@@ -200,24 +187,13 @@ appreciated**.
 Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you
 for being involved!
 
-## Authors & contributors
-
-For a full list of all authors and contributors, see
-[the contributors page](https://github.com/keep-starknet-strange/beerus/contributors).
-
 ## Security
 
 Beerus follows good practices of security, but 100% security cannot be assured.
 Beerus is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our
-[security documentation](docs/SECURITY.md)._
-
-## License
-
-This project is licensed under the **MIT license**.
-
-See [LICENSE](LICENSE) for more information.
+[security documentation](docs/SECURITY.md).
 
 ## Acknowledgements
 
@@ -225,6 +201,8 @@ See [LICENSE](LICENSE) for more information.
   [helios](https://github.com/a16z/helios/).
 
 ## Contributors ✨
+
+[The contributors page](https://github.com/keep-starknet-strange/beerus/contributors).
 
 Thanks goes to these wonderful people
 ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
