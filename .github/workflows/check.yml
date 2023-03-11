@@ -32,10 +32,6 @@ jobs:
           command: fmt
           args: -- --check
 
-  test:
-    name: test
-    runs-on: ubuntu-latest
-    steps:
       - name: Test
         uses: actions-rs/cargo@v1
         with:
