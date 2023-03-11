@@ -104,7 +104,7 @@ install_beerus_manually() {
     cd $PROJECT_TMP/beerus
     
     echo "Building $NAME...\n"
-    cargo build -q --all --release 
+    cargo build -q --release 
 
     find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
 
