@@ -2,7 +2,8 @@ use eyre::Result;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 use std::net::{AddrParseError, SocketAddr};
 use thiserror::Error;
-mod server;
+pub mod server;
+pub mod utils;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use server::{BeerusApiServer, BeerusRpc};
 
