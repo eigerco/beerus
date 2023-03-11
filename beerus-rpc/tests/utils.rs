@@ -6,28 +6,25 @@ use beerus_core::{
     },
 };
 use beerus_rpc::{beerus_rpc_server::BeerusRpc, utils::wiremock::setup_wiremock};
-use std::path::PathBuf;
-
-pub const DEFAULT_DATA_DIR: &str = "/tmp";
 
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mock_starknet_rpc = setup_wiremock().await;
-    let config = Config {
-        ethereum_network: "goerli".to_string(),
-        ethereum_consensus_rpc: "".to_string(),
-        ethereum_execution_rpc: "".to_string(),
-        starknet_rpc: mock_starknet_rpc,
-        starknet_core_contract_address: Default::default(),
-        data_dir: Some(PathBuf::from(DEFAULT_DATA_DIR)),
-    };
+    set_mandatory_envs(mock_starknet_rpc);
+    let config = Config::default();
 
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
 
-    let beerus = BeerusLightClient::new(
+    let beerus_client = BeerusLightClient::new(
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
-    BeerusRpc::new(beerus)
+    BeerusRpc::new(beerus_client)
+}
+
+fn set_mandatory_envs(starknet_rpc: String) {
+    std::env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "");
+    std::env::set_var("ETHEREUM_EXECUTION_RPC_URL", "");
+    std::env::set_var("STARKNET_RPC_URL", starknet_rpc);
 }
