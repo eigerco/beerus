@@ -809,4 +809,25 @@ impl BeerusLightClient {
 
         Ok(transactions)
     }
+
+    /// Return transaction by block number and index of transaction.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// block_id: &BlockId, index: u64
+    /// # Returns
+    /// Transaction
+    pub async fn get_transaction_by_block_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction> {
+        let block_with_txs = self.get_block_with_txs(block_id).await.unwrap();
+
+        let transactions = match block_with_txs {
+            MaybePendingBlockWithTxs::Block(block) => block.transactions,
+            MaybePendingBlockWithTxs::PendingBlock(block) => block.transactions,
+        };
+
+        Ok(transactions[index as usize].clone())
+    }
 }
