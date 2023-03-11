@@ -519,4 +519,23 @@ impl BeerusLightClient {
 
         Ok(transactions[index as usize].clone())
     }
+
+    /// Return transaction count of requested block
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// block_id: &BlockId
+    /// # Returns
+    /// transaction_count: usize
+    pub async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<usize> {
+        let block_with_txs = self.get_block_with_txs(block_id).await.unwrap();
+
+        let transactions = match block_with_txs {
+            MaybePendingBlockWithTxs::Block(block) => block.transactions,
+            MaybePendingBlockWithTxs::PendingBlock(block) => block.transactions,
+        };
+
+        let transaction_count = transactions.len();
+
+        Ok(transaction_count)
+    }
 }
