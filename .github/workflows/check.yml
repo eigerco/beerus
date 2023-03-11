@@ -1,11 +1,11 @@
-name: test
+name: check
 
 on: [pull_request]
 
 # TODO: removed llvm codecov until we have beerus-rpc testing 
 jobs:
   check:
-    name: Clippy + FMT + Test
+    name: check
     runs-on: ubuntu-latest
     steps:
       - name: Setup Toolchain

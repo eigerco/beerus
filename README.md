@@ -2,8 +2,6 @@
   <h1>Beerus</h1>
     <img src="docs/images/beerus.png" height="200">
   <br />
-  <a href="#about"><strong>Explore the screenshots »</strong></a>
-  <br />
   <br />
   <a href="https://github.com/starknet-exploration/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
   -
@@ -31,17 +29,15 @@
 - [Architecture](#architecture)
   - [Simple usage overview](#simple-usage-overview)
 - [Getting Started](#getting-started)
-  - [Beerus CLI](#beerus-cli)
-    - [Debug Beerus CLI](#debug-beerus-cli)
-  - [Beerus RPC](#beerus-rpc)
-    - [Debug Beerus RPC](#debug-beerus-rpc)
-  - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Beerusup](#beerusup)
-    - [Environment variables](#environment-variables)
-    - [Configuration](#configuration)
     - [Build](#build)
     - [Test](#test)
+    - [Environment variables](#environment-variables)
+    - [Beerus CLI](#beerus-cli)
+      - [Debug Beerus CLI](#debug-beerus-cli)
+    - [Beerus RPC](#beerus-rpc)
+      - [Debug Beerus RPC](#debug-beerus-rpc)
 - [Roadmap](#roadmap)
 - [Report a bug](#report-a-bug-1)
 - [Request a feature](#request-a-feature-1)
@@ -85,81 +81,14 @@ storage value of a StarkNet contract.
 
 ## Getting Started
 
-#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-cli/README.md)
-
-##### Debug Beerus CLI
-
-```bash
-RUST_LOG=info cargo run --bin beerus-cli
-```
-
-#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/README.md)
-
-##### Debug Beerus RPC
-
-```bash
-RUST_LOG=info cargo run --bin beerus-rpc
-```
-
-### Prerequisites
-
-- [Rust](https://www.rust-lang.org/tools/install)
-
 ### Installation
 
 #### Beerusup
 
-To install with `beerusup` run (beerusup requires nightly rustup):
+To install with `beerusup`:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
-```
-
-#### Environment variables
-
-The project requires an Ethereum node and a Starknet node. For Ethereum nodes
-you can use Alchemy (not Infura since it does not support getProof endpoint).
-
-For StarkNet node for the moment you can use Infura but soon
-[verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
-will be implemented in Pathfinder nodes, and so will these nodes be working as
-well.
-
-#### Configuration
-
-Beerus is configurable through environment variables.
-
-For the execution and  RPC url, you may use [helios](https://github.com/a16z/helios#configuration-files) as a reference
-
-```toml
-[mainnet]
-consensus_rpc = "https://www.lightclientdata.org"
-execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/XXXXX"
-
-[goerli]
-consensus_rpc = "http://testing.prater.beacon-api.nimbus.team"
-execution_rpc = "https://eth-goerli.g.alchemy.com/v2/XXXXX"
-```
-
-Here is the list of all the available environment variables:
-
-| Name                       | Default value | Description                                                                                                 |
-| -------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| ETHEREUM_NETWORK           | goerli        | The Ethereum network to use. Can be one of `mainnet`, `goerli`.                                             |
-| ETHEREUM_EXECUTION_RPC_URL | No            | Ethereum execution layer RPC URL (must be an Ethereum provider that supports the eth_getProof endpoint)     |
-| ETHEREUM_CONSENSUS_RPC_URL | No            | Ethereum consensus layer RPC URL (must be a consensus node that supports the light client beacon chain api) |
-| STARKNET_CORE_CONTRACT_ADDRESS | No            | location of core contracts |
-| STARKNET_RPC_URL           | No            | StarkNet RPC URL |
-
-Copy the `.env.example` file to a `.env` file and populate each variable (they
-are all mandatory except for `ETHEREUM_NETWORK` which defaults to `"goerli"`:
-
-```bash
-cp examples/.env.example .env
-```
-
-```bash
-source .env
 ```
 
 #### Build
@@ -172,6 +101,52 @@ cargo build --release
 
 ```bash
 cargo test
+```
+
+#### Environment variables
+
+Beerus is configurable through environment variables.
+
+```bash
+cp examples/.env.example .env
+source .env
+```
+
+The project requires an Ethereum node and a Starknet node. For Ethereum nodes
+you can use Alchemy (not Infura since it does not support getProof endpoint).
+Ethereum execution layer RPC URL (must be an Ethereum provider that supports
+the eth_getProof endpoint)
+Ethereum consensus layer RPC URL (must be a consensus node that supports the
+light client beacon chain api)
+
+For StarkNet node for the moment you can use Infura but soon
+[verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
+will be implemented in Pathfinder nodes, and so will these nodes be working as
+well.
+
+| Name | Mainnet | Goerli |
+| -------------  | ------------- | ------------- |
+| ETHEREUM_NETWORK | `mainnet` | `goerli(default)` |
+| ETHEREUM_EXECUTION_RPC_URL | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
+| ETHEREUM_CONSENSUS_RPC_URL | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
+| STARKNET_RPC_URL  | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX>
+| STARKNET_CORE_CONTRACT_ADDRESS | 0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4 | 0xde29d060D45901Fb19ED6C6e959EB22d8626708e |
+
+
+#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
+
+##### Debug Beerus CLI
+
+```bash
+RUST_LOG=info cargo run --bin beerus-cli
+```
+
+#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
+
+##### Debug Beerus RPC
+
+```bash
+RUST_LOG=info cargo run --bin beerus-rpc
 ```
 
 ## Roadmap
