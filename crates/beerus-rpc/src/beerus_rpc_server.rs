@@ -6,7 +6,10 @@ use jsonrpsee::{
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use starknet::providers::jsonrpc::models::BlockHashAndNumber;
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{BlockHashAndNumber, MaybePendingTransactionReceipt},
+};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -32,6 +35,12 @@ trait BeerusApi {
 
     #[method(name = "stark_blockHashAndNumber")]
     async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
+
+    #[method(name = "stark_transactionReceipt")]
+    async fn get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt>;
 }
 
 #[async_trait]
@@ -84,6 +93,19 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .block_hash_and_number()
+            .await
+            .unwrap())
+    }
+
+    async fn get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_transaction_receipt(tx_hash_felt)
             .await
             .unwrap())
     }
