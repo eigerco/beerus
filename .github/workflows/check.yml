@@ -13,15 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: install toolchain
-        run: |
-          rustup set profile minimal
-          rustup update --no-self-update stable
-          
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          
       - run: cargo test -- -q --test-threads=2
 
   clippy:
@@ -29,15 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: install toolchain
-        run: |
-          rustup set profile minimal
-          rustup update --no-self-update stable
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2          
       # TODO: cleanup for
       # cargo clippy --all-features and --all-targets -- -D warnings
       - run: cargo clippy -- -D warnings
@@ -47,13 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: install toolchain
-        run: |
-          rustup set profile minimal
-          rustup update --no-self-update stable
-
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-
       - run: cargo fmt --check
