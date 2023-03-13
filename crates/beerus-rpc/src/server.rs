@@ -10,12 +10,10 @@ use jsonrpsee::{
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
+use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
-    Transaction,
-};
-use starknet::{
-    core::types::FieldElement, providers::jsonrpc::models::MaybePendingTransactionReceipt,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 
 pub struct BeerusRpc {
@@ -68,6 +66,13 @@ trait BeerusApi {
         block_id: &str,
         index: &str,
     ) -> Result<Transaction>;
+
+    #[method(name = "starknet_getBlockWithTxs")]
+    async fn starknet_get_block_with_txs(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+    ) -> Result<MaybePendingBlockWithTxs>;
 
     #[method(name = "starknet_getStateUpdate")]
     async fn starknet_get_state_update(
@@ -207,6 +212,28 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .get_transaction_by_block_id_and_index(&block_id, index)
+            .await
+            .map_err(|e| {
+                jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
+            })?;
+        Ok(result)
+    }
+    async fn starknet_get_block_with_txs(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+    ) -> Result<MaybePendingBlockWithTxs> {
+        let block_id =
+            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
+                .map_err(|e| {
+                    jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(
+                        e.to_string()
+                    )))
+                })?;
+        let result = self
+            ._beerus
+            .starknet_lightclient
+            .get_block_with_txs(&block_id)
             .await
             .map_err(|e| {
                 jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
