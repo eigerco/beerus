@@ -10,10 +10,11 @@ use jsonrpsee::{
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
+use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
 };
-use starknet::{core::types::FieldElement, providers::jsonrpc::models::MaybePendingBlockWithTxs};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -83,6 +84,12 @@ trait BeerusApi {
 
     #[method(name = "starknet_l1_to_l2_message_cancellations")]
     async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256>;
+
+    #[method(name = "starknet_getTransactionReceipt")]
+    async fn starknet_get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt>;
 }
 
 #[async_trait]
@@ -240,6 +247,19 @@ impl BeerusApiServer for BeerusRpc {
         Ok(self
             ._beerus
             .starknet_l1_to_l2_message_cancellations(msg_hash)
+            .await
+            .unwrap())
+    }
+
+    async fn starknet_get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_transaction_receipt(tx_hash_felt)
             .await
             .unwrap())
     }

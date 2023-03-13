@@ -2,37 +2,58 @@ name: check
 
 on: [pull_request]
 
-# TODO: removed llvm codecov until we have beerus-rpc testing 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+# TODO: add back llvm codecov when we beerus-rpc testing 
 jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+          
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          
+      - run: cargo test -- -q --test-threads=2
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          
+      # TODO: cleanup for
+      # cargo clippy --all-features and --all-targets -- -D warnings
+      - run: cargo clippy -- -D warnings
+
   check:
     name: check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: install toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
 
-      - name: Setup Toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          profile: minimal
-          toolchain: stable
+          cache-on-failure: true
 
-      - name: Cache Deps
-        uses: Swatinem/rust-cache@v2
-
-      - name: Clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
-
-      - name: Format
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
-
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo fmt --check
