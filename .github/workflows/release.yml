@@ -28,12 +28,11 @@ jobs:
         run: |
           rustup set profile minimal
           rustup update --no-self-update stable
-          rustup default stable
           
       - name: Cache Deps
         uses: Swatinem/rust-cache@v2
         with:
-          
+          cache-on-failure: true
 
       - name: Build
         run: cargo build --release --locked
