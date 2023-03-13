@@ -6,7 +6,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-# TODO: add back llvm codecov when we beerus-rpc testing 
+# TODO: add llvm codecov when we beerus-rpc testing 
 jobs:
   check:
     name: check
