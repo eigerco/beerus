@@ -16,7 +16,8 @@ use starknet::{
         BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
         BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
         DeployTransaction, FeeEstimate, FunctionCall, InvokeTransaction, L1HandlerTransaction,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, Transaction,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        Transaction,
     },
 };
 
@@ -474,6 +475,36 @@ impl BeerusLightClient {
         }
     }
 
+    /// Return transaction receipt of a transaction.
+    /// # Arguments
+    /// * `tx_hash` - The transaction hash as String.
+    /// # Returns
+    /// `Ok(MaybePendingTransactionReceipt)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        let cloned_node = self.node.read().await;
+        let state_root = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await?
+            .to_string();
+
+        if cloned_node.state_root != state_root {
+            return Err(eyre::eyre!("State root mismatch"));
+        }
+
+        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
+        let tx_receipt = self
+            .starknet_lightclient
+            .get_transaction_receipt(tx_hash_felt)
+            .await?;
+        Ok(tx_receipt)
+    }
     /// Return block with transaction hashes.
     /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
     /// # Arguments
