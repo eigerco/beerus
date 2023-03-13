@@ -216,7 +216,7 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn starknet_estimate_fee(&self, broadcasted_transaction: String, block_id_type: String,  block_id: String) -> Result<FeeEstimate>  {
         let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-        let broadcasted_transaction: BroadcastedTransaction = serde_json::from_str(&*broadcasted_transaction).unwrap();
+        let broadcasted_transaction: BroadcastedTransaction = serde_json::from_str(&broadcasted_transaction).unwrap();
 
         Ok(self
             ._beerus
