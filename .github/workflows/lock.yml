@@ -1,5 +1,5 @@
 ---
-name: Lock
+name: lock
 
 on:
   schedule:
