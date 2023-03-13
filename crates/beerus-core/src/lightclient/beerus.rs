@@ -13,8 +13,10 @@ use helios::types::CallOpts;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BlockTag as StarknetBlockTag, BlockWithTxs,
-        BroadcastedTransaction, FeeEstimate, FunctionCall, MaybePendingBlockWithTxs,
+        BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
+        BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
+        DeployTransaction, FeeEstimate, FunctionCall, InvokeTransaction, L1HandlerTransaction,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, Transaction,
     },
 };
 
@@ -469,6 +471,96 @@ impl BeerusLightClient {
                 block_number: block.block_number,
             }),
             _ => Err(eyre::eyre!("Block not found")),
+        }
+    }
+
+    /// Return block with transaction hashes.
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// BlockId
+    /// # Returns
+    /// `Ok(MaybePendingBlockWithTxHashes)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes> {
+        let cloned_node = self.node.read().await;
+        let payload = cloned_node.payload.clone();
+
+        let block = match block_id {
+            BlockId::Number(block_number) => payload.get(block_number),
+            BlockId::Hash(block_hash) => {
+                let block = payload
+                    .values()
+                    .find(|block| block.block_hash == *block_hash);
+                match block {
+                    Some(block) => Some(block),
+                    None => {
+                        return Err(eyre::eyre!(
+                            "Block with hash {} not found in the payload.",
+                            block_hash
+                        ))
+                    }
+                }
+            }
+            BlockId::Tag(tag) => match tag {
+                StarknetBlockTag::Latest => payload.get(&cloned_node.block_number),
+                StarknetBlockTag::Pending => {
+                    let block = payload
+                        .values()
+                        .find(|block| block.status == BlockStatus::Pending);
+                    match block {
+                        Some(block) => Some(block),
+                        None => {
+                            return Err(eyre::eyre!(
+                                "Block with pending status not found in the payload."
+                            ))
+                        }
+                    }
+                }
+            },
+        };
+
+        match block {
+            Some(block) => {
+                let tx_hashes = block
+                    .clone()
+                    .transactions
+                    .into_iter()
+                    .map(|transaction| match transaction {
+                        Transaction::Invoke(tx) => match tx {
+                            InvokeTransaction::V0(v0_tx) => v0_tx.transaction_hash,
+                            InvokeTransaction::V1(v1_tx) => v1_tx.transaction_hash,
+                        },
+                        Transaction::L1Handler(L1HandlerTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::Declare(DeclareTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::Deploy(DeployTransaction {
+                            transaction_hash, ..
+                        })
+                        | Transaction::DeployAccount(DeployAccountTransaction {
+                            transaction_hash,
+                            ..
+                        }) => transaction_hash,
+                    })
+                    .collect();
+                let block_with_tx_hashes = BlockWithTxHashes {
+                    transactions: tx_hashes,
+                    status: block.status.clone(),
+                    block_hash: block.block_hash,
+                    parent_hash: block.parent_hash,
+                    block_number: block.block_number,
+                    new_root: block.new_root,
+                    timestamp: block.timestamp,
+                    sequencer_address: block.sequencer_address,
+                };
+                Ok(MaybePendingBlockWithTxHashes::Block(block_with_tx_hashes))
+            }
+            _ => Err(eyre::eyre!("Error while retrieving block.")),
         }
     }
 }
