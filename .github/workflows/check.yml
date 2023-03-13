@@ -24,6 +24,10 @@ jobs:
           cache-on-failure: true
           
       - run: cargo test -- -q --test-threads=2
+      - run: |
+          env
+          echo ""
+          
 
   clippy:
     name: clippy
