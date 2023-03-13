@@ -473,7 +473,13 @@ impl BeerusLightClient {
         }
     }
 
-    pub async fn get_transaction_receipt(
+    /// Return transaction receipt of a transaction.
+    /// # Arguments
+    /// * `tx_hash` - The transaction hash as String.
+    /// # Returns
+    /// `Ok(MaybePendingTransactionReceipt)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_get_transaction_receipt(
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt> {
