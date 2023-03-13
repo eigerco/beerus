@@ -625,4 +625,19 @@ impl BeerusLightClient {
 
         Ok(transaction)
     }
+    ///  Returns the pending transactions in the starknet transaction pool
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful - A vector of pending transactions
+    /// `Err(eyre::Report)` if the operation failed - No pending transactions found.
+    // TODO: Determine if error should throw if no pending transactions are found, or just a zero case
+    pub async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>> {
+        let transactions = self.starknet_lightclient.pending_transactions().await;
+        
+        match transactions {
+            Some(transactions) => Ok(Result<Vec<Transaction>>),
+            _ => Err(eyre::eyre!("No pending transactions found.")),
+        }
+    }
 }
