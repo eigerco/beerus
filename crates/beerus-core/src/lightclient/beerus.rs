@@ -550,8 +550,7 @@ impl BeerusLightClient {
                     .collect();
                 let block_with_tx_hashes = BlockWithTxHashes {
                     transactions: tx_hashes,
-                    // todo BlockWithTxs doesn't have a status field
-                    status: BlockStatus::AcceptedOnL2,
+                    status: block.status.clone(),
                     block_hash: block.block_hash,
                     parent_hash: block.parent_hash,
                     block_number: block.block_number,
