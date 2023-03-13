@@ -59,7 +59,6 @@ jobs:
           rustup default stable
           
       - uses: Swatinem/rust-cache@v2
-      - uses: Swatinem/rust-cache@v2
         with:
           shared-key: beerus-check
           cache-on-failure: true
