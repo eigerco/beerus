@@ -6,7 +6,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-# TODO: add llvm codecov when we beerus-rpc testing 
+# TODO: add back llvm codecov when we beerus-rpc testing 
 jobs:
   check:
     name: check
@@ -21,48 +21,43 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: beerus-check
           cache-on-failure: true
 
       - run: cargo fmt --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+          rustup default stable
+          rustup component add clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          
+      # TODO: cleanup for
+      # cargo clippy --all-features and --all-targets -- -D warnings
       - run: cargo clippy -- -D warnings
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+          rustup default stable
+          
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          
       - run: cargo test
-
-  # clippy:
-  #   name: clippy
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: install toolchain
-  #       run: |
-  #         rustup set profile minimal
-  #         rustup update --no-self-update stable
-  #         rustup default stable
-  #         rustup component add clippy
-
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: beerus-check
-  #         cache-on-failure: true
-          
-  #     # TODO: cleanup for
-  #     # cargo clippy --all-features and --all-targets -- -D warnings
-  #     - run: cargo clippy -- -D warnings
-
-  # test:
-  #   name: test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: install toolchain
-  #       run: |
-  #         rustup set profile minimal
-  #         rustup update --no-self-update stable
-  #         rustup default stable
-          
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: beerus-check
-  #         cache-on-failure: true
-          
-  #     - run: cargo test
