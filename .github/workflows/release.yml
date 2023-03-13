@@ -24,11 +24,11 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Setup Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
+      - name: Install Toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+          rustup default stable
           
       - name: Cache Deps
         uses: Swatinem/rust-cache@v2

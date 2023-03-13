@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
     use beerus_cli::model::CommandResponse;
-    use serde_json;
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockHashAndNumber};
 
     #[test]
