@@ -503,7 +503,6 @@ impl BeerusLightClient {
             .starknet_lightclient
             .get_transaction_receipt(tx_hash_felt)
             .await?;
-
         Ok(tx_receipt)
     }
     
