@@ -43,9 +43,12 @@ jobs:
         with:
           shared-key: beerus-check
           cache-on-failure: true
-      # TODO: cleanup for
-      # cargo clippy --all-features and --all-targets -- -D warnings
-      - run: cargo clippy -- -D warnings
+
+        uses: actions-rs/clippy-check@v1
+        with:
+          # args: --all --all-features
+          args: -- -D warnings
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     name: test
