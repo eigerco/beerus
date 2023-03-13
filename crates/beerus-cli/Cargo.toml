@@ -21,16 +21,6 @@ serde_json = "1.0.91"
 base64 = "0.20.0"
 serde = "1.0.152"
 
-[dev-dependencies.cargo-husky]
-version = "1.5.0"
-default-features = false
-features = [
-    "precommit-hook",
-    "run-for-all",
-    "run-cargo-clippy",
-    "run-cargo-fmt",
-]
-
 [[bin]]
 name = "beerus"
 path = "src/main.rs"
