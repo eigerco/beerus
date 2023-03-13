@@ -14,7 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install toolchain
-        run: rustup update --no-self-update --profile=minimal stable
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -28,7 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install toolchain
-        run: rustup update --no-self-update --profile=minimal stable
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -44,7 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install toolchain
-        run: rustup update --no-self-update --profile=minimal stable
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
           
       - uses: Swatinem/rust-cache@v2
         with:
