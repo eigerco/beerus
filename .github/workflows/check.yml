@@ -21,9 +21,7 @@ jobs:
           rustup component add rustfmt
 
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - run: cargo fmt --check
 
   clippy:
     name: clippy
@@ -38,12 +36,9 @@ jobs:
           rustup component add clippy
 
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          # TODO: cleanup for --all-features and --all-targets
-          # args: --all-features --all-targets -- -D warnings
-          args: --all-features --all-targets -- -D warnings
+      # TODO: cleanup for
+      # cargo clippy --all-features and --all-targets -- -D warnings
+      - run: cargo clippy -- -D warnings
 
   test:
     name: test
@@ -57,6 +52,4 @@ jobs:
           rustup default stable
           
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo test
