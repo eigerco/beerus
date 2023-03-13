@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, str::FromStr, sync::Arc, thread, time};
+use std::{collections::BTreeMap, sync::Arc, thread, time};
 use tokio::sync::RwLock;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
@@ -483,15 +483,16 @@ impl BeerusLightClient {
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt> {
-        let node_state_root = U256::from_str(&self.node.read().await.state_root)?;
+        let cloned_node = self.node.read().await;
         let state_root = self
             .ethereum_lightclient
             .read()
             .await
             .starknet_state_root()
-            .await?;
+            .await?
+            .to_string();
 
-        if node_state_root != state_root {
+        if cloned_node.state_root != state_root {
             return Err(eyre::eyre!("State root mismatch"));
         }
 
