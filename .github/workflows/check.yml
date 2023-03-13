@@ -21,6 +21,10 @@ jobs:
           rustup component add rustfmt
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: beerus-check
+          cache-on-failure: true
+
       - run: cargo fmt --check
 
   clippy:
@@ -36,6 +40,9 @@ jobs:
           rustup component add clippy
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: beerus-check
+          cache-on-failure: true
       # TODO: cleanup for
       # cargo clippy --all-features and --all-targets -- -D warnings
       - run: cargo clippy -- -D warnings
@@ -52,4 +59,9 @@ jobs:
           rustup default stable
           
       - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: beerus-check
+          cache-on-failure: true
+          
       - run: cargo test
