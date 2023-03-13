@@ -20,6 +20,7 @@ jobs:
           
       - uses: Swatinem/rust-cache@v2
         with:
+          shared-key: test
           cache-on-failure: true
           
       - run: cargo test -- -q --test-threads=2
@@ -36,6 +37,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          shared-key: clippy
           cache-on-failure: true
           
       # TODO: cleanup for
@@ -54,6 +56,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          shared-key: check
           cache-on-failure: true
 
       - run: cargo fmt --check
