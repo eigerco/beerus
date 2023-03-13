@@ -13,7 +13,7 @@ use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
     BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 
 pub struct BeerusRpc {
@@ -58,6 +58,14 @@ trait BeerusApi {
         block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes>;
+
+    #[method(name = "starknet_getTransactionByBlockIdAndIndex")]
+    async fn starknet_get_transaction_by_block_id_and_index(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+        index: &str,
+    ) -> Result<Transaction>;
 
     #[method(name = "starknet_getBlockWithTxs")]
     async fn starknet_get_block_with_txs(
@@ -184,6 +192,32 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
+    async fn starknet_get_transaction_by_block_id_and_index(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+        index: &str,
+    ) -> Result<Transaction> {
+        let block_id =
+            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
+                .map_err(|e| {
+                    jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(
+                        e.to_string()
+                    )))
+                })?;
+        let index = u64::from_str(index).map_err(|e| {
+            jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
+        })?;
+        let result = self
+            ._beerus
+            .starknet_lightclient
+            .get_transaction_by_block_id_and_index(&block_id, index)
+            .await
+            .map_err(|e| {
+                jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
+            })?;
+        Ok(result)
+    }
     async fn starknet_get_block_with_txs(
         &self,
         block_id_type: &str,
