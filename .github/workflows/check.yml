@@ -19,9 +19,6 @@ jobs:
           rustup update --no-self-update stable
           
       - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          
       - run: cargo test -- -q --test-threads=2
 
   clippy:
@@ -34,10 +31,7 @@ jobs:
           rustup set profile minimal
           rustup update --no-self-update stable
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          
+      - uses: Swatinem/rust-cache@v2          
       # TODO: cleanup for
       # cargo clippy --all-features and --all-targets -- -D warnings
       - run: cargo clippy -- -D warnings
@@ -53,7 +47,4 @@ jobs:
           rustup update --no-self-update stable
 
       - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-
       - run: cargo fmt --check
