@@ -22,7 +22,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: beerus-check
+          key: beerus-check
           cache-on-failure: true
 
       - run: cargo fmt --check
@@ -41,7 +41,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: beerus-check
+          key: beerus-check
           cache-on-failure: true
       # TODO: cleanup for
       # cargo clippy --all-features and --all-targets -- -D warnings
@@ -61,7 +61,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: beerus-check
+          key: beerus-check
           cache-on-failure: true
           
       - run: cargo test
