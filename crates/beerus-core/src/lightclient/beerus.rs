@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, sync::Arc, thread, time};
+use std::{collections::BTreeMap, str::FromStr, sync::Arc, thread, time};
 use tokio::sync::RwLock;
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
@@ -15,6 +15,7 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BlockTag as StarknetBlockTag, BlockWithTxs,
         BroadcastedTransaction, FeeEstimate, FunctionCall, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt,
     },
 };
 
@@ -470,5 +471,30 @@ impl BeerusLightClient {
             }),
             _ => Err(eyre::eyre!("Block not found")),
         }
+    }
+
+    pub async fn get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        let node_state_root = U256::from_str(&self.node.read().await.state_root)?;
+        let state_root = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_state_root()
+            .await?;
+
+        if node_state_root != state_root {
+            return Err(eyre::eyre!("State root mismatch"));
+        }
+
+        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
+        let tx_receipt = self
+            .starknet_lightclient
+            .get_transaction_receipt(tx_hash_felt)
+            .await?;
+
+        Ok(tx_receipt)
     }
 }
