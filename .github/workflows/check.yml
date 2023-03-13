@@ -8,8 +8,8 @@ concurrency:
 
 # TODO: add back llvm codecov when we beerus-rpc testing 
 jobs:
-  check:
-    name: check
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,12 +17,12 @@ jobs:
         run: |
           rustup set profile minimal
           rustup update --no-self-update stable
-
+          
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-
-      - run: cargo fmt --check
+          
+      - run: cargo test -- -q --test-threads=2
 
   clippy:
     name: clippy
@@ -42,8 +42,8 @@ jobs:
       # cargo clippy --all-features and --all-targets -- -D warnings
       - run: cargo clippy -- -D warnings
 
-  test:
-    name: test
+  check:
+    name: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -51,9 +51,9 @@ jobs:
         run: |
           rustup set profile minimal
           rustup update --no-self-update stable
-          
+
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-          
-      - run: cargo test -- -q
+
+      - run: cargo fmt --check
