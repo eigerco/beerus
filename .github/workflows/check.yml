@@ -44,7 +44,7 @@ jobs:
           shared-key: beerus-check
           cache-on-failure: true
 
-        uses: actions-rs/clippy-check@v1
+      - uses: actions-rs/clippy-check@v1
         with:
           # args: --all --all-features
           args: -- -D warnings
