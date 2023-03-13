@@ -3957,6 +3957,37 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
     }
 
+    #[tokio::test]
+    async fn given_empty_result_when_calling_starknet_pending_transactions_then_should_return_error(
+    ) {
+        // Given
+        // Mock config and beerus light client with a mocked starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Mock dependencies.
+        starknet_lightclient_mock
+            .expect_pending_transactions()
+            .return_once(|| Ok(vec![])); // Return an empty list of pending transactions.
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        let result = beerus.starknet_pending_transactions().await;
+
+        // Then
+        // Assert that the `starknet_pending_transactions` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // Assert that the error returned by the `starknet_pending_transactions` method of the Beerus light client is the expected error.
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "No pending transactions found.".to_string()
+        );
+    }
+
     fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
         let config = Config {
             ethereum_network: "mainnet".to_string(),
