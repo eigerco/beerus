@@ -20,14 +20,14 @@ jobs:
           
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: test
           cache-on-failure: true
           
       - run: cargo test -- -q --test-threads=2
       - run: |
           env
+          echo $CARGO_INCREMENTAL
           echo ""
-          
+
 
   clippy:
     name: clippy
@@ -41,7 +41,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: clippy
           cache-on-failure: true
           
       # TODO: cleanup for
@@ -60,7 +59,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: check
           cache-on-failure: true
 
       - run: cargo fmt --check
