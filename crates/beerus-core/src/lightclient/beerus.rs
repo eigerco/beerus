@@ -505,7 +505,6 @@ impl BeerusLightClient {
             .await?;
         Ok(tx_receipt)
     }
-    
     /// Return block with transaction hashes.
     /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
     /// # Arguments
