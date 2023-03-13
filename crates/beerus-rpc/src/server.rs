@@ -10,7 +10,7 @@ use jsonrpsee::{
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType, Transaction
 };
 use starknet::{
     core::types::FieldElement, providers::jsonrpc::models::MaybePendingTransactionReceipt,
@@ -83,6 +83,10 @@ trait BeerusApi {
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt>;
+
+    #[method(name = "starknet_pendingTransactions")]
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>>;
+
 }
 
 #[async_trait]
@@ -233,6 +237,18 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap())
     }
+
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>> {
+        let transactions = self
+            ._beerus
+            .starknet_lightclient
+            .pending_transactions()
+            .await
+            .unwrap();
+
+        Ok(transactions)
+    }
+
 }
 
 impl BeerusRpc {
