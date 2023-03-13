@@ -56,4 +56,4 @@ jobs:
         with:
           cache-on-failure: true
           
-      - run: cargo test
+      - run: cargo test -- -q
