@@ -1,5 +1,5 @@
 ---
-name: Release
+name: release
 
 on:
   push:
@@ -14,22 +14,38 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: beerus_linux_x86_64.tar.gz
-            asset_name: beerus_linux_x86_64.tar.gz
+            artifact_name: beerus-linux-x86_64.tar.gz
+            asset_name: beerus-linux-x86_64.tar.gz
           - os: macos-latest
-            artifact_name: beerus_darwin_x86_64.tar.gz
-            asset_name: beerus_darwin_x86_64.tar.gz
+            artifact_name: beerus-darwin-x86_64.tar.gz
+            asset_name: beerus-darwin-x86_64.tar.gz
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --release --locked
-    - name: Create Tarball
-      run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus_cli beerus_rest_api
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.asset_name }}
-        tag: ${{ github.ref }}
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install Toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
+          
+      - name: Cache Deps
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Create Tarball
+        run: >
+          tar -C target/release -czvf ${{ matrix.artifact_name }}
+          beerus beerus-rpc
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
