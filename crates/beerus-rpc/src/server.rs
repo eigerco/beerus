@@ -5,14 +5,15 @@ use beerus_core::lightclient::beerus::BeerusLightClient;
 use jsonrpsee::{
     core::{async_trait, RpcResult as Result},
     proc_macros::rpc,
+    types::error::CallError,
 };
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
-    MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
+    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
 
 pub struct BeerusRpc {
@@ -58,6 +59,21 @@ trait BeerusApi {
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes>;
 
+    #[method(name = "starknet_getTransactionByBlockIdAndIndex")]
+    async fn starknet_get_transaction_by_block_id_and_index(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+        index: &str,
+    ) -> Result<Transaction>;
+
+    #[method(name = "starknet_getBlockWithTxs")]
+    async fn starknet_get_block_with_txs(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+    ) -> Result<MaybePendingBlockWithTxs>;
+
     #[method(name = "starknet_getStateUpdate")]
     async fn starknet_get_state_update(
         &self,
@@ -84,6 +100,12 @@ trait BeerusApi {
         block_id_type: String,
         block_id: String,
     ) -> Result<FeeEstimate>;
+
+    #[method(name = "starknet_getTransactionReceipt")]
+    async fn starknet_get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt>;
 }
 
 #[async_trait]
@@ -178,6 +200,55 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
+    async fn starknet_get_transaction_by_block_id_and_index(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+        index: &str,
+    ) -> Result<Transaction> {
+        let block_id =
+            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
+                .map_err(|e| {
+                    jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(
+                        e.to_string()
+                    )))
+                })?;
+        let index = u64::from_str(index).map_err(|e| {
+            jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
+        })?;
+        let result = self
+            ._beerus
+            .starknet_lightclient
+            .get_transaction_by_block_id_and_index(&block_id, index)
+            .await
+            .map_err(|e| {
+                jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
+            })?;
+        Ok(result)
+    }
+    async fn starknet_get_block_with_txs(
+        &self,
+        block_id_type: &str,
+        block_id: &str,
+    ) -> Result<MaybePendingBlockWithTxs> {
+        let block_id =
+            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
+                .map_err(|e| {
+                    jsonrpsee::core::Error::Call(CallError::InvalidParams(anyhow::anyhow!(
+                        e.to_string()
+                    )))
+                })?;
+        let result = self
+            ._beerus
+            .starknet_lightclient
+            .get_block_with_txs(&block_id)
+            .await
+            .map_err(|e| {
+                jsonrpsee::core::Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
+            })?;
+        Ok(result)
+    }
+
     async fn starknet_get_state_update(
         &self,
         block_id_type: String,
@@ -235,6 +306,19 @@ impl BeerusApiServer for BeerusRpc {
         Ok(self
             ._beerus
             .starknet_estimate_fee(broadcasted_transaction, &block_id)
+            .await
+            .unwrap())
+    }
+    
+    async fn starknet_get_transaction_receipt(
+        &self,
+        tx_hash: String,
+    ) -> Result<MaybePendingTransactionReceipt> {
+        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_transaction_receipt(tx_hash_felt)
             .await
             .unwrap())
     }
