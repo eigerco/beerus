@@ -9,8 +9,11 @@ use jsonrpsee::{
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
-use starknet::core::types::{FieldElement};
-use starknet::providers::jsonrpc::models::{BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate, MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType};
+use starknet::core::types::FieldElement;
+use starknet::providers::jsonrpc::models::{
+    BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
+    MaybePendingBlockWithTxHashes, StateUpdate, SyncStatusType,
+};
 
 pub struct BeerusRpc {
     _beerus: BeerusLightClient,
@@ -75,8 +78,13 @@ trait BeerusApi {
     async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256>;
 
     #[method(name = "starknet_estimateFee")]
-    async fn starknet_estimate_fee(&self, broadcasted_transaction: String, block_id_type: String, block_id: String) -> Result<FeeEstimate>;
-    }
+    async fn starknet_estimate_fee(
+        &self,
+        broadcasted_transaction: String,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<FeeEstimate>;
+}
 
 #[async_trait]
 impl BeerusApiServer for BeerusRpc {
@@ -214,9 +222,15 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
-    async fn starknet_estimate_fee(&self, broadcasted_transaction: String, block_id_type: String,  block_id: String) -> Result<FeeEstimate>  {
+    async fn starknet_estimate_fee(
+        &self,
+        broadcasted_transaction: String,
+        block_id_type: String,
+        block_id: String,
+    ) -> Result<FeeEstimate> {
         let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-        let broadcasted_transaction: BroadcastedTransaction = serde_json::from_str(&broadcasted_transaction).unwrap();
+        let broadcasted_transaction: BroadcastedTransaction =
+            serde_json::from_str(&broadcasted_transaction).unwrap();
 
         Ok(self
             ._beerus
