@@ -31,6 +31,9 @@ trait BeerusApi {
     #[method(name = "starknet_chainId")]
     async fn starknet_chain_id(&self) -> Result<String>;
 
+    #[method(name = "starket_getNonce")]
+    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String>;
+
     #[method(name = "starknet_blockNumber")]
     async fn starknet_block_number(&self) -> Result<u64>;
 
@@ -124,6 +127,17 @@ impl BeerusApiServer for BeerusRpc {
             .to_string();
 
         Ok(chain_id)
+    }
+
+    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String> {
+        let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
+        let nonce = self
+            ._beerus
+            .starknet_get_nonce(contract_address)
+            .await
+            .unwrap()
+            .to_string();
+        Ok(nonce)
     }
 
     async fn starknet_block_number(&self) -> Result<u64> {
