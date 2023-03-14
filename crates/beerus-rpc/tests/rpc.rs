@@ -35,9 +35,9 @@ mod tests {
 
         assert_eq!(expected.gas_consumed, actual.gas_consumed);
         assert_eq!(expected.gas_price, actual.gas_price);
-        assert_eq!(expected.overall_fee, actual.overall_fee);   
+        assert_eq!(expected.overall_fee, actual.overall_fee);
     }
-    
+
     #[tokio::test]
     async fn test_get_block_transaction_count_is_ok() {
         let beerus_rpc = setup_beerus_rpc().await;

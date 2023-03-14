@@ -40,7 +40,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
-    
+
     pub const fn starknet_get_block_transaction_count(params: StarknetParams) -> Self {
         Self {
             id: 1,
@@ -88,7 +88,7 @@ fn mock_estimate_fee() -> Mock {
             "application/json",
         ))
 }
-      
+
 fn mock_get_block_transaction_count() -> Mock {
     let latest_block = BlockId::Tag(BlockTag::Latest);
     Mock::given(method("POST"))

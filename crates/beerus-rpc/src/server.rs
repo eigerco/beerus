@@ -12,8 +12,9 @@ use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
 use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+    BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+    StateUpdate, SyncStatusType, Transaction,
 };
 
 pub struct BeerusRpc {
@@ -309,7 +310,7 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap())
     }
-    
+
     async fn starknet_get_transaction_receipt(
         &self,
         tx_hash: String,
