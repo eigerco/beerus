@@ -1,17 +1,14 @@
-use std::str::FromStr;
-
 use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::{checkpoints, networks::Network};
 use std::path::PathBuf;
+use std::str::FromStr;
 
+pub const STARKNET_MAINNET_CC_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+pub const STARKNET_GOERLI_CC_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
-// By default, we use the Ethereum Mainnet value.
-// const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
-// For testing purpose use Goerli address until we make it configurable
-pub const DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS: &str =
-    "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
 pub const DEFAULT_DATA_DIR: &str = "/tmp";
+
 /// Global configuration.
 #[derive(Clone, PartialEq)]
 pub struct Config {
@@ -34,6 +31,12 @@ impl Config {
     pub fn new_from_env() -> Result<Self> {
         let ethereum_network = std::env::var("ETHEREUM_NETWORK")
             .unwrap_or_else(|_| DEFAULT_ETHEREUM_NETWORK.to_string());
+
+        let starknet_core_contract_address = match ethereum_network.as_str() {
+            DEFAULT_ETHEREUM_NETWORK => Address::from_str(STARKNET_GOERLI_CC_ADDRESS)?,
+            _ => Address::from_str(STARKNET_MAINNET_CC_ADDRESS)?,
+        };
+
         let ethereum_consensus_rpc = std::env::var("ETHEREUM_CONSENSUS_RPC_URL").map_err(|_| {
             eyre!("Missing mandatory environment variable: ETHEREUM_CONSENSUS_RPC_URL")
         })?;
@@ -42,9 +45,6 @@ impl Config {
         })?;
         let starknet_rpc = std::env::var("STARKNET_RPC_URL")
             .map_err(|_| eyre!("Missing mandatory environment variable: STARKNET_RPC_URL"))?;
-        let starknet_core_contract_address = std::env::var("STARKNET_CORE_CONTRACT_ADDRESS")
-            .unwrap_or_else(|_| DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS.to_string());
-        let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
         let data_dir_str =
             std::env::var("DATA_DIR").unwrap_or_else(|_| DEFAULT_DATA_DIR.to_string());
         let data_dir = PathBuf::from(data_dir_str);

@@ -14,3 +14,4 @@ helios = { git = "https://github.com/a16z/helios" }
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 ethers = "1.0.2"
 eyre = "0.6.8"
+log = "0.4.14"
