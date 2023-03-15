@@ -13,9 +13,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-      BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
-      MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-      StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 
