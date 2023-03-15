@@ -8,8 +8,7 @@ use ethers::{
     types::{H160, U256},
 };
 use eyre::Result;
-use helios::types::BlockTag;
-use helios::types::CallOpts;
+use helios::types::{BlockTag, CallOpts};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{

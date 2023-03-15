@@ -9,8 +9,7 @@ mod tests {
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
-    use ethers::types::U256;
-    use ethers::types::{Address, Log, Transaction, H256};
+    use ethers::types::{Address, Log, Transaction, H256, U256};
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
@@ -28,8 +27,7 @@ mod tests {
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{path::PathBuf, str::FromStr};
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
