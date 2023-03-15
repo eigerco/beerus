@@ -9,6 +9,7 @@ use beerus_core::{
 use clap::Parser;
 use env_logger::Env;
 use log::{error, info};
+use std::process::exit;
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +21,7 @@ async fn main() {
         Ok(config) => config,
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 
@@ -29,7 +30,7 @@ async fn main() {
         Ok(ethereum_lightclient) => ethereum_lightclient,
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 
@@ -38,7 +39,7 @@ async fn main() {
         Ok(starknet_lightclient) => starknet_lightclient,
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 
@@ -52,7 +53,7 @@ async fn main() {
     info!("starting beerus lightclient...");
     if let Err(err) = beerus.start().await {
         error!("{}", err);
-        return;
+        exit(1);
     };
 
     info!("running cli...");
@@ -63,7 +64,7 @@ async fn main() {
         }
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 }

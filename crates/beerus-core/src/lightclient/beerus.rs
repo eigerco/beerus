@@ -242,9 +242,7 @@ impl BeerusLightClient {
             .as_u64();
 
         // Call the StarkNet light client.
-        let res = self.starknet_lightclient.call(opts, last_block).await;
-
-        res
+        self.starknet_lightclient.call(opts, last_block).await
     }
 
     /// Estimate the fee for a given StarkNet transaction

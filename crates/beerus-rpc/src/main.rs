@@ -9,6 +9,7 @@ use beerus_rpc::run_server;
 use dotenv::dotenv;
 use env_logger::Env;
 use log::{error, info};
+use std::process::exit;
 
 #[tokio::main]
 async fn main() {
@@ -22,7 +23,7 @@ async fn main() {
         Ok(ethereum_lightclient) => ethereum_lightclient,
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 
@@ -31,7 +32,7 @@ async fn main() {
         Ok(starknet_lightclient) => starknet_lightclient,
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 
@@ -45,7 +46,7 @@ async fn main() {
     info!("starting the Beerus light client...");
     if let Err(err) = beerus.start().await {
         error!("{}", err);
-        return;
+        exit(1);
     };
 
     info!("starting beerus rpc server...");
@@ -59,7 +60,7 @@ async fn main() {
         }
         Err(err) => {
             error! {"{}", err};
-            return;
+            exit(1);
         }
     };
 }

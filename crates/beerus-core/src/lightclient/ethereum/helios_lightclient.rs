@@ -1,4 +1,4 @@
-use crate::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
+use crate::config::Config;
 use async_trait::async_trait;
 use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
 use eyre::{eyre, Result};
@@ -7,8 +7,6 @@ use helios::{
     types::{BlockTag, CallOpts, ExecutionBlock},
 };
 use std::{primitive::u64, str::FromStr};
-
-use crate::config::Config;
 
 use super::EthereumLightClient;
 
