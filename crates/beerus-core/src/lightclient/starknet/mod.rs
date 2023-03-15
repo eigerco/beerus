@@ -9,13 +9,13 @@ use starknet::{
     providers::jsonrpc::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, ContractClass,
-            DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
-            InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            MaybePendingTransactionReceipt, SyncStatusType, Transaction,
+            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+            ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter,
+            EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
         },
-        models::{BroadcastedTransaction, FeeEstimate, FunctionCall, StateUpdate},
-        {HttpTransport, JsonRpcClient},
+        HttpTransport, JsonRpcClient,
     },
 };
 use url::Url;

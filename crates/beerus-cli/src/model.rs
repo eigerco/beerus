@@ -1,15 +1,19 @@
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use clap::{Parser, Subcommand};
-use ethers::prelude::Log;
-use ethers::types::{H256, U256};
+use ethers::{
+    prelude::Log,
+    types::{H256, U256},
+};
 use helios::types::ExecutionBlock;
 use serde_json::json;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-    EventsPage, FeeEstimate, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-    MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-    Transaction,
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+        EventsPage, FeeEstimate, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
+    },
 };
 use std::{fmt::Display, path::PathBuf};
 
