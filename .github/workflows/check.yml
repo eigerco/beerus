@@ -26,7 +26,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2          
       # TODO: cleanup for
       # cargo clippy --all-features and --all-targets -- -D warnings
-      - run: cargo clippy --workspace --all-features --all-targets -- -D warnings
+      - run: cargo clippy --all -- -D warnings
 
   check:
     name: check
