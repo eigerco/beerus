@@ -1,11 +1,15 @@
+pub mod common;
+use common::mock_clients;
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use beerus_core::{
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
-            starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
+            ethereum::helios_lightclient::HeliosLightClient,
+            starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
@@ -1382,7 +1386,7 @@ mod tests {
             U256::from_str("0x5bb9692622e817c39663e69dce50777daf4c167bdfa95f3e5cef99c6b8a344d")
                 .unwrap();
         // Convert to bytes because that's what the mock returns.
-        let mut expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
+        let expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
         expected_starknet_state_root.to_big_endian(&mut expected_starknet_state_root_bytes.clone());
 
         // Set the expected return value for the Ethereum light client mock.
@@ -3541,7 +3545,6 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus.starknet_lightclient.pending_transactions().await;
 
         // Then
@@ -3953,24 +3956,5 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `add_declare_transaction` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
-    }
-
-    fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        (
-            config,
-            MockEthereumLightClient::new(),
-            MockStarkNetLightClient::new(),
-        )
     }
 }

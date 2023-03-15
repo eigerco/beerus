@@ -9,6 +9,7 @@ use ethers::{
 };
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
+use log::{error, info, warn};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -70,7 +71,7 @@ pub struct BeerusLightClient {
 }
 
 impl BeerusLightClient {
-    //     /// Create a new Beerus Light Client service.
+    /// Create a new Beerus Light Client service.
     pub fn new(
         config: Config,
         //TODO: Check if we should just have &str as arguments
@@ -100,14 +101,12 @@ impl BeerusLightClient {
         }
     }
 
-    //     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
+    /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
-            //TODO: Change unwrap
             self.ethereum_lightclient.write().await.start().await?;
             // Start the StarkNet light client.
-            //TODO: Change unwrap
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
             let ethereum_clone = self.ethereum_lightclient.clone();
@@ -117,58 +116,52 @@ impl BeerusLightClient {
             // Define function that will loop
             let task = async move {
                 loop {
-                    //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
-                    // let state_root = ethereum_clone
-                    //     .read()
-                    //     .await
-                    //     .starknet_state_root()
-                    //     .await
-                    //     .unwrap();
-                    // let last_proven_block = ethereum_clone
-                    //     .read()
-                    //     .await
-                    //     .starknet_last_proven_block()
-                    //     .await
-                    //     .unwrap();
-
-                    //TODO:Remove this once starknet_state_root and last_proven_block call(This is just to valdiate that Helios Fetch are working fine within the thread)
-                    let block_number = ethereum_clone
+                    let state_root = ethereum_clone
                         .read()
                         .await
-                        .get_block_number()
+                        .starknet_state_root()
                         .await
                         .unwrap();
-                    // println!("Loop State Root, {state_root}");
-                    // println!("Loop Block Number, {last_proven_block}");
-                    println!("Ethereum Block Number, {block_number}");
+
+                    let last_proven_block = ethereum_clone
+                        .read()
+                        .await
+                        .starknet_last_proven_block()
+                        .await
+                        .unwrap();
+
+                    // TODO: these logs don't get caught by the main thread
+                    info!("State Root: {state_root}");
+                    info!("Block Number: {last_proven_block}");
 
                     match starknet_clone
                         .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
                         .await
                     {
                         Ok(block) => {
+                            println!("block: {:?}", block);
                             let mut data = node_clone.write().await;
                             match block {
                                 MaybePendingBlockWithTxs::Block(block) => {
-                                    // TODO: change "0 < block.block_number" to "block.block_number == last_proven_block"
+                                    // if block.block_number > data.block_number && block.block_number == last_proven_block
                                     if block.block_number > data.block_number
                                         && 0 < block.block_number
                                     {
                                         data.block_number = block.block_number;
                                         data.state_root = block.new_root.to_string();
                                         data.payload.insert(block.block_number, block);
-                                        println!("New Block Added to Payload");
-                                        println!("Block Number {:?}", &data.block_number);
-                                        println!("Block Root {:?}", &data.state_root);
+                                        info!("New Block Added to Payload:");
+                                        info!("Block Number {:?}", &data.block_number);
+                                        info!("Block Root {:?}", &data.state_root);
                                     }
                                 }
                                 MaybePendingBlockWithTxs::PendingBlock(_) => {
-                                    println!("Pending Block");
+                                    warn!("Pending Block");
                                 }
                             }
                         }
                         Err(err) => {
-                            eprintln!("Error getting block: {err:?}");
+                            error!("Error getting block: {}", err);
                         }
                     }
                     //TODO: Make this configurable
@@ -247,8 +240,11 @@ impl BeerusLightClient {
             .starknet_last_proven_block()
             .await?
             .as_u64();
+
         // Call the StarkNet light client.
-        self.starknet_lightclient.call(opts, last_block).await
+        let res = self.starknet_lightclient.call(opts, last_block).await;
+
+        res
     }
 
     /// Estimate the fee for a given StarkNet transaction

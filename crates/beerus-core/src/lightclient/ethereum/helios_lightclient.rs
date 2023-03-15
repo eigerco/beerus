@@ -8,12 +8,15 @@ use helios::{
 };
 use std::{primitive::u64, str::FromStr};
 
+use crate::config::Config;
+
 use super::EthereumLightClient;
 
 /// Helios implementation of `EthereumLightClient`.
 pub struct HeliosLightClient {
     /// The wrapped Helios client.
     pub helios_light_client: Client<FileDB>,
+    pub starknet_core_contract_address: Address,
 }
 
 /// Implementation of `EthereumLightClient` for Helios.
@@ -128,10 +131,6 @@ impl EthereumLightClient for HeliosLightClient {
 
     /// Get the StarkNet state root.
     async fn starknet_state_root(&self) -> Result<U256> {
-        // Get the StarkNet core contract address.
-        let starknet_core_contract_address =
-            Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS)?;
-
         // Corresponds to the StarkNet core contract function `stateRoot`.
         // The function signature is `stateRoot() -> (uint256)`.
         // The function selector is `0x95d8ecA2`.
@@ -140,7 +139,7 @@ impl EthereumLightClient for HeliosLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: starknet_core_contract_address,
+            to: self.starknet_core_contract_address,
             gas: None,
             gas_price: None,
             value: None,
@@ -163,16 +162,12 @@ impl EthereumLightClient for HeliosLightClient {
     /// `Ok(U256)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
     async fn starknet_last_proven_block(&self) -> Result<U256> {
-        // Get the StarkNet core contract address.
-        let starknet_core_contract_address =
-            Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS)?;
-
         let data = vec![53, 190, 250, 93];
 
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: starknet_core_contract_address,
+            to: self.starknet_core_contract_address,
             gas: None,
             gas_price: None,
             value: None,
@@ -204,6 +199,7 @@ impl HeliosLightClient {
 
         Ok(Self {
             helios_light_client,
+            starknet_core_contract_address: config.starknet_core_contract_address,
         })
     }
 }

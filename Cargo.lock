@@ -481,6 +481,7 @@ dependencies = [
  "helios",
  "hex",
  "httpmock",
+ "log",
  "mockall",
  "primitive-types 0.11.1",
  "serde",
