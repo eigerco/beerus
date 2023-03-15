@@ -10,11 +10,13 @@ use jsonrpsee::{
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-    StateUpdate, SyncStatusType, Transaction,
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+      BlockHashAndNumber, BroadcastedTransaction, ContractClass, FeeEstimate,
+      MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+      StateUpdate, SyncStatusType, Transaction,
+    },
 };
 
 pub struct BeerusRpc {

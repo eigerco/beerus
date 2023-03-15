@@ -3,8 +3,7 @@ mod tests {
     use beerus_core::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
     use ethers::types::Address;
     use helios::config::networks::Network;
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{path::PathBuf, str::FromStr};
 
     /// Test `new_from_env` function.
     #[test]

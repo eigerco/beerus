@@ -14,9 +14,7 @@ mod test {
     use serde::{Deserialize, Serialize};
     use serde_json::json;
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
-    use std::fs;
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{fs, path::PathBuf, str::FromStr};
 
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_storage_at_should_work() {
