@@ -58,17 +58,13 @@ pub enum BeerusApiError {
 
 impl From<BeerusApiError> for Error {
     fn from(err: BeerusApiError) -> Self {
-        Error::Call(CallError::Custom(ErrorObject::owned(err as i32, err.to_string(), None::<()>)))
+        Error::Call(CallError::Custom(ErrorObject::owned(
+            err as i32,
+            err.to_string(),
+            None::<()>,
+        )))
     }
 }
-
-// impl BeerusApiError {
-//     fn unwrap(err: Error) -> Option<(i32, String)> {
-
-//         Error::Call(CallError::Custom(ErrorObject::owned(err as i32, err.to_string(), None::<()>)))
-//     }
-// }
-
 
 #[rpc(server, client)]
 trait BeerusApi {
@@ -235,8 +231,7 @@ impl BeerusApiServer for BeerusRpc {
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes, Error> {
         let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-        self
-            ._beerus
+        self._beerus
             .starknet_lightclient
             .get_block_with_tx_hashes(&block_id)
             .await
@@ -252,21 +247,16 @@ impl BeerusApiServer for BeerusRpc {
         let block_id =
             beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
                 .map_err(|e| {
-                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(
-                        e.to_string()
-                    )))
+                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
                 })?;
-        let index = u64::from_str(index).map_err(|e| {
-            Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
-        })?;
+        let index = u64::from_str(index)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let result = self
             ._beerus
             .starknet_lightclient
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await
-            .map_err(|e| {
-                Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
-            })?;
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
         Ok(result)
     }
     async fn starknet_get_block_with_txs(
@@ -277,18 +267,14 @@ impl BeerusApiServer for BeerusRpc {
         let block_id =
             beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
                 .map_err(|e| {
-                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(
-                        e.to_string()
-                    )))
+                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
                 })?;
         let result = self
             ._beerus
             .starknet_lightclient
             .get_block_with_txs(&block_id)
             .await
-            .map_err(|e| {
-                Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))
-            })?;
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
         Ok(result)
     }
 

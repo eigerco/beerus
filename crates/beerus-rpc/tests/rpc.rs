@@ -6,7 +6,6 @@ mod tests {
     use beerus_rpc::server::BeerusApiServer;
     use jsonrpsee::types::error::ErrorObjectOwned;
 
-
     #[tokio::test]
     async fn test_block_number_is_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
