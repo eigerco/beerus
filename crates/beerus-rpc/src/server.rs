@@ -307,7 +307,7 @@ impl BeerusApiServer for BeerusRpc {
     }
 
     async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>> {
-        let transactions = self
+        let transactions_result = self
             ._beerus
             .starknet_lightclient
             .pending_transactions()

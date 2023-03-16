@@ -3967,7 +3967,7 @@ mod tests {
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_pending_transactions()
-            .return_once(|| Err(eyre!("Network Error"))); // Return an empty list of pending transactions.
+            .return_once(|| Err(eyre::ErrReport::msg("Network Error"))); // Return a network error
 
         let beerus = BeerusLightClient::new(
             config.clone(),
