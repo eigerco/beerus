@@ -37,9 +37,9 @@
       - [Config File](#config-file)
       - [Environment Variables](#environment-variables)
     - [Beerus CLI](#beerus-cli)
-      - [Debug Beerus CLI](#debug-beerus-cli)
+      - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
-      - [Debug Beerus RPC](#debug-beerus-rpc)
+      - [Beerus RPC](#beerus-rpc-1)
 - [Roadmap](#roadmap)
 - [Support](#support)
 - [Project assistance](#project-assistance)
@@ -146,18 +146,18 @@ source .env
 
 #### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
 
-##### Debug Beerus CLI
+##### Beerus CLI
 
 ```bash
-RUST_LOG=info cargo run --bin beerus-cli
+cargo run --bin beerus starknet query-state-root
 ```
 
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
-##### Debug Beerus RPC
+##### Beerus RPC
 
 ```bash
-RUST_LOG=info cargo run --bin beerus-rpc
+cargo run --bin beerus-rpc
 ```
 
 ## Roadmap
