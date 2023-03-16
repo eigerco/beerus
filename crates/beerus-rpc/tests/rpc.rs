@@ -1,8 +1,8 @@
-mod utils;
+mod common;
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::setup_beerus_rpc;
+    use crate::common::setup_beerus_rpc;
     use beerus_rpc::server::BeerusApiServer;
 
     #[tokio::test]

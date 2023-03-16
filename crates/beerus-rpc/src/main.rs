@@ -6,7 +6,6 @@ use beerus_core::{
     },
 };
 use beerus_rpc::run_server;
-use dotenv::dotenv;
 use env_logger::Env;
 use log::{error, info};
 use std::process::exit;
@@ -15,8 +14,7 @@ use std::process::exit;
 async fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    dotenv().ok();
-    let config = Config::default();
+    let config = Config::from_env();
 
     info!("creating ethereum(helios) lightclient...");
     let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {

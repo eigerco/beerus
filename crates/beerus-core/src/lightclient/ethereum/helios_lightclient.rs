@@ -192,7 +192,7 @@ impl HeliosLightClient {
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
             .load_external_fallback()
-            .data_dir(config.data_dir.unwrap())
+            .data_dir(config.data_dir)
             .build()?;
 
         Ok(Self {
