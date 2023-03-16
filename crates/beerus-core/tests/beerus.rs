@@ -3958,7 +3958,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_empty_result_when_calling_starknet_pending_transactions_then_should_return_error(
+    async fn given_error_result_when_calling_starknet_pending_transactions_then_should_return_same_error(
     ) {
         // Given
         // Mock config and beerus light client with a mocked starknet light client.
@@ -3967,7 +3967,7 @@ mod tests {
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_pending_transactions()
-            .return_once(|| Ok(vec![])); // Return an empty list of pending transactions.
+            .return_once(|| Err(eyre!("Network Error"))); // Return an empty list of pending transactions.
 
         let beerus = BeerusLightClient::new(
             config.clone(),
@@ -3984,7 +3984,7 @@ mod tests {
         // Assert that the error returned by the `starknet_pending_transactions` method of the Beerus light client is the expected error.
         assert_eq!(
             result.unwrap_err().to_string(),
-            "No pending transactions found.".to_string()
+            "Network Error".to_string()
         );
     }
 

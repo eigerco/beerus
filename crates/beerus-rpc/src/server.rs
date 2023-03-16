@@ -3,7 +3,7 @@ use std::str::FromStr;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 /// The RPC module for the Ethereum protocol required by Kakarot.
 use jsonrpsee::{
-    core::{async_trait, RpcResult as Result},
+    core::{async_trait, RpcResult as Result, Error::Custom},
     proc_macros::rpc,
 };
 
@@ -244,9 +244,8 @@ impl BeerusApiServer for BeerusRpc {
             .starknet_lightclient
             .pending_transactions()
             .await
-            .unwrap();
-
-        Ok(transactions)
+            .map_err(|e| Custom(e.to_string()));
+        Ok(transactions.unwrap())
     }
 
 }
