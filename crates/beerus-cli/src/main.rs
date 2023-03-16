@@ -17,13 +17,12 @@ async fn main() {
 
     // TODO: we need to print CLI usage
     let cli = Cli::parse();
-    let config = match Config::new_from_env() {
-        Ok(config) => config,
-        Err(err) => {
-            error! {"{}", err};
-            exit(1);
-        }
+
+    let config = match &cli.config {
+        Some(path) => Config::from_file(path),
+        None => Config::from_env(),
     };
+
 
     info!("creating ethereum(helios) lightclient...");
     let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {

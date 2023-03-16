@@ -5,9 +5,9 @@ mod tests {
     use helios::config::networks::Network;
     use std::{path::PathBuf, str::FromStr};
 
-    /// Test `new_from_env` function.
+    /// Test `from_env` function.
     #[test]
-    fn given_normal_conditions_when_new_from_env_then_returns_config() {
+    fn given_normal_conditions_when_from_env_then_returns_config() {
         temp_env::with_vars(
             vec![
                 ("ETHEREUM_NETWORK", Some("mainnet")),
@@ -16,7 +16,7 @@ mod tests {
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
             ],
             || {
-                let result = Config::new_from_env();
+                let result = Config::from_env();
                 assert!(result.is_ok());
                 let config = result.unwrap();
                 assert_eq!(config.ethereum_network, "mainnet");
@@ -27,12 +27,12 @@ mod tests {
         );
     }
 
-    /// Test `new_from_env` function when `ETHEREUM_NETWORK` is not set.
+    /// Test `from_env` function when `ETHEREUM_NETWORK` is not set.
     /// It should use the default value.
     /// The default value is `goerli`.
     /// The default value is defined in `DEFAULT_ETHEREUM_NETWORK` constant.
     #[test]
-    fn given_ethereum_network_is_not_set_when_new_from_env_then_returns_config() {
+    fn given_ethereum_network_is_not_set_when_from_env_then_returns_config() {
         temp_env::with_vars(
             vec![
                 ("ETHEREUM_NETWORK", None),
@@ -41,7 +41,7 @@ mod tests {
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
             ],
             || {
-                let result = Config::new_from_env();
+                let result = Config::from_env();
                 assert!(result.is_ok());
                 let config = result.unwrap();
                 assert_eq!(config.ethereum_network, "goerli");
@@ -49,10 +49,10 @@ mod tests {
         );
     }
 
-    /// Test `new_from_env` function when `ETHEREUM_CONSENSUS_RPC_URL` is not set.
+    /// Test `from_env` function when `ETHEREUM_CONSENSUS_RPC_URL` is not set.
     /// It should return an error.
     #[test]
-    fn given_ethereum_consensus_rpc_is_not_set_when_new_from_env_then_returns_error() {
+    fn given_ethereum_consensus_rpc_is_not_set_when_from_env_then_returns_error() {
         temp_env::with_vars(
             vec![
                 ("ETHEREUM_NETWORK", Some("mainnet")),
@@ -61,7 +61,7 @@ mod tests {
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
             ],
             || {
-                let result = Config::new_from_env();
+                let result = Config::from_env();
                 match result {
                     Ok(_) => panic!("Should return an error"),
                     Err(err) => {
@@ -75,10 +75,10 @@ mod tests {
         );
     }
 
-    /// Test `new_from_env` function when `ETHEREUM_EXECUTION_RPC_URL` is not set.
+    /// Test `from_env` function when `ETHEREUM_EXECUTION_RPC_URL` is not set.
     /// It should return an error.
     #[test]
-    fn given_ethereum_execution_rpc_is_not_set_when_new_from_env_then_returns_error() {
+    fn given_ethereum_execution_rpc_is_not_set_when_from_env_then_returns_error() {
         temp_env::with_vars(
             vec![
                 ("ETHEREUM_NETWORK", Some("mainnet")),
@@ -87,7 +87,7 @@ mod tests {
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
             ],
             || {
-                let result = Config::new_from_env();
+                let result = Config::from_env();
                 match result {
                     Ok(_) => panic!("Should return an error"),
                     Err(err) => {
@@ -101,10 +101,10 @@ mod tests {
         );
     }
 
-    /// Test `new_from_env` function when `STARKNET_RPC_URL` is not set.
+    /// Test `from_env` function when `STARKNET_RPC_URL` is not set.
     /// It should return an error.
     #[test]
-    fn given_starknet_rpc_is_not_set_when_new_from_env_then_returns_error() {
+    fn given_starknet_rpc_is_not_set_when_from_env_then_returns_error() {
         temp_env::with_vars(
             vec![
                 ("ETHEREUM_NETWORK", Some("mainnet")),
@@ -113,7 +113,7 @@ mod tests {
                 ("STARKNET_RPC_URL", None),
             ],
             || {
-                let result = Config::new_from_env();
+                let result = Config::from_env();
                 match result {
                     Ok(_) => panic!("Should return an error"),
                     Err(err) => {

@@ -2,7 +2,8 @@ use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::{checkpoints, networks::Network};
 use std::path::PathBuf;
-use std::str::FromStr;
+use serde::Deserialize;
+use std::fs;
 
 pub const STARKNET_MAINNET_CC_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 pub const STARKNET_GOERLI_CC_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
@@ -10,7 +11,7 @@ pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 pub const DEFAULT_DATA_DIR: &str = "/tmp";
 
 /// Global configuration.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Deserialize, Debug)]
 pub struct Config {
     /// Ethereum network.
     pub ethereum_network: String,
@@ -21,6 +22,7 @@ pub struct Config {
     /// StarkNet RPC endpoint.
     pub starknet_rpc: String,
     // StarkNet core contract address.
+    #[serde(skip_deserializing)]
     pub starknet_core_contract_address: Address,
     // Path to storage directory
     pub data_dir: Option<PathBuf>,
@@ -28,7 +30,12 @@ pub struct Config {
 
 impl Config {
     /// Create a new global configuration from environment variables.
-    pub fn new_from_env() -> Result<Self> {
+    pub fn from_env() -> Result<Self> {
+        if let Ok(path) = std::env::var("BEERUS_CONFIG") {
+            let buf = PathBuf::from(path);
+            return Self::from_file(&buf);
+        }
+
         let ethereum_network = std::env::var("ETHEREUM_NETWORK")
             .unwrap_or_else(|_| DEFAULT_ETHEREUM_NETWORK.to_string());
 
@@ -57,6 +64,19 @@ impl Config {
             starknet_core_contract_address,
             data_dir: Some(data_dir),
         })
+    }
+
+    pub fn from_file(path: &PathBuf) -> Result<Self> {
+        let raw_config = fs::read_to_string(path)?;
+
+        let mut config: Config = toml::from_str(&raw_config)?;
+
+        config.starknet_core_contract_address = match config.ethereum_network.as_str() {
+            DEFAULT_ETHEREUM_NETWORK => Address::from_str(STARKNET_GOERLI_CC_ADDRESS)?,
+            _ => Address::from_str(STARKNET_MAINNET_CC_ADDRESS)?,
+        };
+
+        Ok(config)
     }
 
     /// Return the Ethereum network.
@@ -89,6 +109,6 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::new_from_env().unwrap()
+        Self::from_env().unwrap()
     }
 }
