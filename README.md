@@ -131,9 +131,9 @@ Beerus is configurable via a config toml. If you have set the env var
 variables and take configuration from values defined herein.
 Also the the cli can be directed via `berrus --config <path/to/config>`
 
-[goerli.toml](./crates/beerus-core/tests/data/goerli.toml)
+[goerli.toml](./crates/beerus-core/tests/common/data/goerli.toml)
 
-[mainnet.toml](./crates/beerus-core/tests/data/mainnet.toml)
+[mainnet.toml](./crates/beerus-core/tests/common/data/mainnet.toml)
 
 ##### Environment Variables
 

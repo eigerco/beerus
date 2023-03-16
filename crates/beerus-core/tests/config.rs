@@ -14,7 +14,7 @@ mod tests {
     #[test]
     fn mainnet_file_config_returns_correct_values() {
         let mainnet_file_config: Config =
-            Config::from_file(&PathBuf::from("tests/data/mainnet.toml"));
+            Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
 
         assert_eq!(mainnet_file_config.ethereum_network, "mainnet");
         assert_eq!(
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn goerli_file_config_returns_correct_values() {
         let goerli_file_config: Config =
-            Config::from_file(&PathBuf::from("tests/data/goerli.toml"));
+            Config::from_file(&PathBuf::from("tests/common/data/goerli.toml"));
 
         assert_eq!(
             goerli_file_config.ethereum_network,
@@ -72,7 +72,6 @@ mod tests {
 
     /// Test `from_env` function.
     #[test]
-    #[serial]
     fn all_envs_set_returns_config() {
         Config::clean_env();
         env::set_var("ETHEREUM_NETWORK", "mainnet");
@@ -103,6 +102,24 @@ mod tests {
 
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "goerli");
+    }
+
+    /// Env Var `BEERUS_CONFIG`
+    /// Should override the config parsing to the file
+    #[test]
+    #[serial]
+    fn beerus_config_env_var_should_override() {
+        env::set_var("BEERUS_CONFIG", "tests/common/data/goerli.toml");
+        let cfg = Config::from_env();
+
+        assert_eq!(
+            cfg.ethereum_consensus_rpc,
+            "http://testing.prater.beacon-api.nimbus.team"
+        );
+        assert_eq!(
+            cfg.ethereum_execution_rpc,
+            "https://eth-goerli.g.alchemy.com/v2/XXXXX"
+        );
     }
 
     /// Test `from_env` function when `ETHEREUM_CONSENSUS_RPC_URL` is not set.
@@ -145,23 +162,5 @@ mod tests {
         env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
 
         let _cfg = Config::from_env();
-    }
-
-    /// Env Var `BEERUS_CONFIG`
-    /// Should override the config parsing to the file
-    #[test]
-    #[serial]
-    fn beerus_config_env_var_should_override() {
-        env::set_var("BEERUS_CONFIG", "tests/data/goerli.toml");
-        let cfg = Config::from_env();
-
-        assert_eq!(
-            cfg.ethereum_consensus_rpc,
-            "http://testing.prater.beacon-api.nimbus.team"
-        );
-        assert_eq!(
-            cfg.ethereum_execution_rpc,
-            "https://eth-goerli.g.alchemy.com/v2/XXXXX"
-        );
     }
 }
