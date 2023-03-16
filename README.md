@@ -33,11 +33,13 @@
     - [Beerusup](#beerusup)
     - [Build](#build)
     - [Test](#test)
-    - [Environment variables](#environment-variables)
+    - [Config](#config)
+      - [Config File](#config-file)
+      - [Environment Variables](#environment-variables)
     - [Beerus CLI](#beerus-cli)
-      - [Debug Beerus CLI](#debug-beerus-cli)
+      - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
-      - [Debug Beerus RPC](#debug-beerus-rpc)
+      - [Beerus RPC](#beerus-rpc-1)
 - [Roadmap](#roadmap)
 - [Support](#support)
 - [Project assistance](#project-assistance)
@@ -99,14 +101,7 @@ cargo build --release
 cargo test
 ```
 
-#### Environment variables
-
-Beerus is configurable through environment variables.
-
-```bash
-cp examples/.env.example .env
-source .env
-```
+#### Config
 
 The project requires an Ethereum node and a Starknet node. For Ethereum nodes
 you can use Alchemy (not Infura since it does not support getProof endpoint).
@@ -122,27 +117,47 @@ For StarkNet node for the moment you can use Infura but soon
 will be implemented in Pathfinder nodes, and so will these nodes be working as
 well.
 
-| Name | Mainnet | Goerli |
-| -------------  | ------------- | ------------- |
-| ETHEREUM_NETWORK | `mainnet` | `goerli(default)` |
-| ETHEREUM_EXECUTION_RPC_URL | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
-| ETHEREUM_CONSENSUS_RPC_URL | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
-| STARKNET_RPC_URL  | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX>
+| Env Var | TOML | Mainnet | Goerli |
+| -------------  | -------------  | ------------- | ------------- |
+| ETHEREUM_NETWORK | ethereum_network | `mainnet` | `goerli(default)` |
+| ETHEREUM_EXECUTION_RPC_URL | ethereum_consensus_rpc | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
+| ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
+| STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
+
+##### Config File
+
+Beerus is configurable via a config toml. If you have set the env var
+`BEERUS_CONFIG` = `path/to/config` this will override all other environment
+variables and take configuration from values defined herein.
+Also the the cli can be directed via `berrus --config <path/to/config>`
+
+[goerli.toml](./crates/beerus-core/tests/data/goerli.toml)
+
+[mainnet.toml](./crates/beerus-core/tests/data/mainnet.toml)
+
+##### Environment Variables
+
+Beerus is configurable through environment variables.
+
+```bash
+cp examples/.env.example .env
+source .env
+```
 
 #### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
 
-##### Debug Beerus CLI
+##### Beerus CLI
 
 ```bash
-RUST_LOG=info cargo run --bin beerus-cli
+cargo run --bin beerus starknet query-state-root
 ```
 
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
-##### Debug Beerus RPC
+##### Beerus RPC
 
 ```bash
-RUST_LOG=info cargo run --bin beerus-rpc
+cargo run --bin beerus-rpc
 ```
 
 ## Roadmap

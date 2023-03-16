@@ -112,6 +112,7 @@ impl BeerusLightClient {
             let ethereum_clone = self.ethereum_lightclient.clone();
             let starknet_clone = self.starknet_lightclient.clone();
             let node_clone = self.node.clone();
+            let poll_interval_secs = self.config.get_poll_interval();
 
             // Define function that will loop
             let task = async move {
@@ -164,8 +165,7 @@ impl BeerusLightClient {
                             error!("Error getting block: {}", err);
                         }
                     }
-                    //TODO: Make this configurable
-                    thread::sleep(time::Duration::from_secs(5));
+                    thread::sleep(time::Duration::from_secs(poll_interval_secs));
                 }
             };
             // Spawn loop function

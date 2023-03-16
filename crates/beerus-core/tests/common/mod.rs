@@ -15,26 +15,15 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 pub fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-    let config = Config {
-        ethereum_network: "mainnet".to_string(),
-        ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-        ethereum_execution_rpc: "http://localhost:8545".to_string(),
-        starknet_rpc: "http://localhost:8545".to_string(),
-        data_dir: Some(PathBuf::from("/tmp")),
-        starknet_core_contract_address: Address::from_str(
-            "0x0000000000000000000000000000000000000000",
-        )
-        .unwrap(),
-    };
     (
-        config,
+        Config::default(),
         MockEthereumLightClient::new(),
         MockStarkNetLightClient::new(),
     )
 }
 
 pub fn mock_get_contract_storage_proof(server: &MockServer) -> (Mock, GetProofOutput) {
-    let path = "tests/data.json";
+    let path = "tests/data/data.json";
     let s = fs::read_to_string(path).unwrap();
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -116,16 +105,17 @@ pub fn mock_call(server: &MockServer) -> Mock {
     })
 }
 
-pub fn mock_config(server: &MockServer) -> Config {
+pub fn mock_server_config(server: &MockServer) -> Config {
     Config {
         ethereum_network: "mainnet".to_string(),
         ethereum_consensus_rpc: server.base_url(),
         ethereum_execution_rpc: server.base_url(),
-        data_dir: Some(PathBuf::from("/tmp")),
         starknet_rpc: server.base_url(),
         starknet_core_contract_address: Address::from_str(
             "0x0000000000000000000000000000000000000000",
         )
         .unwrap(),
+        data_dir: PathBuf::from("/tmp"),
+        poll_interval_secs: Some(5),
     }
 }

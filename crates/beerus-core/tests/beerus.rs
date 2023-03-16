@@ -31,7 +31,7 @@ mod tests {
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
-    use std::{path::PathBuf, str::FromStr};
+    use std::str::FromStr;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -1781,17 +1781,9 @@ mod tests {
     #[test]
     fn given_wrong_url_when_create_sn_lightclient_should_fail() {
         // Mock config.
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "mainnet".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
+        let mut config = Config::default();
+        config.starknet_rpc = "".to_string();
+
         // Create a new StarkNet light client.
         let sn_light_client = StarkNetLightClientImpl::new(&config);
         assert!(sn_light_client.is_err());

@@ -1,5 +1,5 @@
 pub mod common;
-use common::{mock_call, mock_config, mock_get_contract_storage_proof, mock_get_storage_at};
+use common::{mock_call, mock_get_contract_storage_proof, mock_get_storage_at, mock_server_config};
 
 #[cfg(test)]
 mod test {
@@ -19,7 +19,7 @@ mod test {
         // Start a lightweight mock server.
         let server = MockServer::start();
         let mock_request = mock_get_storage_at(&server);
-        let config = mock_config(&server);
+        let config = mock_server_config(&server);
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
@@ -45,7 +45,7 @@ mod test {
     async fn given_ethereum_light_client_returns_error_when_starknet_get_storage_at_should_fail() {
         let server = MockServer::start();
         let mock_request = mock_get_storage_at(&server);
-        let config = mock_config(&server);
+        let config = mock_server_config(&server);
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
@@ -73,7 +73,7 @@ mod test {
         // Start a lightweight mock server.
         let server = MockServer::start();
         let mock_request = mock_call(&server);
-        let config = mock_config(&server);
+        let config = mock_server_config(&server);
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
@@ -102,7 +102,7 @@ mod test {
     async fn given_ethereum_light_client_returns_error_when_starknet_starknet_call_should_fail() {
         let server = MockServer::start();
         let mock_request = mock_get_storage_at(&server);
-        let config = mock_config(&server);
+        let config = mock_server_config(&server);
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
@@ -130,7 +130,7 @@ mod test {
     async fn given_normal_conditions_when_starknet_get_storage_proof_should_work() {
         // Start a lightweight mock server.
         let server = MockServer::start();
-        let config = mock_config(&server);
+        let config = mock_server_config(&server);
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let helios_lightclient = MockEthereumLightClient::new();

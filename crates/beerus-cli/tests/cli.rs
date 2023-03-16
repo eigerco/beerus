@@ -1,7 +1,7 @@
 #[cfg(test)]
 
 mod test {
-    use std::{path::PathBuf, str::FromStr};
+    use std::str::FromStr;
 
     use beerus_cli::{
         model::{
@@ -3738,19 +3738,8 @@ mod test {
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
         (
-            config,
+            Config::default(),
             MockEthereumLightClient::new(),
             MockStarkNetLightClient::new(),
         )

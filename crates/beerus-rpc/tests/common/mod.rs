@@ -1,3 +1,11 @@
+use beerus_core::{
+    config::Config,
+    lightclient::{
+        beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
+        starknet::StarkNetLightClientImpl,
+    },
+};
+use beerus_rpc::server::BeerusRpc;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use starknet::providers::jsonrpc::models::{BlockId, BlockTag};
@@ -48,11 +56,35 @@ pub async fn setup_wiremock() -> String {
     mock_server.uri()
 }
 
+pub async fn setup_beerus_rpc() -> BeerusRpc {
+    let mock_starknet_rpc = setup_wiremock().await;
+    set_mandatory_envs(mock_starknet_rpc);
+    let config = Config::from_env();
+
+    let ethereum_lightclient = MockEthereumLightClient::new();
+    let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
+
+    let beerus_client = BeerusLightClient::new(
+        config,
+        Box::new(ethereum_lightclient),
+        Box::new(starknet_lightclient),
+    );
+    BeerusRpc::new(beerus_client)
+}
+
+fn set_mandatory_envs(starknet_rpc: String) {
+    Config::clean_env();
+    std::env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "");
+    std::env::set_var("ETHEREUM_EXECUTION_RPC_URL", "");
+    std::env::set_var("STARKNET_RPC_URL", starknet_rpc);
+    std::env::set_var("DATA_DIR", "");
+}
+
 fn mock_block_number() -> Mock {
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::stark_block_number(())))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
-            include_str!("data/blocks/starknet_blockNumber.json"),
+            include_str!("data/starknet_blockNumber.json"),
             "application/json",
         ))
 }
@@ -64,7 +96,7 @@ fn mock_get_block_transaction_count() -> Mock {
             StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block]),
         ))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
-            include_str!("data/blocks/starknet_getBlockTransactionCount.json"),
+            include_str!("data/starknet_getBlockTransactionCount.json"),
             "application/json",
         ))
 }

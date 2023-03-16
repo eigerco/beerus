@@ -15,14 +15,11 @@ use std::process::exit;
 async fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    // TODO: we need to print CLI usage
     let cli = Cli::parse();
-    let config = match Config::new_from_env() {
-        Ok(config) => config,
-        Err(err) => {
-            error! {"{}", err};
-            exit(1);
-        }
+
+    let config = match &cli.config {
+        Some(path) => Config::from_file(path),
+        None => Config::from_env(),
     };
 
     info!("creating ethereum(helios) lightclient...");
