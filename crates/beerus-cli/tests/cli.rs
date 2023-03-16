@@ -1,8 +1,7 @@
 #[cfg(test)]
 
 mod test {
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{path::PathBuf, str::FromStr};
 
     use beerus_cli::{
         model::{
@@ -14,12 +13,10 @@ mod test {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
-            starknet::MockStarkNetLightClient,
+            beerus::BeerusLightClient,
+            ethereum::MockEthereumLightClient,
+            starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
         },
-    };
-    use beerus_core::{
-        lightclient::starknet::storage_proof::GetProofOutput,
         starknet_helper::create_mock_broadcasted_transaction,
     };
     use ethers::types::{Address, H256, U256};
@@ -71,7 +68,6 @@ mod test {
         // When
         let result = runner::run(beerus, cli).await.unwrap();
 
-        println!("{}", &result);
         // Then
         assert_eq!("0xc9bb…c31d", format!("{}", result));
     }
@@ -2900,8 +2896,6 @@ mod test {
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
 
-        println!("Contract Class {contract_class_string:?}");
-
         let params = StarkNetSubCommands::AddDeployTransaction {
             contract_class: contract_class_string,
             version: "10".to_string(),
@@ -2971,8 +2965,6 @@ mod test {
         };
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
-
-        println!("Contract Class {contract_class_string:?}");
 
         let params = StarkNetSubCommands::AddDeployTransaction {
             contract_class: contract_class_string,
@@ -3720,8 +3712,6 @@ mod test {
         };
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
-
-        println!("Contract Class {contract_class_string:?}");
 
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),

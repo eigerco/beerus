@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use beerus_core::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
+    use beerus_core::config::Config;
     use ethers::types::Address;
     use helios::config::networks::Network;
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{path::PathBuf, str::FromStr};
 
     /// Test `new_from_env` function.
     #[test]
@@ -15,10 +14,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
                 ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let result = Config::new_from_env();
@@ -44,10 +39,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
                 ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let result = Config::new_from_env();
@@ -68,10 +59,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", None),
                 ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let result = Config::new_from_env();
@@ -98,10 +85,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
                 ("ETHEREUM_EXECUTION_RPC_URL", None),
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let result = Config::new_from_env();
@@ -128,10 +111,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
                 ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
                 ("STARKNET_RPC_URL", None),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let result = Config::new_from_env();
@@ -142,58 +121,6 @@ mod tests {
                             err.to_string(),
                             "Missing mandatory environment variable: STARKNET_RPC_URL"
                         )
-                    }
-                }
-            },
-        );
-    }
-
-    /// Test `new_from_env` function when `STARKNET_CORE_CONTRACT_ADDRESS` is not set.
-    /// It should return the default value.
-    /// The default value is `DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS`.
-    #[test]
-    fn given_starknet_core_contract_address_is_not_set_when_new_from_env_then_returns_config() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_CORE_CONTRACT_ADDRESS", None),
-            ],
-            || {
-                let result = Config::new_from_env();
-                assert!(result.is_ok());
-                let config = result.unwrap();
-                assert_eq!(
-                    config.starknet_core_contract_address,
-                    Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS).unwrap()
-                );
-            },
-        );
-    }
-
-    /// Test `new_from_env` function when `STARKNET_CORE_CONTRACT_ADDRESS` is not a valid address.
-    /// It should return an error.
-    #[test]
-    fn given_starknet_core_contract_address_is_not_valid_when_new_from_env_then_returns_error() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("Not a valid address"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                match result {
-                    Ok(_) => panic!("Should return an error"),
-                    Err(err) => {
-                        assert_eq!(err.to_string(), "Invalid character 'N' at position 0")
                     }
                 }
             },
@@ -275,10 +202,6 @@ mod tests {
                 ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
                 ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
                 ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
             ],
             || {
                 let config = Config::default();

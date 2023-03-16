@@ -128,7 +128,6 @@ well.
 | ETHEREUM_EXECUTION_RPC_URL | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
 | ETHEREUM_CONSENSUS_RPC_URL | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
 | STARKNET_RPC_URL  | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX>
-| STARKNET_CORE_CONTRACT_ADDRESS | 0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4 | 0xde29d060D45901Fb19ED6C6e959EB22d8626708e |
 
 #### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
 

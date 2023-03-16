@@ -1,16 +1,19 @@
+pub mod common;
+use common::mock_clients;
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use beerus_core::{
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
-            starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
+            ethereum::helios_lightclient::HeliosLightClient,
+            starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
-    use ethers::types::U256;
-    use ethers::types::{Address, Log, Transaction, H256};
+    use ethers::types::{Address, Log, Transaction, H256, U256};
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
@@ -28,8 +31,7 @@ mod tests {
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::{path::PathBuf, str::FromStr};
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -1384,7 +1386,7 @@ mod tests {
             U256::from_str("0x5bb9692622e817c39663e69dce50777daf4c167bdfa95f3e5cef99c6b8a344d")
                 .unwrap();
         // Convert to bytes because that's what the mock returns.
-        let mut expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
+        let expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
         expected_starknet_state_root.to_big_endian(&mut expected_starknet_state_root_bytes.clone());
 
         // Set the expected return value for the Ethereum light client mock.
@@ -3543,7 +3545,6 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus.starknet_lightclient.pending_transactions().await;
 
         // Then

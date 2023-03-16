@@ -1,0 +1,131 @@
+use beerus_core::{
+    config::Config,
+    lightclient::{
+        ethereum::MockEthereumLightClient,
+        starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
+    },
+};
+use ethers::types::Address;
+use httpmock::{prelude::*, Mock};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::fs;
+
+use std::path::PathBuf;
+use std::str::FromStr;
+
+pub fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
+    let config = Config {
+        ethereum_network: "mainnet".to_string(),
+        ethereum_consensus_rpc: "http://localhost:8545".to_string(),
+        ethereum_execution_rpc: "http://localhost:8545".to_string(),
+        starknet_rpc: "http://localhost:8545".to_string(),
+        data_dir: Some(PathBuf::from("/tmp")),
+        starknet_core_contract_address: Address::from_str(
+            "0x0000000000000000000000000000000000000000",
+        )
+        .unwrap(),
+    };
+    (
+        config,
+        MockEthereumLightClient::new(),
+        MockStarkNetLightClient::new(),
+    )
+}
+
+pub fn mock_get_contract_storage_proof(server: &MockServer) -> (Mock, GetProofOutput) {
+    let path = "tests/data.json";
+    let s = fs::read_to_string(path).unwrap();
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct JsonOutput {
+        result: GetProofOutput,
+    }
+    let output: JsonOutput = serde_json::from_str(&s).unwrap();
+
+    let mock = server.mock(|when, then| {
+        when.method(POST).path("/").json_body(json!({
+            "id":1,
+            "jsonrpc":"2.0",
+            "method":"pathfinder_getProof",
+            "params":[
+                {
+                    "block_number":1
+                },
+                "0x4d4e07157aeb54abeb64f5792145f2e8db1c83bda01a8f06e050be18cfb8153",
+                ["0x1"]
+            ]
+        }));
+        then.status(200)
+            .header("content-type", "application/json")
+            .body_from_file(path);
+    });
+    (mock, output.result)
+}
+
+pub fn mock_get_storage_at(server: &MockServer) -> Mock {
+    server.mock(|when, then| {
+        when.method(POST).path("/").json_body(json!({
+            "id":1,
+            "jsonrpc":"2.0",
+            "method":"starknet_getStorageAt",
+            "params":[
+                "0x0",
+                "0x0",
+                {
+                    "block_number":1
+                }
+            ]
+        }));
+        then.status(200)
+            .header("content-type", "application/json")
+            .json_body(json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+            }));
+    })
+}
+
+pub fn mock_call(server: &MockServer) -> Mock {
+    server.mock(|when, then| {
+        when.method(POST).path("/").json_body(json!({
+            "id":1,
+            "jsonrpc":"2.0",
+            "method":"starknet_call",
+            "params":[
+                {
+                    "calldata":[
+
+                    ],
+                    "contract_address":"0x0",
+                    "entry_point_selector":"0x0"
+                },
+                {
+                    "block_number":1
+                }
+            ]
+        }));
+        then.status(200)
+            .header("content-type", "application/json")
+            .json_body(json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": ["0x0000000000000000000000000000000000000000000000000000000000000001"]
+            }));
+    })
+}
+
+pub fn mock_config(server: &MockServer) -> Config {
+    Config {
+        ethereum_network: "mainnet".to_string(),
+        ethereum_consensus_rpc: server.base_url(),
+        ethereum_execution_rpc: server.base_url(),
+        data_dir: Some(PathBuf::from("/tmp")),
+        starknet_rpc: server.base_url(),
+        starknet_core_contract_address: Address::from_str(
+            "0x0000000000000000000000000000000000000000",
+        )
+        .unwrap(),
+    }
+}

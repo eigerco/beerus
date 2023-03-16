@@ -10,10 +10,12 @@ use jsonrpsee::{
 
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{
-    BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,Transaction
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+    },
 };
 // use starknet::{
 //     core::types::FieldElement, providers::jsonrpc::models::MaybePendingTransactionReceipt,
@@ -105,7 +107,13 @@ trait BeerusApi {
     #[method(name = "starknet_pendingTransactions")]
     async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>>;
 
-
+    #[method(name = "starknet_getClassHash")]
+    async fn starknet_get_class_hash(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+    ) -> Result<FieldElement>;
 }
 
 #[async_trait]
@@ -316,6 +324,22 @@ impl BeerusApiServer for BeerusRpc {
         Ok(transactions.unwrap())
     }
 
+    async fn starknet_get_class_hash(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+    ) -> Result<FieldElement> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let contract_address = FieldElement::from_str(&contract_address).unwrap();
+
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .get_class_hash_at(&block_id, contract_address)
+            .await
+            .unwrap())
+    }
 }
 
 impl BeerusRpc {
