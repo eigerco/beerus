@@ -1,5 +1,4 @@
 mod test {
-    use std::path::PathBuf;
     use std::str::FromStr;
 
     use beerus_cli::{

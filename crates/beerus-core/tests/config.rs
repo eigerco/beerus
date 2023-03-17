@@ -9,6 +9,7 @@ mod tests {
     use std::env;
     use std::{path::PathBuf, str::FromStr};
 
+
     /// Test `ethereum_network` function.
     /// It should return the correct value.
     #[test]
@@ -69,6 +70,7 @@ mod tests {
         assert_eq!(conf.data_dir, PathBuf::from(DEFAULT_DATA_DIR));
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
+
 
     /// Test `from_env` function.
     #[test]

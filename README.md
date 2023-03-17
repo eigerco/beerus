@@ -92,13 +92,19 @@ curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/bee
 #### Build
 
 ```bash
-cargo build --release
+cargo build --all --release
+```
+
+Build `beerus-core` for WASM:
+
+```bash
+cargo build -p beerus-core --no-default-features --target wasm32-unknown-unknown --release
 ```
 
 #### Test
 
 ```bash
-cargo test
+cargo test --all
 ```
 
 #### Config

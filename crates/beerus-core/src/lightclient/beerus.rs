@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-use std::{thread, time};
+use std::{str::FromStr, thread, time};
 
 #[cfg(not(feature = "std"))]
 use gloo_timers::callback::Interval;
@@ -7,9 +7,6 @@ use gloo_timers::callback::Interval;
 use wasm_bindgen_futures::spawn_local;
 
 use tokio::sync::RwLock;
-
-#[cfg(feature = "std")]
-use std::str::FromStr;
 
 #[cfg(not(feature = "std"))]
 use core::str::FromStr;
@@ -25,6 +22,7 @@ use ethabi::Uint as U256;
 use ethers::{abi::Abi, types::H160};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
+#[cfg(feature = "std")]
 use log::{error, info, warn};
 use starknet::{
     core::types::FieldElement,

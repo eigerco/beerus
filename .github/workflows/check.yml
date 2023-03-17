@@ -15,7 +15,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test -- -q --test-threads=2
+      - run: cargo test --all -- -q --test-threads=2
+      - name: Install wasm-bindgen-cli
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run: wasm-pack test --node --no-default-features -p beerus-core
 
   clippy:
     name: clippy
