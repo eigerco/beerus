@@ -13,8 +13,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedDeclareTransaction, ContractClass, DeclareTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 
@@ -108,6 +109,17 @@ trait BeerusApi {
         block_id: String,
         contract_address: String,
     ) -> Result<FieldElement>;
+
+    #[method(name = "starknet_declare_transaction")]
+    async fn starknet_add_declare_transaction(
+        &self,
+        version: String,
+        max_fee: String,
+        signature: Vec<String>,
+        nonce: String,
+        contract_class: String,
+        sender_address: String,
+    ) -> Result<DeclareTransactionResult>;
 }
 
 #[async_trait]
@@ -321,6 +333,44 @@ impl BeerusApiServer for BeerusRpc {
             ._beerus
             .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
+            .await
+            .unwrap())
+    }
+
+    async fn starknet_add_declare_transaction(
+        &self,
+        version: String,
+        max_fee: String,
+        signature: Vec<String>,
+        nonce: String,
+        contract_class: String,
+        sender_address: String,
+    ) -> Result<DeclareTransactionResult> {
+        let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+        let version: u64 = version.parse().unwrap();
+        let signature = signature
+            .iter()
+            .map(|x| FieldElement::from_str(x).unwrap())
+            .collect();
+        let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+
+        let contract_class_bytes = contract_class.as_bytes();
+        let contract_class = serde_json::from_slice(contract_class_bytes)?;
+        let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+
+        let declare_transaction = BroadcastedDeclareTransaction {
+            max_fee,
+            version,
+            signature,
+            nonce,
+            contract_class,
+            sender_address,
+        };
+
+        Ok(self
+            ._beerus
+            .starknet_lightclient
+            .add_declare_transaction(&declare_transaction)
             .await
             .unwrap())
     }
