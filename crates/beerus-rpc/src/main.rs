@@ -5,7 +5,7 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-use beerus_rpc::run_server;
+use beerus_rpc::BeerusRpc;
 use env_logger::Env;
 use log::{error, info};
 use std::process::exit;
@@ -48,7 +48,7 @@ async fn main() {
     };
 
     info!("starting beerus rpc server...");
-    match run_server(beerus).await {
+    match BeerusRpc::new(beerus).run().await {
         Ok((addr, server_handle)) => {
             info!("===================================================");
             info!("Beerus JSON-RPC Server started: http://{addr}");

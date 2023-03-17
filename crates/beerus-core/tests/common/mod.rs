@@ -1,5 +1,5 @@
 use beerus_core::{
-    config::Config,
+    config::{Config, DEFAULT_BEERUS_RPC_ADDR},
     lightclient::{
         ethereum::MockEthereumLightClient,
         starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
@@ -10,7 +10,7 @@ use httpmock::{prelude::*, Mock};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fs;
-
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -23,7 +23,7 @@ pub fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClie
 }
 
 pub fn mock_get_contract_storage_proof(server: &MockServer) -> (Mock, GetProofOutput) {
-    let path = "tests/data/data.json";
+    let path = "tests/common/data/data.json";
     let s = fs::read_to_string(path).unwrap();
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -117,5 +117,6 @@ pub fn mock_server_config(server: &MockServer) -> Config {
         .unwrap(),
         data_dir: PathBuf::from("/tmp"),
         poll_interval_secs: Some(5),
+        beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
     }
 }

@@ -4,3 +4,4 @@
     starknet_rpc = "https://starknet-mainnet.infura.io/v3/XXXXX"
     data_dir = "~/.beerus/tmp"
     poll_interval_secs = 10
+    
