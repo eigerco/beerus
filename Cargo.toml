@@ -1,30 +1,17 @@
-[package]
-name = "beerus"
-version = "0.1.0"
-edition = "2021"
-
 [workspace]
-members = ["beerus_core", "beerus_cli", "beerus_rest_api", "beerus-rpc"]
+members = ["crates/beerus-core", "crates/beerus-cli", "crates/beerus-rpc"]
 
 [workspace.package]
+version = "0.1.0"
 edition = "2021"
-authors = ["Abdelhamid Bakhta <@abdelhamidbakhta>", "Lucas Levy <@lucaslvy>"]
-description = "A fast, secure and portable light client for StarkNet"
-homepage = "https://github.com/starknet-exploration/beerus"
-repository = "https://github.com/starknet-exploration/beerus"
-readme = "./README.md"
+repository = "https://github.com/keep-starknet-strange/beerus"
 license = "MIT"
+license-file = "LICENSE"
 
-
-[dependencies]
-beerus_core = { path = "./beerus_core" }
-
-[dev-dependencies.cargo-husky]
-version = "1.5.0"
-default-features = false
-features = [
-    "precommit-hook",
-    "run-for-all",
-    "run-cargo-clippy",
-    "run-cargo-fmt",
-]
+[workspace.dependencies]
+beerus-core = { path = "./crates/beerus-core" }
+helios = { git = "https://github.com/a16z/helios" }
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
+ethers = "1.0.2"
+eyre = "0.6.8"
+log = "0.4.14"
