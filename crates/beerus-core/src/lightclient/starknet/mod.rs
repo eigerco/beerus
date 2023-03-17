@@ -4,6 +4,7 @@ use crate::stdlib::boxed::Box;
 use crate::stdlib::format;
 use crate::stdlib::string::String;
 use crate::stdlib::vec::Vec;
+use core::convert::TryFrom;
 
 #[cfg(feature = "std")]
 use mockall::automock;

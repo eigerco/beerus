@@ -6,12 +6,13 @@ use gloo_timers::callback::Interval;
 #[cfg(not(feature = "std"))]
 use wasm_bindgen_futures::spawn_local;
 
-#[cfg(feature = "std")]
-#[cfg(not(target_arch = "wasm32"))]
 use tokio::sync::RwLock;
 
 #[cfg(feature = "std")]
 use std::str::FromStr;
+
+#[cfg(not(feature = "std"))]
+use core::str::FromStr;
 
 use crate::stdlib::boxed::Box;
 use crate::stdlib::string::{String, ToString};

@@ -1,3 +1,5 @@
+#[cfg(not(feature = "std"))]
+use core::str::FromStr;
 use ethers::types::Address;
 use eyre::{eyre, Result};
 use helios::config::{checkpoints, networks::Network};
@@ -11,6 +13,8 @@ use std::fs;
 use std::path::PathBuf;
 #[cfg(feature = "std")]
 use std::str::FromStr;
+
+use crate::stdlib::string::{String, ToString};
 
 pub const STARKNET_MAINNET_CC_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 pub const STARKNET_GOERLI_CC_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
@@ -29,7 +33,6 @@ pub struct Config {
     pub starknet_core_contract_address: Address,
     #[cfg(feature = "std")]
     pub data_dir: PathBuf,
-    #[cfg(feature = "std")]
     pub poll_interval_secs: Option<u64>,
 }
 
@@ -83,6 +86,7 @@ impl Config {
         let starknet_rpc = "Starknet_rpc".to_string();
         let starknet_core_contract_address = "Starknet_core_contract_address".to_string();
         let starknet_core_contract_address = Address::from_str(&starknet_core_contract_address)?;
+        let poll_interval_secs = None;
 
         Ok(Self {
             ethereum_network,
@@ -90,6 +94,7 @@ impl Config {
             ethereum_execution_rpc,
             starknet_rpc,
             starknet_core_contract_address,
+            poll_interval_secs,
         })
     }
 
