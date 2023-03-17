@@ -1,7 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(incomplete_features)]
-#![feature(specialization)]
-#![feature(async_fn_in_trait)]
 
 #[cfg(feature = "std")]
 include!("./with_std.rs");
