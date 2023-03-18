@@ -1,5 +1,8 @@
 pub mod api;
+pub mod models;
+
 use crate::api::{BeerusApiError, BeerusApiServer};
+use crate::models::EventFilter;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -12,8 +15,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, ContractClass, EventsPage, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -235,6 +239,21 @@ impl BeerusApiServer for BeerusRpc {
             .beerus
             .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
+            .await
+            .unwrap())
+    }
+
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage, Error> {
+        let filter = filter.to_starknet_event_filter();
+        Ok(self
+            .beerus
+            .starknet_lightclient
+            .get_events(filter, continuation_token, chunk_size)
             .await
             .unwrap())
     }
