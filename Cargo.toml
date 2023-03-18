@@ -1,5 +1,6 @@
 [workspace]
 members = ["crates/beerus-core", "crates/beerus-cli", "crates/beerus-rpc"]
+default-members = ["crates/beerus-cli", "crates/beerus-rpc"]
 
 [package]
 name = "beerus"
