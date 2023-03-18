@@ -10,9 +10,11 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, ContractClass, DeployTransactionResult, MaybePendingBlockWithTxHashes,
         MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction,
+        Transaction,EventsPage
     },
 };
+
+use crate::models::EventFilter;
 
 #[derive(thiserror::Error, Clone, Copy, Debug)]
 pub enum BeerusApiError {
@@ -173,4 +175,12 @@ pub trait BeerusApi {
         contract_address_salt: String,
         constructor_calldata: Vec<String>,
     ) -> Result<DeployTransactionResult, Error>;
+
+    #[method(name = "getEvents")]
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage, Error>;
 }
