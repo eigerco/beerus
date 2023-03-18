@@ -23,3 +23,7 @@ reqwest = "0.11.13"
 
 [dev-dependencies]
 wiremock = "0.5.17"
+
+[[bin]]
+name = "beerus-rpc"
+path = "src/main.rs"

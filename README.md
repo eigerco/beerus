@@ -135,7 +135,7 @@ well.
 Beerus is configurable via a config toml. If you have set the env var
 `BEERUS_CONFIG` = `path/to/config` this will override all other environment
 variables and take configuration from values defined herein.
-Also the the cli can be directed via `berrus --config <path/to/config>`
+Also the the cli can be directed via `beerus --config <path/to/config>`
 
 [goerli.toml](./crates/beerus-core/tests/common/data/goerli.toml)
 
