@@ -381,4 +381,19 @@ impl BeerusApiServer for BeerusRpc {
 
         Ok(result)
     }
+
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage, Error> {
+        let filter = filter.to_starknet_event_filter();
+        Ok(self
+            .beerus
+            .starknet_lightclient
+            .get_events(filter, continuation_token, chunk_size)
+            .await
+            .unwrap())
+    }
 }
