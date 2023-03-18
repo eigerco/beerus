@@ -7,10 +7,9 @@ use helios::config::{checkpoints, networks::Network};
 use log::{error, info};
 use serde::Deserialize;
 #[cfg(feature = "std")]
-use std::{env, fs, path::PathBuf, str::FromStr, net::SocketAddr};
+use std::{env, fs, net::SocketAddr, path::PathBuf, str::FromStr};
 
 use crate::stdlib::string::{String, ToString};
-
 
 pub const STARKNET_MAINNET_CC_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 pub const STARKNET_GOERLI_CC_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
