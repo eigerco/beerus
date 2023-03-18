@@ -30,6 +30,7 @@ pub struct Config {
     #[cfg(feature = "std")]
     pub data_dir: PathBuf,
     pub poll_interval_secs: Option<u64>,
+    #[cfg(feature = "std")]
     pub beerus_rpc_address: Option<SocketAddr>,
 }
 
@@ -211,6 +212,7 @@ impl Default for Config {
             #[cfg(feature = "std")]
             data_dir: PathBuf::from(DEFAULT_DATA_DIR),
             poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
+            #[cfg(feature = "std")]
             beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
         }
     }
