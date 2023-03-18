@@ -7,15 +7,17 @@ use helios::config::{checkpoints, networks::Network};
 use log::{error, info};
 use serde::Deserialize;
 #[cfg(feature = "std")]
-use std::{env, fs, path::PathBuf, str::FromStr};
+use std::{env, fs, path::PathBuf, str::FromStr, net::SocketAddr};
 
 use crate::stdlib::string::{String, ToString};
+
 
 pub const STARKNET_MAINNET_CC_ADDRESS: &str = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 pub const STARKNET_GOERLI_CC_ADDRESS: &str = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
 pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 pub const DEFAULT_DATA_DIR: &str = "~/.beerus/tmp";
 pub const DEFAULT_POLL_INTERVAL_SECS: u64 = 5;
+pub const DEFAULT_BEERUS_RPC_ADDR: &str = "0.0.0.0:3030";
 
 /// Global configuration.
 #[derive(Clone, PartialEq, Deserialize, Debug)]
@@ -29,6 +31,7 @@ pub struct Config {
     #[cfg(feature = "std")]
     pub data_dir: PathBuf,
     pub poll_interval_secs: Option<u64>,
+    pub beerus_rpc_address: Option<SocketAddr>,
 }
 
 impl Config {
@@ -62,13 +65,15 @@ impl Config {
         config.ethereum_consensus_rpc = string_env_or_die("ETHEREUM_CONSENSUS_RPC_URL");
         config.ethereum_execution_rpc = string_env_or_die("ETHEREUM_EXECUTION_RPC_URL");
         config.starknet_rpc = string_env_or_die("STARKNET_RPC_URL");
-        config.data_dir = match std::env::var("DATA_DIR") {
-            Ok(dir) => PathBuf::from(dir),
-            Err(e) => {
-                error! {"DATA_DIR: {e}"};
-                panic!();
+        if let Ok(dir) = std::env::var("DATA_DIR") {
+            config.data_dir = PathBuf::from(dir);
+        }
+
+        if let Ok(raw_addr) = std::env::var("BEERUS_RPC_ADDR") {
+            if let Ok(addr) = SocketAddr::from_str(raw_addr.as_str()) {
+                config.beerus_rpc_address = Some(addr);
             }
-        };
+        }
 
         config
     }
@@ -103,6 +108,11 @@ impl Config {
 
         if config.poll_interval_secs.is_none() {
             config.poll_interval_secs = Some(DEFAULT_POLL_INTERVAL_SECS);
+        }
+
+        if config.beerus_rpc_address.is_none() {
+            config.beerus_rpc_address =
+                Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap());
         }
 
         config
@@ -152,6 +162,7 @@ impl Config {
         env::remove_var("ETHEREUM_EXECUTION_RPC_URL");
         env::remove_var("STARKNET_RPC_URL");
         env::remove_var("DATA_DIR");
+        env::remove_var("BEERUS_RPC_ADDR");
     }
 
     #[cfg(not(feature = "std"))]
@@ -201,6 +212,7 @@ impl Default for Config {
             #[cfg(feature = "std")]
             data_dir: PathBuf::from(DEFAULT_DATA_DIR),
             poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
+            beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
         }
     }
 }

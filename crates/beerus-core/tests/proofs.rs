@@ -10,7 +10,7 @@ struct JsonOutput {
 
 #[test]
 fn non_membership() {
-    let path = "tests/data/data.json";
+    let path = "tests/common/data/data.json";
     let s = fs::read_to_string(path).unwrap();
 
     let state_root = FieldElement::from_hex_be(
