@@ -9,12 +9,6 @@ use starknet::{
         SyncStatusType,
     },
 };
-// use std::str::FromStr;
-
-// #[cfg(not(feature = "std"))]
-// #[allow(unused_imports)]
-// #[macro_use]
-// extern crate alloc;
 
 #[cfg(feature = "std")]
 use std::vec;
