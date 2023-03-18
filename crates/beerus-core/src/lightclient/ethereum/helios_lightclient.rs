@@ -1,24 +1,48 @@
-use crate::config::Config;
 use async_trait::async_trait;
+
+// #[cfg(not(feature = "std"))]
+// #[allow(unused_imports)]
+// #[macro_use]
+// extern crate alloc;
+
+use crate::stdlib::boxed::Box;
+
+use crate::stdlib::string::String;
+
+use crate::stdlib::vec::Vec;
+
+use crate::stdlib::primitive::u64;
+use crate::stdlib::str::FromStr;
+
 use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
 use eyre::{eyre, Result};
-use helios::{
-    client::{Client, ClientBuilder, FileDB},
-    types::{BlockTag, CallOpts, ExecutionBlock},
-};
-use std::{primitive::u64, str::FromStr};
+
+use crate::config::Config;
+
+use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 
 use super::EthereumLightClient;
+
+#[cfg(not(feature = "std"))]
+use helios::client::{Client, ClientBuilder, ConfigDB};
+#[cfg(feature = "std")]
+use helios::client::{Client, ClientBuilder, FileDB};
 
 /// Helios implementation of `EthereumLightClient`.
 pub struct HeliosLightClient {
     /// The wrapped Helios client.
+    #[cfg(feature = "std")]
     pub helios_light_client: Client<FileDB>,
+
+    #[cfg(not(feature = "std"))]
+    pub helios_light_client: Client<ConfigDB>,
+
     pub starknet_core_contract_address: Address,
 }
 
 /// Implementation of `EthereumLightClient` for Helios.
-#[async_trait]
+#[cfg_attr(feature = "std", async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 impl EthereumLightClient for HeliosLightClient {
     async fn start(&mut self) -> eyre::Result<()> {
         // Start the Helios light client.
@@ -34,11 +58,7 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.send_raw_transaction(bytes).await
     }
 
-    async fn get_balance(
-        &self,
-        address: &Address,
-        block: BlockTag,
-    ) -> eyre::Result<ethers::types::U256> {
+    async fn get_balance(&self, address: &Address, block: BlockTag) -> eyre::Result<U256> {
         self.helios_light_client.get_balance(address, block).await
     }
 
@@ -137,7 +157,7 @@ impl EthereumLightClient for HeliosLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,
@@ -165,7 +185,7 @@ impl EthereumLightClient for HeliosLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,
@@ -187,12 +207,21 @@ impl HeliosLightClient {
     /// Create a new HeliosLightClient.
     pub async fn new(config: Config) -> eyre::Result<Self> {
         // Build the Helios wrapped light client.
+        #[cfg(feature = "std")]
         let helios_light_client: Client<FileDB> = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
             .load_external_fallback()
             .data_dir(config.data_dir)
+            .build()?;
+
+        #[cfg(not(feature = "std"))]
+        let helios_light_client: Client<ConfigDB> = ClientBuilder::new()
+            .network(config.ethereum_network()?)
+            .consensus_rpc(config.ethereum_consensus_rpc.as_str())
+            .execution_rpc(config.ethereum_execution_rpc.as_str())
+            .load_external_fallback()
             .build()?;
 
         Ok(Self {

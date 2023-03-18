@@ -2,6 +2,7 @@ pub mod common;
 use common::{mock_call, mock_get_contract_storage_proof, mock_get_storage_at, mock_server_config};
 
 #[cfg(test)]
+#[cfg(not(target_arch = "wasm32"))]
 mod test {
     use super::*;
     use beerus_core::lightclient::{
@@ -10,6 +11,7 @@ mod test {
     };
     use ethers::types::U256;
     use eyre::eyre;
+    #[cfg(not(target_arch = "wasm32"))]
     use httpmock::prelude::*;
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
     use std::str::FromStr;

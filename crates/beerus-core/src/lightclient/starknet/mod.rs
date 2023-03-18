@@ -1,8 +1,17 @@
 use crate::{config::Config, lightclient::starknet::storage_proof::GetProofOutput};
+
+use crate::stdlib::boxed::Box;
+use crate::stdlib::format;
+use crate::stdlib::string::String;
+use crate::stdlib::vec::Vec;
+use core::convert::TryFrom;
+
+#[cfg(feature = "std")]
+use mockall::automock;
+
 use async_trait::async_trait;
 use ethers::providers::{Http, Provider};
 use eyre::Result;
-use mockall::automock;
 use serde::Serialize;
 use starknet::{
     core::types::FieldElement,
@@ -22,8 +31,10 @@ use url::Url;
 
 pub mod storage_proof;
 
-#[automock]
-#[async_trait]
+// #[cfg(feature="std")]
+// #[automock]
+#[cfg_attr(feature = "std", automock, async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
     async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
@@ -123,7 +134,8 @@ impl StarkNetLightClientImpl {
     }
 }
 
-#[async_trait]
+#[cfg_attr(feature = "std", async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn start(&self) -> Result<()> {
         Ok(())

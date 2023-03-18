@@ -9,7 +9,24 @@ use starknet::{
         SyncStatusType,
     },
 };
+
+#[cfg(feature = "std")]
+use std::vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec;
+
+#[cfg(feature = "std")]
 use std::str::FromStr;
+
+#[cfg(not(feature = "std"))]
+use alloc::str::FromStr;
+
+#[cfg(default = "std")]
+use std::string::ToString;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::ToString;
 
 /// Helper converting block identifier string with corresponding type to a BlockId Type
 /// # Arguments

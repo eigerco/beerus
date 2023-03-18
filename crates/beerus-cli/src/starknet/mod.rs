@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::types::U256;
+use ethabi::Uint as U256;
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 use starknet::{

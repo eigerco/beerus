@@ -1,14 +1,28 @@
-use std::{collections::BTreeMap, str::FromStr, sync::Arc, thread, time};
+#[cfg(feature = "std")]
+use std::{str::FromStr, thread, time};
+
+#[cfg(not(feature = "std"))]
+use gloo_timers::callback::Interval;
+#[cfg(not(feature = "std"))]
+use wasm_bindgen_futures::spawn_local;
+
 use tokio::sync::RwLock;
+
+#[cfg(not(feature = "std"))]
+use core::str::FromStr;
+
+use crate::stdlib::boxed::Box;
+use crate::stdlib::string::{String, ToString};
+use crate::stdlib::vec::Vec;
+use crate::stdlib::{collections::BTreeMap, sync::Arc};
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
-use ethers::{
-    abi::Abi,
-    types::{H160, U256},
-};
+use ethabi::Uint as U256;
+use ethers::{abi::Abi, types::H160};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
+#[cfg(feature = "std")]
 use log::{error, info, warn};
 use starknet::{
     core::types::FieldElement,
@@ -66,7 +80,7 @@ pub struct BeerusLightClient {
     pub starknet_core_abi: Abi,
     /// StarkNet core contract address.
     pub starknet_core_contract_address: H160,
-    // TODO: Add Payload data
+    /// Payload data
     pub node: Arc<RwLock<NodeData>>,
 }
 
@@ -102,6 +116,8 @@ impl BeerusLightClient {
     }
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
+    #[cfg(feature = "std")]
+
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
@@ -109,6 +125,7 @@ impl BeerusLightClient {
             // Start the StarkNet light client.
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
+
             let ethereum_clone = self.ethereum_lightclient.clone();
             let starknet_clone = self.starknet_lightclient.clone();
             let node_clone = self.node.clone();
@@ -140,7 +157,7 @@ impl BeerusLightClient {
                         .await
                     {
                         Ok(block) => {
-                            println!("block: {:?}", block);
+                            println!("block: {block:?}");
                             let mut data = node_clone.write().await;
                             match block {
                                 MaybePendingBlockWithTxs::Block(block) => {
@@ -151,6 +168,7 @@ impl BeerusLightClient {
                                         data.block_number = block.block_number;
                                         data.state_root = block.new_root.to_string();
                                         data.payload.insert(block.block_number, block);
+
                                         info!("New Block Added to Payload:");
                                         info!("Block Number {:?}", &data.block_number);
                                         info!("Block Root {:?}", &data.state_root);
@@ -169,7 +187,92 @@ impl BeerusLightClient {
                 }
             };
             // Spawn loop function
+            #[cfg(feature = "std")]
             tokio::spawn(task);
+        };
+        Ok(())
+    }
+
+    #[cfg(not(feature = "std"))]
+    pub async fn start(&mut self) -> Result<()> {
+        if let SyncStatus::NotSynced = self.sync_status {
+            // Start the Ethereum light client.
+            //TODO: Change unwrap
+            self.ethereum_lightclient.write().await.start().await?;
+            // Start the StarkNet light client.
+            //TODO: Change unwrap
+            self.starknet_lightclient.start().await?;
+            self.sync_status = SyncStatus::Synced;
+
+            let ethereum_clone = self.ethereum_lightclient.clone();
+            let starknet_clone = self.starknet_lightclient.clone();
+            let node_clone = self.node.clone();
+
+            Interval::new(12000, move || {
+                let ethereum_clone = ethereum_clone.clone();
+                let starknet_clone = starknet_clone.clone();
+                let node_clone = node_clone.clone();
+
+                spawn_local(async move {
+                    loop {
+                        //TODO:Fix starknet_state_root and last_proven_block call. (Helios calls are working fine, but these 2 functions arent)
+                        // let state_root = ethereum_clone
+                        //     .read()
+                        //     .await
+                        //     .starknet_state_root()
+                        //     .await
+                        //     .unwrap();
+                        // let last_proven_block = ethereum_clone
+                        //     .read()
+                        //     .await
+                        //     .starknet_last_proven_block()
+                        //     .await
+                        //     .unwrap();
+
+                        //TODO:Remove this once starknet_state_root and last_proven_block call(This is just to valdiate that Helios Fetch are working fine within the thread)
+                        let block_number = ethereum_clone
+                            .read()
+                            .await
+                            .get_block_number()
+                            .await
+                            .unwrap();
+                        // log::info!("Loop State Root, {state_root}");
+                        // log::info!("Loop Block Number, {last_proven_block}");
+                        log::info!("Ethereum Block Number, {block_number}");
+
+                        match starknet_clone
+                            .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
+                            .await
+                        {
+                            Ok(block) => {
+                                let mut data = node_clone.write().await;
+                                match block {
+                                    MaybePendingBlockWithTxs::Block(block) => {
+                                        // TODO: change "0 < block.block_number" to "block.block_number == last_proven_block"
+                                        if block.block_number > data.block_number
+                                            && 0 < block.block_number
+                                        {
+                                            data.block_number = block.block_number;
+                                            data.state_root = block.new_root.to_string();
+                                            data.payload.insert(block.block_number, block);
+                                            log::info!("New Block Added to Payload");
+                                            log::info!("Block Number {:?}", &data.block_number);
+                                            log::info!("Block Root {:?}", &data.state_root);
+                                        }
+                                    }
+                                    MaybePendingBlockWithTxs::PendingBlock(_) => {
+                                        log::info!("Pending Block");
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                log::info!("Error getting block: {err:?}");
+                            }
+                        }
+                    }
+                });
+            })
+            .forget();
         };
         Ok(())
     }
@@ -315,7 +418,7 @@ impl BeerusLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,
@@ -341,7 +444,7 @@ impl BeerusLightClient {
     /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
     /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: ethers::types::U256) -> Result<U256> {
+    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -355,7 +458,7 @@ impl BeerusLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,
@@ -395,7 +498,7 @@ impl BeerusLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,
@@ -430,7 +533,7 @@ impl BeerusLightClient {
         // Build the call options.
         let call_opts = CallOpts {
             from: None,
-            to: self.starknet_core_contract_address,
+            to: Some(self.starknet_core_contract_address),
             gas: None,
             gas_price: None,
             value: None,

@@ -1,9 +1,8 @@
 [package]
 name = "beerus-rpc"
+description = "JSON-RPC server for the Beerus Light Client"
 version.workspace = true
 edition.workspace = true
-repository.workspace = true
-license-file.workspace = true
 
 [dependencies]
 beerus-core.workspace = true
@@ -12,15 +11,14 @@ starknet.workspace = true
 ethers.workspace = true
 eyre.workspace = true
 log.workspace = true
-primitive-types = "0.11.1"
-jsonrpsee = { version = "^0.16", features = ["full"] }
+serde.workspace = true
+primitive-types.workspace = true
+jsonrpsee = { version = "0.16", features = ["full"] }
 thiserror = "1.0.26"
-dotenv = "0.15.0"
-tokio = { version = "1.8.1", features = ["full"] }
+tokio = { version = "1.26.0", features = ["full"] }
 serde_json = "1.0.64"
 env_logger = "0.10.0"
 anyhow = "1.0.69"
-serde = "1.0.152"
 reqwest = "0.11.13"
 
 [dev-dependencies]
