@@ -142,4 +142,12 @@ pub trait BeerusApi {
         block_id: String,
         contract_address: String,
     ) -> Result<FieldElement, Error>;
+
+    #[method(name = "getClass")]
+    async fn starknet_get_class(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        class_hash: String,
+    ) -> Result<ContractClass, Error>;
 }
