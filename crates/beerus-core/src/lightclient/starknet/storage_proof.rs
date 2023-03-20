@@ -1,7 +1,7 @@
-use serde::{de, Serializer};
-use serde::{Deserialize, Deserializer, Serialize};
-use starknet::core::crypto::pedersen_hash;
-use starknet::core::types::FieldElement;
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use starknet::core::{crypto::pedersen_hash, types::FieldElement};
+
+use crate::stdlib::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Path {

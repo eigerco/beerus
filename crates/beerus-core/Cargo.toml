@@ -1,25 +1,45 @@
 [package]
 name = "beerus-core"
-description = "Core utilities of the Beerus Light Client"
+description = "Core utilities for the Beerus Light Client"
 version.workspace = true
 edition.workspace = true
-repository.workspace = true
-license-file.workspace = true
+
+[features]
+default = ["std"]
+std = []
 
 [dependencies]
 helios.workspace = true
 starknet.workspace = true
 ethers.workspace = true
 eyre.workspace = true
+log.workspace = true
+serde = { workspace = true, features = ["derive"] }
+primitive-types.workspace = true
 async-trait = "0.1.58"
-primitive-types = "0.11.1"
-serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0"
 hex = "0.4.3"
 mockall = "0.11.3"
 url = "2.3.1"
 tokio = { version = "1.21.2", features = ["macros"] }
+futures = { version = "0.3", default-features = false }
+ethabi = "18.0.0"
+toml = "0.7.3"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = "0.2.6"
+wasm-bindgen-futures = "0.4.33"
 
 [dev-dependencies]
 httpmock = "0.6.7"
-temp-env = "0.3.1"
+serial_test = "1.0.0"
+
+[dev-dependencies.cargo-husky]
+version = "1.5.0"
+default-features = false
+features = [
+    "precommit-hook",
+    "run-for-all",
+    "run-cargo-clippy",
+    "run-cargo-fmt",
+]

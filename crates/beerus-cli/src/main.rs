@@ -1,5 +1,3 @@
-use std::{thread, time};
-
 use beerus_cli::{model::Cli, runner};
 use beerus_core::{
     config::Config,
@@ -9,42 +7,61 @@ use beerus_core::{
     },
 };
 use clap::Parser;
-use eyre::Result;
+use env_logger::Env;
+use log::{error, info};
+use std::process::exit;
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    // Initialize the logger.
-    env_logger::init();
-    // Parse the CLI arguments.
-    let cli = Cli::parse();
-    // Read the config from the environment.
-    let config = Config::new_from_env()?;
-    // Create a new Ethereum light client.
-    let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
-    // Create a new StarkNet light client.
-    let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
+async fn main() {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    // Create a new Beerus light client.
+    let cli = Cli::parse();
+
+    let config = match &cli.config {
+        Some(path) => Config::from_file(path),
+        None => Config::from_env(),
+    };
+
+    info!("creating ethereum(helios) lightclient...");
+    let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {
+        Ok(ethereum_lightclient) => ethereum_lightclient,
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
+
+    info!("creating starknet lightclient...");
+    let starknet_lightclient = match StarkNetLightClientImpl::new(&config) {
+        Ok(starknet_lightclient) => starknet_lightclient,
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
+
+    info!("creating beerus lightclient");
     let mut beerus = BeerusLightClient::new(
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
 
-    // Start the Beerus light client.
-    println!("Starting Beerus light client...");
-    beerus.start().await?;
-    println!("Beerus light client started!");
-    // Run the CLI command.
-    println!("Before Running command");
-    let command_response = runner::run(beerus, cli).await?;
-    println!("After Command response");
-    // Print the command response.
-    // The handling of the command response is left to each `CommandResponse` implementation.
-    println!("{command_response}");
-    //Thread sleep to test Node/Payload storage
-    //TODO: Remove once data/payload is stable
-    thread::sleep(time::Duration::from_secs(200));
+    info!("starting beerus lightclient...");
+    if let Err(err) = beerus.start().await {
+        error!("{}", err);
+        exit(1);
+    };
 
-    Ok(())
+    info!("running cli...");
+    match runner::run(beerus, cli).await {
+        Ok(cmd_response) => {
+            info!("successful command run...");
+            println!("{cmd_response}");
+        }
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
 }

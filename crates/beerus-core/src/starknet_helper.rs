@@ -1,13 +1,32 @@
 use eyre::{eyre, Result};
 use serde_json::{json, Value};
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{
-    BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-    BroadcastedTransaction, ContractAbiEntry, ContractClass, ContractEntryPoint, EmittedEvent,
-    EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
-    SyncStatusType,
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+        BroadcastedTransaction, ContractAbiEntry, ContractClass, ContractEntryPoint, EmittedEvent,
+        EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
+        SyncStatusType,
+    },
 };
+
+#[cfg(feature = "std")]
+use std::vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec;
+
+#[cfg(feature = "std")]
 use std::str::FromStr;
+
+#[cfg(not(feature = "std"))]
+use alloc::str::FromStr;
+
+#[cfg(default = "std")]
+use std::string::ToString;
+
+#[cfg(not(feature = "std"))]
+use alloc::string::ToString;
 
 /// Helper converting block identifier string with corresponding type to a BlockId Type
 /// # Arguments
@@ -286,8 +305,10 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
 mod tests {
     use std::str::FromStr;
 
-    use starknet::core::types::FieldElement;
-    use starknet::providers::jsonrpc::models::{BlockId, BlockTag};
+    use starknet::{
+        core::types::FieldElement,
+        providers::jsonrpc::models::{BlockId, BlockTag},
+    };
 
     #[tokio::test]
     async fn test_block_id_string_to_block_id_type() {

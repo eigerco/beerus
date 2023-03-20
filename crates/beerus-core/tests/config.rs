@@ -1,292 +1,166 @@
 #[cfg(test)]
 mod tests {
-    use beerus_core::config::{Config, DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS};
+    use beerus_core::config::{
+        Config, DEFAULT_DATA_DIR, DEFAULT_ETHEREUM_NETWORK, DEFAULT_POLL_INTERVAL_SECS,
+        STARKNET_GOERLI_CC_ADDRESS,
+    };
     use ethers::types::Address;
-    use helios::config::networks::Network;
-    use std::path::PathBuf;
-    use std::str::FromStr;
+    use serial_test::serial;
+    use std::env;
+    use std::{path::PathBuf, str::FromStr};
 
-    /// Test `new_from_env` function.
+    /// Test `ethereum_network` function.
+    /// It should return the correct value.
     #[test]
-    fn given_normal_conditions_when_new_from_env_then_returns_config() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                assert!(result.is_ok());
-                let config = result.unwrap();
-                assert_eq!(config.ethereum_network, "mainnet");
-                assert_eq!(config.ethereum_consensus_rpc, "http://localhost:8545");
-                assert_eq!(config.ethereum_execution_rpc, "http://localhost:8545");
-                assert_eq!(config.starknet_rpc, "http://localhost:8545");
-            },
-        );
-    }
+    fn mainnet_file_config_returns_correct_values() {
+        let mainnet_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
 
-    /// Test `new_from_env` function when `ETHEREUM_NETWORK` is not set.
-    /// It should use the default value.
-    /// The default value is `goerli`.
-    /// The default value is defined in `DEFAULT_ETHEREUM_NETWORK` constant.
-    #[test]
-    fn given_ethereum_network_is_not_set_when_new_from_env_then_returns_config() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", None),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                assert!(result.is_ok());
-                let config = result.unwrap();
-                assert_eq!(config.ethereum_network, "goerli");
-            },
+        assert_eq!(mainnet_file_config.ethereum_network, "mainnet");
+        assert_eq!(
+            mainnet_file_config.ethereum_consensus_rpc,
+            "https://www.lightclientdata.org"
         );
-    }
-
-    /// Test `new_from_env` function when `ETHEREUM_CONSENSUS_RPC_URL` is not set.
-    /// It should return an error.
-    #[test]
-    fn given_ethereum_consensus_rpc_is_not_set_when_new_from_env_then_returns_error() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", None),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                match result {
-                    Ok(_) => panic!("Should return an error"),
-                    Err(err) => {
-                        assert_eq!(
-                            err.to_string(),
-                            "Missing mandatory environment variable: ETHEREUM_CONSENSUS_RPC_URL"
-                        )
-                    }
-                }
-            },
+        assert_eq!(
+            mainnet_file_config.ethereum_execution_rpc,
+            "https://eth-mainnet.g.alchemy.com/v2/XXXXX"
         );
-    }
-
-    /// Test `new_from_env` function when `ETHEREUM_EXECUTION_RPC_URL` is not set.
-    /// It should return an error.
-    #[test]
-    fn given_ethereum_execution_rpc_is_not_set_when_new_from_env_then_returns_error() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", None),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                match result {
-                    Ok(_) => panic!("Should return an error"),
-                    Err(err) => {
-                        assert_eq!(
-                            err.to_string(),
-                            "Missing mandatory environment variable: ETHEREUM_EXECUTION_RPC_URL"
-                        )
-                    }
-                }
-            },
-        );
-    }
-
-    /// Test `new_from_env` function when `STARKNET_RPC_URL` is not set.
-    /// It should return an error.
-    #[test]
-    fn given_starknet_rpc_is_not_set_when_new_from_env_then_returns_error() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", None),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                match result {
-                    Ok(_) => panic!("Should return an error"),
-                    Err(err) => {
-                        assert_eq!(
-                            err.to_string(),
-                            "Missing mandatory environment variable: STARKNET_RPC_URL"
-                        )
-                    }
-                }
-            },
-        );
-    }
-
-    /// Test `new_from_env` function when `STARKNET_CORE_CONTRACT_ADDRESS` is not set.
-    /// It should return the default value.
-    /// The default value is `DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS`.
-    #[test]
-    fn given_starknet_core_contract_address_is_not_set_when_new_from_env_then_returns_config() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_CORE_CONTRACT_ADDRESS", None),
-            ],
-            || {
-                let result = Config::new_from_env();
-                assert!(result.is_ok());
-                let config = result.unwrap();
-                assert_eq!(
-                    config.starknet_core_contract_address,
-                    Address::from_str(DEFAULT_STARKNET_CORE_CONTRACT_ADDRESS).unwrap()
-                );
-            },
-        );
-    }
-
-    /// Test `new_from_env` function when `STARKNET_CORE_CONTRACT_ADDRESS` is not a valid address.
-    /// It should return an error.
-    #[test]
-    fn given_starknet_core_contract_address_is_not_valid_when_new_from_env_then_returns_error() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("Not a valid address"),
-                ),
-            ],
-            || {
-                let result = Config::new_from_env();
-                match result {
-                    Ok(_) => panic!("Should return an error"),
-                    Err(err) => {
-                        assert_eq!(err.to_string(), "Invalid character 'N' at position 0")
-                    }
-                }
-            },
-        );
+        assert_eq!(mainnet_file_config.poll_interval_secs, Some(10));
     }
 
     /// Test `ethereum_network` function.
     /// It should return the correct value.
     #[test]
-    fn given_mainnet_when_ethereum_network_then_returns_correct_value() {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        match config.ethereum_network().unwrap() {
-            Network::MAINNET => {}
-            _ => panic!("Should return Mainnet"),
-        }
-    }
+    fn goerli_file_config_returns_correct_values() {
+        let goerli_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/common/data/goerli.toml"));
 
-    /// Test `ethereum_network` function.
-    /// It should return the correct value.
-    #[test]
-    fn given_goerli_when_ethereum_network_then_returns_correct_value() {
-        let config = Config {
-            ethereum_network: "goerli".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        match config.ethereum_network().unwrap() {
-            Network::GOERLI => {}
-            _ => panic!("Should return Goerli"),
-        }
-    }
-
-    /// Test `ethereum_network` function when invalid network value.
-    /// It should return an error.
-    #[test]
-    fn given_ethereum_network_is_invalid_when_ethereum_network_then_returns_error() {
-        let config = Config {
-            ethereum_network: "invalid".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        match config.ethereum_network() {
-            Ok(_) => panic!("Should return an error"),
-            Err(err) => {
-                assert_eq!(err.to_string(), "Invalid network")
-            }
-        }
+        assert_eq!(
+            goerli_file_config.ethereum_network,
+            DEFAULT_ETHEREUM_NETWORK
+        );
+        assert_eq!(
+            goerli_file_config.ethereum_consensus_rpc,
+            "http://testing.prater.beacon-api.nimbus.team"
+        );
+        assert_eq!(
+            goerli_file_config.ethereum_execution_rpc,
+            "https://eth-goerli.g.alchemy.com/v2/XXXXX"
+        );
+        assert_eq!(
+            goerli_file_config.poll_interval_secs,
+            Some(DEFAULT_POLL_INTERVAL_SECS)
+        );
     }
 
     /// Test `default` function.
     /// It should return the correct value.
     #[test]
-    fn given_default_when_default_then_returns_correct_value() {
-        temp_env::with_vars(
-            vec![
-                ("ETHEREUM_NETWORK", Some("mainnet")),
-                ("ETHEREUM_CONSENSUS_RPC_URL", Some("http://localhost:8545")),
-                ("ETHEREUM_EXECUTION_RPC_URL", Some("http://localhost:8545")),
-                ("STARKNET_RPC_URL", Some("http://localhost:8545")),
-                (
-                    "STARKNET_CORE_CONTRACT_ADDRESS",
-                    Some("0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4"),
-                ),
-            ],
-            || {
-                let config = Config::default();
-                assert_eq!(config.ethereum_network, "mainnet");
-                assert_eq!(config.ethereum_consensus_rpc, "http://localhost:8545");
-                assert_eq!(config.ethereum_execution_rpc, "http://localhost:8545");
-                assert_eq!(config.starknet_rpc, "http://localhost:8545");
-            },
+    fn default_returns_correct_values() {
+        let conf = Config::default();
+        assert_eq!(conf.ethereum_network, DEFAULT_ETHEREUM_NETWORK);
+        assert_eq!(conf.ethereum_consensus_rpc, "http://localhost:8545");
+        assert_eq!(conf.ethereum_execution_rpc, "http://localhost:5054");
+        assert_eq!(conf.starknet_rpc, "http://localhost:9545");
+        assert_eq!(
+            conf.starknet_core_contract_address,
+            Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap()
         );
+        assert_eq!(conf.data_dir, PathBuf::from(DEFAULT_DATA_DIR));
+        assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
+    }
+
+    /// Test `from_env` function.
+    #[test]
+    fn all_envs_set_returns_config() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.ethereum_network, "mainnet");
+        assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
+        assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
+        assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
+    }
+
+    /// Test `from_env` function when `ETHEREUM_NETWORK` is not set.
+    /// It should use the default value.
+    /// The default value is `goerli`.
+    /// The default value is defined in `DEFAULT_ETHEREUM_NETWORK` constant.
+    #[test]
+    #[serial]
+    fn ethereum_network_env_not_set_returns_config() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.ethereum_network, "goerli");
+    }
+
+    /// Env Var `BEERUS_CONFIG`
+    /// Should override the config parsing to the file
+    #[test]
+    #[serial]
+    fn beerus_config_env_var_should_override() {
+        env::set_var("BEERUS_CONFIG", "tests/common/data/goerli.toml");
+        let cfg = Config::from_env();
+
+        assert_eq!(
+            cfg.ethereum_consensus_rpc,
+            "http://testing.prater.beacon-api.nimbus.team"
+        );
+        assert_eq!(
+            cfg.ethereum_execution_rpc,
+            "https://eth-goerli.g.alchemy.com/v2/XXXXX"
+        );
+    }
+
+    /// Test `from_env` function when `ETHEREUM_CONSENSUS_RPC_URL` is not set.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_consensus_env_not_set_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test `from_env` function when `ETHEREUM_EXECUTION_RPC_URL` is not set.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_execution_env_not_set_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test `from_env` function when `STARKNET_RPC_URL` is not set.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn starknet_env_not_set_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+
+        let _cfg = Config::from_env();
     }
 }

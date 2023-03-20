@@ -1,0 +1,6 @@
+    ethereum_network = "goerli"
+    ethereum_consensus_rpc = "http://testing.prater.beacon-api.nimbus.team"
+    ethereum_execution_rpc = "https://eth-goerli.g.alchemy.com/v2/XXXXX"
+    starknet_rpc = "https://starknet-goerli.infura.io/v3/XXXXX"
+    data_dir = "~/.beerus/tmp"
+    

@@ -5,36 +5,60 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-use beerus_rpc::run_server;
-use dotenv::dotenv;
-use eyre::Result;
+use beerus_rpc::BeerusRpc;
+use env_logger::Env;
+use log::{error, info};
+use std::process::exit;
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    dotenv().ok();
-    env_logger::init();
-    // Create config.
-    let config = Config::default();
+async fn main() {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    // Create a new Ethereum light client.
-    let ethereum_lightclient = HeliosLightClient::new(config.clone()).await.unwrap();
-    // Create a new StarkNet light client.
-    let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
-    // Create a new Beerus light client.
+    let config = Config::from_env();
+
+    info!("creating ethereum(helios) lightclient...");
+    let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {
+        Ok(ethereum_lightclient) => ethereum_lightclient,
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
+
+    info!("creating starknet lightclient...");
+    let starknet_lightclient = match StarkNetLightClientImpl::new(&config) {
+        Ok(starknet_lightclient) => starknet_lightclient,
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
+
+    info!("creating beerus lightclient");
     let mut beerus = BeerusLightClient::new(
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
-    println!("starting the Beerus light client...");
-    beerus.start().await.unwrap();
-    println!("Beerus light client started and synced.");
 
-    let (addr, server_handle) = run_server(beerus).await.unwrap();
-    let url = format!("http://{addr}");
-    println!("Server started, listening on {url}");
+    info!("starting the Beerus light client...");
+    if let Err(err) = beerus.start().await {
+        error!("{}", err);
+        exit(1);
+    };
 
-    server_handle.stopped().await;
+    info!("starting beerus rpc server...");
+    match BeerusRpc::new(beerus).run().await {
+        Ok((addr, server_handle)) => {
+            info!("===================================================");
+            info!("Beerus JSON-RPC Server started: http://{addr}");
+            info!("===================================================");
 
-    Ok(())
+            server_handle.stopped().await;
+        }
+        Err(err) => {
+            error! {"{}", err};
+            exit(1);
+        }
+    };
 }

@@ -1,16 +1,22 @@
+pub mod common;
+use common::mock_clients;
+
+#[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests {
+    use super::*;
     use beerus_core::{
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::{helios_lightclient::HeliosLightClient, MockEthereumLightClient},
-            starknet::{MockStarkNetLightClient, StarkNetLightClient, StarkNetLightClientImpl},
+            ethereum::helios_lightclient::HeliosLightClient,
+            starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
-    use ethers::types::U256;
+    use ethabi::Uint as U256;
     use ethers::types::{Address, Log, Transaction, H256};
+
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
@@ -28,7 +34,6 @@ mod tests {
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
-    use std::path::PathBuf;
     use std::str::FromStr;
 
     #[test]
@@ -1061,7 +1066,7 @@ mod tests {
 
         let call_opts = CallOpts {
             from: Some(Address::from_low_u64_be(0)),
-            to: Address::from_low_u64_be(1),
+            to: Some(Address::from_low_u64_be(1)),
             gas: Some(U256::from(10_u64)),
             gas_price: Some(U256::from(10_u64)),
             value: Some(U256::from(10_u64)),
@@ -1107,7 +1112,7 @@ mod tests {
         let expected_error = "ethereum_lightclient_error";
         let call_opts = CallOpts {
             from: Some(Address::from_low_u64_be(0)),
-            to: Address::from_low_u64_be(1),
+            to: Some(Address::from_low_u64_be(1)),
             gas: Some(U256::from(10_u64)),
             gas_price: Some(U256::from(10_u64)),
             value: Some(U256::from(10_u64)),
@@ -1384,7 +1389,7 @@ mod tests {
             U256::from_str("0x5bb9692622e817c39663e69dce50777daf4c167bdfa95f3e5cef99c6b8a344d")
                 .unwrap();
         // Convert to bytes because that's what the mock returns.
-        let mut expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
+        let expected_starknet_state_root_bytes: Vec<u8> = vec![0; 32];
         expected_starknet_state_root.to_big_endian(&mut expected_starknet_state_root_bytes.clone());
 
         // Set the expected return value for the Ethereum light client mock.
@@ -1779,17 +1784,9 @@ mod tests {
     #[test]
     fn given_wrong_url_when_create_sn_lightclient_should_fail() {
         // Mock config.
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "mainnet".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
+        let mut config = Config::default();
+        config.starknet_rpc = "".to_string();
+
         // Create a new StarkNet light client.
         let sn_light_client = StarkNetLightClientImpl::new(&config);
         assert!(sn_light_client.is_err());
@@ -2008,8 +2005,8 @@ mod tests {
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
-    /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
-    /// This test mocks external dependencies.
+    // Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
+    // This test mocks external dependencies.
     #[tokio::test]
     async fn given_normal_conditions_when_call_get_l1_to_l2_message_nonce_then_should_return_ok() {
         // Given
@@ -2037,7 +2034,7 @@ mod tests {
         let result = beerus.starknet_l1_to_l2_message_nonce().await.unwrap();
 
         // Then
-        assert_eq!("1234", result.to_string());
+        assert_eq!(expected_nonce, result);
     }
 
     /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
@@ -3543,7 +3540,6 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let result = beerus.starknet_lightclient.pending_transactions().await;
 
         // Then
@@ -3955,24 +3951,5 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `add_declare_transaction` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
-    }
-
-    fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
-        (
-            config,
-            MockEthereumLightClient::new(),
-            MockStarkNetLightClient::new(),
-        )
     }
 }

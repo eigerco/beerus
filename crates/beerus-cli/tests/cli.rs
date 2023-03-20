@@ -1,7 +1,4 @@
-#[cfg(test)]
-
 mod test {
-    use std::path::PathBuf;
     use std::str::FromStr;
 
     use beerus_cli::{
@@ -71,7 +68,6 @@ mod test {
         // When
         let result = runner::run(beerus, cli).await.unwrap();
 
-        println!("{}", &result);
         // Then
         assert_eq!("0xc9bb…c31d", format!("{}", result));
     }
@@ -2900,8 +2896,6 @@ mod test {
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
 
-        println!("Contract Class {contract_class_string:?}");
-
         let params = StarkNetSubCommands::AddDeployTransaction {
             contract_class: contract_class_string,
             version: "10".to_string(),
@@ -2971,8 +2965,6 @@ mod test {
         };
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
-
-        println!("Contract Class {contract_class_string:?}");
 
         let params = StarkNetSubCommands::AddDeployTransaction {
             contract_class: contract_class_string,
@@ -3721,8 +3713,6 @@ mod test {
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
 
-        println!("Contract Class {contract_class_string:?}");
-
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),
             version: "10".to_string(),
@@ -3748,19 +3738,8 @@ mod test {
     }
 
     fn config_and_mocks() -> (Config, MockEthereumLightClient, MockStarkNetLightClient) {
-        let config = Config {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "http://localhost:8545".to_string(),
-            ethereum_execution_rpc: "http://localhost:8545".to_string(),
-            starknet_rpc: "http://localhost:8545".to_string(),
-            data_dir: Some(PathBuf::from("/tmp")),
-            starknet_core_contract_address: Address::from_str(
-                "0x0000000000000000000000000000000000000000",
-            )
-            .unwrap(),
-        };
         (
-            config,
+            Config::default(),
             MockEthereumLightClient::new(),
             MockStarkNetLightClient::new(),
         )

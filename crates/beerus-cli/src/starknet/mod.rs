@@ -2,13 +2,15 @@ use std::str::FromStr;
 
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use ethers::types::U256;
+use ethabi::Uint as U256;
 use eyre::Result;
 use serde::{Deserialize, Serialize};
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{
-    BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
-    BroadcastedInvokeTransactionV0, EventFilter,
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+        BroadcastedInvokeTransactionV0, EventFilter,
+    },
 };
 
 #[derive(Debug, Serialize, Deserialize)]
