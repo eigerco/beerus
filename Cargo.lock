@@ -508,6 +508,7 @@ dependencies = [
  "toml 0.7.3",
  "url",
  "wasm-bindgen-futures",
+ "wasm-bindgen-test",
 ]
 
 [[package]]
@@ -530,6 +531,17 @@ dependencies = [
  "thiserror",
  "tokio",
  "wiremock",
+]
+
+[[package]]
+name = "beerus-ts"
+version = "0.1.0"
+dependencies = [
+ "beerus-core",
+ "console_error_panic_hook",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

@@ -43,6 +43,16 @@ pub enum SyncStatus {
     Synced,
 }
 
+impl ToString for SyncStatus {
+    fn to_string(&self) -> String {
+        match self {
+            SyncStatus::NotSynced => format!("not synced"),
+            SyncStatus::Syncing => format!("syncing"),
+            SyncStatus::Synced => format!("synced"),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct NodeData {
     pub block_number: u64,
@@ -117,7 +127,6 @@ impl BeerusLightClient {
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     #[cfg(feature = "std")]
-
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
@@ -187,7 +196,6 @@ impl BeerusLightClient {
                 }
             };
             // Spawn loop function
-            #[cfg(feature = "std")]
             tokio::spawn(task);
         };
         Ok(())

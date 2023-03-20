@@ -22,3 +22,14 @@ target/
 
 # Environment files
 .env
+
+# Beerus Wasm Example Files
+crates/beerus-ts/target
+crates/beerus-ts/node_modules
+crates/beerus-ts/bin/
+crates/beerus-ts/pkg/
+crates/beerus-ts/dist/
+crates/beerus-ts/Cargo.lock
+crates/beerus-ts/package-lock.json
+crates/beerus-ts/wasm-pack.log
+**/*.rs.bk
