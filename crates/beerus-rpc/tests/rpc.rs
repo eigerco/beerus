@@ -8,7 +8,15 @@ mod tests {
         api::{BeerusApiError, BeerusApiServer},
         models::{BlockId, EventFilter},
     };
+    use ethers::prelude::k256::elliptic_curve::Field;
     use jsonrpsee::types::error::ErrorObjectOwned;
+    use starknet::{
+        core::types::FieldElement,
+        providers::jsonrpc::models::{
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, InvokeTransaction,
+            InvokeTransactionResult, InvokeTransactionV0,
+        },
+    };
 
     #[tokio::test]
     async fn block_number_ok() {
@@ -80,5 +88,35 @@ mod tests {
             assert_eq!(expected_event.data, event.data);
             assert_eq!(expected_event.keys, event.keys);
         }
+    }
+
+    /// Test the `/ethereum/add_invoke_transaction` endpoint.
+    /// Given normal conditions, when query , then ok.
+    #[tokio::test]
+    async fn add_invoke_transaction() {
+        let beerus_rpc = setup_beerus_rpc().await;
+
+        let invoke_transaction = BroadcastedInvokeTransaction::V0(BroadcastedInvokeTransactionV0 {
+            max_fee: FieldElement::ZERO,
+            signature: vec![],
+            nonce: FieldElement::ZERO,
+            contract_address: FieldElement::ZERO,
+            entry_point_selector: FieldElement::ZERO,
+            calldata: vec![],
+        });
+
+        let invoke_trasaction_result = beerus_rpc
+            .add_invoke_transaction(invoke_transaction)
+            .await
+            .unwrap();
+
+        let expected = InvokeTransactionResult {
+            transaction_hash: FieldElement::ONE,
+        };
+
+        assert_eq!(
+            invoke_trasaction_result.transaction_hash,
+            expected.transaction_hash
+        );
     }
 }

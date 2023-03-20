@@ -9,7 +9,13 @@ use beerus_rpc::BeerusRpc;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use starknet::providers::jsonrpc::models::{BlockId, BlockTag, EventFilter};
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+        EventFilter,
+    },
+};
 use std::path::PathBuf;
 use wiremock::{
     matchers::{body_json, method},
@@ -58,6 +64,15 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn add_invoke_transaction(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_addInvokeTransaction",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
@@ -65,6 +80,7 @@ pub async fn setup_wiremock() -> String {
     mock_block_number().mount(&mock_server).await;
     mock_get_block_transaction_count().mount(&mock_server).await;
     mock_get_events().mount(&mock_server).await;
+    mock_add_invoke_transaction().mount(&mock_server).await;
     mock_server.uri()
 }
 
@@ -129,6 +145,31 @@ fn mock_get_events() -> Mock {
             "application/json",
         ))
 }
+
+fn mock_add_invoke_transaction() -> Mock {
+    let invoke_transaction = BroadcastedInvokeTransaction::V0(BroadcastedInvokeTransactionV0 {
+        max_fee: FieldElement::ZERO,
+        signature: vec![],
+        nonce: FieldElement::ZERO,
+        contract_address: FieldElement::ZERO,
+        entry_point_selector: FieldElement::ZERO,
+        calldata: vec![],
+    });
+
+    let body = body_json(StarknetRpcBaseData::add_invoke_transaction([
+        &invoke_transaction,
+    ]));
+
+    println!("{body:#?}");
+
+    Mock::given(method("POST")).and(body).respond_with(
+        response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_getEvents.json"),
+            "application/json",
+        ),
+    )
+}
+
 fn response_template_with_status(status_code: StatusCode) -> ResponseTemplate {
     ResponseTemplate::new(status_code)
         .append_header("vary", "Accept-Encoding")
