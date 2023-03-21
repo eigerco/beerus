@@ -12,8 +12,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedDeployTransaction, ContractClass, DeployTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -257,5 +258,37 @@ impl BeerusApiServer for BeerusRpc {
             .get_class_hash_at(&block_id, contract_address)
             .await
             .unwrap())
+    }
+
+    async fn starknet_add_deploy_transaction(
+        &self,
+        contract_class: String,
+        version: String,
+        contract_address_salt: String,
+        constructor_calldata: Vec<String>,
+    ) -> Result<DeployTransactionResult, Error> {
+        let contract_class_bytes = contract_class.as_bytes();
+        let contract_class = serde_json::from_slice(contract_class_bytes).unwrap();
+        let version: u64 = version.parse().unwrap();
+        let contract_address_salt: FieldElement =
+            FieldElement::from_str(&contract_address_salt).unwrap();
+        let constructor_calldata = constructor_calldata
+            .iter()
+            .map(|x| FieldElement::from_str(x).unwrap())
+            .collect();
+        let deploy_transaction = BroadcastedDeployTransaction {
+            contract_class,
+            version,
+            contract_address_salt,
+            constructor_calldata,
+        };
+        let result = self
+            .beerus
+            .starknet_lightclient
+            .add_deploy_transaction(&deploy_transaction)
+            .await
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
+
+        Ok(result)
     }
 }
