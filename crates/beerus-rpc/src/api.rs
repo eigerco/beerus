@@ -186,4 +186,13 @@ pub trait BeerusApi {
 
     #[method(name = "starknet_pendingTransactions")]
     async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
+
+    #[method(name = "starknet_addDeployTransaction")]
+    async fn starknet_add_deploy_transaction(
+        &self,
+        contract_class: String,
+        version: String,
+        contract_address_salt: String,
+        constructor_calldata: Vec<String>,
+    ) -> Result<DeployTransactionResult, Error>;
 }
