@@ -184,4 +184,6 @@ pub trait BeerusApi {
         chunk_size: u64,
     ) -> Result<EventsPage, Error>;
 
+    #[method(name = "starknet_pendingTransactions")]
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
 }

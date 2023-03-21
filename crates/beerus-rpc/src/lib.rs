@@ -339,6 +339,4 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap())
     }
-
-    
 }
