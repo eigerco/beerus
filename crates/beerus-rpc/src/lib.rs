@@ -282,11 +282,13 @@ impl BeerusApiServer for BeerusRpc {
             contract_address_salt,
             constructor_calldata,
         };
-        Ok(self
-            ._beerus
+        let result = self
+            .beerus
             .starknet_lightclient
             .add_deploy_transaction(&deploy_transaction)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string())))))
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
+            
+        Ok(result)
     }
 }
