@@ -117,6 +117,7 @@ impl BeerusLightClient {
 
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     #[cfg(feature = "std")]
+
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
@@ -186,6 +187,7 @@ impl BeerusLightClient {
                 }
             };
             // Spawn loop function
+            #[cfg(feature = "std")]
             tokio::spawn(task);
         };
         Ok(())
@@ -569,7 +571,7 @@ impl BeerusLightClient {
         if block_number <= node_data.block_number {
             // Get state_root for current block_number
             let payload_block = node_data.payload.get(&block_number).unwrap();
-            Ok(MaybePendingBlockWithTxs::Block(payload_block.to_owned()))
+            Ok(MaybePendingBlockWithTxs::Block(payload_block.clone()))
         } else {
             self.starknet_lightclient.get_block_with_txs(block_id).await
         }
