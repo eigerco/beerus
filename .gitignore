@@ -29,3 +29,4 @@ crates/beerus-js/pkg/
 crates/beerus-js/dist/*
 !crates/beerus-js/dist/index.html
 crates/beerus-js/package-lock.json
+crates/beerus-js/Cargo.lock

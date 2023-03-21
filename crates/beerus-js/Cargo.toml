@@ -1,8 +1,8 @@
 [package]
 name = "beerus-js"
 description = "Web Assembly bindings for the Beerus Light Client"
-version.workspace = true
-edition.workspace = true
+version = "0.1.0"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]

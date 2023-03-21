@@ -512,18 +512,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "beerus-js"
-version = "0.1.0"
-dependencies = [
- "beerus-core",
- "console_error_panic_hook",
- "serde-wasm-bindgen",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "beerus-rpc"
 version = "0.1.0"
 dependencies = [
@@ -4584,17 +4572,6 @@ checksum = "c599b3fd89a75e0c18d6d2be693ddb12cccaf771db4ff9e39097104808a014c0"
 dependencies = [
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "serde-wasm-bindgen"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3b4c031cd0d9014307d82b8abf653c0290fbdaeb4c02d00c63cf52f728628bf"
-dependencies = [
- "js-sys",
- "serde",
- "wasm-bindgen",
 ]
 
 [[package]]
