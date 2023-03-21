@@ -69,6 +69,9 @@ pub trait BeerusApi {
     #[method(name = "chainId")]
     async fn chain_id(&self) -> Result<String, Error>;
 
+    #[method(name = "getNonce")]
+    async fn get_nonce(&self, contract_address: String) -> Result<String, Error>;
+
     #[method(name = "blockNumber")]
     async fn block_number(&self) -> Result<u64, Error>;
 

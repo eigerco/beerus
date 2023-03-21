@@ -63,6 +63,17 @@ impl BeerusApiServer for BeerusRpc {
         Ok(chain_id)
     }
 
+    async fn get_nonce(&self, contract_address: String) -> Result<String, Error> {
+        let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
+        let nonce = self
+            .beerus
+            .starknet_get_nonce(contract_address)
+            .await
+            .unwrap()
+            .to_string();
+        Ok(nonce)
+    }
+
     async fn block_number(&self) -> Result<u64, Error> {
         let block_number = self
             .beerus
