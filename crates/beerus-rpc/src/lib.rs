@@ -329,4 +329,14 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .unwrap())
     }
+
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error> {
+        let transactions_result = self
+            .beerus
+            .starknet_lightclient
+            .pending_transactions()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions));
+        Ok(transactions_result.unwrap())
+    }
 }
