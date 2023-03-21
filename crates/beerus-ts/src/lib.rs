@@ -59,7 +59,7 @@ impl BeerusClient {
     }
 
     #[wasm_bindgen]
-    pub async fn sync_status(&self) -> String {
+    pub fn sync_status(&self) -> String {
         self.beerus.sync_status().to_string()
     }
 }

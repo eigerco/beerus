@@ -13,7 +13,7 @@ export class Client {
         this.#client = new BeerusClient(config.network, config.consensusRpc, config.executionRpc, config.starknetRpc);
     }
 
-    sync_status() {
+    sync_status(): string {
         return this.#client.sync_status();
     }
 }
