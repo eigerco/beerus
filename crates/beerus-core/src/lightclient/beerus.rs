@@ -43,16 +43,6 @@ pub enum SyncStatus {
     Synced,
 }
 
-impl ToString for SyncStatus {
-    fn to_string(&self) -> String {
-        match self {
-            SyncStatus::NotSynced => format!("not synced"),
-            SyncStatus::Syncing => format!("syncing"),
-            SyncStatus::Synced => format!("synced"),
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct NodeData {
     pub block_number: u64,

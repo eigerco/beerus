@@ -40,7 +40,7 @@
       - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
-      - [Beerus TS](#beerus-ts)
+      - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
 - [Roadmap](#roadmap)
 - [Support](#support)
 - [Project assistance](#project-assistance)
@@ -167,22 +167,29 @@ cargo run --bin beerus starknet query-state-root
 cargo run --bin beerus-rpc
 ```
 
-##### Beerus TS
+##### Beerus JS(wasm demo)
 
-***[CORS bypass](https://github.com/garmeeh/local-cors-proxy/blob/master/README.md)***
+Dependencies:
+
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [CORS bypass](https://github.com/garmeeh/local-cors-proxy/blob/master/README.md)
+- local pathfinder node at `http://localhost:9545`
+- execution env var - `ETHEREUM_EXECUTION_RPC_URL`
 
 ```bash
-# build wasm module
-cd crates/beerus-ts && wasm-pack build
-```
-
-```bash
-# run example
-cd crates/beerus-ts
+cd crates/beerus-js
 
 # install node deps
 npm i
+
+# build webpack & wasm modules
 npm run build
+
+# run example
+./run.sh
+
+# navigate browser to http://localhost:8080
+# open developer console
 ```
 
 ## Roadmap
