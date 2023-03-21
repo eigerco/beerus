@@ -8,7 +8,8 @@ use beerus_core::{
 use beerus_rpc::BeerusRpc;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use starknet::providers::jsonrpc::models::{BlockId, BlockTag};
+use serde_json::json;
+use starknet::providers::jsonrpc::models::{BlockId, BlockTag, EventFilter};
 use std::path::PathBuf;
 use wiremock::{
     matchers::{body_json, method},
@@ -48,12 +49,22 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn get_events(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_getEvents",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
     let mock_server = MockServer::start().await;
     mock_block_number().mount(&mock_server).await;
     mock_get_block_transaction_count().mount(&mock_server).await;
+    mock_get_events().mount(&mock_server).await;
     mock_server.uri()
 }
 
@@ -93,6 +104,31 @@ fn mock_get_block_transaction_count() -> Mock {
         ))
 }
 
+fn mock_get_events() -> Mock {
+    // TODO: avoid duplicating the input values in rpc.rs
+    let filter = EventFilter {
+        from_block: Some(BlockId::Number(800)),
+        to_block: Some(BlockId::Number(1701)),
+        address: None,
+        keys: None,
+    };
+    let continuation_token = Some("1000".to_string());
+    let chunk_size = 1000;
+
+    let param = json!({
+        "from_block": filter.from_block,
+        "to_block": filter.to_block,
+        "continuation_token": continuation_token,
+        "chunk_size": chunk_size
+    });
+
+    Mock::given(method("POST"))
+        .and(body_json(StarknetRpcBaseData::get_events([&param])))
+        .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_getEvents.json"),
+            "application/json",
+        ))
+}
 fn response_template_with_status(status_code: StatusCode) -> ResponseTemplate {
     ResponseTemplate::new(status_code)
         .append_header("vary", "Accept-Encoding")
