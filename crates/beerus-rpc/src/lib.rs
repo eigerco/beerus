@@ -260,6 +260,26 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
+    async fn starknet_get_class(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        class_hash: String,
+    ) -> Result<ContractClass, Error> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+        let class_hash = FieldElement::from_str(&class_hash)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+        let result = self
+            .beerus
+            .starknet_lightclient
+            .get_class(&block_id, class_hash)
+            .await
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
+
+        Ok(result)
+    }
+
     async fn starknet_add_deploy_transaction(
         &self,
         contract_class: String,
