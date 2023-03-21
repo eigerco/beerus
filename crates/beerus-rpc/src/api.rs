@@ -8,11 +8,13 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, DeployTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction,
+        BlockHashAndNumber, ContractClass, DeployTransactionResult, EventsPage,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
+
+use crate::models::EventFilter;
 
 #[derive(thiserror::Error, Clone, Copy, Debug)]
 pub enum BeerusApiError {
@@ -168,4 +170,12 @@ pub trait BeerusApi {
         contract_address_salt: String,
         constructor_calldata: Vec<String>,
     ) -> Result<DeployTransactionResult, Error>;
+
+    #[method(name = "starknet_getEvents")]
+    async fn get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage, Error>;
 }
