@@ -288,7 +288,7 @@ impl BeerusApiServer for BeerusRpc {
             .add_deploy_transaction(&deploy_transaction)
             .await
             .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-            
+
         Ok(result)
     }
 }
