@@ -276,10 +276,10 @@ impl BeerusApiServer for BeerusRpc {
             .get_class(&block_id, class_hash)
             .await
             .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-            
+
         Ok(result)
     }
-    
+
     async fn starknet_add_deploy_transaction(
         &self,
         contract_class: String,
