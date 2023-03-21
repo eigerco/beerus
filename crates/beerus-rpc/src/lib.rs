@@ -76,14 +76,22 @@ impl BeerusApiServer for BeerusRpc {
     }
 
     async fn starknet_block_number(&self) -> Result<u64, Error> {
-        let block_number = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .block_number()
             .await
-            .unwrap();
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
+    }
 
-        Ok(block_number)
+    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String, Error> {
+        let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
+        let nonce = self
+            .beerus
+            .starknet_get_nonce(contract_address)
+            .await
+            .unwrap()
+            .to_string();
+        Ok(nonce)
     }
 
     async fn starknet_get_block_transaction_count(
