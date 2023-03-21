@@ -1,5 +1,4 @@
 #[cfg(not(target_arch = "wasm32"))]
-
 use beerus_core::{
     config::{Config, DEFAULT_BEERUS_RPC_ADDR},
     lightclient::{

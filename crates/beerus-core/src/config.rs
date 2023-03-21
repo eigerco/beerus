@@ -114,9 +114,13 @@ impl Config {
         config
     }
 
-
     #[cfg(not(feature = "std"))]
-    pub fn from_args(network: String, consensus_rpc: String, execution_rpc: String, starknet_rpc: String) -> Self {
+    pub fn from_args(
+        network: String,
+        consensus_rpc: String,
+        execution_rpc: String,
+        starknet_rpc: String,
+    ) -> Self {
         let starknet_cc = match network.as_str() {
             "mainnet" => Address::from_str(STARKNET_MAINNET_CC_ADDRESS).unwrap(),
             _ => Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),

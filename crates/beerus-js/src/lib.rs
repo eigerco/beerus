@@ -6,8 +6,8 @@ use wasm_bindgen::prelude::*;
 use beerus_core::{
     config::Config,
     lightclient::{
-        beerus::BeerusLightClient, beerus::SyncStatus, ethereum::helios_lightclient::HeliosLightClient,
-        starknet::StarkNetLightClientImpl,
+        beerus::BeerusLightClient, beerus::SyncStatus,
+        ethereum::helios_lightclient::HeliosLightClient, starknet::StarkNetLightClientImpl,
     },
 };
 
@@ -58,7 +58,11 @@ impl BeerusClient {
 
     #[wasm_bindgen]
     pub async fn get_block_number(&self) -> u32 {
-        self.beerus.starknet_lightclient.block_number().await.unwrap() as u32
+        self.beerus
+            .starknet_lightclient
+            .block_number()
+            .await
+            .unwrap() as u32
     }
 
     #[wasm_bindgen]
