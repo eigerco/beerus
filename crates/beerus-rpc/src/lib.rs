@@ -16,8 +16,8 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BroadcastedDeployTransaction, ContractClass, DeployTransactionResult,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction, EventsPage
+        EventsPage, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
