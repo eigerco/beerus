@@ -348,8 +348,8 @@ mod test {
         // Given
         // Mock dependencies.
         ethereum_lightclient
-            .expect_chain_id()
-            .return_once(move || 1);
+            .expect_get_chain_id()
+            .return_once(move || Ok(1));
 
         let beerus = BeerusLightClient::new(
             config,

@@ -58,6 +58,16 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
+    async fn ethereum_chain_id(&self) -> Result<u64, Error> {
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_chain_id()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
     // Starknet functions
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error> {
         Ok(self

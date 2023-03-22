@@ -434,10 +434,10 @@ mod tests {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Mock the `chain_id` method of the Ethereum light client.
-        let expected_chain_id = 1;
+        let expected_get_chain_id = 1;
         ethereum_lightclient_mock
-            .expect_chain_id()
-            .return_once(move || expected_chain_id);
+            .expect_get_chain_id()
+            .return_once(move || Ok(expected_get_chain_id));
 
         // When
         let beerus = BeerusLightClient::new(
@@ -446,11 +446,17 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let result = beerus.ethereum_lightclient.read().await.chain_id().await;
+        let result = beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_chain_id()
+            .await
+            .unwrap();
 
         // Then
         // Assert that the chain id returned by the `chain_id` method of the Beerus light client is the expected chain id.
-        assert_eq!(result, expected_chain_id);
+        assert_eq!(result, expected_get_chain_id);
     }
 
     /// Test the `get_code` method when everything is fine.
