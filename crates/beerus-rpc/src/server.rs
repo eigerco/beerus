@@ -110,7 +110,7 @@ trait BeerusApi {
         contract_address: String,
     ) -> Result<FieldElement>;
 
-    #[method(name = "starknet_declare_transaction")]
+    #[method(name = "starknet_addDeclareTransaction")]
     async fn starknet_add_declare_transaction(
         &self,
         version: String,
