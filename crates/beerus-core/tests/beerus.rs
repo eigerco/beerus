@@ -3961,7 +3961,7 @@ mod tests {
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // The expected error is what is returned from the API Error
-        let expected_error = "Failed to fetch pending transactions";
+        let expected_error = "Network Failure";
 
         // Mock dependencies.
         starknet_lightclient_mock
@@ -3980,10 +3980,15 @@ mod tests {
         // Then
         // Assert that the `starknet_pending_transactions` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
+        // let actual_error = result.unwrap_err().to_string();
+        // println!("expected error: {}", expected_error);
+        // println!("actual error: {}", actual_error);
+        // assert_eq!(actual_error, expected_error);
+
         // Assert that the error returned by the `starknet_pending_transactions` method of the Beerus light client is the expected error.
         assert_eq!(
             result.unwrap_err().to_string(),
-            "Failed to fetch pending transactions".to_string()
+            "Failed to get pending transactions: Network Failure"
         );
     }
 }
