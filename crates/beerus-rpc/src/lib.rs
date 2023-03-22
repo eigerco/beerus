@@ -3,6 +3,7 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use helios::types::BlockTag;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -54,6 +55,21 @@ impl BeerusApiServer for BeerusRpc {
             .read()
             .await
             .get_block_number()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
+    }
+
+    async fn ethereum_get_block_transaction_count_by_number(
+        &self,
+        block_tag: &str,
+    ) -> Result<u64, Error> {
+        let block_tag: String = serde_json::to_string(&block_tag).unwrap();
+        let block_tag: BlockTag = serde_json::from_str(block_tag.as_str()).unwrap();
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_block_transaction_count_by_number(block_tag)
             .await
             .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }

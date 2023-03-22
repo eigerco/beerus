@@ -68,6 +68,12 @@ pub trait BeerusApi {
     #[method(name = "ethereum_blockNumber")]
     async fn ethereum_block_number(&self) -> Result<u64, Error>;
 
+    #[method(name = "ethereum_getBlockTransactionCountByNumber")]
+    async fn ethereum_get_block_transaction_count_by_number(
+        &self,
+        block_tag: &str,
+    ) -> Result<u64, Error>;
+
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error>;
