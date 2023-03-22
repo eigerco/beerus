@@ -1,6 +1,8 @@
+use ethabi::Uint as U256;
+
 use ethers::{
     abi::{Abi, AbiError, Token, Tokenize},
-    types::{Bytes, U256},
+    types::Bytes,
 };
 use eyre::{eyre, Result};
 use helios::types::BlockTag;

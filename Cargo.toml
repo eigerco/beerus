@@ -1,17 +1,23 @@
 [workspace]
 members = ["crates/beerus-core", "crates/beerus-cli", "crates/beerus-rpc"]
+default-members = ["crates/beerus-cli", "crates/beerus-rpc"]
+
+[package]
+name = "beerus"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/keep-starknet-strange/beerus"
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-repository = "https://github.com/keep-starknet-strange/beerus"
-license = "MIT"
-license-file = "LICENSE"
 
 [workspace.dependencies]
 beerus-core = { path = "./crates/beerus-core" }
-helios = { git = "https://github.com/a16z/helios" }
+helios = { git = "https://github.com/a16z/helios", tag = "0.3.0" }
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
 ethers = "1.0.2"
 eyre = "0.6.8"
-log = "0.4.14"
+log = "0.4.17"
+serde = "1.0.156"
+primitive-types = "0.12.1"

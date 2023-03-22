@@ -1,6 +1,8 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use starknet::core::{crypto::pedersen_hash, types::FieldElement};
 
+use crate::stdlib::vec::Vec;
+
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Path {
     #[serde(deserialize_with = "from_hex_deser", serialize_with = "to_hex_ser")]

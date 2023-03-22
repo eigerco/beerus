@@ -92,13 +92,19 @@ curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/bee
 #### Build
 
 ```bash
-cargo build --release
+cargo build --all --release
+```
+
+Build `beerus-core` for WASM:
+
+```bash
+cargo build -p beerus-core --no-default-features --target wasm32-unknown-unknown --release
 ```
 
 #### Test
 
 ```bash
-cargo test
+cargo test --all
 ```
 
 #### Config
@@ -129,11 +135,11 @@ well.
 Beerus is configurable via a config toml. If you have set the env var
 `BEERUS_CONFIG` = `path/to/config` this will override all other environment
 variables and take configuration from values defined herein.
-Also the the cli can be directed via `berrus --config <path/to/config>`
+Also the the cli can be directed via `beerus --config <path/to/config>`
 
-[goerli.toml](./crates/beerus-core/tests/data/goerli.toml)
+[goerli.toml](./crates/beerus-core/tests/common/data/goerli.toml)
 
-[mainnet.toml](./crates/beerus-core/tests/data/mainnet.toml)
+[mainnet.toml](./crates/beerus-core/tests/common/data/mainnet.toml)
 
 ##### Environment Variables
 

@@ -1,6 +1,7 @@
 pub mod common;
 use common::mock_clients;
 
+#[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -13,7 +14,9 @@ mod tests {
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
     };
-    use ethers::types::{Address, Log, Transaction, H256, U256};
+    use ethabi::Uint as U256;
+    use ethers::types::{Address, Log, Transaction, H256};
+
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
     use starknet::{
@@ -1063,7 +1066,7 @@ mod tests {
 
         let call_opts = CallOpts {
             from: Some(Address::from_low_u64_be(0)),
-            to: Address::from_low_u64_be(1),
+            to: Some(Address::from_low_u64_be(1)),
             gas: Some(U256::from(10_u64)),
             gas_price: Some(U256::from(10_u64)),
             value: Some(U256::from(10_u64)),
@@ -1109,7 +1112,7 @@ mod tests {
         let expected_error = "ethereum_lightclient_error";
         let call_opts = CallOpts {
             from: Some(Address::from_low_u64_be(0)),
-            to: Address::from_low_u64_be(1),
+            to: Some(Address::from_low_u64_be(1)),
             gas: Some(U256::from(10_u64)),
             gas_price: Some(U256::from(10_u64)),
             value: Some(U256::from(10_u64)),
@@ -2002,8 +2005,8 @@ mod tests {
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
 
-    /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
-    /// This test mocks external dependencies.
+    // Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.
+    // This test mocks external dependencies.
     #[tokio::test]
     async fn given_normal_conditions_when_call_get_l1_to_l2_message_nonce_then_should_return_ok() {
         // Given
@@ -2031,7 +2034,7 @@ mod tests {
         let result = beerus.starknet_l1_to_l2_message_nonce().await.unwrap();
 
         // Then
-        assert_eq!("1234", result.to_string());
+        assert_eq!(expected_nonce, result);
     }
 
     /// Test the `starknet_l1_to_l2_message_nonce` method when everything is fine.

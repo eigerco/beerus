@@ -1,5 +1,3 @@
-#[cfg(test)]
-
 mod test {
     use std::str::FromStr;
 
@@ -13,10 +11,12 @@ mod test {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::BeerusLightClient,
-            ethereum::MockEthereumLightClient,
-            starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
+            beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
+            starknet::MockStarkNetLightClient,
         },
+    };
+    use beerus_core::{
+        lightclient::starknet::storage_proof::GetProofOutput,
         starknet_helper::create_mock_broadcasted_transaction,
     };
     use ethers::types::{Address, H256, U256};

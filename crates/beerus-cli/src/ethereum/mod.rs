@@ -1,8 +1,10 @@
 use crate::model::CommandResponse;
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use core::str::FromStr;
+use ethabi::Uint as U256;
+
 use ethers::{
-    types::{Address, H256, U256},
+    types::{Address, H256},
     utils,
     utils::hex,
 };
@@ -296,7 +298,7 @@ pub async fn query_estimate_gas(
             .from
             .as_ref()
             .and_then(|v| Address::from_str(v).ok()),
-        to: Address::from_str(&transaction_object.to)?,
+        to: Some(Address::from_str(&transaction_object.to)?),
         value: transaction_object
             .value
             .as_ref()

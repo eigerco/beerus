@@ -5,10 +5,12 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-use beerus_rpc::server::BeerusRpc;
+use beerus_rpc::BeerusRpc;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use starknet::providers::jsonrpc::models::{BlockId, BlockTag};
+use serde_json::json;
+use starknet::providers::jsonrpc::models::{BlockId, BlockTag, EventFilter};
+use std::path::PathBuf;
 use wiremock::{
     matchers::{body_json, method},
     Mock, MockServer, ResponseTemplate,
@@ -30,7 +32,7 @@ pub struct EthJsonRpcResponse<StarknetParams> {
 }
 
 impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
-    pub const fn stark_block_number(params: StarknetParams) -> Self {
+    pub const fn block_number(params: StarknetParams) -> Self {
         Self {
             id: 1,
             jsonrpc: "2.0",
@@ -47,19 +49,28 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn get_events(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_getEvents",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
     let mock_server = MockServer::start().await;
     mock_block_number().mount(&mock_server).await;
     mock_get_block_transaction_count().mount(&mock_server).await;
+    mock_get_events().mount(&mock_server).await;
     mock_server.uri()
 }
 
 pub async fn setup_beerus_rpc() -> BeerusRpc {
-    let mock_starknet_rpc = setup_wiremock().await;
-    set_mandatory_envs(mock_starknet_rpc);
-    let config = Config::from_env();
+    let mut config = Config::from_file(&PathBuf::from("tests/common/data/test.toml"));
+    config.starknet_rpc = setup_wiremock().await;
 
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
@@ -72,17 +83,9 @@ pub async fn setup_beerus_rpc() -> BeerusRpc {
     BeerusRpc::new(beerus_client)
 }
 
-fn set_mandatory_envs(starknet_rpc: String) {
-    Config::clean_env();
-    std::env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "");
-    std::env::set_var("ETHEREUM_EXECUTION_RPC_URL", "");
-    std::env::set_var("STARKNET_RPC_URL", starknet_rpc);
-    std::env::set_var("DATA_DIR", "");
-}
-
 fn mock_block_number() -> Mock {
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::stark_block_number(())))
+        .and(body_json(StarknetRpcBaseData::block_number(())))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockNumber.json"),
             "application/json",
@@ -101,6 +104,31 @@ fn mock_get_block_transaction_count() -> Mock {
         ))
 }
 
+fn mock_get_events() -> Mock {
+    // TODO: avoid duplicating the input values in rpc.rs
+    let filter = EventFilter {
+        from_block: Some(BlockId::Number(800)),
+        to_block: Some(BlockId::Number(1701)),
+        address: None,
+        keys: None,
+    };
+    let continuation_token = Some("1000".to_string());
+    let chunk_size = 1000;
+
+    let param = json!({
+        "from_block": filter.from_block,
+        "to_block": filter.to_block,
+        "continuation_token": continuation_token,
+        "chunk_size": chunk_size
+    });
+
+    Mock::given(method("POST"))
+        .and(body_json(StarknetRpcBaseData::get_events([&param])))
+        .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_getEvents.json"),
+            "application/json",
+        ))
+}
 fn response_template_with_status(status_code: StatusCode) -> ResponseTemplate {
     ResponseTemplate::new(status_code)
         .append_header("vary", "Accept-Encoding")

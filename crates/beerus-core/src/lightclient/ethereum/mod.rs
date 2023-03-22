@@ -1,18 +1,27 @@
 pub mod helios_lightclient;
 
+use crate::stdlib::boxed::Box;
+
+use crate::stdlib::string::String;
+
+use crate::stdlib::vec::Vec;
+
 use async_trait::async_trait;
+use core::u8;
 use ethers::types::{Address, Log, Transaction, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
+#[cfg(feature = "std")]
 use mockall::automock;
-use std::u8;
 
 /// Ethereum light client trait.
 /// This trait is used to abstract the Ethereum light client implementation.
 // TODO: For now there is a dependency on Helios types, we should abstract this away eventually.
 // TODO: Maybe we can let the possibility to get access to the underlying light client anyway.
-#[automock]
-#[async_trait]
+
+// #[cfg(feature="std")]
+#[cfg_attr(feature = "std", automock, async_trait)]
+#[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait EthereumLightClient: Send + Sync {
     /// Start and synchronize the Ethereum light client.
     /// This function should be called before any other function.
