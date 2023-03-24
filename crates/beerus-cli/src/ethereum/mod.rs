@@ -133,7 +133,12 @@ pub async fn query_block_number(beerus: BeerusLightClient) -> Result<CommandResp
 /// # Returns
 /// * `Result<CommandResponse>` - The chain id of the Ethereum network.
 pub async fn query_chain_id(beerus: BeerusLightClient) -> Result<CommandResponse> {
-    let chain_id = beerus.ethereum_lightclient.read().await.chain_id().await;
+    let chain_id = beerus
+        .ethereum_lightclient
+        .read()
+        .await
+        .get_chain_id()
+        .await?;
     Ok(CommandResponse::EthereumQueryChainId(chain_id))
 }
 

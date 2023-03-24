@@ -98,7 +98,7 @@ pub trait EthereumLightClient: Send + Sync {
     /// The chain ID.
     /// # Errors
     /// Cannot fail.
-    async fn chain_id(&self) -> u64;
+    async fn get_chain_id(&self) -> Result<u64>;
 
     /// Get the code of a given address.
     /// This function should be called after `start`.
