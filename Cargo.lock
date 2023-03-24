@@ -508,6 +508,7 @@ dependencies = [
  "toml 0.7.3",
  "url",
  "wasm-bindgen-futures",
+ "wasm-bindgen-test",
 ]
 
 [[package]]

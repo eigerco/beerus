@@ -1,7 +1,8 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 pub mod common;
 use common::mock_clients;
 
-#[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3957,5 +3958,44 @@ mod tests {
         assert!(result.is_err());
         // Assert that the error returned by the `add_declare_transaction` method of the Beerus light client is the expected error.
         assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    #[tokio::test]
+    async fn given_error_result_when_calling_starknet_pending_transactions_then_should_return_same_error(
+    ) {
+        // Given
+        // Mock config and beerus light client with a mocked starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // The expected error is what is returned from the API Error
+        let expected_error = "Network Failure";
+
+        // Mock dependencies.
+        starknet_lightclient_mock
+            .expect_pending_transactions()
+            .return_once(move || Err(eyre!(expected_error))); // Return a network error
+
+        let beerus = BeerusLightClient::new(
+            config.clone(),
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        // When
+        let result = beerus.starknet_pending_transactions().await;
+
+        // Then
+        // Assert that the `starknet_pending_transactions` method of the Beerus light client returns `Err`.
+        assert!(result.is_err());
+        // let actual_error = result.unwrap_err().to_string();
+        // println!("expected error: {}", expected_error);
+        // println!("actual error: {}", actual_error);
+        // assert_eq!(actual_error, expected_error);
+
+        // Assert that the error returned by the `starknet_pending_transactions` method of the Beerus light client is the expected error.
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Failed to get pending transactions: Network Failure"
+        );
     }
 }
