@@ -50,6 +50,8 @@ pub enum BeerusApiError {
     TooManyKeysInFilter = 34,
     #[error("Internal server error")]
     InternalServerError = 500,
+    #[error("Failed to fetch pending transactions")]
+    FailedToFetchPendingTransactions = 38,
 }
 
 impl From<BeerusApiError> for Error {
@@ -189,4 +191,7 @@ pub trait BeerusApi {
         contract_class: String,
         sender_address: String,
     ) -> Result<DeclareTransactionResult, Error>;
+
+    #[method(name = "starknet_pendingTransactions")]
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
 }

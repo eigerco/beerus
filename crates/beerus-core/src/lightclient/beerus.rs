@@ -571,7 +571,7 @@ impl BeerusLightClient {
         if block_number <= node_data.block_number {
             // Get state_root for current block_number
             let payload_block = node_data.payload.get(&block_number).unwrap();
-            Ok(MaybePendingBlockWithTxs::Block(payload_block.to_owned()))
+            Ok(MaybePendingBlockWithTxs::Block(payload_block.clone()))
         } else {
             self.starknet_lightclient.get_block_with_txs(block_id).await
         }
@@ -773,5 +773,22 @@ impl BeerusLightClient {
         let transaction_count = transactions.len();
 
         Ok(transaction_count)
+    }
+
+    ///  Returns the pending transactions in the starknet transaction pool
+    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// # Arguments
+    /// # Returns
+    /// `Ok(U256)` if the operation was successful - A vector of pending transactions
+    /// `Err(eyre::Report)` if the operation failed - No pending transactions found.
+    pub async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>> {
+        let transactions_result = self.starknet_lightclient.pending_transactions().await;
+
+        let transactions = match transactions_result {
+            Ok(transactions) => transactions,
+            Err(err) => return Err(eyre::eyre!("Failed to get pending transactions: {}", err)),
+        };
+
+        Ok(transactions)
     }
 }
