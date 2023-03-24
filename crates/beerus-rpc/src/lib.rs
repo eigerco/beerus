@@ -15,9 +15,10 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedDeployTransaction, ContractClass, DeployTransactionResult,
-        EventsPage, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
+        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -326,6 +327,44 @@ impl BeerusApiServer for BeerusRpc {
             .beerus
             .starknet_lightclient
             .get_events(filter, continuation_token, chunk_size)
+            .await
+            .unwrap())
+    }
+
+    async fn starknet_add_declare_transaction(
+        &self,
+        version: String,
+        max_fee: String,
+        signature: Vec<String>,
+        nonce: String,
+        contract_class: String,
+        sender_address: String,
+    ) -> Result<DeclareTransactionResult, Error> {
+        let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+        let version: u64 = version.parse().unwrap();
+        let signature = signature
+            .iter()
+            .map(|x| FieldElement::from_str(x).unwrap())
+            .collect();
+        let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+
+        let contract_class_bytes = contract_class.as_bytes();
+        let contract_class = serde_json::from_slice(contract_class_bytes)?;
+        let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+
+        let declare_transaction = BroadcastedDeclareTransaction {
+            max_fee,
+            version,
+            signature,
+            nonce,
+            contract_class,
+            sender_address,
+        };
+
+        Ok(self
+            .beerus
+            .starknet_lightclient
+            .add_declare_transaction(&declare_transaction)
             .await
             .unwrap())
     }

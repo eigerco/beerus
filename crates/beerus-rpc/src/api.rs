@@ -8,9 +8,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, DeployTransactionResult, EventsPage,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+        EventsPage, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
 
@@ -180,6 +180,17 @@ pub trait BeerusApi {
         continuation_token: Option<String>,
         chunk_size: u64,
     ) -> Result<EventsPage, Error>;
+
+    #[method(name = "starknet_addDeclareTransaction")]
+    async fn starknet_add_declare_transaction(
+        &self,
+        version: String,
+        max_fee: String,
+        signature: Vec<String>,
+        nonce: String,
+        contract_class: String,
+        sender_address: String,
+    ) -> Result<DeclareTransactionResult, Error>;
 
     #[method(name = "starknet_pendingTransactions")]
     async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
