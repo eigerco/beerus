@@ -98,12 +98,8 @@ impl Config {
         };
 
         config.starknet_core_contract_address = match config.ethereum_network.as_str() {
-            "goerli" => Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
             "mainnet" => Address::from_str(STARKNET_MAINNET_CC_ADDRESS).unwrap(),
-            _ => {
-                error! {"invalid network"};
-                panic!();
-            }
+            _ => Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
         };
 
         if config.poll_interval_secs.is_none() {
@@ -116,6 +112,28 @@ impl Config {
         }
 
         config
+    }
+
+    #[cfg(not(feature = "std"))]
+    pub fn from_args(
+        network: String,
+        consensus_rpc: String,
+        execution_rpc: String,
+        starknet_rpc: String,
+    ) -> Self {
+        let starknet_cc = match network.as_str() {
+            "mainnet" => Address::from_str(STARKNET_MAINNET_CC_ADDRESS).unwrap(),
+            _ => Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
+        };
+
+        Self {
+            ethereum_network: network.to_string(),
+            ethereum_consensus_rpc: consensus_rpc.to_string(),
+            ethereum_execution_rpc: execution_rpc.to_string(),
+            starknet_rpc: starknet_rpc.to_string(),
+            starknet_core_contract_address: starknet_cc,
+            poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
+        }
     }
 
     /// Return the Ethereum network.
@@ -163,30 +181,6 @@ impl Config {
         env::remove_var("STARKNET_RPC_URL");
         env::remove_var("DATA_DIR");
         env::remove_var("BEERUS_RPC_ADDR");
-    }
-
-    #[cfg(not(feature = "std"))]
-    pub fn mainnet(token: &str) -> Self {
-        Self {
-            ethereum_network: "mainnet".to_string(),
-            ethereum_consensus_rpc: "https://eth-mainnet.g.alchemy.com/v2/{token}".to_string(),
-            ethereum_execution_rpc: "https://www.lightclientdata.org".to_string(),
-            starknet_rpc: format!("https://starknet-mainnet.infura.io/v3/{token}"),
-            starknet_core_contract_address: Address::from_str(STARKNET_MAINNET_CC_ADDRESS).unwrap(),
-            poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
-        }
-    }
-
-    #[cfg(not(feature = "std"))]
-    pub fn goerli(token: &str) -> Self {
-        Self {
-            ethereum_network: "goerli".to_string(),
-            ethereum_consensus_rpc: "https://eth-goerli.g.alchemy.com/v2/{token}".to_string(),
-            ethereum_execution_rpc: "http://testing.prater.beacon-api.nimbus.team".to_string(),
-            starknet_rpc: format!("https://starknet-goerli.infura.io/v3/{token}"),
-            starknet_core_contract_address: Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
-            poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
-        }
     }
 }
 

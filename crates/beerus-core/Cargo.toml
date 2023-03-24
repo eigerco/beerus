@@ -33,6 +33,7 @@ wasm-bindgen-futures = "0.4.33"
 [dev-dependencies]
 httpmock = "0.6.7"
 serial_test = "1.0.0"
+wasm-bindgen-test = "0.3.13"
 
 [dev-dependencies.cargo-husky]
 version = "1.5.0"

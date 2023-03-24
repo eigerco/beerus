@@ -1,7 +1,8 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 pub mod common;
 use common::mock_clients;
 
-#[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,3 +1,5 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 #[cfg(test)]
 mod tests {
     use beerus_core::config::{
