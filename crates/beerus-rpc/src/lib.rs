@@ -362,7 +362,7 @@ impl BeerusApiServer for BeerusRpc {
         };
 
         Ok(self
-            ._beerus
+            .beerus
             .starknet_lightclient
             .add_declare_transaction(&declare_transaction)
             .await
