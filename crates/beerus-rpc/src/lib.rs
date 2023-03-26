@@ -69,6 +69,18 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
     }
 
+    async fn ethereum_gas_price(&self) -> Result<String, Error> {
+        let gas_price = self
+            .beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_gas_price()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::InternalServerError))?;
+        Ok(gas_price.to_string())
+    }
+
     // Starknet functions
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error> {
         Ok(self
