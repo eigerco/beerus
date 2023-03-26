@@ -11,7 +11,7 @@ use jsonrpsee::{
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use ethers::types::U256;
+use ethers::types::{SyncingStatus, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -65,6 +65,16 @@ impl BeerusApiServer for BeerusRpc {
             .read()
             .await
             .get_chain_id()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
+    async fn ethereum_syncing(&self) -> Result<SyncingStatus, Error> {
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_syncing()
             .await
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
     }

@@ -14,7 +14,9 @@ use crate::stdlib::vec::Vec;
 use crate::stdlib::primitive::u64;
 use crate::stdlib::str::FromStr;
 
-use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256, U256};
+use ethers::types::{
+    Address, BlockNumber, Filter, Log, SyncingStatus, Topic, Transaction, H256, U256,
+};
 use eyre::{eyre, Result};
 
 use crate::config::Config;
@@ -76,6 +78,10 @@ impl EthereumLightClient for HeliosLightClient {
 
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>> {
         self.helios_light_client.get_code(address, block).await
+    }
+
+    async fn get_syncing(&self) -> Result<SyncingStatus> {
+        self.helios_light_client.syncing().await
     }
 
     async fn get_transaction_count(&self, address: &Address, block: BlockTag) -> Result<u64> {

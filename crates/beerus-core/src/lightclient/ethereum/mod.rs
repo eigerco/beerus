@@ -8,7 +8,7 @@ use crate::stdlib::vec::Vec;
 
 use async_trait::async_trait;
 use core::u8;
-use ethers::types::{Address, Log, Transaction, H256, U256};
+use ethers::types::{Address, Log, SyncingStatus, Transaction, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 #[cfg(feature = "std")]
@@ -229,6 +229,17 @@ pub trait EthereumLightClient: Send + Sync {
         topics: &Option<Vec<String>>,
         block_hash: &Option<String>,
     ) -> Result<Vec<Log>>;
+
+    /// Get sync status
+    /// # Arguments
+    /// None
+    /// # Returns
+    /// SyncingStatus
+    /// # Errors
+    /// If the call fails, or if there are more than 5 logs.
+    /// # TODO
+    /// Add examples.
+    async fn get_syncing(&self) -> Result<SyncingStatus>;
 
     async fn starknet_last_proven_block(&self) -> Result<U256>;
     async fn starknet_state_root(&self) -> Result<U256>;
