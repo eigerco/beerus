@@ -9,6 +9,8 @@ mod tests {
         models::{BlockId, EventFilter},
     };
     use jsonrpsee::types::error::ErrorObjectOwned;
+    use starknet::core::types::FieldElement;
+    use starknet::providers::jsonrpc::models::SyncStatusType;
 
     #[tokio::test]
     async fn starknet_block_number_ok() {
@@ -79,6 +81,34 @@ mod tests {
             assert_eq!(expected_event.block_number, event.block_number);
             assert_eq!(expected_event.data, event.data);
             assert_eq!(expected_event.keys, event.keys);
+        }
+    }
+
+    #[tokio::test]
+    async fn starknet_syncing_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+
+        let sync_status = beerus_rpc.starknet_syncing().await.unwrap();
+
+        let expected_current_block = FieldElement::from_hex_be(
+            "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
+        )
+        .unwrap();
+        let expected_starting_block = FieldElement::from_hex_be(
+            "0x54cfb11a0c61c26b2e84c6d085a8317e5a1a437fa092d59a97564936afe2438",
+        )
+        .unwrap();
+
+        match sync_status {
+            SyncStatusType::Syncing(result) => {
+                assert_eq!(result.current_block_hash, expected_current_block);
+                assert_eq!(result.current_block_num, 27468);
+                assert_eq!(result.highest_block_hash, expected_current_block);
+                assert_eq!(result.highest_block_num, 27468);
+                assert_eq!(result.starting_block_hash, expected_starting_block);
+                assert_eq!(result.starting_block_num, 24317);
+            }
+            SyncStatusType::NotSyncing => panic!("Syncing status should be true"),
         }
     }
 }
