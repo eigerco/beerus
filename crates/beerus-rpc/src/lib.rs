@@ -3,6 +3,7 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use helios::types::CallOpts;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -67,6 +68,19 @@ impl BeerusApiServer for BeerusRpc {
             .get_chain_id()
             .await
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
+    async fn ethereum_estimate_gas(&self, opts: CallOpts) -> Result<String, Error> {
+        let estimation = self
+            .beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .estimate_gas(&opts)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+
+        Ok(estimation.to_string())
     }
 
     // Starknet functions
