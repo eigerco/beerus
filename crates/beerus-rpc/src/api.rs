@@ -8,9 +8,9 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedInvokeTransaction, ContractClass, EventsPage,
-        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedInvokeTransaction, ContractClass, DeclareTransactionResult,
+        DeployTransactionResult, EventsPage, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
 
@@ -50,6 +50,8 @@ pub enum BeerusApiError {
     TooManyKeysInFilter = 34,
     #[error("Internal server error")]
     InternalServerError = 500,
+    #[error("Failed to fetch pending transactions")]
+    FailedToFetchPendingTransactions = 38,
 }
 
 impl From<BeerusApiError> for Error {
@@ -62,91 +64,119 @@ impl From<BeerusApiError> for Error {
     }
 }
 
-#[rpc(server, client, namespace = "starknet")]
+#[rpc(server, client)]
 pub trait BeerusApi {
-    #[method(name = "l2_to_l1_messages")]
-    async fn l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error>;
+    // Ethereum endpoints
+    #[method(name = "ethereum_blockNumber")]
+    async fn ethereum_block_number(&self) -> Result<u64, Error>;
 
-    #[method(name = "chainId")]
-    async fn chain_id(&self) -> Result<String, Error>;
+    #[method(name = "ethereum_chainId")]
+    async fn ethereum_chain_id(&self) -> Result<u64, Error>;
 
-    #[method(name = "blockNumber")]
-    async fn block_number(&self) -> Result<u64, Error>;
+    // Starknet endpoints
+    #[method(name = "starknet_l2_to_l1_messages")]
+    async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error>;
 
-    #[method(name = "getBlockTransactionCount")]
-    async fn get_block_transaction_count(
+    #[method(name = "starknet_chainId")]
+    async fn starknet_chain_id(&self) -> Result<String, Error>;
+
+    #[method(name = "starknet_getNonce")]
+    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String, Error>;
+
+    #[method(name = "starknet_blockNumber")]
+    async fn starknet_block_number(&self) -> Result<u64, Error>;
+
+    #[method(name = "starknet_getBlockTransactionCount")]
+    async fn starknet_get_block_transaction_count(
         &self,
         block_id_type: String,
         block_id: String,
     ) -> Result<u64, Error>;
 
-    #[method(name = "getClassAt")]
-    async fn get_class_at(
+    #[method(name = "starknet_getClassAt")]
+    async fn starknet_get_class_at(
         &self,
         block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<ContractClass, Error>;
 
-    #[method(name = "blockHashAndNumber")]
-    async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, Error>;
+    #[method(name = "starknet_blockHashAndNumber")]
+    async fn starknet_block_hash_and_number(&self) -> Result<BlockHashAndNumber, Error>;
 
-    #[method(name = "getBlockWithTxHashes")]
-    async fn get_block_with_tx_hashes(
+    #[method(name = "starknet_getBlockWithTxHashes")]
+    async fn starknet_get_block_with_tx_hashes(
         &self,
         block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes, Error>;
 
-    #[method(name = "getTransactionByBlockIdAndIndex")]
-    async fn get_transaction_by_block_id_and_index(
+    #[method(name = "starknet_getTransactionByBlockIdAndIndex")]
+    async fn starknet_get_transaction_by_block_id_and_index(
         &self,
         block_id_type: &str,
         block_id: &str,
         index: &str,
     ) -> Result<Transaction, Error>;
 
-    #[method(name = "getBlockWithTxs")]
-    async fn get_block_with_txs(
+    #[method(name = "starknet_getBlockWithTxs")]
+    async fn starknet_get_block_with_txs(
         &self,
         block_id_type: &str,
         block_id: &str,
     ) -> Result<MaybePendingBlockWithTxs, Error>;
 
-    #[method(name = "getStateUpdate")]
-    async fn get_state_update(
+    #[method(name = "starknet_getStateUpdate")]
+    async fn starknet_get_state_update(
         &self,
         block_id_type: String,
         block_id: String,
     ) -> Result<StateUpdate, Error>;
 
-    #[method(name = "syncing")]
-    async fn syncing(&self) -> Result<SyncStatusType, Error>;
+    #[method(name = "starknet_syncing")]
+    async fn starknet_syncing(&self) -> Result<SyncStatusType, Error>;
 
-    #[method(name = "l1_to_l2_messages")]
-    async fn l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, Error>;
+    #[method(name = "starknet_l1_to_l2_messages")]
+    async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, Error>;
 
-    #[method(name = "l1_to_l2_message_nonce")]
-    async fn l1_to_l2_message_nonce(&self) -> Result<U256, Error>;
+    #[method(name = "starknet_l1_to_l2_message_nonce")]
+    async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256, Error>;
 
-    #[method(name = "l1_to_l2_message_cancellations")]
-    async fn l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256, Error>;
+    #[method(name = "starknet_l1_to_l2_message_cancellations")]
+    async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256, Error>;
 
-    #[method(name = "getTransactionReceipt")]
-    async fn get_transaction_receipt(
+    #[method(name = "starknet_getTransactionReceipt")]
+    async fn starknet_get_transaction_receipt(
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt, Error>;
 
-    #[method(name = "getClassHash")]
-    async fn get_class_hash(
+    #[method(name = "starknet_getClassHash")]
+    async fn starknet_get_class_hash(
         &self,
         block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<FieldElement, Error>;
 
-    #[method(name = "getEvents")]
+    #[method(name = "getClass")]
+    async fn starknet_get_class(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        class_hash: String,
+    ) -> Result<ContractClass, Error>;
+
+    #[method(name = "starknet_addDeployTransaction")]
+    async fn starknet_add_deploy_transaction(
+        &self,
+        contract_class: String,
+        version: String,
+        contract_address_salt: String,
+        constructor_calldata: Vec<String>,
+    ) -> Result<DeployTransactionResult, Error>;
+
+    #[method(name = "starknet_getEvents")]
     async fn get_events(
         &self,
         filter: EventFilter,
@@ -159,4 +189,18 @@ pub trait BeerusApi {
         &self,
         invoke_transaction: BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, Error>;
+
+    #[method(name = "starknet_addDeclareTransaction")]
+    async fn starknet_add_declare_transaction(
+        &self,
+        version: String,
+        max_fee: String,
+        signature: Vec<String>,
+        nonce: String,
+        contract_class: String,
+        sender_address: String,
+    ) -> Result<DeclareTransactionResult, Error>;
+
+    #[method(name = "starknet_pendingTransactions")]
+    async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
 }

@@ -70,8 +70,8 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.get_block_number().await
     }
 
-    async fn chain_id(&self) -> u64 {
-        self.helios_light_client.chain_id().await
+    async fn get_chain_id(&self) -> Result<u64> {
+        Ok(self.helios_light_client.chain_id().await)
     }
 
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>> {

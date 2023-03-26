@@ -1,3 +1,5 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 use beerus_core::lightclient::starknet::storage_proof::{GetProofOutput, Membership};
 use serde::Deserialize;
 use starknet::core::types::FieldElement;
