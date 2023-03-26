@@ -353,6 +353,7 @@ impl BeerusApiServer for BeerusRpc {
             .await;
         println!("{result:#?}");
         Ok(result.unwrap())
+    }
 
     async fn starknet_add_declare_transaction(
         &self,
