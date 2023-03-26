@@ -3,6 +3,7 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use helios::types::ExecutionBlock;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -67,6 +68,28 @@ impl BeerusApiServer for BeerusRpc {
             .get_chain_id()
             .await
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
+    async fn ethereum_get_block_by_hash(
+        &self,
+        hash: &str,
+        full_tx: &str,
+    ) -> Result<Option<ExecutionBlock>, Error> {
+        let hash: Vec<u8> = hash[2..]
+            .chars()
+            .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+            .collect();
+
+        let full_tx =
+            bool::from_str(full_tx).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_block_by_hash(&hash, full_tx)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
     // Starknet functions
