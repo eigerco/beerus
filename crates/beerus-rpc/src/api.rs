@@ -4,7 +4,7 @@ use jsonrpsee::{
     types::error::{CallError, ErrorObject},
 };
 
-use ethers::types::U256;
+use ethers::types::{H256, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -72,6 +72,14 @@ pub trait BeerusApi {
 
     #[method(name = "ethereum_chainId")]
     async fn ethereum_chain_id(&self) -> Result<u64, Error>;
+
+    #[method(name = "ethereum_getStorageAt")]
+    async fn ethereum_get_storage_at(
+        &self,
+        address: &str,
+        slot: H256,
+        block_tag: &str,
+    ) -> Result<String, Error>;
 
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]

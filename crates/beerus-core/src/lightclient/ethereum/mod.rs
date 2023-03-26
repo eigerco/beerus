@@ -8,7 +8,7 @@ use crate::stdlib::vec::Vec;
 
 use async_trait::async_trait;
 use core::u8;
-use ethers::types::{Address, Log, Transaction, H256, U256};
+use ethers::types::{Address, Log, Transaction, H160, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 #[cfg(feature = "std")]
@@ -207,6 +207,20 @@ pub trait EthereumLightClient: Send + Sync {
         block: BlockTag,
         full_tx: bool,
     ) -> Result<Option<ExecutionBlock>>;
+
+    /// Get storage at
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `address` - &H160 address
+    /// * `slot` - H256 slot position
+    /// * `block` - BlockTag
+    /// # Returns
+    /// Storage at this position
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_storage_at(&self, address: &H160, slot: H256, block: BlockTag) -> Result<U256>;
 
     /// Get logs (blockchain events), based on the given filter.
     /// # Arguments
