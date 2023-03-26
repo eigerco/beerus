@@ -9,6 +9,7 @@ mod tests {
         models::{BlockId, EventFilter},
     };
     use jsonrpsee::types::error::ErrorObjectOwned;
+    use starknet::core::types::FieldElement;
 
     #[tokio::test]
     async fn starknet_block_number_ok() {
@@ -80,5 +81,19 @@ mod tests {
             assert_eq!(expected_event.data, event.data);
             assert_eq!(expected_event.keys, event.keys);
         }
+    }
+
+    #[tokio::test]
+    async fn starknet_starknet_block_hash_and_number_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let result = beerus_rpc.starknet_block_hash_and_number().await.unwrap();
+        assert_eq!(result.block_number, 27461);
+        assert_eq!(
+            result.block_hash,
+            FieldElement::from_hex_be(
+                "0x63813d0cd71bf351dfe3217f9d2dcd8871cf4d56c0ffe3563980b3d02b6898d"
+            )
+            .unwrap()
+        );
     }
 }
