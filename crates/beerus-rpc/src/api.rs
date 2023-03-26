@@ -73,6 +73,9 @@ pub trait BeerusApi {
     #[method(name = "ethereum_chainId")]
     async fn ethereum_chain_id(&self) -> Result<u64, Error>;
 
+    #[method(name = "ethereum_getCode")]
+    async fn ethereum_get_code(&self, address: &str) -> Result<Vec<u8>, Error>;
+
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error>;

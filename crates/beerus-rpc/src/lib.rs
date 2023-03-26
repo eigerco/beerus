@@ -3,6 +3,7 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use helios::types::BlockTag;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -11,7 +12,7 @@ use jsonrpsee::{
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use ethers::types::U256;
+use ethers::types::{Address, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -67,6 +68,21 @@ impl BeerusApiServer for BeerusRpc {
             .get_chain_id()
             .await
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
+    async fn ethereum_get_code(&self, address: &str) -> Result<Vec<u8>, Error> {
+        // Parse the Ethereum address.
+        let addr =
+            Address::from_str(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        // TODO: Make the block tag configurable.
+        let block = BlockTag::Latest;
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_code(&addr, block)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractNotFound))
     }
 
     // Starknet functions
