@@ -69,6 +69,22 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
     }
 
+    async fn ethereum_get_block_transaction_count_by_hash(&self, hash: &str) -> Result<u64, Error> {
+        // Parse hash
+        let hash: Vec<u8> = hash[2..]
+            .chars()
+            .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+            .collect();
+
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_block_transaction_count_by_hash(&hash)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
+    }
+
     // Starknet functions
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error> {
         Ok(self
