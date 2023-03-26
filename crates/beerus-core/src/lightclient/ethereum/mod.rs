@@ -8,7 +8,7 @@ use crate::stdlib::vec::Vec;
 
 use async_trait::async_trait;
 use core::u8;
-use ethers::types::{Address, Log, Transaction, H256, U256};
+use ethers::types::{Address, Log, Transaction, TransactionReceipt, H256, U256};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 #[cfg(feature = "std")]
@@ -149,6 +149,18 @@ pub trait EthereumLightClient: Send + Sync {
     /// # TODO
     /// Add examples.
     async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>>;
+
+    /// Get transaction receipt
+    /// This function should be called after `start`.
+    /// # Arguments
+    /// * `tx_hash` - Transaction hash.
+    /// # Returns
+    /// Receipt of the transaction.
+    /// # Errors
+    /// If the call fails.
+    /// # TODO
+    /// Add examples.
+    async fn get_transaction_receipt(&self, tx_hash: &H256) -> Result<Option<TransactionReceipt>>;
 
     /// Get gas price.
     /// This function should be called after `start`.

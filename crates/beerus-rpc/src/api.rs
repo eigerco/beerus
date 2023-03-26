@@ -4,7 +4,7 @@ use jsonrpsee::{
     types::error::{CallError, ErrorObject},
 };
 
-use ethers::types::U256;
+use ethers::types::{TransactionReceipt, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -72,6 +72,12 @@ pub trait BeerusApi {
 
     #[method(name = "ethereum_chainId")]
     async fn ethereum_chain_id(&self) -> Result<u64, Error>;
+
+    #[method(name = "ethereum_getTransactionReceipt")]
+    async fn ethereum_get_transaction_receipt(
+        &self,
+        tx_hash: &str,
+    ) -> Result<Option<TransactionReceipt>, Error>;
 
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]

@@ -11,7 +11,7 @@ use jsonrpsee::{
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use ethers::types::U256;
+use ethers::types::{TransactionReceipt, H256, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -67,6 +67,22 @@ impl BeerusApiServer for BeerusRpc {
             .get_chain_id()
             .await
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
+    async fn ethereum_get_transaction_receipt(
+        &self,
+        tx_hash: &str,
+    ) -> Result<Option<TransactionReceipt>, Error> {
+        let hash =
+            H256::from_str(tx_hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_transaction_receipt(&hash)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
     }
 
     // Starknet functions
