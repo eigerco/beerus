@@ -230,6 +230,17 @@ pub trait EthereumLightClient: Send + Sync {
         block_hash: &Option<String>,
     ) -> Result<Vec<Log>>;
 
+    /// Get coinbase address of the client
+    /// # Arguments
+    /// None
+    /// # Returns
+    /// Address
+    /// # Errors
+    /// If the call fails, or if there are more than 5 logs.
+    /// # TODO
+    /// Add examples.
+    async fn get_coinbase(&self) -> Result<Address>;
+
     async fn starknet_last_proven_block(&self) -> Result<U256>;
     async fn starknet_state_root(&self) -> Result<U256>;
 }

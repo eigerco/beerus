@@ -83,6 +83,10 @@ impl EthereumLightClient for HeliosLightClient {
         self.helios_light_client.get_nonce(address, block).await
     }
 
+    async fn get_coinbase(&self) -> Result<Address> {
+        self.helios_light_client.get_coinbase().await
+    }
+
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
         self.helios_light_client
             .get_block_transaction_count_by_number(block)
