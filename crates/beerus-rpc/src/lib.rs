@@ -3,6 +3,8 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use ethers::utils;
+use helios::types::BlockTag;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -11,7 +13,7 @@ use jsonrpsee::{
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
-use ethers::types::U256;
+use ethers::types::{Address, U256};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -49,6 +51,27 @@ impl BeerusRpc {
 #[async_trait]
 impl BeerusApiServer for BeerusRpc {
     // Ethereum functions
+    async fn ethereum_get_balance(&self, address: &str) -> Result<String, Error> {
+        // Parse the Ethereum address.
+        let addr =
+            Address::from_str(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        // TODO: Make the block tag configurable.
+        let block = BlockTag::Latest;
+        // Query the balance of the Ethereum address.
+        let balance = self
+            .beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .get_balance(&addr, block)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractNotFound))?;
+
+        // Format the balance in Ether.
+        utils::format_units(balance, "ether")
+            .map_err(|_| Error::from(BeerusApiError::InternalServerError))
+    }
+
     async fn ethereum_block_number(&self) -> Result<u64, Error> {
         self.beerus
             .ethereum_lightclient

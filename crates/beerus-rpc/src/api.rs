@@ -67,6 +67,9 @@ impl From<BeerusApiError> for Error {
 #[rpc(server, client)]
 pub trait BeerusApi {
     // Ethereum endpoints
+    #[method(name = "ethereum_getBalance")]
+    async fn ethereum_get_balance(&self, address: &str) -> Result<String, Error>;
+
     #[method(name = "ethereum_blockNumber")]
     async fn ethereum_block_number(&self) -> Result<u64, Error>;
 
