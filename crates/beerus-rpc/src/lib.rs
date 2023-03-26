@@ -69,6 +69,25 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InternalServerError))
     }
 
+    async fn ethereum_send_raw_transaction(&self, bytes: &str) -> Result<String, Error> {
+        // Parse bytes
+        let bytes: Vec<u8> = bytes[2..]
+            .chars()
+            .map(|c| u8::from_str_radix(&c.to_string(), 16).unwrap())
+            .collect();
+        let bytes_slice: &[u8] = bytes.as_ref();
+        // Send Raw Transaction.
+        let response = self
+            .beerus
+            .ethereum_lightclient
+            .read()
+            .await
+            .send_raw_transaction(bytes_slice)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::FailedToReceiveTxn))?;
+        Ok(response.to_string())
+    }
+
     // Starknet functions
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error> {
         Ok(self
