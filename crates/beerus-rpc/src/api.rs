@@ -1,3 +1,4 @@
+use helios::types::CallOpts;
 use jsonrpsee::{
     core::Error,
     proc_macros::rpc,
@@ -72,6 +73,9 @@ pub trait BeerusApi {
 
     #[method(name = "ethereum_chainId")]
     async fn ethereum_chain_id(&self) -> Result<u64, Error>;
+
+    #[method(name = "ethereum_call")]
+    async fn ethereum_call(&self, opts: CallOpts, block_tag: &str) -> Result<String, Error>;
 
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]
