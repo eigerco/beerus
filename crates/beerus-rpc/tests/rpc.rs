@@ -12,6 +12,7 @@ mod tests {
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
         FeeEstimate, InvokeTransaction, InvokeTransactionV1, SyncStatusType, Transaction,
+        BlockStatus, BlockWithTxHashes, MaybePendingBlockWithTxHashes,
     };
 
     #[tokio::test]
@@ -175,6 +176,33 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&transaction).unwrap(),
             serde_json::to_string(&expected_transaction).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn starknet_get_block_with_tx_hashes_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let block_with_tx_hashes = beerus_rpc
+            .starknet_get_block_with_tx_hashes("tag".to_string(), "latest".to_string())
+            .await
+            .unwrap();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let block = BlockWithTxHashes {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: felt.clone(),
+            parent_hash: felt.clone(),
+            block_number: 1,
+            new_root: felt.clone(),
+            timestamp: 10,
+            sequencer_address: felt.clone(),
+            transactions: vec![felt.clone()],
+        };
+        let expected_block_with_tx_hashes = MaybePendingBlockWithTxHashes::Block(block);
+
+        assert_eq!(
+            serde_json::to_string(&block_with_tx_hashes).unwrap(),
+            serde_json::to_string(&expected_block_with_tx_hashes).unwrap()
         );
     }
 }
