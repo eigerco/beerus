@@ -1,7 +1,7 @@
 POST http://0.0.0.0:3030
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"starknet_getNonce","params":[
+    "jsonrpc":"2.0","method":"stark_getNonce","params":[
         "0x010b6c96d364cf182964fbd4a3438a5ae84cab990770c07994f9cb99fd26f6dc"
     ],"id":1
 }
