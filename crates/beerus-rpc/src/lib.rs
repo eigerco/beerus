@@ -17,9 +17,9 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction,
+        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -409,5 +409,28 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions));
         Ok(transactions_result.unwrap())
+    }
+
+    async fn starknet_estimate_fee(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        broadcasted_transaction: String,
+    ) -> Result<FeeEstimate, Error> {
+        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+
+        let broadcasted_transaction: BroadcastedTransaction =
+            serde_json::from_str(&broadcasted_transaction).map_err(|e| {
+                Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
+            })?;
+
+        let estimate_fee = self
+            .beerus
+            .starknet_lightclient
+            .estimate_fee(broadcasted_transaction, &block_id)
+            .await
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
+        Ok(estimate_fee)
     }
 }
