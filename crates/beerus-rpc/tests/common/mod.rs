@@ -70,7 +70,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
-    
+
     pub const fn starknet_syncing(params: StarknetParams) -> Self {
         Self {
             id: 1,
