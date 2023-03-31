@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "current_block_hash": "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
+    "current_block_num": "0x6b4c",
+    "highest_block_hash": "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
+    "highest_block_num": "0x6b4c",
+    "starting_block_hash": "0x54cfb11a0c61c26b2e84c6d085a8317e5a1a437fa092d59a97564936afe2438",
+    "starting_block_num": "0x5efd"
+  }
+}
