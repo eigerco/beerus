@@ -1,3 +1,4 @@
+use helios::types::ExecutionBlock;
 use jsonrpsee::{
     core::Error,
     proc_macros::rpc,
@@ -9,7 +10,7 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
         MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
@@ -72,6 +73,13 @@ pub trait BeerusApi {
 
     #[method(name = "ethereum_chainId")]
     async fn ethereum_chain_id(&self) -> Result<u64, Error>;
+
+    #[method(name = "ethereum_getBlockByNumber")]
+    async fn ethereum_get_block_by_number(
+        &self,
+        block_tag: &str,
+        full_tx: &str,
+    ) -> Result<Option<ExecutionBlock>, Error>;
 
     // Starknet endpoints
     #[method(name = "starknet_l2_to_l1_messages")]
@@ -197,4 +205,12 @@ pub trait BeerusApi {
 
     #[method(name = "starknet_pendingTransactions")]
     async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, Error>;
+
+    #[method(name = "starknet_estimateFee")]
+    async fn starknet_estimate_fee(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        broadcasted_transaction: String,
+    ) -> Result<FeeEstimate, Error>;
 }
