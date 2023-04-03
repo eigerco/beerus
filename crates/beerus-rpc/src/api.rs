@@ -64,7 +64,7 @@ impl From<BeerusApiError> for Error {
     }
 }
 
-#[rpc(server, client)]
+#[rpc(server, client, namespace = "starknet")]
 pub trait BeerusApi {
     // Starknet endpoints
     #[method(name = "l2_to_l1_messages")]
