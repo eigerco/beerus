@@ -79,6 +79,15 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn starknet_block_hash_and_number(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_blockHashAndNumber",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
@@ -88,6 +97,9 @@ pub async fn setup_wiremock() -> String {
     mock_get_events().mount(&mock_server).await;
     mock_estimate_fee().mount(&mock_server).await;
     mock_starknet_syncing().mount(&mock_server).await;
+    mock_starknet_block_hash_and_number()
+        .mount(&mock_server)
+        .await;
     mock_server.uri()
 }
 
@@ -179,6 +191,17 @@ fn mock_starknet_syncing() -> Mock {
         .and(body_json(StarknetRpcBaseData::starknet_syncing(())))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_syncing.json"),
+            "application/json",
+        ))
+}
+
+fn mock_starknet_block_hash_and_number() -> Mock {
+    Mock::given(method("POST"))
+        .and(body_json(
+            StarknetRpcBaseData::starknet_block_hash_and_number(()),
+        ))
+        .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_blockHashAndNumber.json"),
             "application/json",
         ))
 }
