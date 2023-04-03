@@ -1,7 +1,7 @@
 POST http://0.0.0.0:3030
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"stark_addDeployTransaction","params":[
+    "jsonrpc":"2.0","method":"starknet_addDeployTransaction","params":[
         "0x1e2208b571b2cb68908f37a196ed5e391c8933a6db23bb3939acedee40d9b8a",
         "10",
         "0x039564c4f6d9f45a963a6dc8cf32737f0d51a08e446304626173fd838bd70e1c",
