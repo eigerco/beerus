@@ -94,6 +94,9 @@ pub trait BeerusApi {
     #[method(name = "starknet_blockNumber")]
     async fn starknet_block_number(&self) -> Result<u64, Error>;
 
+    #[method(name = "starknet_getTransactionByHash")]
+    async fn starknet_get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error>;
+
     #[method(name = "starknet_getBlockTransactionCount")]
     async fn starknet_get_block_transaction_count(
         &self,
