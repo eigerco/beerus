@@ -106,7 +106,9 @@ pub async fn setup_wiremock() -> String {
     mock_get_events().mount(&mock_server).await;
     mock_estimate_fee().mount(&mock_server).await;
     mock_starknet_syncing().mount(&mock_server).await;
-    mock_starknet_block_hash_and_number();
+    mock_starknet_block_hash_and_number()
+        .mount(&mock_server)
+        .await;
     mock_starknet_get_transaction_by_block_id_and_index()
         .mount(&mock_server)
         .await;

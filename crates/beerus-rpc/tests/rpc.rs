@@ -102,7 +102,7 @@ mod tests {
         };
 
         let actual = beerus_rpc
-            .starknet_estimate_fee(block_type, block_hash, broadcasted_transaction)
+            .estimate_fee(block_type, block_hash, broadcasted_transaction)
             .await
             .unwrap();
 
@@ -115,7 +115,7 @@ mod tests {
     async fn starknet_syncing_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
 
-        let sync_status = beerus_rpc.starknet_syncing().await.unwrap();
+        let sync_status = beerus_rpc.syncing().await.unwrap();
 
         let expected_current_block = FieldElement::from_hex_be(
             "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
@@ -142,7 +142,7 @@ mod tests {
     #[tokio::test]
     async fn starknet_starknet_block_hash_and_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
-        let result = beerus_rpc.starknet_block_hash_and_number().await.unwrap();
+        let result = beerus_rpc.block_hash_and_number().await.unwrap();
         assert_eq!(result.block_number, 27461);
         assert_eq!(
             result.block_hash,
@@ -157,7 +157,7 @@ mod tests {
     async fn starknet_get_transaction_by_block_id_and_index_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let transaction = beerus_rpc
-            .starknet_get_transaction_by_block_id_and_index("tag", "latest", "5")
+            .get_transaction_by_block_id_and_index("tag", "latest", "5")
             .await
             .unwrap();
 
