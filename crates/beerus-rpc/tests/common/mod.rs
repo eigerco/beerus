@@ -88,7 +88,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
-                
+
     pub const fn starknet_get_transaction_by_block_id_and_index(params: StarknetParams) -> Self {
         Self {
             id: 1,
@@ -107,6 +107,8 @@ pub async fn setup_wiremock() -> String {
     mock_estimate_fee().mount(&mock_server).await;
     mock_starknet_syncing().mount(&mock_server).await;
     mock_starknet_block_hash_and_number()
+        .mount(&mock_server)
+        .await;
     mock_starknet_get_transaction_by_block_id_and_index()
         .mount(&mock_server)
         .await;
@@ -215,7 +217,7 @@ fn mock_starknet_block_hash_and_number() -> Mock {
             "application/json",
         ))
 }
-            
+
 fn mock_starknet_get_transaction_by_block_id_and_index() -> Mock {
     let latest_block = BlockId::Tag(BlockTag::Latest);
     let index: u64 = 5;

@@ -1,6 +1,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 use beerus_core::{
-    config::{Config, DEFAULT_BEERUS_RPC_ADDR},
+    config::{Config, DEFAULT_BEERUS_RPC_ADDR, DEFAULT_HELIOS_RPC_ADDR},
     lightclient::{
         ethereum::MockEthereumLightClient,
         starknet::{storage_proof::GetProofOutput, MockStarkNetLightClient},
@@ -119,5 +119,6 @@ pub fn mock_server_config(server: &MockServer) -> Config {
         data_dir: PathBuf::from("/tmp"),
         poll_interval_secs: Some(5),
         beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
+        helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
     }
 }

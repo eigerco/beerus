@@ -229,6 +229,24 @@ impl HeliosLightClient {
             starknet_core_contract_address: config.starknet_core_contract_address,
         })
     }
+
+    #[cfg(feature = "std")]
+    pub async fn new_rpc(config: Config) -> eyre::Result<Self> {
+        // Build the Helios wrapped light client.
+        let helios_light_client: Client<FileDB> = ClientBuilder::new()
+            .network(config.ethereum_network()?)
+            .consensus_rpc(config.ethereum_consensus_rpc.as_str())
+            .execution_rpc(config.ethereum_execution_rpc.as_str())
+            .load_external_fallback()
+            .data_dir(config.data_dir)
+            .rpc_port(config.helios_rpc_address.unwrap())
+            .build()?;
+
+        Ok(Self {
+            helios_light_client,
+            starknet_core_contract_address: config.starknet_core_contract_address,
+        })
+    }
 }
 
 fn build_logs_filter(
