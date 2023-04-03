@@ -11,7 +11,7 @@ mod tests {
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
-        FeeEstimate, InvokeTransaction, InvokeTransactionV1, Transaction, SyncStatusType,
+        FeeEstimate, InvokeTransaction, InvokeTransactionV1, SyncStatusType, Transaction,
     };
 
     #[tokio::test]
