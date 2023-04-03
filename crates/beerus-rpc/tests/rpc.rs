@@ -11,8 +11,8 @@ mod tests {
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
-        FeeEstimate, InvokeTransaction, InvokeTransactionV1, SyncStatusType, Transaction,
-        BlockStatus, BlockWithTxHashes, MaybePendingBlockWithTxHashes,
+        BlockStatus, BlockWithTxHashes, FeeEstimate, InvokeTransaction, InvokeTransactionV1,
+        MaybePendingBlockWithTxHashes, SyncStatusType, Transaction,
     };
 
     #[tokio::test]
@@ -183,7 +183,7 @@ mod tests {
     async fn starknet_get_block_with_tx_hashes_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let block_with_tx_hashes = beerus_rpc
-            .starknet_get_block_with_tx_hashes("tag".to_string(), "latest".to_string())
+            .get_block_with_tx_hashes("tag".to_string(), "latest".to_string())
             .await
             .unwrap();
 
