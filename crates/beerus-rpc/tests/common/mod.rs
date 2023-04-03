@@ -97,6 +97,15 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn starknet_get_block_with_tx_hashes(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_getBlockWithTxHashes",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
@@ -110,6 +119,9 @@ pub async fn setup_wiremock() -> String {
         .mount(&mock_server)
         .await;
     mock_starknet_get_transaction_by_block_id_and_index()
+        .mount(&mock_server)
+        .await;
+    mock_starknet_get_block_with_tx_hashes()
         .mount(&mock_server)
         .await;
     mock_server.uri()
@@ -230,6 +242,18 @@ fn mock_starknet_get_transaction_by_block_id_and_index() -> Mock {
         ))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_getTransactionByBlockIdAndIndex.json"),
+            "application/json",
+        ))
+}
+
+fn mock_starknet_get_block_with_tx_hashes() -> Mock {
+    let latest_block = BlockId::Tag(BlockTag::Latest);
+    Mock::given(method("POST"))
+        .and(body_json(
+            StarknetRpcBaseData::starknet_get_block_with_tx_hashes([&latest_block]),
+        ))
+        .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_getBlockWithTxHashes.json"),
             "application/json",
         ))
 }
