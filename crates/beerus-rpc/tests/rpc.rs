@@ -10,7 +10,9 @@ mod tests {
     };
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
-    use starknet::providers::jsonrpc::models::{FeeEstimate, SyncStatusType};
+    use starknet::providers::jsonrpc::models::{
+        FeeEstimate, InvokeTransaction, InvokeTransactionV1, Transaction, SyncStatusType,
+    };
 
     #[tokio::test]
     async fn starknet_block_number_ok() {
@@ -148,6 +150,31 @@ mod tests {
                 "0x63813d0cd71bf351dfe3217f9d2dcd8871cf4d56c0ffe3563980b3d02b6898d"
             )
             .unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn starknet_get_transaction_by_block_id_and_index_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let transaction = beerus_rpc
+            .starknet_get_transaction_by_block_id_and_index("tag", "latest", "5")
+            .await
+            .unwrap();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let invoke_transaction = InvokeTransactionV1 {
+            transaction_hash: felt.clone(),
+            max_fee: felt.clone(),
+            signature: vec![felt.clone()],
+            nonce: felt.clone(),
+            sender_address: felt.clone(),
+            calldata: vec![felt.clone()],
+        };
+        let expected_transaction = Transaction::Invoke(InvokeTransaction::V1(invoke_transaction));
+
+        assert_eq!(
+            serde_json::to_string(&transaction).unwrap(),
+            serde_json::to_string(&expected_transaction).unwrap()
         );
     }
 }

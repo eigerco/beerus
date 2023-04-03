@@ -88,6 +88,15 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+                
+    pub const fn starknet_get_transaction_by_block_id_and_index(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_getTransactionByBlockIdAndIndex",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
@@ -98,6 +107,7 @@ pub async fn setup_wiremock() -> String {
     mock_estimate_fee().mount(&mock_server).await;
     mock_starknet_syncing().mount(&mock_server).await;
     mock_starknet_block_hash_and_number()
+    mock_starknet_get_transaction_by_block_id_and_index()
         .mount(&mock_server)
         .await;
     mock_server.uri()
@@ -202,6 +212,22 @@ fn mock_starknet_block_hash_and_number() -> Mock {
         ))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockHashAndNumber.json"),
+            "application/json",
+        ))
+}
+            
+fn mock_starknet_get_transaction_by_block_id_and_index() -> Mock {
+    let latest_block = BlockId::Tag(BlockTag::Latest);
+    let index: u64 = 5;
+    Mock::given(method("POST"))
+        .and(body_json(
+            StarknetRpcBaseData::starknet_get_transaction_by_block_id_and_index([
+                serde_json::to_value(&latest_block).unwrap(),
+                serde_json::to_value(index).unwrap(),
+            ]),
+        ))
+        .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
+            include_str!("data/starknet_getTransactionByBlockIdAndIndex.json"),
             "application/json",
         ))
 }
