@@ -5,12 +5,12 @@ exclude = ["crates/beerus-js"]
 
 [package]
 name = "beerus"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/keep-starknet-strange/beerus"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [workspace.dependencies]
