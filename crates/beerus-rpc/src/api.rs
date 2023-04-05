@@ -79,6 +79,9 @@ pub trait BeerusApi {
     #[method(name = "blockNumber")]
     async fn block_number(&self) -> Result<u64, Error>;
 
+    #[method(name = "getTransactionByHash")]
+    async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error>;
+
     #[method(name = "getBlockTransactionCount")]
     async fn get_block_transaction_count(
         &self,

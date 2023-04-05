@@ -88,6 +88,16 @@ impl BeerusApiServer for BeerusRpc {
         Ok(nonce)
     }
 
+    async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error> {
+        let tx_hash_felt = FieldElement::from_hex_be(tx_hash)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        self.beerus
+            .starknet_lightclient
+            .get_transaction_by_hash(tx_hash_felt)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
+    }
+
     async fn get_block_transaction_count(
         &self,
         block_id_type: String,
