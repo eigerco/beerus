@@ -10,12 +10,15 @@ mod tests {
     };
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
-    use starknet::providers::jsonrpc::models::{FeeEstimate, SyncStatusType};
+    use starknet::providers::jsonrpc::models::{
+        BlockStatus, BlockWithTxHashes, FeeEstimate, InvokeTransaction, InvokeTransactionV1,
+        MaybePendingBlockWithTxHashes, SyncStatusType, Transaction,
+    };
 
     #[tokio::test]
     async fn starknet_block_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
-        let block_number = beerus_rpc.starknet_block_number().await.unwrap();
+        let block_number = beerus_rpc.block_number().await.unwrap();
         assert_eq!(block_number, 19640);
     }
 
@@ -23,7 +26,7 @@ mod tests {
     async fn starknet_block_transaction_count_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let transaction_count = beerus_rpc
-            .starknet_get_block_transaction_count("tag".to_string(), "latest".to_string())
+            .get_block_transaction_count("tag".to_string(), "latest".to_string())
             .await
             .unwrap();
 
@@ -34,7 +37,7 @@ mod tests {
     async fn starknet_error_response_block_not_found() {
         let beerus_rpc = setup_beerus_rpc().await;
         let err = beerus_rpc
-            .starknet_get_block_with_tx_hashes("number".to_string(), "22050".to_string())
+            .get_block_with_tx_hashes("number".to_string(), "22050".to_string())
             .await
             .unwrap_err();
 
@@ -100,7 +103,7 @@ mod tests {
         };
 
         let actual = beerus_rpc
-            .starknet_estimate_fee(block_type, block_hash, broadcasted_transaction)
+            .estimate_fee(block_type, block_hash, broadcasted_transaction)
             .await
             .unwrap();
 
@@ -113,7 +116,7 @@ mod tests {
     async fn starknet_syncing_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
 
-        let sync_status = beerus_rpc.starknet_syncing().await.unwrap();
+        let sync_status = beerus_rpc.syncing().await.unwrap();
 
         let expected_current_block = FieldElement::from_hex_be(
             "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
@@ -135,5 +138,71 @@ mod tests {
             }
             SyncStatusType::NotSyncing => panic!("Syncing status should be true"),
         }
+    }
+
+    #[tokio::test]
+    async fn starknet_starknet_block_hash_and_number_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let result = beerus_rpc.block_hash_and_number().await.unwrap();
+        assert_eq!(result.block_number, 27461);
+        assert_eq!(
+            result.block_hash,
+            FieldElement::from_hex_be(
+                "0x63813d0cd71bf351dfe3217f9d2dcd8871cf4d56c0ffe3563980b3d02b6898d"
+            )
+            .unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn starknet_get_transaction_by_block_id_and_index_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let transaction = beerus_rpc
+            .get_transaction_by_block_id_and_index("tag", "latest", "5")
+            .await
+            .unwrap();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let invoke_transaction = InvokeTransactionV1 {
+            transaction_hash: felt.clone(),
+            max_fee: felt.clone(),
+            signature: vec![felt.clone()],
+            nonce: felt.clone(),
+            sender_address: felt.clone(),
+            calldata: vec![felt.clone()],
+        };
+        let expected_transaction = Transaction::Invoke(InvokeTransaction::V1(invoke_transaction));
+
+        assert_eq!(
+            serde_json::to_string(&transaction).unwrap(),
+            serde_json::to_string(&expected_transaction).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn starknet_get_block_with_tx_hashes_ok() {
+        let beerus_rpc = setup_beerus_rpc().await;
+        let block_with_tx_hashes = beerus_rpc
+            .get_block_with_tx_hashes("tag".to_string(), "latest".to_string())
+            .await
+            .unwrap();
+
+        let felt = FieldElement::from_hex_be("0x1").unwrap();
+        let block = BlockWithTxHashes {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: felt.clone(),
+            parent_hash: felt.clone(),
+            block_number: 1,
+            new_root: felt.clone(),
+            timestamp: 10,
+            sequencer_address: felt.clone(),
+            transactions: vec![felt.clone()],
+        };
+        let expected_block_with_tx_hashes = MaybePendingBlockWithTxHashes::Block(block);
+
+        assert_eq!(
+            serde_json::to_string(&block_with_tx_hashes).unwrap(),
+            serde_json::to_string(&expected_block_with_tx_hashes).unwrap()
+        );
     }
 }

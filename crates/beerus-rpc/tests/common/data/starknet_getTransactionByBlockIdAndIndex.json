@@ -1,0 +1,18 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "calldata": [
+      "0x1"
+    ],
+    "max_fee": "0x1",
+    "nonce": "0x1",
+    "sender_address": "0x1",
+    "signature": [
+      "0x1"
+    ],
+    "transaction_hash": "0x1",
+    "type": "INVOKE",
+    "version": "0x1"
+  }
+}

@@ -17,7 +17,7 @@ async fn main() {
     let config = Config::from_env();
 
     info!("creating ethereum(helios) lightclient...");
-    let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {
+    let ethereum_lightclient = match HeliosLightClient::new_rpc(config.clone()).await {
         Ok(ethereum_lightclient) => ethereum_lightclient,
         Err(err) => {
             error! {"{}", err};
@@ -36,7 +36,7 @@ async fn main() {
 
     info!("creating beerus lightclient");
     let mut beerus = BeerusLightClient::new(
-        config,
+        config.clone(),
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
@@ -52,6 +52,10 @@ async fn main() {
         Ok((addr, server_handle)) => {
             info!("===================================================");
             info!("Beerus JSON-RPC Server started: http://{addr}");
+            info!(
+                "Helios JSON-RPC Server started: http://0.0.0.0:{}",
+                config.helios_rpc_address.unwrap()
+            );
             info!("===================================================");
 
             server_handle.stopped().await;

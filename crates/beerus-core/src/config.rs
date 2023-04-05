@@ -17,6 +17,7 @@ pub const DEFAULT_ETHEREUM_NETWORK: &str = "goerli";
 pub const DEFAULT_DATA_DIR: &str = "~/.beerus/tmp";
 pub const DEFAULT_POLL_INTERVAL_SECS: u64 = 5;
 pub const DEFAULT_BEERUS_RPC_ADDR: &str = "0.0.0.0:3030";
+pub const DEFAULT_HELIOS_RPC_ADDR: u16 = 3031;
 
 /// Global configuration.
 #[derive(Clone, PartialEq, Deserialize, Debug)]
@@ -32,6 +33,8 @@ pub struct Config {
     pub poll_interval_secs: Option<u64>,
     #[cfg(feature = "std")]
     pub beerus_rpc_address: Option<SocketAddr>,
+    #[cfg(feature = "std")]
+    pub helios_rpc_address: Option<u16>,
 }
 
 impl Config {
@@ -75,6 +78,10 @@ impl Config {
             }
         }
 
+        if let Ok(raw_addr) = std::env::var("HELIOS_RPC_ADDR") {
+            config.helios_rpc_address = Some(raw_addr.parse().unwrap());
+        }
+
         config
     }
 
@@ -109,6 +116,10 @@ impl Config {
         if config.beerus_rpc_address.is_none() {
             config.beerus_rpc_address =
                 Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap());
+        }
+
+        if config.helios_rpc_address.is_none() {
+            config.helios_rpc_address = Some(DEFAULT_HELIOS_RPC_ADDR);
         }
 
         config
@@ -181,6 +192,7 @@ impl Config {
         env::remove_var("STARKNET_RPC_URL");
         env::remove_var("DATA_DIR");
         env::remove_var("BEERUS_RPC_ADDR");
+        env::remove_var("HELIOS_RPC_ADDR");
     }
 }
 
@@ -208,6 +220,8 @@ impl Default for Config {
             poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
             #[cfg(feature = "std")]
             beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
+            #[cfg(feature = "std")]
+            helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
         }
     }
 }
