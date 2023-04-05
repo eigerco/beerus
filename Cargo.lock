@@ -459,11 +459,11 @@ dependencies = [
 
 [[package]]
 name = "beerus"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "beerus-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "assert_matches",
  "base64 0.20.0",
@@ -485,7 +485,7 @@ dependencies = [
 
 [[package]]
 name = "beerus-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "cargo-husky",
@@ -513,7 +513,7 @@ dependencies = [
 
 [[package]]
 name = "beerus-rpc"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "beerus-core",
