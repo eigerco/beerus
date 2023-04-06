@@ -16,6 +16,7 @@ edition = "2021"
 [workspace.dependencies]
 beerus-core = { path = "./crates/beerus-core" }
 helios = { git = "https://github.com/a16z/helios", tag = "0.3.0" }
+#TODO: update with version tag instead of hash rev when available
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "e72cc0a4b3ea67c7691ebec58300da3c21f0abb2" }
 ethers = "1.0.2"
 eyre = "0.6.8"
