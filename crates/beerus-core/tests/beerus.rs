@@ -25,11 +25,12 @@ mod tests {
         macros::selector,
         providers::jsonrpc::models::{
             BlockHashAndNumber, BlockId, BlockStatus, BlockWithTxHashes, BlockWithTxs,
-            BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
-            ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
-            EntryPointsByType, EventFilter, FeeEstimate, InvokeTransaction,
+            BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
+            BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
+            BroadcastedInvokeTransactionV0, ContractClass, DeclareTransactionResult,
+            DeployTransactionResult, EventFilter, FeeEstimate, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
@@ -3161,32 +3162,32 @@ mod tests {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class = ContractClass::Legacy(LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
-        };
+        });
 
         let deploy_transaction = BroadcastedDeployTransaction {
             contract_class,
@@ -3240,32 +3241,32 @@ mod tests {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class = ContractClass::Legacy(LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
-        };
+        });
 
         let deploy_transaction = BroadcastedDeployTransaction {
             contract_class,
@@ -3830,41 +3831,41 @@ mod tests {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
         };
 
-        let declare_transaction = BroadcastedDeclareTransaction {
-            max_fee: FieldElement::from_str("1000").unwrap(),
-            version: 10,
-            signature: vec![],
-            nonce: FieldElement::from_str("0").unwrap(),
-            contract_class,
-            sender_address: FieldElement::from_str("101010").unwrap(),
-        };
+        let declare_transaction =
+            BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
+                max_fee: FieldElement::from_str("1000").unwrap(),
+                signature: vec![],
+                nonce: FieldElement::from_str("0").unwrap(),
+                contract_class,
+                sender_address: FieldElement::from_str("101010").unwrap(),
+            });
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .starknet_lightclient
@@ -3911,41 +3912,41 @@ mod tests {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
         };
 
-        let declare_transaction = BroadcastedDeclareTransaction {
-            max_fee: FieldElement::from_str("1000").unwrap(),
-            version: 10,
-            signature: vec![],
-            nonce: FieldElement::from_str("0").unwrap(),
-            contract_class,
-            sender_address: FieldElement::from_str("101010").unwrap(),
-        };
+        let declare_transaction =
+            BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
+                max_fee: FieldElement::from_str("1000").unwrap(),
+                signature: vec![],
+                nonce: FieldElement::from_str("0").unwrap(),
+                contract_class,
+                sender_address: FieldElement::from_str("101010").unwrap(),
+            });
 
         // Query the transaction data given a hash on Ethereum.
         let result = beerus

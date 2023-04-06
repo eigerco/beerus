@@ -200,7 +200,6 @@ pub trait BeerusApi {
     #[method(name = "addDeclareTransaction")]
     async fn add_declare_transaction(
         &self,
-        version: String,
         max_fee: String,
         signature: Vec<String>,
         nonce: String,

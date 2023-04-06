@@ -4,9 +4,9 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, ContractAbiEntry, ContractClass, ContractEntryPoint, EmittedEvent,
-        EntryPointsByType, EventsPage, StructAbiEntry, StructAbiType, StructMember, SyncStatus,
-        SyncStatusType,
+        BroadcastedTransaction, ContractAbiEntry, ContractClass, EmittedEvent, EventsPage,
+        LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType, StructAbiEntry,
+        StructAbiType, StructMember, SyncStatus, SyncStatusType,
     },
 };
 
@@ -54,18 +54,18 @@ pub fn block_id_string_to_block_id_type(block_id_type: &str, block_id: &str) -> 
 /// # Returns
 /// Tuple of a mock ContractClass object and its equivalent JSON Value
 pub fn create_mock_contract_class() -> (ContractClass, Value) {
-    let mock_contract_class = ContractClass {
+    let mock_contract_class = ContractClass::Legacy(LegacyContractClass {
         program: vec![1, 2, 3],
-        entry_points_by_type: EntryPointsByType {
-            constructor: vec![ContractEntryPoint {
+        entry_points_by_type: LegacyEntryPointsByType {
+            constructor: vec![LegacyContractEntryPoint {
                 offset: 123,
                 selector: FieldElement::from_str("123").unwrap(),
             }],
-            external: vec![ContractEntryPoint {
+            external: vec![LegacyContractEntryPoint {
                 offset: 456,
                 selector: FieldElement::from_str("456").unwrap(),
             }],
-            l1_handler: vec![ContractEntryPoint {
+            l1_handler: vec![LegacyContractEntryPoint {
                 offset: 789,
                 selector: FieldElement::from_str("789").unwrap(),
             }],
@@ -87,7 +87,7 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
                 },
             ],
         })]),
-    };
+    });
     let mock_contract_class_json = json!({
         "program": "AQID", // base64 encoding of [1, 2 ,3]
         "entry_points_by_type": {

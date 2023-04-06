@@ -301,7 +301,6 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
 
             StarkNetSubCommands::AddDeclareTransaction {
                 max_fee,
-                version,
                 signature,
                 nonce,
                 contract_class,
@@ -309,7 +308,6 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
             } => {
                 starknet::add_declare_transaction(
                     beerus,
-                    version.to_string(),
                     max_fee.to_string(),
                     signature.to_owned(),
                     nonce.to_string(),
