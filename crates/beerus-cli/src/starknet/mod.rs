@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
-        BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+        BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
+        BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
         EventFilter,
     },
 };

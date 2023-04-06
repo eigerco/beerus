@@ -27,7 +27,7 @@ mod test {
             BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
             DeclareTransactionResult, DeployTransactionResult, FeeEstimate, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            InvokeTransactionV1,LegacyContractClass, LegacyContractEntryPoint,
+            InvokeTransactionV1, LegacyContractClass, LegacyContractEntryPoint,
             LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
