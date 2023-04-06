@@ -27,6 +27,7 @@
 - [About](#about)
   - [Built With](#built-with)
 - [Architecture](#architecture)
+- [Endpoint support](#endpoint-support)
   - [Simple usage overview](#simple-usage-overview)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
@@ -70,6 +71,71 @@ easy to use client to query StarkNet state and interact with contracts.
 Here is a high level overview of the architecture of Beerus.
 
 [![Beerus architecture](docs/images/beerus-architecture-v1.0.png)](docs/images/beerus-architecture-v1.0.png)
+
+## Endpoint support
+
+Here is all the endpoints supported by Beerus in tag v0.2.0
+
+*Starknet endpoints* (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+
+| Endpoint                                   | Supported          |
+| :----------------------------------------- | :----------------- |
+| `starknet_getBlockWithTxHashes`            | :heavy_check_mark: |
+| `starknet_getBlockWithTxs`                 | :heavy_check_mark: |
+| `starknet_getStateUpdate`                  | :heavy_check_mark: |
+| `starknet_getStorageAt`                    | :x:                |
+| `starknet_getTransactionByHash`            | :heavy_check_mark: |
+| `starknet_getTransactionByBlockIdAndIndex` | :heavy_check_mark: |
+| `starknet_getTransactionReceipt`           | :heavy_check_mark: |
+| `starknet_getClass`                        | :heavy_check_mark: |
+| `starknet_getClassHashAt`                  | :x:                |
+| `starknet_getClassAt`                      | :heavy_check_mark: |
+| `starknet_getBlockTransactionCount`        | :heavy_check_mark: |
+| `starknet_call`                            | :x:                |
+| `starknet_estimateFee`                     | :heavy_check_mark: |
+| `starknet_blockNumber`                     | :heavy_check_mark: |
+| `starknet_blockHashAndNumber`              | :heavy_check_mark: |
+| `starknet_chainId`                         | :heavy_check_mark: |
+| `starknet_pendingTransactions`             | :heavy_check_mark: |
+| `starknet_syncing`                         | :heavy_check_mark: |
+| `starknet_getEvents`                       | :heavy_check_mark: |
+| `starknet_getNonce`                        | :heavy_check_mark: |
+
+
+*Ethereum endpoints* (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
+| Endpoint                                   | Supported          |
+| :----------------------------------------- | :----------------- |
+| `eth_getBalance`                           | :heavy_check_mark: |
+| `eth_getTransactionCount`                  | :heavy_check_mark: |
+| `eth_getCode`                              | :heavy_check_mark: |
+| `eth_call`                                 | :heavy_check_mark: |
+| `eth_estimateGas`                          | :heavy_check_mark: |
+| `eth_getChainId`                           | :heavy_check_mark: |
+| `eth_gasPrice`                             | :heavy_check_mark: |
+| `eth_maxPriorityFeePerGas`                 | :heavy_check_mark: |
+| `eth_blockNumber`                          | :heavy_check_mark: |
+| `eth_getBlockByNumber`                     | :heavy_check_mark: |
+| `eth_getBlockByHash`                       | :heavy_check_mark: |
+| `eth_sendRawTransaction`                   | :heavy_check_mark: |
+| `eth_getTransactionReceipt`                | :heavy_check_mark: |
+| `eth_getLogs`                              | :heavy_check_mark: |
+| `eth_getStorageAt`                         | :heavy_check_mark: |
+| `eth_getBlockTransactionCountByHash`       | :heavy_check_mark: |
+| `eth_getBlockTransactionCountByNumber`     | :heavy_check_mark: |
+| `eth_coinbase`                             | :heavy_check_mark: |
+| `eth_syncing`                              | :heavy_check_mark: |
+
+*Additional endpoints*:
+| Endpoint                                   | Supported          |
+| :----------------------------------------- | :----------------- |
+| `starknet_l1_to_l2_messages`               | :heavy_check_mark: |
+| `starknet_l1_to_l2_message_nonce`          | :heavy_check_mark: |
+| `starknet_l1_to_l2_message_cancellations`  | :heavy_check_mark: |
+| `starknet_l2_to_l1_messages`               | :heavy_check_mark: |
+| `starknet_addDeclareTransaction`           | :heavy_check_mark: |
+| `starknet_getContractStorageProof`         | :x:                |
+| `starknet_addDeployAccountTransaction`     | :x:                |
+| `starknet_addInvokeTransaction`            | :x:                |
 
 ### Simple usage overview
 
