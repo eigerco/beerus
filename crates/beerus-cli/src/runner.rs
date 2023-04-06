@@ -304,6 +304,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 signature,
                 nonce,
                 contract_class,
+                compiled_class_hash,
                 sender_address,
             } => {
                 starknet::add_declare_transaction(
@@ -312,6 +313,7 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                     signature.to_owned(),
                     nonce.to_string(),
                     contract_class.to_string(),
+                    compiled_class_hash.to_string(),
                     sender_address.to_string(),
                 )
                 .await
