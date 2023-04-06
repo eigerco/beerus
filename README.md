@@ -95,7 +95,7 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
 | `starknet_getTransactionReceipt`           | :white_check_mark: |
 | `starknet_getClass`                        | :white_check_mark: |
-| `starknet_getClassHashAt`                  | :x:                |
+| `starknet_getClassHashAt`                  | :white_check_mark: |
 | `starknet_getClassAt`                      | :white_check_mark: |
 | `starknet_getBlockTransactionCount`        | :white_check_mark: |
 | `starknet_call`                            | :x:                |
@@ -140,8 +140,8 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
 | `starknet_l2_to_l1_messages`               | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :white_check_mark: |
+| `starknet_addDeployAccountTransaction`     | :white_check_mark: |
 | `starknet_getContractStorageProof`         | :x:                |
-| `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
 
 ## Getting Started
