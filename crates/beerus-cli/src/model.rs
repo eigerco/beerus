@@ -350,6 +350,8 @@ pub enum StarkNetSubCommands {
         /// The contract class
         #[arg(short, long, value_name = "CONTRACT_CLASS")]
         contract_class: String,
+        #[arg(short, long, value_name = "COMPILED_CLASS_HASH")]
+        compiled_class_hash: String,
         // The entry point selector
         #[arg(short, long, value_name = "SENDER_ADDRESS")]
         sender_address: String,
