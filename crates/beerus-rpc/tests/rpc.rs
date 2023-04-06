@@ -8,13 +8,11 @@ mod tests {
         api::{BeerusApiError, BeerusApiServer},
         models::{BlockId, EventFilter},
     };
-    use ethers::prelude::k256::elliptic_curve::Field;
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, InvokeTransaction,
-            InvokeTransactionResult, InvokeTransactionV0,
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, InvokeTransactionResult,
         },
     };
 

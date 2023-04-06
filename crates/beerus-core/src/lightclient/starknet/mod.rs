@@ -397,7 +397,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// # Arguments
     ///
     /// invoke_transaction : Transaction data
-    ///  
+    ///
     ///
     /// # Returns
     ///
@@ -593,7 +593,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// # Arguments
     ///
     /// declare_transaction : Transaction data
-    ///  
+    ///
     ///
     /// # Returns
     ///

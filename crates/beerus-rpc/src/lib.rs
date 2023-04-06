@@ -346,13 +346,12 @@ impl BeerusApiServer for BeerusRpc {
         &self,
         invoke_transaction: BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, Error> {
-        let result = self
+        Ok(self
             .beerus
             .starknet_lightclient
             .add_invoke_transaction(&invoke_transaction)
-            .await;
-        println!("{result:#?}");
-        Ok(result.unwrap())
+            .await
+            .unwrap())
     }
 
     async fn starknet_add_declare_transaction(

@@ -164,7 +164,7 @@ fn mock_add_invoke_transaction() -> Mock {
 
     Mock::given(method("POST")).and(body).respond_with(
         response_template_with_status(StatusCode::OK).set_body_raw(
-            include_str!("data/starknet_getEvents.json"),
+            include_str!("data/starknet_addInvokeTransaction.json"),
             "application/json",
         ),
     )
