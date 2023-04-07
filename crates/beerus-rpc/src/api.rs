@@ -157,8 +157,8 @@ pub trait BeerusApi {
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt, Error>;
 
-    #[method(name = "getClassHash")]
-    async fn get_class_hash(
+    #[method(name = "getClassHashAt")]
+    async fn get_class_hash_at(
         &self,
         block_id_type: String,
         block_id: String,
@@ -173,8 +173,8 @@ pub trait BeerusApi {
         class_hash: String,
     ) -> Result<ContractClass, Error>;
 
-    #[method(name = "addDeployTransaction")]
-    async fn add_deploy_transaction(
+    #[method(name = "addDeployAccountTransaction")]
+    async fn add_deploy_account_transaction(
         &self,
         contract_class: String,
         version: String,
