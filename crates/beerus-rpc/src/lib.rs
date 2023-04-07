@@ -246,7 +246,7 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
-    async fn get_class_hash(
+    async fn get_class_hash_at(
         &self,
         block_id_type: String,
         block_id: String,
@@ -283,7 +283,7 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn add_deploy_transaction(
+    async fn add_deploy_account_transaction(
         &self,
         contract_class: String,
         version: String,
