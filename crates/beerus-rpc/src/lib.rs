@@ -3,6 +3,7 @@ pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
+use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -121,6 +122,34 @@ impl BeerusApiServer for BeerusRpc {
             .block_hash_and_number()
             .await
             .unwrap())
+    }
+
+    async fn get_contract_storage_proof(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+        keys: Vec<String>,
+    ) -> Result<GetProofOutput, Error> {
+        let block_id = beerus_core::starknet_helper::block_id_string_to_block_id_type(
+            &block_id_type,
+            &block_id,
+        )
+        .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let contract_address = FieldElement::from_str(&contract_address)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let keys: Result<Vec<FieldElement>, _> =
+            keys.iter().map(|k| FieldElement::from_str(k)).collect();
+
+        self.beerus
+            .starknet_lightclient
+            .get_contract_storage_proof(
+                contract_address,
+                keys.map_err(|_| Error::from(BeerusApiError::InvalidCallData))?,
+                &block_id,
+            )
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
 
     async fn get_class_at(
@@ -246,7 +275,7 @@ impl BeerusApiServer for BeerusRpc {
             .unwrap())
     }
 
-    async fn get_class_hash(
+    async fn get_class_hash_at(
         &self,
         block_id_type: String,
         block_id: String,
@@ -283,7 +312,7 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn add_deploy_transaction(
+    async fn add_deploy_account_transaction(
         &self,
         contract_class: String,
         version: String,
