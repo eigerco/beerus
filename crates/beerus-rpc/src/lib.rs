@@ -18,8 +18,9 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
         BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        EventsPage, FeeEstimate, FunctionCall, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -428,5 +429,19 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
         Ok(estimate_fee)
+    }
+
+    async fn call(
+        &self,
+        request: FunctionCall,
+        block_number: u64,
+    ) -> Result<Vec<FieldElement>, Error> {
+        let call_result = self
+            .beerus
+            .starknet_lightclient
+            .call(request, block_number)
+            .await
+            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
+        Ok(call_result)
     }
 }

@@ -11,10 +11,9 @@ mod tests {
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
-        BlockStatus, BlockWithTxHashes, FeeEstimate, InvokeTransaction, InvokeTransactionV1,
-        MaybePendingBlockWithTxHashes, SyncStatusType, Transaction,
+        BlockStatus, BlockWithTxHashes, FeeEstimate, FunctionCall, InvokeTransaction,
+        InvokeTransactionV1, MaybePendingBlockWithTxHashes, SyncStatusType, Transaction,
     };
-
     #[tokio::test]
     async fn starknet_block_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
@@ -204,5 +203,28 @@ mod tests {
             serde_json::to_string(&block_with_tx_hashes).unwrap(),
             serde_json::to_string(&expected_block_with_tx_hashes).unwrap()
         );
+    }
+
+    #[tokio::test]
+    async fn starknet_call() {
+        let beerus_rpc = setup_beerus_rpc().await;
+
+        let request = FunctionCall {
+            contract_address: FieldElement::from_hex_be(
+                "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+            )
+            .unwrap(),
+            entry_point_selector: FieldElement::from_hex_be(
+                "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
+            )
+            .unwrap(),
+            calldata: Vec::new(),
+        };
+        let block_number: u64 = 33482;
+
+        let call_result: Vec<FieldElement> = beerus_rpc.call(request, block_number).await.unwrap();
+        let expected: Vec<FieldElement> = vec![FieldElement::from_hex_be("298305742194").unwrap()];
+
+        assert_eq!(call_result, expected);
     }
 }

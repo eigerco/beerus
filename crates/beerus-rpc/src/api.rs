@@ -10,8 +10,9 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        EventsPage, FeeEstimate, FunctionCall, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 
@@ -211,4 +212,11 @@ pub trait BeerusApi {
         block_id: String,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error>;
+
+    #[method(name = "call")]
+    async fn call(
+        &self,
+        request: FunctionCall,
+        block_number: u64,
+    ) -> Result<Vec<FieldElement>, Error>;
 }

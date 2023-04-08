@@ -7,11 +7,12 @@ use beerus_core::{
     starknet_helper::block_id_string_to_block_id_type,
 };
 use beerus_rpc::BeerusRpc;
-use reqwest::StatusCode;
+use reqwest::{Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::models::{
-    BlockId, BlockTag, BroadcastedTransaction, EventFilter,
+    BlockId, BlockTag, BroadcastedTransaction, EventFilter, FunctionCall,
 };
 use std::path::PathBuf;
 use wiremock::{
@@ -106,6 +107,15 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
             params,
         }
     }
+
+    pub const fn starknet_call(params: StarknetParams) -> Self {
+        Self {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "starknet_call",
+            params,
+        }
+    }
 }
 
 pub async fn setup_wiremock() -> String {
@@ -124,6 +134,8 @@ pub async fn setup_wiremock() -> String {
     mock_starknet_get_block_with_tx_hashes()
         .mount(&mock_server)
         .await;
+    mock_starknet_call().mount(&mock_server).await;
+
     mock_server.uri()
 }
 
@@ -256,6 +268,30 @@ fn mock_starknet_get_block_with_tx_hashes() -> Mock {
             include_str!("data/starknet_getBlockWithTxHashes.json"),
             "application/json",
         ))
+}
+
+fn mock_starknet_call() -> Mock {
+    let request = FunctionCall {
+        contract_address: FieldElement::from_hex_be(
+            "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )
+        .unwrap(),
+        entry_point_selector: FieldElement::from_hex_be(
+            "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
+        )
+        .unwrap(),
+        calldata: Vec::new(),
+    };
+    let block_id = BlockId::Number(33482);
+
+    Mock::given(method(Method::POST))
+        .and(body_json(StarknetRpcBaseData::starknet_call((
+            &request, &block_id,
+        ))))
+        .respond_with(
+            response_template_with_status(StatusCode::OK)
+                .set_body_raw(include_str!("data/starknet_call.json"), "application/json"),
+        )
 }
 
 fn response_template_with_status(status_code: StatusCode) -> ResponseTemplate {
