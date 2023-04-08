@@ -201,4 +201,11 @@ pub trait BeerusApi {
         block_id: String,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error>;
+
+    #[method(name = "getStorageAt")]
+    async fn get_storage_at(
+        &self,
+        contract_address: String,
+        key: String,
+    ) -> Result<FieldElement, Error>;
 }
