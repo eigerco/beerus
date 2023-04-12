@@ -54,3 +54,21 @@ jobs:
   #         target: wasm32-unknown-unknown
   #     - uses: Swatinem/rust-cache@v2
   #     - run: cargo check -p beerus-core --target wasm32-unknown-unknown --no-default-features
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+    - name: Setup rust toolchain
+      run: rustup show
+    - name: Set-Up
+      run: >
+        sudo apt-get update && sudo apt-get install -y clang llvm libudev-dev protobuf-compiler && cargo install cargo-tarpaulin
+    - uses: Swatinem/rust-cache@v2
+    - name: Coverage
+      run: cargo tarpaulin --workspace --skip-clean
+    - name: Upload coverage to codecov.io
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: true
