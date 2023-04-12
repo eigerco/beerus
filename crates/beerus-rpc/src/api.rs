@@ -9,10 +9,10 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedInvokeTransaction, ContractClass, DeclareTransactionResult, 
-        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult, 
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, 
-        StateUpdate, SyncStatusType,Transaction,
+        BlockHashAndNumber, BroadcastedInvokeTransaction, ContractClass, DeclareTransactionResult,
+        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 
