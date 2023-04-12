@@ -17,11 +17,11 @@ use starknet::providers::jsonrpc::models::{BroadcastedInvokeTransaction, InvokeT
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, FunctionCall, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction,
+        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
+        BroadcastedDeployTransaction, BroadcastedTransaction, ContractClass,
+        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
