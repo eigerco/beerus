@@ -67,7 +67,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y clang llvm libudev-dev protobuf-compiler && cargo install cargo-tarpaulin
       - uses: Swatinem/rust-cache@v2
       - name: Coverage
-        run: cargo tarpaulin --workspace --skip-clean
+        run: cargo tarpaulin --workspace --skip-clean --avoid-cfg-tarpaulin
       - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@v3
         with:
