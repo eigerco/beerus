@@ -13,6 +13,7 @@ use jsonrpsee::{
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
+use starknet::providers::jsonrpc::models::{BroadcastedInvokeTransaction, InvokeTransactionResult};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -167,6 +168,17 @@ impl BeerusApiServer for BeerusRpc {
             .get_class_at(&block_id, contract_address)
             .await
             .unwrap())
+    }
+
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult, Error> {
+        self.beerus
+            .starknet_lightclient
+            .add_invoke_transaction(&invoke_transaction)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
     }
 
     async fn get_block_with_tx_hashes(
