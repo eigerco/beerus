@@ -1,3 +1,4 @@
+use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use jsonrpsee::{
     core::Error,
     proc_macros::rpc,
@@ -108,6 +109,15 @@ pub trait BeerusApi {
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes, Error>;
 
+    #[method(name = "getContractStorageProof")]
+    async fn get_contract_storage_proof(
+        &self,
+        block_id_type: String,
+        block_id: String,
+        contract_address: String,
+        keys: Vec<String>,
+    ) -> Result<GetProofOutput, Error>;
+
     #[method(name = "getTransactionByBlockIdAndIndex")]
     async fn get_transaction_by_block_id_and_index(
         &self,
@@ -154,8 +164,8 @@ pub trait BeerusApi {
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt, Error>;
 
-    #[method(name = "getClassHash")]
-    async fn get_class_hash(
+    #[method(name = "getClassHashAt")]
+    async fn get_class_hash_at(
         &self,
         block_id_type: String,
         block_id: String,
@@ -170,8 +180,8 @@ pub trait BeerusApi {
         class_hash: String,
     ) -> Result<ContractClass, Error>;
 
-    #[method(name = "addDeployTransaction")]
-    async fn add_deploy_transaction(
+    #[method(name = "addDeployAccountTransaction")]
+    async fn add_deploy_account_transaction(
         &self,
         contract_class: String,
         version: String,
