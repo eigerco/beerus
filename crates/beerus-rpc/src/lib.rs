@@ -436,12 +436,10 @@ impl BeerusApiServer for BeerusRpc {
         request: FunctionCall,
         block_number: u64,
     ) -> Result<Vec<FieldElement>, Error> {
-        let call_result = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .call(request, block_number)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(call_result)
+            .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
 }
