@@ -13,13 +13,15 @@ use jsonrpsee::{
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
+use starknet::providers::jsonrpc::models::{BroadcastedInvokeTransaction, InvokeTransactionResult};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
         BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        EventsPage, FeeEstimate, FunctionCall, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -166,6 +168,17 @@ impl BeerusApiServer for BeerusRpc {
             .get_class_at(&block_id, contract_address)
             .await
             .unwrap())
+    }
+
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult, Error> {
+        self.beerus
+            .starknet_lightclient
+            .add_invoke_transaction(&invoke_transaction)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
     }
 
     async fn get_block_with_tx_hashes(
@@ -428,6 +441,18 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
         Ok(estimate_fee)
+    }
+
+    async fn call(
+        &self,
+        request: FunctionCall,
+        block_number: u64,
+    ) -> Result<Vec<FieldElement>, Error> {
+        self.beerus
+            .starknet_lightclient
+            .call(request, block_number)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
 
     async fn get_storage_at(

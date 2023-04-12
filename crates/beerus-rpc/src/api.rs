@@ -9,9 +9,10 @@ use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        BlockHashAndNumber, BroadcastedInvokeTransaction, ContractClass, DeclareTransactionResult,
+        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 
@@ -125,6 +126,12 @@ pub trait BeerusApi {
         index: &str,
     ) -> Result<Transaction, Error>;
 
+    #[method(name = "addInvokeTransaction")]
+    async fn add_invoke_transaction(
+        &self,
+        invoke_transaction: BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult, Error>;
+
     #[method(name = "getBlockWithTxs")]
     async fn get_block_with_txs(
         &self,
@@ -211,6 +218,13 @@ pub trait BeerusApi {
         block_id: String,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error>;
+
+    #[method(name = "call")]
+    async fn call(
+        &self,
+        request: FunctionCall,
+        block_number: u64,
+    ) -> Result<Vec<FieldElement>, Error>;
 
     #[method(name = "getStorageAt")]
     async fn get_storage_at(
