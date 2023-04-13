@@ -12,17 +12,16 @@ use jsonrpsee::{
 };
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
-use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
-        BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
-        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+        BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
+        BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
+        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
+        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -102,12 +101,9 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
     }
 
-    async fn get_block_transaction_count(
-        &self,
-        block_id_type: String,
-        block_id: String,
-    ) -> Result<u64, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+    async fn get_block_transaction_count(&self, block_id: String) -> Result<u64, Error> {
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let block_transaction_count = self
             .beerus
             .starknet_lightclient
@@ -129,16 +125,12 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_contract_storage_proof(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
         keys: Vec<String>,
     ) -> Result<GetProofOutput, Error> {
-        let block_id = beerus_core::starknet_helper::block_id_string_to_block_id_type(
-            &block_id_type,
-            &block_id,
-        )
-        .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address)
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         let keys: Result<Vec<FieldElement>, _> =
@@ -157,11 +149,11 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class_at(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<ContractClass, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address).unwrap();
         Ok(self
             .beerus
@@ -184,10 +176,10 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_block_with_tx_hashes(
         &self,
-        block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         self.beerus
             .starknet_lightclient
             .get_block_with_tx_hashes(&block_id)
@@ -197,15 +189,11 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_transaction_by_block_id_and_index(
         &self,
-        block_id_type: &str,
         block_id: &str,
         index: &str,
     ) -> Result<Transaction, Error> {
-        let block_id =
-            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
-                .map_err(|e| {
-                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
-                })?;
+        let block_id: BlockId = serde_json::from_str(block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let index = u64::from_str(index)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let result = self
@@ -217,16 +205,9 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn get_block_with_txs(
-        &self,
-        block_id_type: &str,
-        block_id: &str,
-    ) -> Result<MaybePendingBlockWithTxs, Error> {
-        let block_id =
-            beerus_core::starknet_helper::block_id_string_to_block_id_type(block_id_type, block_id)
-                .map_err(|e| {
-                    Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
-                })?;
+    async fn get_block_with_txs(&self, block_id: &str) -> Result<MaybePendingBlockWithTxs, Error> {
+        let block_id: BlockId = serde_json::from_str(block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let result = self
             .beerus
             .starknet_lightclient
@@ -236,12 +217,9 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn get_state_update(
-        &self,
-        block_id_type: String,
-        block_id: String,
-    ) -> Result<StateUpdate, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+    async fn get_state_update(&self, block_id: String) -> Result<StateUpdate, Error> {
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         Ok(self
             .beerus
             .starknet_lightclient
@@ -291,11 +269,11 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class_hash_at(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<FieldElement, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
+        let block_id: BlockId = serde_json::from_str(&block_id)
+            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address).unwrap();
 
         Ok(self
@@ -308,11 +286,10 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class(
         &self,
-        block_id_type: String,
         block_id: String,
         class_hash: String,
     ) -> Result<ContractClass, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)
+        let block_id: BlockId = serde_json::from_str(&block_id)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let class_hash = FieldElement::from_str(&class_hash)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
@@ -423,11 +400,10 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn estimate_fee(
         &self,
-        block_id_type: String,
         block_id: String,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error> {
-        let block_id = block_id_string_to_block_id_type(&block_id_type, &block_id)
+        let block_id: BlockId = serde_json::from_str(&block_id)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
 
         let broadcasted_transaction: BroadcastedTransaction =

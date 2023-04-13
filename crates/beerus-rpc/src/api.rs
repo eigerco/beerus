@@ -85,16 +85,11 @@ pub trait BeerusApi {
     async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error>;
 
     #[method(name = "getBlockTransactionCount")]
-    async fn get_block_transaction_count(
-        &self,
-        block_id_type: String,
-        block_id: String,
-    ) -> Result<u64, Error>;
+    async fn get_block_transaction_count(&self, block_id: String) -> Result<u64, Error>;
 
     #[method(name = "getClassAt")]
     async fn get_class_at(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<ContractClass, Error>;
@@ -105,14 +100,12 @@ pub trait BeerusApi {
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
-        block_id_type: String,
         block_id: String,
     ) -> Result<MaybePendingBlockWithTxHashes, Error>;
 
     #[method(name = "getContractStorageProof")]
     async fn get_contract_storage_proof(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
         keys: Vec<String>,
@@ -121,7 +114,6 @@ pub trait BeerusApi {
     #[method(name = "getTransactionByBlockIdAndIndex")]
     async fn get_transaction_by_block_id_and_index(
         &self,
-        block_id_type: &str,
         block_id: &str,
         index: &str,
     ) -> Result<Transaction, Error>;
@@ -133,18 +125,10 @@ pub trait BeerusApi {
     ) -> Result<InvokeTransactionResult, Error>;
 
     #[method(name = "getBlockWithTxs")]
-    async fn get_block_with_txs(
-        &self,
-        block_id_type: &str,
-        block_id: &str,
-    ) -> Result<MaybePendingBlockWithTxs, Error>;
+    async fn get_block_with_txs(&self, block_id: &str) -> Result<MaybePendingBlockWithTxs, Error>;
 
     #[method(name = "getStateUpdate")]
-    async fn get_state_update(
-        &self,
-        block_id_type: String,
-        block_id: String,
-    ) -> Result<StateUpdate, Error>;
+    async fn get_state_update(&self, block_id: String) -> Result<StateUpdate, Error>;
 
     #[method(name = "syncing")]
     async fn syncing(&self) -> Result<SyncStatusType, Error>;
@@ -167,18 +151,13 @@ pub trait BeerusApi {
     #[method(name = "getClassHashAt")]
     async fn get_class_hash_at(
         &self,
-        block_id_type: String,
         block_id: String,
         contract_address: String,
     ) -> Result<FieldElement, Error>;
 
     #[method(name = "getClass")]
-    async fn get_class(
-        &self,
-        block_id_type: String,
-        block_id: String,
-        class_hash: String,
-    ) -> Result<ContractClass, Error>;
+    async fn get_class(&self, block_id: String, class_hash: String)
+        -> Result<ContractClass, Error>;
 
     #[method(name = "addDeployAccountTransaction")]
     async fn add_deploy_account_transaction(
@@ -214,7 +193,6 @@ pub trait BeerusApi {
     #[method(name = "estimateFee")]
     async fn estimate_fee(
         &self,
-        block_id_type: String,
         block_id: String,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error>;
