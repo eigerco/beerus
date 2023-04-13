@@ -24,14 +24,13 @@ mod test {
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractEntryPoint,
-            DeclareTransactionResult, DeployTransactionResult, EntryPointsByType, FeeEstimate,
-            InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
-            InvokeTransactionV0, InvokeTransactionV1, LegacyContractClass,
-            LegacyContractEntryPoint, LegacyEntryPointsByType, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, SierraContractClass,
-            StateDiff, StateUpdate, Transaction as StarknetTransaction, TransactionReceipt,
-            TransactionStatus,
+            BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
+            DeclareTransactionResult, DeployTransactionResult, FeeEstimate, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            InvokeTransactionV1, LegacyContractClass, LegacyContractEntryPoint,
+            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
 
@@ -3610,47 +3609,44 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-        let sierra_program = vec![];
-        let constructor = vec![ContractEntryPoint {
-            function_idx: 10,
+        let program = vec![];
+        let constructor = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
-            function_idx: 10,
+        let external = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
-            function_idx: 10,
+        let l1_handler = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
-        let abi = Default::default();
-        let contract_class_version = Default::default();
+        let abi = None;
 
-        let contract_class = SierraContractClass {
-            sierra_program,
+        let contract_class = LegacyContractClass {
+            program,
             entry_points_by_type,
             abi,
-            contract_class_version,
         };
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
-        let compiled_class_hash = Default::default();
 
         // let contract_class_string = contract_class.to_string();
 
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),
+            version: "10".to_string(),
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
-            compiled_class_hash,
             sender_address: "0".to_string(),
         };
 
@@ -3687,45 +3683,42 @@ mod test {
             Box::new(starknet_lightclient),
         );
 
-        let sierra_program = vec![];
-        let constructor = vec![ContractEntryPoint {
-            function_idx: 10,
+        let program = vec![];
+        let constructor = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
-            function_idx: 10,
+        let external = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
-            function_idx: 10,
+        let l1_handler = vec![LegacyContractEntryPoint {
+            offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
-        let abi = Default::default();
-        let contract_class_version = Default::default();
+        let abi = None;
 
-        let contract_class = SierraContractClass {
-            sierra_program,
+        let contract_class = LegacyContractClass {
+            program,
             entry_points_by_type,
             abi,
-            contract_class_version,
         };
 
         let contract_class_string = serde_json::to_string(&contract_class).unwrap();
-        let compiled_class_hash = Default::default();
 
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),
+            version: "10".to_string(),
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
-            compiled_class_hash,
             sender_address: "0".to_string(),
         };
 

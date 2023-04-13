@@ -4,6 +4,7 @@ pub mod models;
 use crate::api::{BeerusApiError, BeerusApiServer};
 use crate::models::EventFilter;
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
+
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
@@ -13,15 +14,15 @@ use jsonrpsee::{
 use beerus_core::lightclient::beerus::BeerusLightClient;
 use beerus_core::starknet_helper::block_id_string_to_block_id_type;
 use ethers::types::U256;
-use starknet::providers::jsonrpc::models::{BroadcastedInvokeTransaction, InvokeTransactionResult};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
-        BroadcastedDeployTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction,
+        BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
+        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -374,6 +375,7 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn add_declare_transaction(
         &self,
+        version: String,
         max_fee: String,
         signature: Vec<String>,
         nonce: String,
@@ -381,6 +383,7 @@ impl BeerusApiServer for BeerusRpc {
         sender_address: String,
     ) -> Result<DeclareTransactionResult, Error> {
         let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
+        let _version: u64 = version.parse().unwrap();
         let signature = signature
             .iter()
             .map(|x| FieldElement::from_str(x).unwrap())

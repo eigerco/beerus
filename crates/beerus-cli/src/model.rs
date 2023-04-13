@@ -341,6 +341,9 @@ pub enum StarkNetSubCommands {
         /// Max fee
         #[arg(short, long, value_name = "MAX_FEE")]
         max_fee: String,
+        /// Declare tx version
+        #[arg(short, long, value_name = "VERSION")]
+        version: String,
         /// The signature
         #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
         signature: Vec<String>,
@@ -350,9 +353,6 @@ pub enum StarkNetSubCommands {
         /// The contract class
         #[arg(short, long, value_name = "CONTRACT_CLASS")]
         contract_class: String,
-        /// The compiled class hash
-        #[arg(short, long, value_name = "COMPILED_CLASS_HASH")]
-        compiled_class_hash: String,
         // The entry point selector
         #[arg(short, long, value_name = "SENDER_ADDRESS")]
         sender_address: String,
