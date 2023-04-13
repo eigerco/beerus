@@ -341,9 +341,6 @@ pub enum StarkNetSubCommands {
         /// Max fee
         #[arg(short, long, value_name = "MAX_FEE")]
         max_fee: String,
-        /// Declare tx version
-        #[arg(short, long, value_name = "VERSION")]
-        version: String,
         /// The signature
         #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
         signature: Vec<String>,
@@ -652,13 +649,18 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClass(response) => {
-                let json_response = json!(
-                    {
+                let json_response = match response {
+                    ContractClass::Legacy(response) => json!({
                         "program": base64::encode(&response.program),
                         "entry_points_by_type": response.entry_points_by_type,
                         "abi": response.abi.as_ref().unwrap()
-                    }
-                );
+                    }),
+                    ContractClass::Sierra(response) => json!({
+                        "program": &response.sierra_program,
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi
+                    }),
+                };
                 write!(f, "{json_response}")
             }
 
@@ -688,13 +690,18 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClassAt(response) => {
-                let json_response = json!(
-                    {
+                let json_response = match response {
+                    ContractClass::Legacy(response) => json!({
                         "program": base64::encode(&response.program),
                         "entry_points_by_type": response.entry_points_by_type,
                         "abi": response.abi.as_ref().unwrap()
-                    }
-                );
+                    }),
+                    ContractClass::Sierra(response) => json!({
+                        "program": &response.sierra_program,
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi
+                    }),
+                };
                 write!(f, "{json_response}")
             }
             // Print the number of transactions in a block.

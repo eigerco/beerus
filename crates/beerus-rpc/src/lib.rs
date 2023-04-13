@@ -17,11 +17,11 @@ use starknet::providers::jsonrpc::models::{BroadcastedInvokeTransaction, InvokeT
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, FunctionCall, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction,
+        BlockHashAndNumber, BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
+        BroadcastedDeployTransaction, BroadcastedTransaction, ContractClass,
+        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -374,7 +374,6 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn add_declare_transaction(
         &self,
-        version: String,
         max_fee: String,
         signature: Vec<String>,
         nonce: String,
@@ -382,7 +381,6 @@ impl BeerusApiServer for BeerusRpc {
         sender_address: String,
     ) -> Result<DeclareTransactionResult, Error> {
         let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
-        let version: u64 = version.parse().unwrap();
         let signature = signature
             .iter()
             .map(|x| FieldElement::from_str(x).unwrap())
@@ -393,14 +391,14 @@ impl BeerusApiServer for BeerusRpc {
         let contract_class = serde_json::from_slice(contract_class_bytes)?;
         let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
 
-        let declare_transaction = BroadcastedDeclareTransaction {
-            max_fee,
-            version,
-            signature,
-            nonce,
-            contract_class,
-            sender_address,
-        };
+        let declare_transaction =
+            BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
+                max_fee,
+                signature,
+                nonce,
+                contract_class,
+                sender_address,
+            });
 
         Ok(self
             .beerus

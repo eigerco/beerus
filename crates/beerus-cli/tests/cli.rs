@@ -24,11 +24,11 @@ mod test {
     use starknet::{
         core::types::FieldElement,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs, ContractClass,
-            ContractEntryPoint, DeclareTransactionResult, DeployTransactionResult,
-            EntryPointsByType, FeeEstimate, InvokeTransaction, InvokeTransactionReceipt,
-            InvokeTransactionResult, InvokeTransactionV0, InvokeTransactionV1,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            BlockHashAndNumber, BlockStatus, BlockWithTxHashes, BlockWithTxs,
+            DeclareTransactionResult, DeployTransactionResult, FeeEstimate, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            InvokeTransactionV1, LegacyContractClass, LegacyContractEntryPoint,
+            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
@@ -2867,28 +2867,28 @@ mod test {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
@@ -2937,28 +2937,28 @@ mod test {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
@@ -3610,28 +3610,28 @@ mod test {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
@@ -3643,7 +3643,6 @@ mod test {
 
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),
-            version: "10".to_string(),
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
@@ -3684,28 +3683,28 @@ mod test {
         );
 
         let program = vec![];
-        let constructor = vec![ContractEntryPoint {
+        let constructor = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let external = vec![ContractEntryPoint {
+        let external = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
 
-        let l1_handler = vec![ContractEntryPoint {
+        let l1_handler = vec![LegacyContractEntryPoint {
             offset: 10,
             selector: FieldElement::from_str("0").unwrap(),
         }];
-        let entry_points_by_type = EntryPointsByType {
+        let entry_points_by_type = LegacyEntryPointsByType {
             constructor,
             external,
             l1_handler,
         };
         let abi = None;
 
-        let contract_class: ContractClass = ContractClass {
+        let contract_class: LegacyContractClass = LegacyContractClass {
             program,
             entry_points_by_type,
             abi,
@@ -3715,7 +3714,6 @@ mod test {
 
         let params = StarkNetSubCommands::AddDeclareTransaction {
             max_fee: "0".to_string(),
-            version: "10".to_string(),
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
