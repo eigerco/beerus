@@ -19,7 +19,8 @@ beerus-core = { path = "./crates/beerus-core" }
 # Helios revision is supposed to be changed by the corresponding tag once the revision is released. Next expected tag: 0.5.0.
 helios = { git = "https://github.com/a16z/helios", rev = "f63e4142c8c8094cdf94cf8d1ef1cb637a7eac98" }
 
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
+#TODO: update with version tag instead of hash rev when available
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "e72cc0a4b3ea67c7691ebec58300da3c21f0abb2" }
 ethers = "2.0.2"
 eyre = "0.6.8"
 log = "0.4.17"
