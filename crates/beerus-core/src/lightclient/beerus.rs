@@ -23,7 +23,7 @@ use ethers::{abi::Abi, types::H160};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 #[cfg(feature = "std")]
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -157,7 +157,7 @@ impl BeerusLightClient {
                         .await
                     {
                         Ok(block) => {
-                            println!("block: {block:?}");
+                            debug!("block: {block:?}");
                             let mut data = node_clone.write().await;
                             match block {
                                 MaybePendingBlockWithTxs::Block(block) => {
