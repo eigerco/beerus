@@ -8,8 +8,9 @@ use serde::{Deserialize, Serialize};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BroadcastedDeclareTransaction, BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
-        BroadcastedInvokeTransactionV0, EventFilter,
+        BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
+        BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+        EventFilter,
     },
 };
 
@@ -720,25 +721,23 @@ pub async fn add_declare_transaction(
     sender_address: String,
 ) -> Result<CommandResponse> {
     let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
-    let version: u64 = version.parse().unwrap();
+    let _version: u64 = version.parse().unwrap();
     let signature = signature
         .iter()
         .map(|x| FieldElement::from_str(x).unwrap())
         .collect();
     let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
-
     let contract_class_bytes = contract_class.as_bytes();
     let contract_class = serde_json::from_slice(contract_class_bytes)?;
     let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
 
-    let declare_transaction = BroadcastedDeclareTransaction {
+    let declare_transaction = BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
         max_fee,
-        version,
         signature,
         nonce,
         contract_class,
         sender_address,
-    };
+    });
 
     Ok(CommandResponse::StarknetAddDeclareTransaction(
         beerus
