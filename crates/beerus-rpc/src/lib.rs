@@ -1,8 +1,6 @@
 pub mod api;
-pub mod models;
 
 use crate::api::{BeerusApiError, BeerusApiServer};
-use crate::models::EventFilter;
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 
 use jsonrpsee::{
@@ -19,9 +17,10 @@ use starknet::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
         BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
-        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+        DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage, FeeEstimate,
+        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction,
     },
 };
 use std::net::SocketAddr;
@@ -101,9 +100,7 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
     }
 
-    async fn get_block_transaction_count(&self, block_id: String) -> Result<u64, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+    async fn get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, Error> {
         let block_transaction_count = self
             .beerus
             .starknet_lightclient
@@ -125,12 +122,10 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_contract_storage_proof(
         &self,
-        block_id: String,
+        block_id: BlockId,
         contract_address: String,
         keys: Vec<String>,
     ) -> Result<GetProofOutput, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address)
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         let keys: Result<Vec<FieldElement>, _> =
@@ -149,11 +144,9 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class_at(
         &self,
-        block_id: String,
+        block_id: BlockId,
         contract_address: String,
     ) -> Result<ContractClass, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address).unwrap();
         Ok(self
             .beerus
@@ -176,10 +169,8 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_block_with_tx_hashes(
         &self,
-        block_id: String,
+        block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxHashes, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         self.beerus
             .starknet_lightclient
             .get_block_with_tx_hashes(&block_id)
@@ -189,11 +180,9 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_transaction_by_block_id_and_index(
         &self,
-        block_id: &str,
+        block_id: BlockId,
         index: &str,
     ) -> Result<Transaction, Error> {
-        let block_id: BlockId = serde_json::from_str(block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let index = u64::from_str(index)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let result = self
@@ -205,9 +194,10 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn get_block_with_txs(&self, block_id: &str) -> Result<MaybePendingBlockWithTxs, Error> {
-        let block_id: BlockId = serde_json::from_str(block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+    async fn get_block_with_txs(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingBlockWithTxs, Error> {
         let result = self
             .beerus
             .starknet_lightclient
@@ -217,9 +207,7 @@ impl BeerusApiServer for BeerusRpc {
         Ok(result)
     }
 
-    async fn get_state_update(&self, block_id: String) -> Result<StateUpdate, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
+    async fn get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error> {
         Ok(self
             .beerus
             .starknet_lightclient
@@ -269,11 +257,9 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class_hash_at(
         &self,
-        block_id: String,
+        block_id: BlockId,
         contract_address: String,
     ) -> Result<FieldElement, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let contract_address = FieldElement::from_str(&contract_address).unwrap();
 
         Ok(self
@@ -286,11 +272,9 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_class(
         &self,
-        block_id: String,
+        block_id: BlockId,
         class_hash: String,
     ) -> Result<ContractClass, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let class_hash = FieldElement::from_str(&class_hash)
             .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
         let result = self
@@ -341,7 +325,6 @@ impl BeerusApiServer for BeerusRpc {
         continuation_token: Option<String>,
         chunk_size: u64,
     ) -> Result<EventsPage, Error> {
-        let filter = filter.to_starknet_event_filter();
         Ok(self
             .beerus
             .starknet_lightclient
@@ -400,12 +383,9 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn estimate_fee(
         &self,
-        block_id: String,
+        block_id: BlockId,
         broadcasted_transaction: String,
     ) -> Result<FeeEstimate, Error> {
-        let block_id: BlockId = serde_json::from_str(&block_id)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
-
         let broadcasted_transaction: BroadcastedTransaction =
             serde_json::from_str(&broadcasted_transaction).map_err(|e| {
                 Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
