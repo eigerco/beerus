@@ -411,4 +411,20 @@ impl BeerusApiServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
+
+    async fn get_storage_at(
+        &self,
+        contract_address: String,
+        key: String,
+    ) -> Result<FieldElement, Error> {
+        let contract_address = FieldElement::from_hex_be(&contract_address)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let key = FieldElement::from_hex_be(&key)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
+            .starknet_get_storage_at(contract_address, key)
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractError))
+    }
 }

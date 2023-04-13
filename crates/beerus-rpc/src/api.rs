@@ -208,4 +208,11 @@ pub trait BeerusApi {
         request: FunctionCall,
         block_number: u64,
     ) -> Result<Vec<FieldElement>, Error>;
+
+    #[method(name = "getStorageAt")]
+    async fn get_storage_at(
+        &self,
+        contract_address: String,
+        key: String,
+    ) -> Result<FieldElement, Error>;
 }
