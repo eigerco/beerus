@@ -23,7 +23,7 @@ use ethers::{abi::Abi, types::H160};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts};
 #[cfg(feature = "std")]
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -157,7 +157,7 @@ impl BeerusLightClient {
                         .await
                     {
                         Ok(block) => {
-                            println!("block: {block:?}");
+                            debug!("block: {block:?}");
                             let mut data = node_clone.write().await;
                             match block {
                                 MaybePendingBlockWithTxs::Block(block) => {
@@ -687,10 +687,11 @@ impl BeerusLightClient {
                             InvokeTransaction::V0(v0_tx) => v0_tx.transaction_hash,
                             InvokeTransaction::V1(v1_tx) => v1_tx.transaction_hash,
                         },
+                        Transaction::Declare(tx) => match tx {
+                            DeclareTransaction::V1(v1_tx) => v1_tx.transaction_hash,
+                            DeclareTransaction::V2(v2_tx) => v2_tx.transaction_hash,
+                        },
                         Transaction::L1Handler(L1HandlerTransaction {
-                            transaction_hash, ..
-                        })
-                        | Transaction::Declare(DeclareTransaction {
                             transaction_hash, ..
                         })
                         | Transaction::Deploy(DeployTransaction {

@@ -652,13 +652,18 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClass(response) => {
-                let json_response = json!(
-                    {
+                let json_response = match response {
+                    ContractClass::Legacy(response) => json!({
                         "program": base64::encode(&response.program),
                         "entry_points_by_type": response.entry_points_by_type,
                         "abi": response.abi.as_ref().unwrap()
-                    }
-                );
+                    }),
+                    ContractClass::Sierra(response) => json!({
+                        "program": &response.sierra_program,
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi
+                    }),
+                };
                 write!(f, "{json_response}")
             }
 
@@ -688,13 +693,18 @@ impl Display for CommandResponse {
             //    "program": "AQID"
             // }
             CommandResponse::StarknetQueryGetClassAt(response) => {
-                let json_response = json!(
-                    {
+                let json_response = match response {
+                    ContractClass::Legacy(response) => json!({
                         "program": base64::encode(&response.program),
                         "entry_points_by_type": response.entry_points_by_type,
                         "abi": response.abi.as_ref().unwrap()
-                    }
-                );
+                    }),
+                    ContractClass::Sierra(response) => json!({
+                        "program": &response.sierra_program,
+                        "entry_points_by_type": response.entry_points_by_type,
+                        "abi": response.abi
+                    }),
+                };
                 write!(f, "{json_response}")
             }
             // Print the number of transactions in a block.
