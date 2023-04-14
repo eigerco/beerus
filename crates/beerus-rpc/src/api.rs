@@ -214,5 +214,6 @@ pub trait BeerusApi {
         &self,
         contract_address: String,
         key: String,
+        block_id: BlockId,
     ) -> Result<FieldElement, Error>;
 }

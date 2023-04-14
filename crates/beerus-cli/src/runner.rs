@@ -95,11 +95,18 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 )
                 .await
             }
-            StarkNetSubCommands::QueryGetStorageAt { address, key } => {
+            StarkNetSubCommands::QueryGetStorageAt {
+                address,
+                key,
+                block_id_type,
+                block_id,
+            } => {
                 starknet::query_starknet_get_storage_at(
                     beerus,
                     address.to_string(),
                     key.to_string(),
+                    block_id_type.to_string(),
+                    block_id.to_string(),
                 )
                 .await
             }

@@ -60,15 +60,22 @@ pub async fn query_starknet_get_storage_at(
     beerus: BeerusLightClient,
     address: String,
     slot: String,
+    block_id_type: String,
+    block_id: String,
 ) -> Result<CommandResponse> {
     // Convert address to FieldElement.
     let address = FieldElement::from_str(&address)?;
     // Convert slot to FieldElement.
     let slot = FieldElement::from_str(&slot)?;
 
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+
     // Call the StarkNet contract to get the state root.
     Ok(CommandResponse::StarkNetQueryGetStorageAt(
-        beerus.starknet_get_storage_at(address, slot).await?,
+        beerus
+            .starknet_get_storage_at(address, slot, &block_id)
+            .await?,
     ))
 }
 

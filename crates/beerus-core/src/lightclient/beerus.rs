@@ -298,16 +298,10 @@ impl BeerusLightClient {
         &self,
         contract_address: FieldElement,
         storage_key: FieldElement,
+        block_id: &BlockId,
     ) -> Result<FieldElement> {
-        let last_block = self
-            .ethereum_lightclient
-            .read()
-            .await
-            .starknet_last_proven_block()
-            .await?
-            .as_u64();
         self.starknet_lightclient
-            .get_storage_at(contract_address, storage_key, last_block)
+            .get_storage_at(contract_address, storage_key, block_id)
             .await
     }
 

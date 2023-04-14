@@ -180,6 +180,14 @@ pub enum StarkNetSubCommands {
         /// The slot of the storage to query
         #[arg(short, long, value_name = "KEY")]
         key: String,
+        /// Type of block identifier
+        /// eg. hash, number, tag
+        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        block_id_type: String,
+        /// The block identifier
+        /// eg. 0x123, 123, pending, or latest
+        #[arg(short, long, value_name = "BLOCK_ID")]
+        block_id: String,
     },
     QueryNonce {
         /// The address of the contract to query

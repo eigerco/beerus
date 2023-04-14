@@ -32,10 +32,13 @@ mod test {
             .return_once(move || Ok(U256::from(1)));
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let storage_var = beerus
             .starknet_get_storage_at(
                 FieldElement::from_str("0x00").unwrap(),
                 FieldElement::from_str("0x00").unwrap(),
+                &block_id,
             )
             .await
             .unwrap();
@@ -60,10 +63,13 @@ mod test {
             .return_once(move || Err(eyre!(expected_error)));
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         let res = beerus
             .starknet_get_storage_at(
                 FieldElement::from_str("0x00").unwrap(),
                 FieldElement::from_str("0x00").unwrap(),
+                &block_id,
             )
             .await;
         assert_eq!(mock_request.hits(), 0);

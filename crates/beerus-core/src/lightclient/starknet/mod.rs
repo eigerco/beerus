@@ -47,7 +47,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement>;
     async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
     async fn chain_id(&self) -> Result<FieldElement>;
@@ -157,14 +157,10 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement> {
         self.client
-            .get_storage_at(
-                address,
-                key,
-                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
-            )
+            .get_storage_at(address, key, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

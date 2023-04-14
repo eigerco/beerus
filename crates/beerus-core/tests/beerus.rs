@@ -1655,8 +1655,12 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         // Perform the test call.
-        let res = beerus.starknet_get_storage_at(address, key).await.unwrap();
+        let res = beerus
+            .starknet_get_storage_at(address, key, &block_id)
+            .await
+            .unwrap();
 
         assert_eq!(res, expected_result);
     }
@@ -1690,9 +1694,11 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
-
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         // Perform the test call.
-        let res = beerus.starknet_get_storage_at(address, key).await;
+        let res = beerus
+            .starknet_get_storage_at(address, key, &block_id)
+            .await;
 
         // Assert that the result is correct.
         assert!(res.is_err());
