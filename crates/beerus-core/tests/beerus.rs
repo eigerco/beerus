@@ -1658,7 +1658,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         // Perform the test call.
         let res = beerus
-            .starknet_get_storage_at(address, key, &block_id)
+            .starknet_lightclient
+            .get_storage_at(address, key, &block_id)
             .await
             .unwrap();
 
@@ -1697,7 +1698,8 @@ mod tests {
         let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
         // Perform the test call.
         let res = beerus
-            .starknet_get_storage_at(address, key, &block_id)
+            .starknet_lightclient
+            .get_storage_at(address, key, &block_id)
             .await;
 
         // Assert that the result is correct.

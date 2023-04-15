@@ -74,7 +74,8 @@ pub async fn query_starknet_get_storage_at(
     // Call the StarkNet contract to get the state root.
     Ok(CommandResponse::StarkNetQueryGetStorageAt(
         beerus
-            .starknet_get_storage_at(address, slot, &block_id)
+            .starknet_lightclient
+            .get_storage_at(address, slot, &block_id)
             .await?,
     ))
 }
