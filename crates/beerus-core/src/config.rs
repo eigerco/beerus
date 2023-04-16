@@ -7,6 +7,7 @@ use helios::config::{checkpoints, networks::Network};
 use log::{error, info};
 use serde::Deserialize;
 use shellexpand::tilde;
+#[cfg(feature = "std")]
 use std::{env, fs, net::SocketAddr, path::PathBuf, str::FromStr};
 
 use crate::stdlib::string::{String, ToString};
