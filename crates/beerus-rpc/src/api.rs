@@ -22,7 +22,6 @@ use starknet::{
         Transaction as StarknetTransaction,
     },
 };
-use std::string::ToString;
 pub const BLOCK_NOT_FOUND: &str = "Block not found";
 pub const CONTRACT_NOT_FOUND: &str = "Contract not found";
 pub const CONTRACT_ERROR: &str = "Contract error";
