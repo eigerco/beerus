@@ -15,13 +15,17 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
         ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
         FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
         MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
 };
+use std::string::ToString;
+pub const BLOCK_NOT_FOUND: &str = "Block not found";
+pub const CONTRACT_NOT_FOUND: &str = "Contract not found";
+pub const CONTRACT_ERROR: &str = "Contract error";
 
 #[derive(thiserror::Error, Clone, Copy, Debug)]
 pub enum BeerusApiError {
@@ -300,7 +304,7 @@ pub trait BeerusRpc {
     async fn starknet_estimate_fee(
         &self,
         block_id: BlockId,
-        broadcasted_transaction: String,
+        broadcasted_transaction: BroadcastedTransaction,
     ) -> Result<FeeEstimate, Error>;
 
     #[method(name = "starknet_call")]

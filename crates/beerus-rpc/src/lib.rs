@@ -2,8 +2,11 @@ pub mod api;
 pub mod models;
 pub mod utils;
 
-use crate::api::{BeerusApiError, BeerusRpcServer};
 use crate::models::EventFilterWithPage;
+use crate::api::{
+    BeerusApiError, BeerusRpcServer, BLOCK_NOT_FOUND, CONTRACT_ERROR, CONTRACT_NOT_FOUND,
+};
+use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
@@ -660,33 +663,38 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
     }
 
+<<<<<<< HEAD
     async fn starknet_pending_transactions(&self) -> Result<Vec<StarknetTransaction>, Error> {
         let transactions_result = self
             .beerus
+=======
+    async fn pending_transactions(&self) -> Result<Vec<Transaction>, Error> {
+        self.beerus
+>>>>>>> 45fb0c3 (Refactor starknet_getEstimateFee + error handling)
             .starknet_lightclient
             .pending_transactions()
             .await
-            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions));
-        Ok(transactions_result.unwrap())
+            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions))
     }
 
     async fn starknet_estimate_fee(
         &self,
         block_id: BlockId,
-        broadcasted_transaction: String,
+        broadcasted_transaction: BroadcastedTransaction,
     ) -> Result<FeeEstimate, Error> {
-        let broadcasted_transaction: BroadcastedTransaction =
-            serde_json::from_str(&broadcasted_transaction).map_err(|e| {
-                Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
-            })?;
-
-        let estimate_fee = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .estimate_fee(broadcasted_transaction, &block_id)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(estimate_fee)
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    CONTRACT_ERROR => Error::from(BeerusApiError::ContractError),
+                    CONTRACT_NOT_FOUND => Error::from(BeerusApiError::ContractNotFound),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn starknet_call(
