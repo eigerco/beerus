@@ -206,7 +206,7 @@ pub trait BeerusApi {
     async fn call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error>;
 
     #[method(name = "getStorageAt")]

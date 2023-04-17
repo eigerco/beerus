@@ -9,7 +9,7 @@ Content-Type: application/json
       "entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
       "calldata": []
     },
-    "block_number": 33482
+    "block_id": "latest"
   },
   "id":1
 }

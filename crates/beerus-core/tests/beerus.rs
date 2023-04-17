@@ -28,7 +28,7 @@ mod tests {
             BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
             BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
             BroadcastedInvokeTransactionV0, ContractClass, DeclareTransactionResult,
-            DeployTransactionResult, EventFilter, FeeEstimate, InvokeTransaction,
+            DeployTransactionResult, EventFilter, FeeEstimate, FunctionCall, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
             LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
@@ -1540,7 +1540,7 @@ mod tests {
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_call_should_work() {
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         let expected_result = vec![
             FieldElement::from_hex_be("0x4e28f97185e801").unwrap(),
@@ -1555,9 +1555,6 @@ mod tests {
             .times(1)
             .return_once(move |_req, _block_nb| Ok(expected_result));
 
-        ethereum_lightclient_mock
-            .expect_starknet_last_proven_block()
-            .return_once(move || Ok(U256::from(10000)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1565,19 +1562,28 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
+        let contract_address = FieldElement::from_hex_be(
+            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )
+        .unwrap();
+        let entry_point_selector = selector!("balanceOf");
+        let calldata = vec![FieldElement::from_hex_be(
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+        )
+        .unwrap()];
+
+        let opts = FunctionCall {
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+
         // Perform the test call.
         let res = beerus
-            .starknet_call_contract(
-                FieldElement::from_hex_be(
-                    "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                )
-                .unwrap(),
-                selector!("balanceOf"),
-                vec![FieldElement::from_hex_be(
-                    "0x0000000000000000000000000000000000000000000000000000000000000001",
-                )
-                .unwrap()],
-            )
+            .starknet_lightclient
+            .call(opts, &block_id)
             .await
             .unwrap();
 
@@ -1591,7 +1597,7 @@ mod tests {
     async fn given_starknet_light_client_returns_error_when_starknet_call_should_fail_with_same_error(
     ) {
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Starknet light client mock.
         let expected_error = "Wrong url";
@@ -1599,9 +1605,7 @@ mod tests {
             .expect_call()
             .times(1)
             .return_once(move |_req, _block_nb| Err(eyre!(expected_error)));
-        ethereum_lightclient_mock
-            .expect_starknet_last_proven_block()
-            .return_once(move || Ok(U256::from(10)));
+
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1609,20 +1613,24 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
+        let contract_address = FieldElement::from_hex_be(
+            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )
+        .unwrap();
+        let entry_point_selector = selector!("balanceOf");
+        let calldata = vec![FieldElement::from_hex_be(
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+        )
+        .unwrap()];
+        let opts = FunctionCall {
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+        let block_id = BlockId::Hash(FieldElement::from_str("0x01").unwrap());
+
         // Perform the test call.
-        let res = beerus
-            .starknet_call_contract(
-                FieldElement::from_hex_be(
-                    "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                )
-                .unwrap(),
-                selector!("balanceOf"),
-                vec![FieldElement::from_hex_be(
-                    "0x0000000000000000000000000000000000000000000000000000000000000001",
-                )
-                .unwrap()],
-            )
-            .await;
+        let res = beerus.starknet_lightclient.call(opts, &block_id).await;
 
         // Assert that the result is correct.
         assert!(res.is_err());

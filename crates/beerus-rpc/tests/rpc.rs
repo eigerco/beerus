@@ -222,9 +222,9 @@ mod tests {
             .unwrap(),
             calldata: Vec::new(),
         };
-        let block_number: u64 = 33482;
+        let block_id = BlockId::Tag(BlockTag::Latest);
 
-        let call_result: Vec<FieldElement> = beerus_rpc.call(request, block_number).await.unwrap();
+        let call_result: Vec<FieldElement> = beerus_rpc.call(request, block_id).await.unwrap();
         let expected: Vec<FieldElement> = vec![FieldElement::from_hex_be("298305742194").unwrap()];
 
         assert_eq!(call_result, expected);

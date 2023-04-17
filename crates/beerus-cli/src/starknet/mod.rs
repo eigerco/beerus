@@ -10,7 +10,7 @@ use starknet::{
     providers::jsonrpc::models::{
         BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
         BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-        EventFilter,
+        EventFilter, FunctionCall,
     },
 };
 
@@ -88,25 +88,34 @@ pub async fn query_starknet_get_storage_at(
 /// * If the StarkNet calldata is invalid.
 pub async fn query_starknet_contract_view(
     beerus: BeerusLightClient,
-    address: String,
-    selector: String,
+    contract_address: String,
+    entry_point_selector: String,
     calldata: Vec<String>,
+    block_id_type: String,
+    block_id: String,
 ) -> Result<CommandResponse> {
     // Convert address to FieldElement.
-    let address = FieldElement::from_str(&address)?;
+    let contract_address = FieldElement::from_str(&contract_address)?;
     // Convert selector to FieldElement.
-    let selector = FieldElement::from_str(&selector)?;
+    let entry_point_selector = FieldElement::from_str(&entry_point_selector)?;
     // Convert calldata to FieldElements.
     let calldata = calldata
         .iter()
         .map(|x| FieldElement::from_str(x).unwrap())
         .collect();
 
+    let opts = FunctionCall {
+        contract_address,
+        entry_point_selector,
+        calldata,
+    };
+
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+
     // Call the StarkNet contract to get the state root.
     Ok(CommandResponse::StarkNetQueryContract(
-        beerus
-            .starknet_call_contract(address, selector, calldata)
-            .await?,
+        beerus.starknet_lightclient.call(opts, &block_id).await?,
     ))
 }
 
