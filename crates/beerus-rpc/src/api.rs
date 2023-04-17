@@ -16,6 +16,14 @@ use starknet::{
         Transaction,
     },
 };
+pub const CLASS_HASH_NOT_FOUND: &str = "Class hash not found";
+pub const INVALID_CONTINUATION_TOKEN: &str =
+    "The supplied continuation token is invalid or unknown";
+pub const TOO_MANY_KEYS_IN_FILTER: &str = "Too many keys provided in a filter";
+pub const PAGE_SIZE_TOO_BIG: &str = "Requested page size is too big";
+pub const BLOCK_NOT_FOUND: &str = "Block not found";
+pub const INVALID_TXN_INDEX: &str = "Invalid transaction index in a block";
+pub const CONTRACT_NOT_FOUND: &str = "Contract not found";
 
 #[derive(thiserror::Error, Clone, Copy, Debug)]
 pub enum BeerusApiError {
@@ -75,7 +83,7 @@ pub trait BeerusApi {
     async fn chain_id(&self) -> Result<String, Error>;
 
     #[method(name = "getNonce")]
-    async fn get_nonce(&self, contract_address: String) -> Result<String, Error>;
+    async fn get_nonce(&self, contract_address: String) -> Result<FieldElement, Error>;
 
     #[method(name = "blockNumber")]
     async fn block_number(&self) -> Result<u64, Error>;

@@ -1,6 +1,9 @@
 pub mod api;
 
-use crate::api::{BeerusApiError, BeerusApiServer};
+use crate::api::{
+    BeerusApiError, BeerusApiServer, BLOCK_NOT_FOUND, CLASS_HASH_NOT_FOUND, CONTRACT_NOT_FOUND,
+    INVALID_CONTINUATION_TOKEN, INVALID_TXN_INDEX, PAGE_SIZE_TOO_BIG, TOO_MANY_KEYS_IN_FILTER,
+};
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 
 use jsonrpsee::{
@@ -79,15 +82,21 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
-    async fn get_nonce(&self, contract_address: String) -> Result<String, Error> {
-        let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
-        let nonce = self
-            .beerus
+    async fn get_nonce(&self, contract_address: String) -> Result<FieldElement, Error> {
+        let contract_address = FieldElement::from_hex_be(&contract_address)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
             .starknet_get_nonce(contract_address)
             .await
-            .unwrap()
-            .to_string();
-        Ok(nonce)
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    CONTRACT_NOT_FOUND => Error::from(BeerusApiError::ContractNotFound),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error> {
@@ -183,42 +192,48 @@ impl BeerusApiServer for BeerusRpc {
         block_id: BlockId,
         index: &str,
     ) -> Result<Transaction, Error> {
-        let index = u64::from_str(index)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
-        let result = self
-            .beerus
+        let index =
+            u64::from_str(index).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
             .starknet_lightclient
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(result)
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    INVALID_TXN_INDEX => Error::from(BeerusApiError::InvalidTxnIndex),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn get_block_with_txs(
         &self,
         block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxs, Error> {
-        let result = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_block_with_txs(&block_id)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(result)
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
     async fn get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_state_update(&block_id)
             .await
-            .unwrap())
+            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
     async fn syncing(&self) -> Result<SyncStatusType, Error> {
-        let sync_status_type = self.beerus.starknet_lightclient.syncing().await.unwrap();
-        Ok(sync_status_type)
+        self.beerus
+            .starknet_lightclient
+            .syncing()
+            .await
+            .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
 
     async fn l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, Error> {
@@ -276,15 +291,20 @@ impl BeerusApiServer for BeerusRpc {
         class_hash: String,
     ) -> Result<ContractClass, Error> {
         let class_hash = FieldElement::from_str(&class_hash)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
-        let result = self
-            .beerus
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+
+        self.beerus
             .starknet_lightclient
             .get_class(&block_id, class_hash)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-
-        Ok(result)
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    CLASS_HASH_NOT_FOUND => Error::from(BeerusApiError::ClassHashNotFound),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn add_deploy_account_transaction(
@@ -325,12 +345,22 @@ impl BeerusApiServer for BeerusRpc {
         continuation_token: Option<String>,
         chunk_size: u64,
     ) -> Result<EventsPage, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_events(filter, continuation_token, chunk_size)
             .await
-            .unwrap())
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    PAGE_SIZE_TOO_BIG => Error::from(BeerusApiError::PageSizeTooBig),
+                    INVALID_CONTINUATION_TOKEN => {
+                        Error::from(BeerusApiError::InvalidContinuationToken)
+                    }
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    TOO_MANY_KEYS_IN_FILTER => Error::from(BeerusApiError::TooManyKeysInFilter),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn add_declare_transaction(
@@ -348,11 +378,14 @@ impl BeerusApiServer for BeerusRpc {
             .iter()
             .map(|x| FieldElement::from_str(x).unwrap())
             .collect();
-        let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+        let nonce: FieldElement = FieldElement::from_str(&nonce)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
 
         let contract_class_bytes = contract_class.as_bytes();
         let contract_class = serde_json::from_slice(contract_class_bytes)?;
-        let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+
+        let sender_address: FieldElement = FieldElement::from_str(&sender_address)
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
 
         let declare_transaction =
             BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
