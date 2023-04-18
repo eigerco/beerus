@@ -1633,16 +1633,13 @@ mod tests {
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_storage_at_should_work() {
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
         let expected_result = FieldElement::from_hex_be("298305742194").unwrap();
         // Set the expected return value for the StarkNet light client mock.
         starknet_lightclient_mock
             .expect_get_storage_at()
             .times(1)
             .return_once(move |_address, _key, _block_nb| Ok(expected_result));
-        ethereum_lightclient_mock
-            .expect_starknet_last_proven_block()
-            .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1671,7 +1668,7 @@ mod tests {
     async fn given_starknet_lightclient_returns_error_when_starknet_get_storage_at_should_fail_with_same_error(
     ) {
         // Mock config, ethereum light client and starknet light client.
-        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Starknet light client mock.
         let expected_error = "Wrong url";
@@ -1679,10 +1676,6 @@ mod tests {
             .expect_get_storage_at()
             .times(1)
             .return_once(move |_address, _key, _block_nb| Err(eyre!(expected_error)));
-        ethereum_lightclient_mock
-            .expect_starknet_last_proven_block()
-            .return_once(move || Ok(U256::from(10)));
-
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
