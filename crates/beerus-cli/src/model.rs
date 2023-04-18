@@ -53,18 +53,18 @@ pub enum EthereumSubCommands {
     /// Sends a Raw Transaction.
     SendRawTransaction {
         /// Bytes of the Raw Transaction
-        #[arg(short, long, value_name = "BYTES")]
+        #[arg(long, value_name = "BYTES")]
         bytes: String,
     },
     /// Query the balance of an Ethereum address.
     QueryBalance {
         /// The address to query the balance of
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
     },
     QueryNonce {
         /// The address to query the nonce of
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
     },
 
@@ -74,76 +74,76 @@ pub enum EthereumSubCommands {
 
     QueryCode {
         /// The address of the contract to query the code
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
     },
     /// Query the transaction of an Ethereum address from the given block.
     QueryTxCount {
         /// The ethereum address
         /// The block from which to query the txs count
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
-        #[arg(short, long, value_name = "BLOCK")]
+        #[arg(long, value_name = "BLOCK")]
         block: String,
     },
     QueryBlockTxCountByNumber {
         /// The block from which to query the txs count
-        #[arg(short, long, value_name = "BLOCK")]
+        #[arg(long, value_name = "BLOCK")]
         block: u64,
     },
     QueryBlockTxCountByHash {
         /// The block from which to query the txs count
-        #[arg(short, long, value_name = "HASH")]
+        #[arg(long, value_name = "HASH")]
         hash: String,
     },
     QueryTxByHash {
-        #[arg(short, long, value_name = "HASH")]
+        #[arg(long, value_name = "HASH")]
         hash: String,
     },
     QueryGasPrice {},
     QueryEstimateGas {
-        #[arg(short, long, value_name = "params")]
+        #[arg(long, value_name = "params")]
         params: String,
     },
     QueryBlockByHash {
         /// The block number to query
-        #[arg(short, long, value_name = "BLOCK_HASH")]
+        #[arg(long, value_name = "BLOCK_HASH")]
         hash: String,
 
         /// Fetch full transaction objects or just the transaction hashes
-        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        #[arg(long, value_name = "FULL_TRANSACTIONS")]
         full_tx: bool,
     },
 
     QueryPriorityFee {},
     QueryBlockByNumber {
         /// The block number to query
-        #[arg(short, long, value_name = "BLOCK_NUMBER")]
+        #[arg(long, value_name = "BLOCK_NUMBER")]
         block: String,
 
         /// Fetch full transaction objects or just the transaction hashes
-        #[arg(short, long, value_name = "FULL_TRANSACTIONS")]
+        #[arg(long, value_name = "FULL_TRANSACTIONS")]
         full_tx: bool,
     },
     /// Query Logs (blockchain events) that match
     /// the given parameters.
     QueryLogs {
         /// Address from which the log comes from.
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: Option<String>,
         /// Equivalent to from_block = to_block,
         /// only allowed if neither from_block or to_block
         /// is supplied.
-        #[arg(short, long, value_name = "BLOCK_HASH")]
+        #[arg(long, value_name = "BLOCK_HASH")]
         blockhash: Option<String>,
         /// Starting block to filter from, defaults to "latest".
-        #[arg(short, long, value_name = "FROM_BLOCK")]
+        #[arg(long, value_name = "FROM_BLOCK")]
         from_block: Option<String>,
         /// Ending block to filter to, defaults to "latest".
-        #[arg(short, long, value_name = "TO_BLOCK")]
+        #[arg(long, value_name = "TO_BLOCK")]
         to_block: Option<String>,
         /// Topics to filter, up to 4 allowed.
-        #[arg(short, long, value_name = "TOPICS", value_delimiter = ',')]
+        #[arg(long, value_name = "TOPICS", value_delimiter = ',')]
         topics: Option<Vec<String>>,
     },
 }
@@ -164,10 +164,10 @@ pub enum StarkNetSubCommands {
     /// Query a StarkNet contract view.
     QueryContract {
         /// The address of the contract to query
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
         /// The selector of the function to call
-        #[arg(short, long, value_name = "SELECTOR")]
+        #[arg(long, value_name = "SELECTOR")]
         selector: String,
         /// The calldata of the function to call
         #[arg(long, value_name = "CALLDATA", use_value_delimiter = true)]
@@ -175,30 +175,30 @@ pub enum StarkNetSubCommands {
     },
     QueryGetStorageAt {
         /// The address of the contract to query
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
         /// The slot of the storage to query
-        #[arg(short, long, value_name = "KEY")]
+        #[arg(long, value_name = "KEY")]
         key: String,
     },
     QueryNonce {
         /// The address of the contract to query
-        #[arg(short, long, value_name = "ADDRESS")]
+        #[arg(long, value_name = "ADDRESS")]
         address: String,
     },
     L1ToL2MessageCancellations {
         /// The hash of the message
-        #[arg(short, long, value_name = "MSG_HASH")]
+        #[arg(long, value_name = "MSG_HASH")]
         msg_hash: String,
     },
     L1ToL2Messages {
         /// The hash of the message
-        #[arg(short, long, value_name = "MSG_HASH")]
+        #[arg(long, value_name = "MSG_HASH")]
         msg_hash: String,
     },
     L2ToL1Messages {
         /// The hash of the message
-        #[arg(short, long, value_name = "MSG_HASH")]
+        #[arg(long, value_name = "MSG_HASH")]
         msg_hash: String,
     },
     /// The nonce of the L1 to L2 message bridge
@@ -212,29 +212,29 @@ pub enum StarkNetSubCommands {
     QueryGetClass {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
         /// The class hash
-        #[arg(short, long, value_name = "CLASS_HASH")]
+        #[arg(long, value_name = "CLASS_HASH")]
         class_hash: String,
     },
     /// The contract class definition
     QueryGetClassHash {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
         /// The contract address
 
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        #[arg(long, value_name = "CONTRACT_ADDRESS")]
         contract_address: String,
     },
 
@@ -242,150 +242,140 @@ pub enum StarkNetSubCommands {
     QueryGetClassAt {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
 
         /// The class hash
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        #[arg(long, value_name = "CONTRACT_ADDRESS")]
         contract_address: String,
     },
     // The number of transactions in a block given a block id of the StarkNet network
     QueryGetBlockTransactionCount {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
     },
     QueryGetStateUpdate {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
     },
     QueryGetEvents {
-        #[arg(short, long, value_name = "PARAMS")]
+        #[arg(long, value_name = "PARAMS")]
         params: String,
     },
     QuerySyncing {},
     QueryEstimateFee {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
         /// Broadcasted transaction
         /// eg. "{\"type\":\"INVOKE\",\"max_fee\":\"0x0\",\"version\":\"0x1\",\"signature\":[\"0x156a781f12e8743bd07e20a4484154fd0baccee95d9ea791c121c916ad44ee0\",\"0x7228267473c670cbb86a644f8696973db978c51acde19431d3f1f8f100794c6\"],\"nonce\":\"0x0\",\"sender_address\":\"0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0\",\"calldata\":[\"0x1\",\"0x7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10\",\"0x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354\",\"0x0\",\"0x3\",\"0x3\",\"0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0\",\"0x3635c9adc5dea00000\",\"0x0\"]}"
-        #[arg(short, long, value_name = "BROADCASTED_TX")]
+        #[arg(long, value_name = "BROADCASTED_TX")]
         broadcasted_transaction: String,
     },
     AddInvokeTransaction {
         /// Max fee
-        #[arg(short, long, value_name = "MAX_FEE")]
+        #[arg(long, value_name = "MAX_FEE")]
         max_fee: String,
         /// The signature
-        #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
+        #[arg(long, value_name = "SIGNATURE", value_delimiter = ',')]
         signature: Vec<String>,
         /// The nonce
-        #[arg(short, long, value_name = "NONCE")]
+        #[arg(long, value_name = "NONCE")]
         nonce: String,
         /// The contract address
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        #[arg(long, value_name = "CONTRACT_ADDRESS")]
         contract_address: String,
         // The entry point selector
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
+        #[arg(long, value_name = "CONTRACT_ADDRESS")]
         entry_point_selector: String,
         /// The calldata
-        #[arg(
-            short,
-            long,
-            value_name = "CONSTRUCTOR_CALLDATA",
-            value_delimiter = ','
-        )]
+        #[arg(long, value_name = "CONSTRUCTOR_CALLDATA", value_delimiter = ',')]
         calldata: Vec<String>,
     },
     AddDeployTransaction {
         /// The contract class
-        #[arg(short, long, value_name = "CONTRACT_CLASS")]
+        #[arg(long, value_name = "CONTRACT_CLASS")]
         contract_class: String,
         /// The version
-        #[arg(short, long, value_name = "VERSION")]
+        #[arg(long, value_name = "VERSION")]
         version: String,
         /// The contract address salt
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS_SALT")]
+        #[arg(long, value_name = "CONTRACT_ADDRESS_SALT")]
         contract_address_salt: String,
         /// The constructor calldata
-        #[arg(
-            short,
-            long,
-            value_name = "CONSTRUCTOR_CALLDATA",
-            value_delimiter = ','
-        )]
+        #[arg(long, value_name = "CONSTRUCTOR_CALLDATA", value_delimiter = ',')]
         constructor_calldata: Vec<String>,
     },
     AddDeclareTransaction {
         /// Max fee
-        #[arg(short, long, value_name = "MAX_FEE")]
+        #[arg(long, value_name = "MAX_FEE")]
         max_fee: String,
         /// Declare tx version
-        #[arg(short, long, value_name = "VERSION")]
+        #[arg(long, value_name = "VERSION")]
         version: String,
         /// The signature
-        #[arg(short, long, value_name = "SIGNATURE", value_delimiter = ',')]
+        #[arg(long, value_name = "SIGNATURE", value_delimiter = ',')]
         signature: Vec<String>,
         /// The nonce
-        #[arg(short, long, value_name = "NONCE")]
+        #[arg(long, value_name = "NONCE")]
         nonce: String,
         /// The contract class
-        #[arg(short, long, value_name = "CONTRACT_CLASS")]
+        #[arg(long, value_name = "CONTRACT_CLASS")]
         contract_class: String,
         // The entry point selector
-        #[arg(short, long, value_name = "SENDER_ADDRESS")]
+        #[arg(long, value_name = "SENDER_ADDRESS")]
         sender_address: String,
     },
     // Get a transaction by its hash
     QueryTransactionByHash {
         /// The transaction's hash,
         /// as a hex-string, eg. 0x1234.
-        #[arg(short, long, value_name = "HASH")]
+        #[arg(long, value_name = "HASH")]
         hash: String,
     },
     QueryBlockWithTxs {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
     },
     QueryTransactionByBlockIdAndIndex {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
         /// The Transaction Index
         /// eg. 0,1,2,3,
-        #[arg(short, long, value_name = "INDEX")]
+        #[arg(long, value_name = "INDEX")]
         index: String,
     },
     // Pending transactions
@@ -394,17 +384,17 @@ pub enum StarkNetSubCommands {
     QueryBlockWithTxHashes {
         /// Type of block identifier
         /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
+        #[arg(long, value_name = "BLOCK_ID_TYPE")]
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
     },
     QueryTxReceipt {
         /// The transaction hash, as
         /// a hex-string.
-        #[arg(short, long, value_name = "TX_HASH")]
+        #[arg(long, value_name = "TX_HASH")]
         tx_hash: String,
     },
 
@@ -415,7 +405,7 @@ pub enum StarkNetSubCommands {
         block_id_type: String,
         /// The block identifier
         /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
+        #[arg(long, value_name = "BLOCK_ID")]
         block_id: String,
 
         /// The contract address
@@ -423,7 +413,7 @@ pub enum StarkNetSubCommands {
         contract_address: String,
 
         /// Storage keys
-        #[arg(short, long, value_name = "KEYS", value_delimiter = ',')]
+        #[arg(long, value_name = "KEYS", value_delimiter = ',')]
         keys: Vec<String>,
     },
 }
