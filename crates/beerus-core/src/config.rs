@@ -36,6 +36,7 @@ pub struct Config {
     pub beerus_rpc_address: Option<SocketAddr>,
     #[cfg(feature = "std")]
     pub helios_rpc_address: Option<u16>,
+    pub helios_checkpoint: Option<String>,
 }
 
 impl Config {
@@ -81,6 +82,12 @@ impl Config {
 
         if let Ok(raw_addr) = std::env::var("HELIOS_RPC_ADDR") {
             config.helios_rpc_address = Some(raw_addr.parse().unwrap());
+        }
+
+        if let Ok(helios_checkpoint) = std::env::var("HELIOS_CHECKPOINT") {
+            config.helios_checkpoint = helios_checkpoint_parse(&helios_checkpoint);
+        } else {
+            config.helios_checkpoint = None;
         }
 
         config
@@ -208,6 +215,29 @@ fn string_env_or_die(env_var: &str) -> String {
     }
 }
 
+/// Parses a checkpoint for helios light client.
+///
+/// Expected values are:
+///   * "clear" -> clear any saved checkpoint and helios will re-sync.
+///   * "0x...." -> explicit checkpoint hex string to use.
+///   * Any other string -> ignore the value and let helios manage the checkpoint.
+#[cfg(feature = "std")]
+fn helios_checkpoint_parse(checkpoint: &str) -> Option<String> {
+    if checkpoint == "clear" {
+        return Some(checkpoint.to_string());
+    }
+
+    if checkpoint.starts_with("0x") {
+        let stripped = checkpoint.strip_prefix("0x").unwrap_or(checkpoint);
+        return match hex::decode(stripped) {
+            Ok(_) => Some(stripped.to_string()),
+            Err(_) => panic!("Helios checkpoint is expected to be a hex string."),
+        };
+    }
+
+    None
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -223,6 +253,8 @@ impl Default for Config {
             beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
             #[cfg(feature = "std")]
             helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
+            #[cfg(feature = "std")]
+            helios_checkpoint: None,
         }
     }
 }
