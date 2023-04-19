@@ -6,7 +6,7 @@ use helios::config::{checkpoints, networks::Network};
 #[cfg(feature = "std")]
 use log::{error, info};
 use serde::Deserialize;
-use shellexpand::tilde;
+use shellexpand;
 #[cfg(feature = "std")]
 use std::{env, fs, net::SocketAddr, path::PathBuf, str::FromStr};
 
@@ -70,7 +70,7 @@ impl Config {
         config.ethereum_execution_rpc = string_env_or_die("ETHEREUM_EXECUTION_RPC_URL");
         config.starknet_rpc = string_env_or_die("STARKNET_RPC_URL");
         if let Ok(dir) = std::env::var("DATA_DIR") {
-            config.data_dir = PathBuf::from(tilde(&dir).to_string());
+            config.data_dir = PathBuf::from(shellexpand::tilde(&dir).to_string());
         }
 
         if let Ok(raw_addr) = std::env::var("BEERUS_RPC_ADDR") {
@@ -217,7 +217,7 @@ impl Default for Config {
             starknet_rpc: "http://localhost:9545".to_string(),
             starknet_core_contract_address: Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
             #[cfg(feature = "std")]
-            data_dir: PathBuf::from(tilde(DEFAULT_DATA_DIR).to_string()),
+            data_dir: PathBuf::from(shellexpand::tilde(DEFAULT_DATA_DIR).to_string()),
             poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
             #[cfg(feature = "std")]
             beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),

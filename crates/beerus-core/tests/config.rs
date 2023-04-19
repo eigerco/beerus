@@ -8,7 +8,7 @@ mod tests {
     };
     use ethers::types::Address;
     use serial_test::serial;
-    use shellexpand::tilde;
+    use shellexpand;
     use std::env;
     use std::{path::PathBuf, str::FromStr};
 
@@ -72,7 +72,7 @@ mod tests {
 
         assert_eq!(
             conf.data_dir,
-            PathBuf::from(tilde(DEFAULT_DATA_DIR).to_string())
+            PathBuf::from(shellexpand::tilde(DEFAULT_DATA_DIR).to_string())
         );
 
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
