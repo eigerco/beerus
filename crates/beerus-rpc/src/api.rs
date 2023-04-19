@@ -16,7 +16,9 @@ use starknet::{
         Transaction,
     },
 };
+pub const INVALID_CALL_DATA: &str = "Invalid call data";
 pub const CLASS_HASH_NOT_FOUND: &str = "Class hash not found";
+pub const INVALID_CONTRACT_CLASS: &str = "Invalid contract class";
 pub const INVALID_CONTINUATION_TOKEN: &str =
     "The supplied continuation token is invalid or unknown";
 pub const TOO_MANY_KEYS_IN_FILTER: &str = "Too many keys provided in a filter";
@@ -24,6 +26,7 @@ pub const PAGE_SIZE_TOO_BIG: &str = "Requested page size is too big";
 pub const BLOCK_NOT_FOUND: &str = "Block not found";
 pub const INVALID_TXN_INDEX: &str = "Invalid transaction index in a block";
 pub const CONTRACT_NOT_FOUND: &str = "Contract not found";
+pub const CONTRACT_ERROR: &str = "Contract error";
 
 #[derive(thiserror::Error, Clone, Copy, Debug)]
 pub enum BeerusApiError {
@@ -63,11 +66,26 @@ pub enum BeerusApiError {
     FailedToFetchPendingTransactions = 38,
 }
 
+pub struct BeerusApiErrorWithMessage {
+    pub error: BeerusApiError,
+    pub message: String,
+}
+
 impl From<BeerusApiError> for Error {
     fn from(err: BeerusApiError) -> Self {
         Error::Call(CallError::Custom(ErrorObject::owned(
             err as i32,
             err.to_string(),
+            None::<()>,
+        )))
+    }
+}
+
+impl From<BeerusApiErrorWithMessage> for Error {
+    fn from(err: BeerusApiErrorWithMessage) -> Self {
+        Error::Call(CallError::Custom(ErrorObject::owned(
+            err.error as i32,
+            err.message,
             None::<()>,
         )))
     }
