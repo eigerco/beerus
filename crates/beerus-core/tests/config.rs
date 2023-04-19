@@ -8,6 +8,7 @@ mod tests {
     };
     use ethers::types::Address;
     use serial_test::serial;
+    use shellexpand;
     use std::env;
     use std::{path::PathBuf, str::FromStr};
 
@@ -68,7 +69,12 @@ mod tests {
             conf.starknet_core_contract_address,
             Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap()
         );
-        assert_eq!(conf.data_dir, PathBuf::from(DEFAULT_DATA_DIR));
+
+        assert_eq!(
+            conf.data_dir,
+            PathBuf::from(shellexpand::tilde(DEFAULT_DATA_DIR).to_string())
+        );
+
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
 
