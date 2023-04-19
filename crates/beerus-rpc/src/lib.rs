@@ -83,7 +83,7 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_nonce(&self, contract_address: String) -> Result<FieldElement, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address)
-            .map_err(|_| throw_error_invalid_param("contract_address"))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
 
         self.beerus
             .starknet_get_nonce(contract_address)
@@ -100,7 +100,7 @@ impl BeerusApiServer for BeerusRpc {
 
     async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Transaction, Error> {
         let tx_hash_felt =
-            FieldElement::from_hex_be(tx_hash).map_err(|_| throw_error_invalid_param("tx_hash"))?;
+            FieldElement::from_hex_be(tx_hash).map_err(|_| invalid_call_data("tx_hash"))?;
 
         self.beerus
             .starknet_lightclient
@@ -132,7 +132,7 @@ impl BeerusApiServer for BeerusRpc {
         keys: Vec<String>,
     ) -> Result<GetProofOutput, Error> {
         let contract_address = FieldElement::from_str(&contract_address)
-            .map_err(|_| throw_error_invalid_param("contract_address"))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
 
         let keys: Result<Vec<FieldElement>, _> =
             keys.iter().map(|k| FieldElement::from_str(k)).collect();
@@ -141,7 +141,7 @@ impl BeerusApiServer for BeerusRpc {
             .starknet_lightclient
             .get_contract_storage_proof(
                 contract_address,
-                keys.map_err(|_| throw_error_invalid_param("keys"))?,
+                keys.map_err(|_| invalid_call_data("keys"))?,
                 &block_id,
             )
             .await
@@ -154,7 +154,7 @@ impl BeerusApiServer for BeerusRpc {
         contract_address: String,
     ) -> Result<ContractClass, Error> {
         let contract_address = FieldElement::from_str(&contract_address)
-            .map_err(|_| throw_error_invalid_param("contract_address"))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
 
         self.beerus
             .starknet_lightclient
@@ -197,7 +197,7 @@ impl BeerusApiServer for BeerusRpc {
         block_id: BlockId,
         index: &str,
     ) -> Result<Transaction, Error> {
-        let index = u64::from_str(index).map_err(|_| throw_error_invalid_param("index"))?;
+        let index = u64::from_str(index).map_err(|_| invalid_call_data("index"))?;
 
         self.beerus
             .starknet_lightclient
@@ -265,8 +265,8 @@ impl BeerusApiServer for BeerusRpc {
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt, Error> {
-        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash)
-            .map_err(|_| throw_error_invalid_param("tx_hash"))?;
+        let tx_hash_felt =
+            FieldElement::from_hex_be(&tx_hash).map_err(|_| invalid_call_data("tx_hash"))?;
 
         self.beerus
             .starknet_lightclient
@@ -281,7 +281,7 @@ impl BeerusApiServer for BeerusRpc {
         contract_address: String,
     ) -> Result<FieldElement, Error> {
         let contract_address = FieldElement::from_str(&contract_address)
-            .map_err(|_| throw_error_invalid_param("contract_address"))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
 
         self.beerus
             .starknet_lightclient
@@ -302,8 +302,8 @@ impl BeerusApiServer for BeerusRpc {
         block_id: BlockId,
         class_hash: String,
     ) -> Result<ContractClass, Error> {
-        let class_hash = FieldElement::from_str(&class_hash)
-            .map_err(|_| throw_error_invalid_param("class_hash"))?;
+        let class_hash =
+            FieldElement::from_str(&class_hash).map_err(|_| invalid_call_data("class_hash"))?;
 
         self.beerus
             .starknet_lightclient
@@ -328,20 +328,18 @@ impl BeerusApiServer for BeerusRpc {
     ) -> Result<DeployTransactionResult, Error> {
         let contract_class_bytes = contract_class.as_bytes();
         let contract_class = serde_json::from_slice(contract_class_bytes)
-            .map_err(|_| throw_error_invalid_param("contract_class"))?;
+            .map_err(|_| invalid_call_data("contract_class"))?;
 
-        let version: u64 = version
-            .parse()
-            .map_err(|_| throw_error_invalid_param("version"))?;
+        let version: u64 = version.parse().map_err(|_| invalid_call_data("version"))?;
 
         let contract_address_salt: FieldElement = FieldElement::from_str(&contract_address_salt)
-            .map_err(|_| throw_error_invalid_param("contract_address_salt"))?;
+            .map_err(|_| invalid_call_data("contract_address_salt"))?;
 
         let constructor_calldata = constructor_calldata
             .iter()
             .map(|x| {
                 FieldElement::from_str(x)
-                    .map_err(|_| throw_error_invalid_param("constructor_calldata"))
+                    .map_err(|_| invalid_call_data("constructor_calldata"))
                     .unwrap()
             })
             .collect();
@@ -400,31 +398,29 @@ impl BeerusApiServer for BeerusRpc {
         sender_address: String,
     ) -> Result<DeclareTransactionResult, Error> {
         let max_fee: FieldElement =
-            FieldElement::from_str(&max_fee).map_err(|_| throw_error_invalid_param("max_fee"))?;
+            FieldElement::from_str(&max_fee).map_err(|_| invalid_call_data("max_fee"))?;
 
-        let _version: u64 = version
-            .parse()
-            .map_err(|_| throw_error_invalid_param("version"))?;
+        let _version: u64 = version.parse().map_err(|_| invalid_call_data("version"))?;
 
         let signature = signature
             .iter()
             .map(|x| {
                 FieldElement::from_str(x)
-                    .map_err(|_| throw_error_invalid_param("signature"))
+                    .map_err(|_| invalid_call_data("signature"))
                     .unwrap()
             })
             .collect();
 
         let nonce: FieldElement =
-            FieldElement::from_str(&nonce).map_err(|_| throw_error_invalid_param("nonce"))?;
+            FieldElement::from_str(&nonce).map_err(|_| invalid_call_data("nonce"))?;
 
         let contract_class_bytes = contract_class.as_bytes();
 
         let contract_class = serde_json::from_slice(contract_class_bytes)
-            .map_err(|_| throw_error_invalid_param("contract_class"))?;
+            .map_err(|_| invalid_call_data("contract_class"))?;
 
         let sender_address: FieldElement = FieldElement::from_str(&sender_address)
-            .map_err(|_| throw_error_invalid_param("sender_address"))?;
+            .map_err(|_| invalid_call_data("sender_address"))?;
 
         let declare_transaction =
             BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
@@ -495,8 +491,8 @@ impl BeerusApiServer for BeerusRpc {
         key: String,
     ) -> Result<FieldElement, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address)
-            .map_err(|_| throw_error_invalid_param("contract_class"))?;
-        let key = FieldElement::from_hex_be(&key).map_err(|_| throw_error_invalid_param("key"))?;
+            .map_err(|_| invalid_call_data("contract_class"))?;
+        let key = FieldElement::from_hex_be(&key).map_err(|_| invalid_call_data("key"))?;
 
         self.beerus
             .starknet_get_storage_at(contract_address, key)
@@ -505,7 +501,7 @@ impl BeerusApiServer for BeerusRpc {
     }
 }
 
-fn throw_error_invalid_param(param: &str) -> Error {
+fn invalid_call_data(param: &str) -> Error {
     let message = INVALID_CALL_DATA.to_string() + ": cannot parse '" + param + "'";
     Error::from(BeerusApiErrorWithMessage {
         error: BeerusApiError::InvalidCallData,
