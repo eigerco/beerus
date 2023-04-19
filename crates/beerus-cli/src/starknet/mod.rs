@@ -11,7 +11,7 @@ use starknet::{
         BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
         BroadcastedDeclareTransactionV2, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, EventFilter,
-        SierraContractClass,
+        SierraContractClass, LegacyContractClass,
     },
 };
 
@@ -728,18 +728,18 @@ pub async fn add_declare_transaction(
         .collect();
     let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
     let contract_class_bytes = contract_obj.0.as_bytes();
-    let contract_class = serde_json::from_slice(contract_class_bytes)?;
+    //let contract_class: starknet::providers::jsonrpc::models::LegacyContractClass = serde_json::from_slice(contract_class_bytes.clone())?;
     let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
     let _version: u64 = version.parse().unwrap();
     let compiled_class_hash: FieldElement = FieldElement::from_str(&contract_obj.1).unwrap();
-    let contract_class_v2: SierraContractClass = serde_json::from_slice(contract_class_bytes)?;
 
+    
     let declare_transaction = match _version {
         2 => BroadcastedDeclareTransaction::V2(BroadcastedDeclareTransactionV2 {
             max_fee,
             signature,
             nonce,
-            contract_class: contract_class_v2,
+            contract_class: serde_json::from_slice(contract_class_bytes)?,
             compiled_class_hash,
             sender_address,
         }),
@@ -747,7 +747,7 @@ pub async fn add_declare_transaction(
             max_fee,
             signature,
             nonce,
-            contract_class,
+            contract_class: serde_json::from_slice(contract_class_bytes)?,
             sender_address,
         }),
     };

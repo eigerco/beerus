@@ -30,7 +30,7 @@ mod test {
             InvokeTransactionV1, LegacyContractClass, LegacyContractEntryPoint,
             LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate,
-            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus, ContractEntryPoint, EntryPointsByType, SierraContractClass,
         },
     };
 
@@ -3629,7 +3629,7 @@ mod test {
             external,
             l1_handler,
         };
-        let abi = None;
+        let abi: Option<Vec<starknet::providers::jsonrpc::models::ContractAbiEntry>> = None;
 
         let contract_class = LegacyContractClass {
             program,
@@ -3637,7 +3637,31 @@ mod test {
             abi,
         };
 
-        let contract_class_string = serde_json::to_string(&contract_class).unwrap();
+
+        /*let sierra_program: Vec<u8> = vec![];
+        let constructor_sierra = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external_sierra = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler_sierra = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type_sierra = EntryPointsByType {
+            constructor : constructor_sierra,
+            external: external_sierra,
+            l1_handler: l1_handler_sierra,
+        };
+
+        let contract_class_string: String = serde_json::to_string(&contract_class).unwrap();*/
+
+        let contract_class_string: String = serde_json::to_string(&contract_class).unwrap();
 
         // let contract_class_string = contract_class.to_string();
 
@@ -3658,7 +3682,83 @@ mod test {
             command: Commands::StarkNet(StarkNetCommands { command: params }),
         };
         // When
-        let result = runner::run(beerus, cli).await.unwrap();
+        let result: beerus_cli::model::CommandResponse = runner::run(beerus, cli).await.unwrap();
+
+        // Then
+        assert_eq!("DeclareTransactionResult { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, class_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 } }", result.to_string());
+    }
+
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_add_declare_transaction_then_ok_v2() {
+        // Build mocks.
+        let (config, ethereum_lightclient, mut starknet_lightclient) = config_and_mocks();
+
+        // Given
+        let expected_result = DeclareTransactionResult {
+            transaction_hash: FieldElement::from_str("0x01").unwrap(),
+            class_hash: FieldElement::from_str("0x01").unwrap(),
+        };
+        // Set the expected return value for the StarkNet light client mock.
+        starknet_lightclient
+            .expect_add_declare_transaction()
+            .return_once(move |_| Ok(expected_result));
+
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient),
+            Box::new(starknet_lightclient),
+        );
+
+        let sierra_program: Vec<FieldElement> = vec![];
+        let constructor = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let external = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+
+        let l1_handler = vec![ContractEntryPoint {
+            function_idx: 10,
+            selector: FieldElement::from_str("0").unwrap(),
+        }];
+        let entry_points_by_type = EntryPointsByType {
+            constructor,
+            external,
+            l1_handler,
+        };
+
+        let abi: String = String::from("0x");
+        let contract_class_version: String = String::from("2");
+
+        let contract_class = SierraContractClass {
+            sierra_program,
+            entry_points_by_type,
+            abi,
+            contract_class_version
+        };
+
+        let contract_class_string: String = serde_json::to_string(&contract_class).unwrap();
+
+        let params = StarkNetSubCommands::AddDeclareTransaction {
+            max_fee: "0".to_string(),
+            version: "2".to_string(),
+            signature: vec![10.to_string()],
+            nonce: "0".to_string(),
+            contract_class: contract_class_string,
+            compiled_class_hash: "0".to_string(),
+            sender_address: "0".to_string(),
+        };
+
+        // Mock the command line arguments.
+        let cli = Cli {
+            config: None,
+            command: Commands::StarkNet(StarkNetCommands { command: params }),
+        };
+        // When
+        let result: beerus_cli::model::CommandResponse = runner::run(beerus, cli).await.unwrap();
 
         // Then
         assert_eq!("DeclareTransactionResult { transaction_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 }, class_hash: FieldElement { inner: 0x0000000000000000000000000000000000000000000000000000000000000001 } }", result.to_string());
