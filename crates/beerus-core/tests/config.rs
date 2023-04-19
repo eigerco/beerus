@@ -74,6 +74,7 @@ mod tests {
 
     /// Test `from_env` function.
     #[test]
+    #[serial]
     fn all_envs_set_returns_config() {
         Config::clean_env();
         env::set_var("ETHEREUM_NETWORK", "mainnet");
