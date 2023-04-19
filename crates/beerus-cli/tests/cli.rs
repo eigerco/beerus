@@ -3647,6 +3647,8 @@ mod test {
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
+            // todo : just added
+            compiled_class_hash: "0".to_string(),
             sender_address: "0".to_string(),
         };
 
@@ -3719,6 +3721,8 @@ mod test {
             signature: vec![10.to_string()],
             nonce: "0".to_string(),
             contract_class: contract_class_string,
+            //todo : just added
+            compiled_class_hash: "0".to_string(),
             sender_address: "0".to_string(),
         };
 

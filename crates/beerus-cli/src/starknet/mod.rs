@@ -9,8 +9,9 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
-        BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-        EventFilter,
+        BroadcastedDeclareTransactionV2, BroadcastedDeployTransaction,
+        BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, EventFilter,
+        SierraContractClass,
     },
 };
 
@@ -705,39 +706,51 @@ pub async fn query_contract_storage_proof(
 /// * `signature` - The signature.
 /// * `nonce` - The nonce.
 /// * `contract_class` - The contract class.
+/// * `compiled_class_hash` - The compiled class hash.
 /// * `entry_point_selector` - The entry point selector.
 /// * `calldata` - The calldata.
-///
 /// # Returns
-///
 /// * `Result<CommandResponse>` - If the node is synchronized on the StarkNet network.
+// TODO : v2 impl mostly finished must test
 pub async fn add_declare_transaction(
     beerus: BeerusLightClient,
-    version: String,
     max_fee: String,
+    version: String,
     signature: Vec<String>,
     nonce: String,
-    contract_class: String,
+    contract_obj: (String, String),
     sender_address: String,
 ) -> Result<CommandResponse> {
     let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
-    let _version: u64 = version.parse().unwrap();
     let signature = signature
         .iter()
         .map(|x| FieldElement::from_str(x).unwrap())
         .collect();
     let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
-    let contract_class_bytes = contract_class.as_bytes();
+    let contract_class_bytes = contract_obj.0.as_bytes();
     let contract_class = serde_json::from_slice(contract_class_bytes)?;
     let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
+    let _version: u64 = version.parse().unwrap();
+    let compiled_class_hash: FieldElement = FieldElement::from_str(&contract_obj.1).unwrap();
+    let contract_class_v2: SierraContractClass = serde_json::from_slice(contract_class_bytes)?;
 
-    let declare_transaction = BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
-        max_fee,
-        signature,
-        nonce,
-        contract_class,
-        sender_address,
-    });
+    let declare_transaction = match _version {
+        2 => BroadcastedDeclareTransaction::V2(BroadcastedDeclareTransactionV2 {
+            max_fee,
+            signature,
+            nonce,
+            contract_class: contract_class_v2,
+            compiled_class_hash,
+            sender_address,
+        }),
+        _ => BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
+            max_fee,
+            signature,
+            nonce,
+            contract_class,
+            sender_address,
+        }),
+    };
 
     Ok(CommandResponse::StarknetAddDeclareTransaction(
         beerus

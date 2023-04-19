@@ -112,6 +112,7 @@ pub trait StarkNetLightClient: Send + Sync {
         keys: Vec<FieldElement>,
         block: &BlockId,
     ) -> Result<GetProofOutput>;
+
     async fn add_declare_transaction(
         &self,
         declare_transaction: &BroadcastedDeclareTransaction,
@@ -601,6 +602,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(DeclareTransactionResult)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
+
     async fn add_declare_transaction(
         &self,
         declare_transaction: &BroadcastedDeclareTransaction,
