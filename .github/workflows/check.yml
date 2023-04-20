@@ -45,13 +45,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
 
-  check:
-    name: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          target: wasm32-unknown-unknown
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo check -p beerus-core --target wasm32-unknown-unknown --no-default-features
+  # TODO: Add back in once Helios supports
+  #   - ref(https://github.com/keep-starknet-strange/beerus/issues/383)
+  # check:
+  #   name: check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         target: wasm32-unknown-unknown
+  #     - uses: Swatinem/rust-cache@v2
+  #     - run: cargo check -p beerus-core --target wasm32-unknown-unknown --no-default-features
