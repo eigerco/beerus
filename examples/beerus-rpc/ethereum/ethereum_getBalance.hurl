@@ -1,5 +1,11 @@
 POST http://0.0.0.0:3031
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"eth_getBalance","params":["0xeBec795c9c8bBD61FFc14A6662944748F299cAcf"],"id":1
+  "id": 1,
+  "jsonrpc": "2.0",
+  "params": [
+    "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+    "latest"
+  ],
+  "method": "eth_getBalance"
 }

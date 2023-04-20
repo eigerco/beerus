@@ -3,6 +3,12 @@ Content-Type: application/json
 {
     "jsonrpc":"2.0",
     "method":"starknet_getContractStorageProof",
-    "params":["tag", "latest", "0x073c0847469d786aaf0f09a342c6ac03a3eb84ff10ec2cb7acd2da089ca8ccff"],
+    "params":[
+    {
+        "block_number": 2083
+    },
+    "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
+    "0x0206F38F7E4F15E87567361213C28F235CCCDAA1D7FD34C9DB1DFE9489C6A091"
+    ],
     "id":1
 }
