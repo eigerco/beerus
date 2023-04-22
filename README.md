@@ -37,8 +37,6 @@
     - [Config](#config)
       - [Config File](#config-file)
       - [Environment Variables](#environment-variables)
-    - [Beerus CLI](#beerus-cli)
-      - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
       - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
@@ -215,14 +213,6 @@ Beerus is configurable through environment variables.
 ```bash
 cp examples/.env.example .env
 source .env
-```
-
-#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
-
-##### Beerus CLI
-
-```bash
-cargo run --bin beerus starknet query-state-root
 ```
 
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
