@@ -1,5 +1,11 @@
 POST http://0.0.0.0:3031
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"eth_getCode","params":["0xeBec795c9c8bBD61FFc14A6662944748F299cAcf"],"id":1
+  "id": 1,
+  "jsonrpc": "2.0",
+  "params": [
+    "0x4D73AdB72bC3DD368966edD0f0b2148401A178E2",
+    "latest"
+  ],
+  "method": "eth_getCode"
 }
