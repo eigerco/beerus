@@ -8,3 +8,7 @@ Content-Type: application/json
   ],
   "method": "eth_sendRawTransaction"
 }
+
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists

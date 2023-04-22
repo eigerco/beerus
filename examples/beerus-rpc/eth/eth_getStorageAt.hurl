@@ -10,3 +10,8 @@ Content-Type: application/json
     "latest"
   ]
 }
+
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.error" not exists

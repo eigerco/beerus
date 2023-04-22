@@ -8,3 +8,8 @@ Content-Type: application/json
   ],
   "method": "eth_getTransactionReceipt"
 }
+
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.result" exists
