@@ -2,7 +2,7 @@ POST http://0.0.0.0:3030
 Content-Type: application/json
 {
     "jsonrpc": "2.0",
-    "method": "starknet_getTransactionReceipt",
+    "method": "starknet_pendingTransactions",
     "params": [],
     "id":1
 }
@@ -10,4 +10,4 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.error" not exists
-jsonpath "$.result" exists
+jsonpath "$.result" isCollection

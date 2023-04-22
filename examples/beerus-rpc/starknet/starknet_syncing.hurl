@@ -1,7 +1,10 @@
 POST http://0.0.0.0:3030
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"starknet_syncing","params":[],"id":1
+    "jsonrpc": "2.0",
+    "method": "starknet_syncing",
+    "params": [],
+    "id":1
 }
 
 HTTP 200
