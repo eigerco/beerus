@@ -131,6 +131,8 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
 | `eth_coinbase`                             | :white_check_mark: |
 | `eth_syncing`                              | :white_check_mark: |
+| `eth_`                              | :white_check_mark: |
+| `eth_`                              | :white_check_mark: |
 
 *Additional endpoints*:
 | Endpoint                                   | Supported          |
