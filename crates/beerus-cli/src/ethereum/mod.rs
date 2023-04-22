@@ -400,19 +400,20 @@ pub async fn query_block_by_number(
         .await?;
     Ok(CommandResponse::EthereumQueryBlockByNumber(block))
 }
-pub async fn query_logs(
-    beerus: BeerusLightClient,
-    from_block: &Option<String>,
-    to_block: &Option<String>,
-    address: &Option<String>,
-    topics: &Option<Vec<String>>,
-    block_hash: &Option<String>,
-) -> Result<CommandResponse> {
-    let logs = beerus
-        .ethereum_lightclient
-        .read()
-        .await
-        .get_logs(from_block, to_block, address, topics, block_hash)
-        .await?;
-    Ok(CommandResponse::EthereumQueryLogs(logs))
-}
+
+// pub async fn query_logs(
+//     beerus: BeerusLightClient,
+//     from_block: &Option<String>,
+//     to_block: &Option<String>,
+//     address: &Option<String>,
+//     topics: &Option<Vec<String>>,
+//     block_hash: &Option<String>,
+// ) -> Result<CommandResponse> {
+//     let logs = beerus
+//         .ethereum_lightclient
+//         .read()
+//         .await
+//         .get_logs(from_block, to_block, address, topics, block_hash)
+//         .await?;
+//     Ok(CommandResponse::EthereumQueryLogs(logs))
+// }

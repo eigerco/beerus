@@ -2,13 +2,13 @@ pub mod helios_lightclient;
 
 use crate::stdlib::boxed::Box;
 
-use crate::stdlib::string::String;
-
 use crate::stdlib::vec::Vec;
 
 use async_trait::async_trait;
 use core::u8;
-use ethers::types::{Address, Log, Transaction, H256, U256};
+use ethers::types::{
+    Address, Filter, Log, SyncingStatus, Transaction, TransactionReceipt, H256, U256,
+};
 use eyre::Result;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 #[cfg(feature = "std")]
@@ -40,8 +40,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The result of the call.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn call(&self, opts: &CallOpts, block: BlockTag) -> Result<Vec<u8>>;
 
     /// Send Raw Transaction
@@ -52,8 +50,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The balance of the account.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn send_raw_transaction(&self, bytes: &[u8]) -> Result<H256>;
 
     /// Get the balance of an account.
@@ -65,8 +61,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The balance of the account.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256>;
 
     /// Get the Nonce of an account.
@@ -78,8 +72,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The balance of the account.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_nonce(&self, address: &Address, block: BlockTag) -> Result<u64>;
 
     /// Get the current block number.
@@ -88,8 +80,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The current block number.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_block_number(&self) -> Result<u64>;
 
     /// Get the chain ID.
@@ -106,8 +96,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The code of the contract.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>>;
 
     /// Get the txs counts of an Ethereum address from a given block.
@@ -116,8 +104,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The transaction count of a given address from a given block.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_transaction_count(&self, address: &Address, block: BlockTag) -> Result<u64>;
 
     /// Get the txs counts of a given block number.
@@ -126,8 +112,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The code of the contract.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64>;
 
     /// Get the txs counts of a given block hash.
@@ -136,9 +120,51 @@ pub trait EthereumLightClient: Send + Sync {
     /// The code of the contract.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_block_transaction_count_by_hash(&self, hash: &[u8]) -> Result<u64>;
+
+    /// Get transaction in a block at certain index.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// Transaction at that index.
+    /// # Errors
+    /// If the call fails.
+    async fn get_transaction_by_block_hash_and_index(
+        &self,
+        hash: &[u8],
+        index: usize,
+    ) -> Result<Option<Transaction>>;
+
+    /// Get the syncing status of the client.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The SyncingStatus
+    /// # Errors
+    /// If the call fails.
+    async fn syncing(&self) -> Result<SyncingStatus>;
+
+    /// Get the coinbase address of the client.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// The coinbase address
+    /// # Errors
+    /// If the call fails.
+    async fn coinbase(&self) -> Result<Address>;
+
+    /// Get the tx_receipt of a certain tx
+    /// This function should be called after `start`.
+    /// # Returns
+    /// Transaction Receipt.
+    /// # Errors
+    /// If the call fails.
+    async fn get_transaction_receipt(&self, tx_hash: &H256) -> Result<Option<TransactionReceipt>>;
+
+    /// Get the value at a certain storage position.
+    /// This function should be called after `start`.
+    /// # Returns
+    /// Value at this storage position
+    /// # Errors
+    /// If the call fails.
+    async fn get_storage_at(&self, address: &Address, slot: H256, block: BlockTag) -> Result<U256>;
 
     /// Get the tx data of a given tx hash.
     /// This function should be called after `start`.
@@ -156,8 +182,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The gas price from the Ethereum network.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_gas_price(&self) -> Result<U256>;
 
     /// Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
@@ -167,8 +191,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The gas estimate.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64>;
 
     /// Get information about a block by block hash.
@@ -189,8 +211,6 @@ pub trait EthereumLightClient: Send + Sync {
     /// The gas price from the Ethereum network.
     /// # Errors
     /// If the call fails.
-    /// # TODO
-    /// Add examples.
     async fn get_priority_fee(&self) -> Result<U256>;
 
     /// Get information about a block by block number.
@@ -219,16 +239,16 @@ pub trait EthereumLightClient: Send + Sync {
     /// Vector of logs, matching the given filter params.
     /// # Errors
     /// If the call fails, or if there are more than 5 logs.
-    /// # TODO
-    /// Add examples.
-    async fn get_logs(
-        &self,
-        from_block: &Option<String>,
-        to_block: &Option<String>,
-        address: &Option<String>,
-        topics: &Option<Vec<String>>,
-        block_hash: &Option<String>,
-    ) -> Result<Vec<Log>>;
+    async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>>;
+
+    // async fn get_logs(
+    //     &self,
+    //     from_block: &Option<String>,
+    //     to_block: &Option<String>,
+    //     address: &Option<String>,
+    //     topics: &Option<Vec<String>>,
+    //     block_hash: &Option<String>,
+    // ) -> Result<Vec<Log>>;
 
     async fn starknet_last_proven_block(&self) -> Result<U256>;
     async fn starknet_state_root(&self) -> Result<U256>;
