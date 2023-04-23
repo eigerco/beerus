@@ -15,6 +15,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: beerus:ci
           outputs: type=docker,dest=/tmp/beerus.tar
       - name: Upload artifact
