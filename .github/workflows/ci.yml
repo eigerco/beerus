@@ -66,5 +66,5 @@ jobs:
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Execute hurl tests
       - name: Hurl tests
-        run: hurl --test examples/**/*.hurl
+        run: find examples -type f -name "*.hurl" -exec hurl --test {} \;
         continue-on-error: true
