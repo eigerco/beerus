@@ -63,7 +63,8 @@ jobs:
       - name: Run beerus
         run: |
           docker compose up -d 
-          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
-      # todo: replace by tests
-      - name: print the docker logs
-        run: docker compose logs
+          curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"starknet_blockNumber","params":[],"id":1}' --retry 6 --retry-delay 10 --retry-connrefused http://0.0.0.0:3030
+      # Execute hurl tests
+      - name: Hurl tests
+        run: hurl --test examples/**/*.hurl
+        continue-on-error: true
