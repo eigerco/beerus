@@ -24,7 +24,7 @@ jobs:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: "beerus:${BEERUS_VERSION}"
+          tags: beerus:${{ env.BEERUS_VERSION }}
           outputs: type=docker,dest=/tmp/beerus.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
