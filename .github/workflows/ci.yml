@@ -3,6 +3,13 @@ name: continuous integration
 on:
   pull_request:
 
+env:
+  BEERUS_VERSION: ci
+  ETHEREUM_NETWORK: mainnet
+  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
+  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
+  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,14 +24,15 @@ jobs:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: beerus:ci
+          tags: "beerus:${BEERUS_VERSION}"
           outputs: type=docker,dest=/tmp/beerus.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: beerus
           path: /tmp/beerus.tar
-  testing:
+
+  e2e-tests:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -39,3 +47,9 @@ jobs:
         run: |
           docker load --input /tmp/beerus.tar
           docker image ls -a
+      - name: execute the rpc in background
+        run: |
+          docker compose up -d 
+          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+      - name: print the docker logs
+        run: docker compose logs
