@@ -46,9 +46,9 @@ jobs:
       # Install hurl
       - name: Install dependencies
         run: |
-          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
-          apt update && apt install ./hurl_2.0.1_amd64.deb
-          hurl --version
+          INSTALL_DIR=/tmp
+          curl -silent --location https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl-2.0.1-x86_64-linux.tar.gz | tar xvz -C $INSTALL_DIR
+          export PATH=$INSTALL_DIR/hurl-2.0.1:$PATH
       # Download the beerus docker image
       - name: Download artifact
         uses: actions/download-artifact@v3
