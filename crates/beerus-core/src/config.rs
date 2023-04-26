@@ -195,6 +195,7 @@ impl Config {
     pub fn clean_env() {
         env::remove_var("BEERUS_CONFIG");
         env::remove_var("ETHEREUM_NETWORK");
+        env::remove_var("ETHEREUM_CHECKPOINT");
         env::remove_var("ETHEREUM_CONSENSUS_RPC_URL");
         env::remove_var("ETHEREUM_EXECUTION_RPC_URL");
         env::remove_var("STARKNET_RPC_URL");
