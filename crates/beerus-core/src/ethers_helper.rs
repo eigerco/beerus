@@ -1,8 +1,10 @@
+use core::str::FromStr;
+
 use ethabi::Uint as U256;
 
 use ethers::{
     abi::{Abi, AbiError, Token, Tokenize},
-    types::Bytes,
+    types::{Address, Bytes},
 };
 use eyre::{eyre, Result};
 use helios::types::BlockTag;
@@ -24,6 +26,25 @@ pub fn encode_function_data<T: Tokenize>(
     let function = abi.function(function_name)?;
     let tokens = args.into_tokens();
     Ok(function.encode_input(&tokens).map(Into::into)?)
+}
+
+/// Parses an ethereum hash
+/// # Arguments
+/// * `hash` - The &str to convert.
+/// # Returns
+/// The hash as a Vec<u8>
+pub fn parse_eth_hash(hash: &str) -> Result<Vec<u8>> {
+    let stripped = hash.strip_prefix("0x").unwrap_or(hash);
+    Ok(hex::decode(stripped)?)
+}
+
+/// Parses an ethereum address
+/// # Arguments
+/// * `address` - The &str to convert.
+/// # Returns
+/// The address as an Address
+pub fn parse_eth_address(address: &str) -> Result<Address> {
+    Ok(Address::from_str(address)?)
 }
 
 /// Convert a U256 to a slice of 32 bytes.
