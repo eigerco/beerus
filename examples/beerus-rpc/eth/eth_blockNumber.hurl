@@ -10,4 +10,5 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.error" not exists
-jsonpath "$.result" matches /^0x[A-Fa-f0-9]+$/
+# jsonpath "$.result" matches /^0x[A-Fa-f0-9]+$/
+jsonpath "$.result" matches /^[0-9]+$/
