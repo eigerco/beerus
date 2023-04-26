@@ -18,9 +18,9 @@ use ethers::types::{Address, BlockNumber, Filter, Log, Topic, Transaction, H256,
 use eyre::{eyre, Result};
 
 #[cfg(feature = "std")]
-use std::{fs, path::PathBuf};
-#[cfg(feature = "std")]
 use log;
+#[cfg(feature = "std")]
+use std::{fs, path::PathBuf};
 
 use crate::config::Config;
 
@@ -299,10 +299,11 @@ impl HeliosLightClient {
             };
         }
 
-	// Checkpoint is at this point expected to be a hex string without 0x prefix,
-	// already stripped during environment variable parsing.
-	// Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
-	let checkpoint_str = helios_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
+        // Checkpoint is at this point expected to be a hex string without 0x prefix,
+        // already stripped during environment variable parsing.
+        // Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
+        let checkpoint_str =
+            helios_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
 
         log::info!("Loading helios checkpoint 0x{:?}.", checkpoint_str);
         builder.checkpoint(&checkpoint_str)
