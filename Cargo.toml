@@ -1,6 +1,6 @@
 [workspace]
-members = ["crates/beerus-core", "crates/beerus-cli", "crates/beerus-rpc"]
-default-members = ["crates/beerus-cli", "crates/beerus-rpc"]
+members = ["crates/beerus-core", "crates/beerus-rpc"]
+default-members = ["crates/beerus-rpc"]
 exclude = ["crates/beerus-js"]
 
 [package]
