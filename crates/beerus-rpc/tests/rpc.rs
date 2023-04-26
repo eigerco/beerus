@@ -5,7 +5,7 @@ mod tests {
 
     use crate::common::setup_beerus_rpc;
     use beerus_core::starknet_helper::create_mock_get_events;
-    use beerus_rpc::api::{BeerusApiError, BeerusApiServer};
+    use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
@@ -16,7 +16,7 @@ mod tests {
     #[tokio::test]
     async fn starknet_block_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
-        let block_number = beerus_rpc.block_number().await.unwrap();
+        let block_number = beerus_rpc.starknet_block_number().await.unwrap();
         assert_eq!(block_number, 19640);
     }
 
@@ -24,7 +24,7 @@ mod tests {
     async fn starknet_block_transaction_count_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let transaction_count = beerus_rpc
-            .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+            .starknet_get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
             .await
             .unwrap();
 
@@ -35,7 +35,7 @@ mod tests {
     async fn starknet_error_response_block_not_found() {
         let beerus_rpc = setup_beerus_rpc().await;
         let err = beerus_rpc
-            .get_block_with_tx_hashes(BlockId::Number(22050))
+            .starknet_get_block_with_tx_hashes(BlockId::Number(22050))
             .await
             .unwrap_err();
 
@@ -61,7 +61,7 @@ mod tests {
         let chunk_size = 1000;
 
         let events_page = beerus_rpc
-            .get_events(filter, continuation_token, chunk_size)
+            .starknet_get_events(filter, continuation_token, chunk_size)
             .await
             .unwrap();
 
@@ -104,7 +104,7 @@ mod tests {
         };
 
         let actual = beerus_rpc
-            .estimate_fee(block_hash, broadcasted_transaction)
+            .starknet_estimate_fee(block_hash, broadcasted_transaction)
             .await
             .unwrap();
 
@@ -117,7 +117,7 @@ mod tests {
     async fn starknet_syncing_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
 
-        let sync_status = beerus_rpc.syncing().await.unwrap();
+        let sync_status = beerus_rpc.starknet_syncing().await.unwrap();
 
         let expected_current_block = FieldElement::from_hex_be(
             "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
@@ -144,7 +144,7 @@ mod tests {
     #[tokio::test]
     async fn starknet_starknet_block_hash_and_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
-        let result = beerus_rpc.block_hash_and_number().await.unwrap();
+        let result = beerus_rpc.starknet_block_hash_and_number().await.unwrap();
         assert_eq!(result.block_number, 27461);
         assert_eq!(
             result.block_hash,
@@ -159,7 +159,7 @@ mod tests {
     async fn starknet_get_transaction_by_block_id_and_index_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let transaction = beerus_rpc
-            .get_transaction_by_block_id_and_index(BlockId::Tag(BlockTag::Latest), "5")
+            .starknet_get_transaction_by_block_id_and_index(BlockId::Tag(BlockTag::Latest), "5")
             .await
             .unwrap();
 
@@ -184,7 +184,7 @@ mod tests {
     async fn starknet_get_block_with_tx_hashes_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
         let block_with_tx_hashes = beerus_rpc
-            .get_block_with_tx_hashes(BlockId::Tag(BlockTag::Latest))
+            .starknet_get_block_with_tx_hashes(BlockId::Tag(BlockTag::Latest))
             .await
             .unwrap();
 
@@ -224,7 +224,10 @@ mod tests {
         };
         let block_number: u64 = 33482;
 
-        let call_result: Vec<FieldElement> = beerus_rpc.call(request, block_number).await.unwrap();
+        let call_result: Vec<FieldElement> = beerus_rpc
+            .starknet_call(request, block_number)
+            .await
+            .unwrap();
         let expected: Vec<FieldElement> = vec![FieldElement::from_hex_be("298305742194").unwrap()];
 
         assert_eq!(call_result, expected);
