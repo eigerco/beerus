@@ -5,7 +5,6 @@ services:
     image: "beerus:${BEERUS_VERSION:-latest}"
     ports:
       - '3030:3030'
-      - '3031:3031'
     environment:
       ETHEREUM_NETWORK: "${ETHEREUM_NETWORK:-mainnet}"
       ETHEREUM_CONSENSUS_RPC_URL: "${ETHEREUM_CONSENSUS_RPC_URL}"
