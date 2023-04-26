@@ -224,7 +224,7 @@ impl HeliosLightClient {
             builder = builder.data_dir(config.data_dir.clone());
             builder = HeliosLightClient::load_checkpoint(
                 builder,
-                config.helios_checkpoint,
+                config.ethereum_checkpoint,
                 config.data_dir.clone(),
             );
         }
@@ -254,7 +254,7 @@ impl HeliosLightClient {
 
         builder = HeliosLightClient::load_checkpoint(
             builder,
-            config.helios_checkpoint,
+            config.ethereum_checkpoint,
             config.data_dir.clone(),
         );
 
@@ -277,15 +277,15 @@ impl HeliosLightClient {
     #[cfg(feature = "std")]
     fn load_checkpoint(
         builder: ClientBuilder,
-        helios_checkpoint: Option<String>,
+        ethereum_checkpoint: Option<String>,
         data_dir: PathBuf,
     ) -> ClientBuilder {
-        if helios_checkpoint.is_none() {
+        if ethereum_checkpoint.is_none() {
             log::info!("Ignoring checkpoint, helios will manage.");
             return builder;
         }
 
-        if helios_checkpoint == Some(String::from("clear")) {
+        if ethereum_checkpoint == Some(String::from("clear")) {
             log::info!("Clearing helios checkpoint.");
 
             let r = fs::remove_file(data_dir.join(HELIOS_CHECKPOINT_FILENAME));
@@ -303,7 +303,7 @@ impl HeliosLightClient {
         // already stripped during environment variable parsing.
         // Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
         let checkpoint_str =
-            helios_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
+            ethereum_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
 
         log::info!("Loading helios checkpoint 0x{:?}.", checkpoint_str);
         builder.checkpoint(&checkpoint_str)

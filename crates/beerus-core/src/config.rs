@@ -36,7 +36,7 @@ pub struct Config {
     pub beerus_rpc_address: Option<SocketAddr>,
     #[cfg(feature = "std")]
     pub helios_rpc_address: Option<u16>,
-    pub helios_checkpoint: Option<String>,
+    pub ethereum_checkpoint: Option<String>,
 }
 
 impl Config {
@@ -84,10 +84,10 @@ impl Config {
             config.helios_rpc_address = Some(raw_addr.parse().unwrap());
         }
 
-        if let Ok(helios_checkpoint) = std::env::var("HELIOS_CHECKPOINT") {
-            config.helios_checkpoint = helios_checkpoint_parse(&helios_checkpoint);
+        if let Ok(ethereum_checkpoint) = std::env::var("ETHEREUM_CHECKPOINT") {
+            config.ethereum_checkpoint = ethereum_checkpoint_parse(&ethereum_checkpoint);
         } else {
-            config.helios_checkpoint = None;
+            config.ethereum_checkpoint = None;
         }
 
         config
@@ -222,7 +222,7 @@ fn string_env_or_die(env_var: &str) -> String {
 ///   * "0x...." -> explicit checkpoint hex string to use.
 ///   * Any other string -> panic.
 #[cfg(feature = "std")]
-fn helios_checkpoint_parse(checkpoint: &str) -> Option<String> {
+fn ethereum_checkpoint_parse(checkpoint: &str) -> Option<String> {
     if checkpoint == "clear" {
         return Some(checkpoint.to_string());
     }
@@ -270,7 +270,7 @@ impl Default for Config {
             #[cfg(feature = "std")]
             helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
             #[cfg(feature = "std")]
-            helios_checkpoint: None,
+            ethereum_checkpoint: None,
         }
     }
 }
