@@ -71,5 +71,5 @@ jobs:
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Execute hurl tests
       - name: Hurl tests
-        run: find examples -type f -name "*.hurl" -exec hurl --test {} \;
+        run: find examples -type f -name "*.hurl" -exec hurl --test --connect-timeout 5 {} \;
         continue-on-error: true # remove the continue-on-error flag once PR #422 is merged
