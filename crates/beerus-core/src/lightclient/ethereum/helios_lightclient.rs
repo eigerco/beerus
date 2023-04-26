@@ -19,6 +19,8 @@ use eyre::{eyre, Result};
 
 #[cfg(feature = "std")]
 use std::{fs, path::PathBuf};
+#[cfg(feature = "std")]
+use log;
 
 use crate::config::Config;
 
@@ -279,31 +281,31 @@ impl HeliosLightClient {
         data_dir: PathBuf,
     ) -> ClientBuilder {
         if helios_checkpoint.is_none() {
-            println!("Ignoring checkpoint, helios will manage.");
+            log::info!("Ignoring checkpoint, helios will manage.");
             return builder;
         }
 
         if helios_checkpoint == Some(String::from("clear")) {
-            println!("Clearing helios checkpoint.");
+            log::info!("Clearing helios checkpoint.");
 
             let r = fs::remove_file(data_dir.join(HELIOS_CHECKPOINT_FILENAME));
 
             return match r {
                 Ok(_) => builder,
                 Err(_) => {
-                    println!("Helios checkpoint file could not be deleted.");
+                    println!("Helios checkpoint file could not be deleted or didn't exist.");
                     builder
                 }
             };
         }
 
-        println!("Loading helios checkpoint {:?}.", helios_checkpoint);
-        // Supposed to have a hex string here, directly forwarded to helios.
-        builder.checkpoint(
-            helios_checkpoint
-                .expect("Helios checkpoint is expected to be a hex string.")
-                .as_str(),
-        )
+	// Checkpoint is at this point expected to be a hex string without 0x prefix,
+	// already stripped during environment variable parsing.
+	// Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
+	let checkpoint_str = helios_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
+
+        log::info!("Loading helios checkpoint 0x{:?}.", checkpoint_str);
+        builder.checkpoint(&checkpoint_str)
     }
 }
 

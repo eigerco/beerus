@@ -220,7 +220,7 @@ fn string_env_or_die(env_var: &str) -> String {
 /// Expected values are:
 ///   * "clear" -> clear any saved checkpoint and helios will re-sync.
 ///   * "0x...." -> explicit checkpoint hex string to use.
-///   * Any other string -> ignore the value and let helios manage the checkpoint.
+///   * Any other string -> panic.
 #[cfg(feature = "std")]
 fn helios_checkpoint_parse(checkpoint: &str) -> Option<String> {
     if checkpoint == "clear" {
@@ -229,13 +229,23 @@ fn helios_checkpoint_parse(checkpoint: &str) -> Option<String> {
 
     if checkpoint.starts_with("0x") {
         let stripped = checkpoint.strip_prefix("0x").unwrap_or(checkpoint);
+	if stripped.len() != 64 {
+	    panic!("Checkpoint is expected to be a 32 bytes hex string starting with \
+		    '0x' or 'clear'. For example: \
+		    0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68. \
+		    Checkpoint found: {:?}.", checkpoint.to_string());
+	}
+
         return match hex::decode(stripped) {
             Ok(_) => Some(stripped.to_string()),
-            Err(_) => panic!("Helios checkpoint is expected to be a hex string."),
+            Err(_) => panic!("Helios checkpoint is expected to be a valid hex string."),
         };
     }
-
-    None
+    
+    panic!("Checkpoint is expected to be a 32 bytes hex string starting with \
+	    '0x' or 'clear'. For example: \
+	    0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68. \
+	    Checkpoint found: {:?}.", checkpoint.to_string());
 }
 
 impl Default for Config {
