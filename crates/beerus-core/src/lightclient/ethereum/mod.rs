@@ -230,25 +230,12 @@ pub trait EthereumLightClient: Send + Sync {
 
     /// Get logs (blockchain events), based on the given filter.
     /// # Arguments
-    /// * `from_block` - Either the hex value of a block number OR block tags.
-    /// * `to_block` - Either the hex value of a block number OR block tags (e.g. 'latest').
-    /// * `address` - Address from which logs come from. (e.g. 'latest').
-    /// * `topics` - Array of 32 Bytes DATA topics. Topics are order-dependent. Each topic can also be an array of DATA with "or" options.
-    /// * `block_hash` - Equivalent to using from_block = to_block. If provided, neither to_block or from_block are allowed.
+    /// * `Filter` - Filter object
     /// # Returns
     /// Vector of logs, matching the given filter params.
     /// # Errors
     /// If the call fails, or if there are more than 5 logs.
     async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>>;
-
-    // async fn get_logs(
-    //     &self,
-    //     from_block: &Option<String>,
-    //     to_block: &Option<String>,
-    //     address: &Option<String>,
-    //     topics: &Option<Vec<String>>,
-    //     block_hash: &Option<String>,
-    // ) -> Result<Vec<Log>>;
 
     async fn starknet_last_proven_block(&self) -> Result<U256>;
     async fn starknet_state_root(&self) -> Result<U256>;
