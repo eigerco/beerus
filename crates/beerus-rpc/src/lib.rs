@@ -69,7 +69,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(balance.to_string())
+        Ok(format!("0x{balance:x}"))
     }
 
     async fn eth_get_transaction_count(
@@ -79,7 +79,8 @@ impl BeerusRpcServer for BeerusRpc {
     ) -> Result<String, Error> {
         let address =
             parse_eth_address(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
-        let nonce = self
+
+        let tx_count = self
             .beerus
             .ethereum_lightclient
             .read()
@@ -87,7 +88,8 @@ impl BeerusRpcServer for BeerusRpc {
             .get_transaction_count(&address, block)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(nonce.to_string())
+
+        Ok(format!("0x{tx_count:x}"))
     }
 
     async fn eth_get_block_transaction_count_by_hash(&self, hash: &str) -> Result<String, Error> {
@@ -102,7 +104,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(tx_count.to_string())
+        Ok(format!("0x{tx_count:x}"))
     }
 
     async fn eth_get_block_transaction_count_by_number(
@@ -117,7 +119,8 @@ impl BeerusRpcServer for BeerusRpc {
             .get_block_transaction_count_by_number(block)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(tx_count.to_string())
+
+        Ok(format!("0x{tx_count:x}"))
     }
 
     async fn eth_get_code(&self, address: &str, block: BlockTag) -> Result<String, Error> {
@@ -156,7 +159,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(gas_estimation.to_string())
+        Ok(format!("0x{gas_estimation:x}"))
     }
 
     async fn eth_chain_id(&self) -> Result<String, Error> {
@@ -169,7 +172,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(chain_id.to_string())
+        Ok(format!("0x{chain_id:x}"))
     }
 
     async fn eth_gas_price(&self) -> Result<String, Error> {
@@ -181,7 +184,7 @@ impl BeerusRpcServer for BeerusRpc {
             .get_gas_price()
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(gas_price.to_string())
+        Ok(format!("0x{gas_price:x}"))
     }
 
     async fn eth_max_priority_fee_per_gas(&self) -> Result<String, Error> {
@@ -193,7 +196,8 @@ impl BeerusRpcServer for BeerusRpc {
             .get_priority_fee()
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(max_priority_fee_per_gas.to_string())
+
+        Ok(format!("0x{max_priority_fee_per_gas:x}"))
     }
 
     async fn eth_block_number(&self) -> Result<String, Error> {
@@ -205,7 +209,7 @@ impl BeerusRpcServer for BeerusRpc {
             .get_block_number()
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(block_number.to_string())
+        Ok(format!("0x{block_number:x}"))
     }
 
     async fn eth_get_block_by_number(
