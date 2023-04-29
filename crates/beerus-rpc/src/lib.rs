@@ -70,7 +70,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u256_to_hex_string(balance))
+        Ok(hex_string!(balance))
     }
 
     async fn eth_get_transaction_count(
@@ -90,7 +90,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(tx_count))
+        Ok(hex_string!(tx_count))
     }
 
     async fn eth_get_block_transaction_count_by_hash(&self, hash: &str) -> Result<String, Error> {
@@ -105,7 +105,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(tx_count))
+        Ok(hex_string!(tx_count))
     }
 
     async fn eth_get_block_transaction_count_by_number(
@@ -121,7 +121,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(tx_count))
+        Ok(hex_string!(tx_count))
     }
 
     async fn eth_get_code(&self, address: &str, block: BlockTag) -> Result<String, Error> {
@@ -160,7 +160,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(gas_estimation))
+        Ok(hex_string!(gas_estimation))
     }
 
     async fn eth_chain_id(&self) -> Result<String, Error> {
@@ -173,7 +173,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(chain_id))
+        Ok(hex_string!(chain_id))
     }
 
     async fn eth_gas_price(&self) -> Result<String, Error> {
@@ -186,7 +186,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u256_to_hex_string(gas_price))
+        Ok(hex_string!(gas_price))
     }
 
     async fn eth_max_priority_fee_per_gas(&self) -> Result<String, Error> {
@@ -199,7 +199,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u256_to_hex_string(max_priority_fee_per_gas))
+        Ok(hex_string!(max_priority_fee_per_gas))
     }
 
     async fn eth_block_number(&self) -> Result<String, Error> {
@@ -212,7 +212,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
 
-        Ok(utils::u64_to_hex_string(block_number))
+        Ok(hex_string!(block_number))
     }
 
     async fn eth_get_block_by_number(
