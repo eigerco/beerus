@@ -18,5 +18,4 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.error" not exists
-# jsonpath "$.result" == "0x5a3c"
-jsonpath "$.result" matches /^[0-9]+$/
+jsonpath "$.result" == "0x5a3c"
