@@ -24,6 +24,7 @@
 
 - [Report a Bug](#report-a-bug)
 - [Request a Feature](#request-a-feature)
+- [Roadmap](#roadmap)
 - [About](#about)
   - [Built With](#built-with)
 - [Architecture](#architecture)
@@ -40,7 +41,7 @@
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
       - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Roadmap](#roadmap)
+- [Roadmap](#roadmap-1)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
@@ -51,7 +52,10 @@
 </details>
 
 ---
+## Roadmap
+We have big plans for Beerus. Check out the Roadmap!
 
+[![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
 ## About
 
 Beerus is a StarkNet Light Client inspired by and using
