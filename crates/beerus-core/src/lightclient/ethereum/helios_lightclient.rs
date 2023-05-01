@@ -16,6 +16,11 @@ use ethers::types::{
 };
 use eyre::Result;
 
+#[cfg(feature = "std")]
+use log;
+#[cfg(feature = "std")]
+use std::{fs, path::PathBuf};
+
 use crate::config::Config;
 
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
@@ -26,6 +31,8 @@ use super::EthereumLightClient;
 use helios::client::{Client, ClientBuilder, ConfigDB};
 #[cfg(feature = "std")]
 use helios::client::{Client, ClientBuilder, FileDB};
+
+pub const HELIOS_CHECKPOINT_FILENAME: &str = "checkpoint";
 
 /// Helios implementation of `EthereumLightClient`.
 pub struct HeliosLightClient {
@@ -224,22 +231,26 @@ impl HeliosLightClient {
     /// Create a new HeliosLightClient.
     pub async fn new(config: Config) -> eyre::Result<Self> {
         // Build the Helios wrapped light client.
-        #[cfg(feature = "std")]
-        let helios_light_client: Client<FileDB> = ClientBuilder::new()
+        let mut builder = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .load_external_fallback()
-            .data_dir(config.data_dir)
-            .build()?;
+            .load_external_fallback();
+
+        if cfg!(feature = "std") {
+            builder = builder.data_dir(config.data_dir.clone());
+            builder = HeliosLightClient::load_checkpoint(
+                builder,
+                config.ethereum_checkpoint,
+                config.data_dir.clone(),
+            );
+        }
+
+        #[cfg(feature = "std")]
+        let helios_light_client: Client<FileDB> = builder.build()?;
 
         #[cfg(not(feature = "std"))]
-        let helios_light_client: Client<ConfigDB> = ClientBuilder::new()
-            .network(config.ethereum_network()?)
-            .consensus_rpc(config.ethereum_consensus_rpc.as_str())
-            .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .load_external_fallback()
-            .build()?;
+        let helios_light_client: Client<ConfigDB> = builder.build()?;
 
         Ok(Self {
             helios_light_client,
@@ -250,18 +261,68 @@ impl HeliosLightClient {
     #[cfg(feature = "std")]
     pub async fn new_rpc(config: Config) -> eyre::Result<Self> {
         // Build the Helios wrapped light client.
-        let helios_light_client: Client<FileDB> = ClientBuilder::new()
+        let mut builder = ClientBuilder::new()
             .network(config.ethereum_network()?)
             .consensus_rpc(config.ethereum_consensus_rpc.as_str())
             .execution_rpc(config.ethereum_execution_rpc.as_str())
             .load_external_fallback()
-            .data_dir(config.data_dir)
-            .rpc_port(config.helios_rpc_address.unwrap())
-            .build()?;
+            .data_dir(config.data_dir.clone())
+            .rpc_port(config.helios_rpc_address.unwrap());
+
+        builder = HeliosLightClient::load_checkpoint(
+            builder,
+            config.ethereum_checkpoint,
+            config.data_dir.clone(),
+        );
+
+        let helios_light_client: Client<FileDB> = builder.build()?;
 
         Ok(Self {
             helios_light_client,
             starknet_core_contract_address: config.starknet_core_contract_address,
         })
+    }
+
+    /// Loads helios checkpoint -if any- from the configuration DATA_DIR.
+    ///
+    /// Helios by default uses the file for the checkpoint if None is passed
+    /// to the ClientBuilder.
+    /// For this reason, if we want to completly clear the checkpoint,
+    /// we have to remove the file locally.
+    ///
+    /// Uses the same style as helios, take ownership and return it.
+    #[cfg(feature = "std")]
+    fn load_checkpoint(
+        builder: ClientBuilder,
+        ethereum_checkpoint: Option<String>,
+        data_dir: PathBuf,
+    ) -> ClientBuilder {
+        if ethereum_checkpoint.is_none() {
+            log::info!("Ignoring checkpoint, helios will manage.");
+            return builder;
+        }
+
+        if ethereum_checkpoint == Some(String::from("clear")) {
+            log::info!("Clearing helios checkpoint.");
+
+            let r = fs::remove_file(data_dir.join(HELIOS_CHECKPOINT_FILENAME));
+
+            return match r {
+                Ok(_) => builder,
+                Err(_) => {
+                    println!("Helios checkpoint file could not be deleted or didn't exist.");
+                    builder
+                }
+            };
+        }
+
+        // Checkpoint is at this point expected to be a hex string without 0x prefix,
+        // already stripped during environment variable parsing.
+        // Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
+        let checkpoint_str =
+            ethereum_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
+
+        log::info!("Loading helios checkpoint 0x{:?}.", checkpoint_str);
+        builder.checkpoint(&checkpoint_str)
     }
 }

@@ -172,4 +172,77 @@ mod tests {
 
         let _cfg = Config::from_env();
     }
+
+    /// Test ethereum custom checkpoint allowed valued.
+    /// It should pass accepting 'clear' and explicit endpoint to sync.
+    #[test]
+    #[serial]
+    fn ethereum_checkpoint_clear() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "clear");
+
+        let _cfg = Config::from_env();
+
+        env::set_var(
+            "ETHEREUM_CHECKPOINT",
+            "0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68",
+        );
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test ethereum custom checkpoint with unexpected random string.
+    /// It should panic.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_bad_string() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "somestring");
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test ethereum custom checkpoint with invalid hex string.
+    /// It should panic.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_invalid_hex() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "0x1234poepk");
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test ethereum custom checkpoint with missing '0x' prefix.
+    /// It should panic.
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_missing_prefix() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var(
+            "ETHEREUM_CHECKPOINT",
+            "85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68",
+        );
+
+        let _cfg = Config::from_env();
+    }
 }
