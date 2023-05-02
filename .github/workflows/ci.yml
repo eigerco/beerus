@@ -104,6 +104,6 @@ jobs:
       # Fail the job if the script step has failed
       - name: Check for script failure
         run: |
-          if [[ "${{ steps.failingStep.outcome }}" == "failure" ]]; then
+          if [[ "${{ steps.e2e_test.outcome }}" == "failure" ]]; then
             exit 1
           fi
