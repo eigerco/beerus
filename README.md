@@ -41,7 +41,7 @@
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
       - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Roadmap](#roadmap-1)
+- [Work in progress](#work-in-progress)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
@@ -254,7 +254,7 @@ npm run build
 # open developer console
 ```
 
-## Roadmap
+## Work in progress
 
 See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
 a list of proposed features (and known issues).
