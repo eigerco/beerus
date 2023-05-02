@@ -135,11 +135,11 @@ impl BeerusRpcServer for BeerusRpc {
             .get_code(&address, block)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(String::from_utf8(code).map_err(|_| Error::from(BeerusApiError::ContractError))?)
+        Ok(format!("0x{}", hex::encode(code)))
     }
 
     async fn eth_call(&self, opts: CallOpts, block: BlockTag) -> Result<String, Error> {
-        let call = self
+        let res = self
             .beerus
             .ethereum_lightclient
             .read()
@@ -147,7 +147,7 @@ impl BeerusRpcServer for BeerusRpc {
             .call(&opts, block)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))?;
-        Ok(String::from_utf8(call).map_err(|_| Error::from(BeerusApiError::ContractError))?)
+        Ok(format!("0x{}", hex::encode(res)))
     }
 
     async fn eth_estimate_gas(&self, opts: CallOpts) -> Result<String, Error> {
