@@ -70,12 +70,26 @@ jobs:
           docker compose up -d 
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Execute hurl tests
-      - name: Hurl tests
-        run: find examples -type f -name "*.hurl" -exec hurl --test --connect-timeout 30 --max-time 30 {} \;
-        continue-on-error: true # remove the continue-on-error flag once PR #422 is merged
+#      - name: Hurl tests
+#        run: find examples -type f -name "*.hurl" -exec hurl --test --connect-timeout 30 --max-time 30 {} \;
+#        continue-on-error: true # remove the continue-on-error flag once PR #422 is merged
+      # Run a test curl -- todo: remove
+      - name: run curl against 0.0.0.0
+        run: |
+          curl -X POST http://0.0.0.0:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id":1}'
+      # Run a test curl -- todo: remove
+      - name: run curl against 127.0.0.1
+        run: |
+          curl -X POST http://127.0.0.1:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id":1}'
+      # Run a test curl -- todo: remove
+      - name: run curl against localhost
+        run: |
+          curl -X POST http://localhost:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id":1}'
       # Capture docker logs
       - name: Capture docker logs
-        run: docker logs beerus-beerus-rpc-1 > docker_logs.txt
+        run: |
+          docker ps
+          docker logs beerus-beerus-rpc-1 > docker_logs.txt
       # Upload the docker logs
       - name: Upload docker logs
         uses: actions/upload-artifact@v2
