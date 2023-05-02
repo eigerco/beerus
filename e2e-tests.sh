@@ -4,8 +4,8 @@
 succeeding_files=()
 failing_files=()
 
-# Use find to get all .hurl files in examples directory and its subdirectories
-all_files=$(find examples -name "*.hurl")
+# Use find to get all .hurl files in the examples directory and its subdirectories
+all_files=$(find examples/beerus-rpc/eth -name "*.hurl")
 
 # Count all files, removing leading spaces
 total_files=$(echo "$all_files" | wc -l | tr -d ' ')
@@ -22,7 +22,7 @@ do
     # Display progress
     echo -e "\n[${count}/${total_files}] Executing: $file"
 
-    # Execute the file with hurl and check the exit status, suppressing output
+    # Execute the file with hurl and check the exit status
     if hurl --test --max-time=10 "$file"
     then
         # If the exit status is 0 (success), add file to succeeding_files
@@ -40,19 +40,15 @@ then
     printf '%s\n' "${failing_files[@]}"
 fi
 
-# Display the one-line summary
+# Display a one-line summary
 echo "Summary: ${#failing_files[@]} failing files out of $total_files"
-
-
-
-
 
 ######################################################################
 
 # Generate a markdown summary file
 markdown_file="summary.md"
 
-# Write the level 2 title, description, and level 3 titles for failing and succeeding methods
+# Write the summary header
 echo -e "## Hurl Test Execution Summary\n\
 \n\
 This is a summary of the different methods tested.\n\
@@ -69,7 +65,7 @@ for method in "${failing_files[@]}"; do
     echo "| $group | $method_name | :x: |" >> "$markdown_file"
 done
 
-# Write the level 3 title for succeeding methods
+# Add the succeeding methods section
 echo -e "\n\
 ### Succeeding Methods\n\
 \n\
@@ -84,10 +80,6 @@ for method in "${succeeding_files[@]}"; do
 done
 
 ######################################################################
-
-
-
-
 
 # If there are any failing files, return an error
 if [ ${#failing_files[@]} -gt 0 ]

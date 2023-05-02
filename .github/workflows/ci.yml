@@ -27,7 +27,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       # Build and export the beerus docker image
       - name: Build and export
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           cache-from: type=gha
@@ -92,7 +92,7 @@ jobs:
           docker logs beerus-beerus-rpc-1 > docker_logs.txt
       # Upload the docker logs
       - name: Upload docker logs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: docker-logs
