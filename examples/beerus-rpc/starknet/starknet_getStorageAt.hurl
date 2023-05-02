@@ -6,6 +6,8 @@ Content-Type: application/json
     "params": [
         "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
         "0x0206F38F7E4F15E87567361213C28F235CCCDAA1D7FD34C9DB1DFE9489C6A091",
-        "latest"
+        {
+            "block_number": 47700
+        }
     ], "id":1
 }

@@ -424,8 +424,7 @@ impl BeerusApiServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
 
         self.beerus
-            .starknet_lightclient
-            .get_storage_at(contract_address, key, &block_id)
+            .starknet_get_storage_at(contract_address, key, &block_id)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))
     }

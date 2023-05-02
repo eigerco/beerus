@@ -63,7 +63,7 @@ pub fn mock_get_storage_at(server: &MockServer) -> Mock {
                 "0x0",
                 "0x0",
                 {
-                    "block_number":1
+                    "block_number": 1
                 }
             ]
         }));
