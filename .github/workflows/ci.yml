@@ -97,3 +97,6 @@ jobs:
         with:
           name: docker-logs
           path: docker_logs.txt
+      # Generate job summary
+      - name: Generate job summary
+        run: cat summary.md >> $GITHUB_STEP_SUMMARY

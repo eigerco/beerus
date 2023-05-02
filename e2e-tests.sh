@@ -43,6 +43,52 @@ fi
 # Display the one-line summary
 echo "Summary: ${#failing_files[@]} failing files out of $total_files"
 
+
+
+
+
+######################################################################
+
+# Generate a markdown summary file
+markdown_file="summary.md"
+
+# Write the level 2 title, description, and level 3 titles for failing and succeeding methods
+echo -e "## Hurl Test Execution Summary\n\
+\n\
+This is a summary of the different methods tested.\n\
+\n\
+### Failing Methods\n\
+\n\
+| Group | Method | Status |\n\
+| --- | --- | --- |" > "$markdown_file"
+
+# Add failing methods to the table
+for method in "${failing_files[@]}"; do
+    group=$(echo "$method" | awk -F'/' '{print $(NF-1)}')
+    method_name=$(echo "$method" | awk -F'/' '{print $NF}' | sed 's/.hurl//')
+    echo "| $group | $method_name | :x: |" >> "$markdown_file"
+done
+
+# Write the level 3 title for succeeding methods
+echo -e "\n\
+### Succeeding Methods\n\
+\n\
+| Group | Method | Status |\n\
+| --- | --- | --- |" >> "$markdown_file"
+
+# Add succeeding methods to the table
+for method in "${succeeding_files[@]}"; do
+    group=$(echo "$method" | awk -F'/' '{print $(NF-1)}')
+    method_name=$(echo "$method" | awk -F'/' '{print $NF}' | sed 's/.hurl//')
+    echo "| $group | $method_name | :heavy_check_mark: |" >> "$markdown_file"
+done
+
+######################################################################
+
+
+
+
+
 # If there are any failing files, return an error
 if [ ${#failing_files[@]} -gt 0 ]
 then
