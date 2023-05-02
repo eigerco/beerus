@@ -484,6 +484,7 @@ dependencies = [
  "ethers",
  "eyre",
  "helios",
+ "hex",
  "jsonrpsee 0.16.2",
  "log",
  "primitive-types 0.12.1",
