@@ -11,3 +11,8 @@ Content-Type: application/json
   ],
   "id": 1
 }
+
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.result" matches "^\\d+$"

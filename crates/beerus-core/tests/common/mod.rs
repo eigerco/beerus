@@ -120,5 +120,6 @@ pub fn mock_server_config(server: &MockServer) -> Config {
         poll_interval_secs: Some(5),
         beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
         helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
+        ethereum_checkpoint: None,
     }
 }

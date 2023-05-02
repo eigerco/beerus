@@ -24,6 +24,7 @@
 
 - [Report a Bug](#report-a-bug)
 - [Request a Feature](#request-a-feature)
+- [Roadmap](#roadmap)
 - [About](#about)
   - [Built With](#built-with)
 - [Architecture](#architecture)
@@ -37,12 +38,10 @@
     - [Config](#config)
       - [Config File](#config-file)
       - [Environment Variables](#environment-variables)
-    - [Beerus CLI](#beerus-cli)
-      - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
       - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Roadmap](#roadmap)
+- [Work in progress](#work-in-progress)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
@@ -53,7 +52,10 @@
 </details>
 
 ---
+## Roadmap
+We have big plans for Beerus. Check out the Roadmap!
 
+[![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
 ## About
 
 Beerus is a StarkNet Light Client inspired by and using
@@ -131,6 +133,8 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
 | `eth_coinbase`                             | :white_check_mark: |
 | `eth_syncing`                              | :white_check_mark: |
+| `eth_getTransactionByHash`                 | :white_check_mark: |
+| `eth_getTransactionByBlockHashAndIndex`    | :white_check_mark: |
 
 *Additional endpoints*:
 | Endpoint                                   | Supported          |
@@ -217,14 +221,6 @@ cp examples/.env.example .env
 source .env
 ```
 
-#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
-
-##### Beerus CLI
-
-```bash
-cargo run --bin beerus starknet query-state-root
-```
-
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
 ##### Beerus RPC
@@ -258,7 +254,7 @@ npm run build
 # open developer console
 ```
 
-## Roadmap
+## Work in progress
 
 See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
 a list of proposed features (and known issues).
