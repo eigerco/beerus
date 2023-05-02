@@ -103,4 +103,4 @@ jobs:
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
       # Print the job outcome (so we can mark it as errored)
       - name: Print the script outcome
-        run: echo "script outcome:: ${{steps.e2e_test.outcome}}"
+        run: echo "script outcome ${{steps.e2e_test.outcome}}"
