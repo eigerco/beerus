@@ -20,10 +20,10 @@ do
     ((count++))
 
     # Display progress
-    echo "[${count}/${total_files}] Executing: $file"
+    echo -e "\n[${count}/${total_files}] Executing: $file"
 
     # Execute the file with hurl and check the exit status, suppressing output
-    if hurl --test "$file"
+    if hurl --test --max-time=10 "$file"
     then
         # If the exit status is 0 (success), add file to succeeding_files
         succeeding_files+=("$file")
