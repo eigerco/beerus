@@ -79,6 +79,7 @@ jobs:
           hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
       # Execute hurl tests
       - name: Execute the end-to-end tests
+        id: e2e_test
         run: ./e2e-tests.sh
         continue-on-error: true
       - name: run a sample hurl again
@@ -89,7 +90,7 @@ jobs:
       - name: Capture docker logs
         run: |
           docker ps
-          docker logs beerus-beerus-rpc-1 > docker_logs.txt
+          docker logs beerus-beerus-rpc-1 >& docker_logs.txt
       # Upload the docker logs
       - name: Upload docker logs
         uses: actions/upload-artifact@v3
@@ -100,3 +101,6 @@ jobs:
       # Generate job summary
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
+      # Print the job outcome (so we can mark it as errored)
+      - name: Print the script outcome
+        run: echo "script outcome:: ${{steps.e2e_test.outcome}}"
