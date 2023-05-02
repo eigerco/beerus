@@ -1,5 +1,26 @@
 POST http://0.0.0.0:3030
 Content-Type: application/json
 {
-    "jsonrpc":"2.0","method":"eth_getBlockTransactionCountByHash","params":["0xc63f666315fa1eae17e354fab532aeeecf549be93e358737d0648f50d57083a0"],"id":1
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "eth_getBlockByNumber",
+    "params": ["latest", true]
 }
+
+HTTP 200
+[Captures]
+block_hash: jsonpath "$.result.hash"
+
+POST http://0.0.0.0:3031
+Content-Type: application/json
+{
+    "jsonrpc":"2.0",
+    "method":"eth_getBlockTransactionCountByHash",
+    "params":["{{block_hash}}"],
+    "id":1
+}
+
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.result" matches /^0x[A-Fa-f0-9]+$/
