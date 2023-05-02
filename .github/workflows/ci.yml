@@ -90,6 +90,13 @@ jobs:
         run: |
           docker ps
           docker logs beerus-beerus-rpc-1 > docker_logs.txt
+      - name: Run a few hurl tests
+        run: |
+          hurl --ignore-asserts examples/beerus-rpc/eth/eth_blockNumber.hurl
+          hurl --ignore-asserts examples/beerus-rpc/eth/eth_chainId.hurl
+          hurl --ignore-asserts examples/beerus-rpc/starknet/starknet_blockHashAndNumber.hurl
+      - name: Run hurls with new syntax
+        run: hurl --test examples/**/*.hurl
       # Upload the docker logs
       - name: Upload docker logs
         uses: actions/upload-artifact@v2
