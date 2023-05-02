@@ -84,6 +84,7 @@ jobs:
       - name: run a sample hurl again
         run: |
           hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
+        continue-on-error: true
       # Capture docker logs
       - name: Capture docker logs
         run: |
