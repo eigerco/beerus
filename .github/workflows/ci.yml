@@ -85,7 +85,6 @@ jobs:
       - name: Execute the end-to-end tests
         id: e2e_test
         run: |
-          sleep 120
           ./e2e-tests.sh
         continue-on-error: true
       # Run a sample hurl test again
