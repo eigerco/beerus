@@ -1655,7 +1655,7 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
-        let block_id = BlockId::Hash(FieldElement::from_str("0x0a").unwrap());
+        let block_id = BlockId::Number(10);
         // Perform the test call.
         let res = beerus
             .starknet_get_storage_at(address, key, &block_id)
@@ -1693,7 +1693,7 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
-        let block_id = BlockId::Hash(FieldElement::from_str("0x0a").unwrap());
+        let block_id = BlockId::Number(10);
         // Perform the test call.
         let res = beerus
             .starknet_get_storage_at(address, key, &block_id)
