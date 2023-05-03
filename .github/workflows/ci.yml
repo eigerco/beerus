@@ -69,36 +69,64 @@ jobs:
         run: |
           docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
-      # Run a hurl failing method with curl
-#      - name: run a failing hurl endpoint with curl
-#        run: |
-#          curl -X POST http://0.0.0.0:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "starknet_l1ToL2Messages", "params": ["0x28164f78e696225e725b47da74019a17ccf6ff6b84107282b7eaaa6f3cfee4a4"], "id":1}'
-      # Run a test curl
-      - name: run a sample curl
-        run: |
-          curl -X POST http://0.0.0.0:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id":1}'
-      # Run a test curl
-      - name: run a sample hurl
-        run: |
-          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_blockNumber.hurl
       # Execute hurl tests
-      - name: Execute the end-to-end tests
-        id: e2e_test
+#      - name: Execute the end-to-end tests
+#        id: e2e_test
+#        run: |
+#          ./e2e-tests.sh
+#        continue-on-error: true
+      # Execute every hurl apart
+      - name: Run hurl tests
         run: |
-          ./e2e-tests.sh
-        continue-on-error: true
-      # Run a sample hurl test again
-      - name: run a sample hurl again
-        run: |
-          hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
-        continue-on-error: true
-      - name: run a failing hurl
-        run: |
-          hurl --ignore-asserts --max-time=10 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
-        continue-on-error: true
-      # Print the docker container resource usage
-      - name: Get docker stats
-        run: docker stats --no-stream
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getStorageAt.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionReceipt.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionCount.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_syncing.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBalance.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getCode.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_gasPrice.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getLogs.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionByBlockHashAndIndex.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_sendRawTransaction.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_coinbase.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockTransactionCountByNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_chainId.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_blockNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionByHash.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_call.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockTransactionCountByHash.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockByHash.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockByNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_maxPriorityFeePerGas.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_estimateGas.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_nonce.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeployAccountTransaction.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeclareTransaction.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l2_to_l1_messages.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_getContractStorageProof.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addInvokeTransaction.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_cancellations.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClassHashAt.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClassAt.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getEvents.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_chainId.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getEstimateFee.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClass.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionByHash.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockTransactionCount.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionByBlockIdAndIndex.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getStorageAt.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_blockNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockWithTxs.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_blockHashAndNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_syncing.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getNonce.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_call.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_pendingTransactions.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getStateUpdate.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockWithTxHashes.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionReceipt.hurl
       # Capture docker logs
       - name: Capture docker logs
         run: |
