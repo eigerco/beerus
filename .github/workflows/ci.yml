@@ -76,8 +76,9 @@ jobs:
 #          ./e2e-tests.sh
 #        continue-on-error: true
       # Execute every hurl apart
-      - name: Run hurl tests
-        run: |
+      # Sleep before running tests
+      - name: sleep between some tests
+        run: sleep 60
       # Run the hurl test for eth_getStorageAt
       - name: test eth_getStorageAt
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getStorageAt.hurl
@@ -106,9 +107,6 @@ jobs:
       - name: test eth_gasPrice
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_gasPrice.hurl
         continue-on-error: true
-      # Sleep in the middle of the eth tests
-      - name: sleep between some tests
-        run: sleep 60
       # Run the hurl test for eth_getLogs
       - name: test eth_getLogs
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getLogs.hurl
@@ -165,38 +163,6 @@ jobs:
       - name: test eth_estimateGas
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_estimateGas.hurl
         continue-on-error: true
-#      # Run the hurl test for starknet_l1_to_l2_message_nonce
-#      - name: test starknet_l1_to_l2_message_nonce
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_nonce.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_l1_to_l2_messages
-#      - name: test starknet_l1_to_l2_messages
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_addDeployAccountTransaction
-#      - name: test starknet_addDeployAccountTransaction
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeployAccountTransaction.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_addDeclareTransaction
-#      - name: test starknet_addDeclareTransaction
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeclareTransaction.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_l2_to_l1_messages
-#      - name: test starknet_l2_to_l1_messages
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l2_to_l1_messages.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_getContractStorageProof
-#      - name: test starknet_getContractStorageProof
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_getContractStorageProof.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_addInvokeTransaction
-#      - name: test starknet_addInvokeTransaction
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addInvokeTransaction.hurl
-#        continue-on-error: true
-#      # Run the hurl test for starknet_l1_to_l2_message_cancellations
-#      - name: test starknet_l1_to_l2_message_cancellations
-#        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_cancellations.hurl
-#        continue-on-error: true
       # Run the hurl test for starknet_getClassHashAt
       - name: test starknet_getClassHashAt
         run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClassHashAt.hurl
@@ -276,6 +242,38 @@ jobs:
       # Run the hurl test for starknet_getTransactionReceipt
       - name: test starknet_getTransactionReceipt
         run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionReceipt.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_message_nonce
+      - name: test starknet_l1_to_l2_message_nonce
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_nonce.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_messages
+      - name: test starknet_l1_to_l2_messages
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addDeployAccountTransaction
+      - name: test starknet_addDeployAccountTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeployAccountTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addDeclareTransaction
+      - name: test starknet_addDeclareTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeclareTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l2_to_l1_messages
+      - name: test starknet_l2_to_l1_messages
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l2_to_l1_messages.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getContractStorageProof
+      - name: test starknet_getContractStorageProof
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_getContractStorageProof.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addInvokeTransaction
+      - name: test starknet_addInvokeTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addInvokeTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_message_cancellations
+      - name: test starknet_l1_to_l2_message_cancellations
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_cancellations.hurl
         continue-on-error: true
       # Capture docker logs
       - name: Capture docker logs
