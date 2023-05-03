@@ -10,3 +10,8 @@ services:
       ETHEREUM_CONSENSUS_RPC_URL: "${ETHEREUM_CONSENSUS_RPC_URL}"
       ETHEREUM_EXECUTION_RPC_URL: "${ETHEREUM_EXECUTION_RPC_URL}"
       STARKNET_RPC_URL: "${STARKNET_RPC_URL}"
+    deploy:
+      resources:
+        reservations:
+          cpus: "1"
+          memory: "100M"
