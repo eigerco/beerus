@@ -31,6 +31,9 @@ do
         # If the exit status is non-zero (failure), add file to failing_files
         failing_files+=("$file")
     fi
+
+    # Wait 10s before each test to avoid timeouts?
+    sleep 10
 done <<< "$all_files"
 
 # Display failing files
