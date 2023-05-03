@@ -23,7 +23,7 @@ do
     echo -e "\n[${count}/${total_files}] Executing: $file"
 
     # Execute the file with hurl and check the exit status
-    if hurl --test --max-time=60 "$file"
+    if hurl --test --max-time=10 "$file"
     then
         # If the exit status is 0 (success), add file to succeeding_files
         succeeding_files+=("$file")

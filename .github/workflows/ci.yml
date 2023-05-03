@@ -104,7 +104,7 @@ jobs:
       - name: Capture docker logs
         run: |
           docker ps
-          docker logs beerus-beerus-rpc-1 >& docker_logs.txt
+          docker logs $(docker ps -q) >& docker_logs.txt
           cat docker_logs.txt
       # Upload the docker logs
       - name: Upload docker logs
