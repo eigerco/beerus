@@ -67,7 +67,7 @@ jobs:
       # Run beerus RPC in the background
       - name: Run beerus
         run: |
-          docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
+          docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_CHECKPOINT="0x77af399ca2cd16b8cb6811b4de9a2a78d149e45583f4963d2a9a74960142e3f6" --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Execute hurl tests
 #      - name: Execute the end-to-end tests
