@@ -71,7 +71,7 @@ jobs:
 #          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Run beerus through cargo
       - name: Run beerus in background
-        run: cargo run --bin beerus-rpc &
+        run: cargo run --bin beerus-rpc
       # Wait for beerus to come online
       - name: Wait for beerus to be up
         run: hurl --retry --retry-max-count 60 --ignore-asserts ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl;
