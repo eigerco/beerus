@@ -76,9 +76,6 @@ jobs:
 #          ./e2e-tests.sh
 #        continue-on-error: true
       # Execute every hurl apart
-      # Sleep before running tests
-      - name: sleep between some tests
-        run: sleep 60
       # Run the hurl test for eth_getStorageAt
       - name: test eth_getStorageAt
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getStorageAt.hurl
@@ -219,6 +216,9 @@ jobs:
       - name: test starknet_syncing
         run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_syncing.hurl
         continue-on-error: true
+      # Sleep before running tests
+      - name: sleep between some tests
+        run: sleep 10
       # Run the hurl test for starknet_getNonce
       - name: test starknet_getNonce
         run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getNonce.hurl
