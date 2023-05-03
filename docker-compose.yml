@@ -12,6 +12,9 @@ services:
       STARKNET_RPC_URL: "${STARKNET_RPC_URL}"
     deploy:
       resources:
+        limits:
+          cpus: "0.25"
+          memory: "100M"
         reservations:
-          cpus: "1"
+          cpus: "0.25"
           memory: "100M"
