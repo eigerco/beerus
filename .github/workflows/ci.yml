@@ -69,11 +69,15 @@ jobs:
         run: |
           docker compose up -d 
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+      # Run a hurl failing method with curl
+      - name: run a failing hurl endpoint with curl
+        run: |
+          curl -X POST http://0.0.0.0:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "starknet_l1ToL2Messages", "params": ["0x28164f78e696225e725b47da74019a17ccf6ff6b84107282b7eaaa6f3cfee4a4"], "id":1}'
       # Run a test curl
       - name: run a sample curl
         run: |
           curl -X POST http://0.0.0.0:3030 -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id":1}'
-          # Run a test curl
+      # Run a test curl
       - name: run a sample hurl
         run: |
           hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
