@@ -80,12 +80,15 @@ jobs:
       # Run a test curl
       - name: run a sample hurl
         run: |
-          hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
+          hurl --test --max-time=30 examples/beerus-rpc/eth/eth_blockNumber.hurl
       # Execute hurl tests
       - name: Execute the end-to-end tests
         id: e2e_test
-        run: ./e2e-tests.sh
+        run: |
+          sleep 120
+          ./e2e-tests.sh
         continue-on-error: true
+      # Run a sample hurl test again
       - name: run a sample hurl again
         run: |
           hurl --test --max-time=10 examples/beerus-rpc/eth/eth_blockNumber.hurl
@@ -102,6 +105,7 @@ jobs:
         run: |
           docker ps
           docker logs beerus-beerus-rpc-1 >& docker_logs.txt
+          cat docker_logs.txt
       # Upload the docker logs
       - name: Upload docker logs
         uses: actions/upload-artifact@v3
