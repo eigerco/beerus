@@ -106,6 +106,9 @@ jobs:
       - name: test eth_gasPrice
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_gasPrice.hurl
         continue-on-error: true
+      # Sleep in the middle of the eth tests
+      - name: sleep between some tests
+        run: sleep 60
       # Run the hurl test for eth_getLogs
       - name: test eth_getLogs
         run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getLogs.hurl
