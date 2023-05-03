@@ -64,11 +64,17 @@ jobs:
         run: |
           docker load --input /tmp/beerus.tar
           docker image ls -a
-      # Run beerus RPC in the background
-      - name: Run beerus
-        run: |
-          docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
-          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+#      # Run beerus RPC in the background
+#      - name: Run beerus
+#        run: |
+#          docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
+#          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+      # Run beerus through cargo
+      - name: Run beerus in background
+        run: cargo run --bin beerus-rpc &
+      # Wait for beerus to come online
+      - name: Wait for beerus to be up
+        run: hurl --retry --retry-max-count 60 --ignore-asserts ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl;
       # Execute hurl tests
       - name: Execute the end-to-end tests
         id: e2e_test
