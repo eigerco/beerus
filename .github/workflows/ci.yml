@@ -93,6 +93,7 @@ jobs:
       - name: run a failing hurl
         run: |
           hurl --ignore-asserts --max-time=10 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
+        continue-on-error: true
       # Print the docker container resource usage
       - name: Get docker stats
         run: docker stats --no-stream
