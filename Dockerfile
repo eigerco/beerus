@@ -20,6 +20,7 @@ LABEL description="Docker image for Beerus, light client for Starknet." \
       image.source="https://github.com/keep-starknet-strange/beerus" \
       image.documentation="https://github.com/keep-starknet-strange/beerus"
 EXPOSE 3030
+EXPOSE 3031
 ENTRYPOINT ["/usr/local/bin/beerus-rpc"]
 
 FROM runtime
