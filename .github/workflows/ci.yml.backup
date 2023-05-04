@@ -1,0 +1,296 @@
+name: continuous integration
+
+on:
+  pull_request:
+
+# The following urls will soon be removed, API keys invalidated and RPC urls will be provided as secrets
+
+env:
+  BEERUS_VERSION: ci
+  ETHEREUM_NETWORK: mainnet
+#  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
+  ETHEREUM_CONSENSUS_RPC_URL: https://www.lightclientdata.org
+#  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
+  ETHEREUM_EXECUTION_RPC_URL: https://eth-mainnet.g.alchemy.com/v2/nveGwZH-6VJciyEwZb3C1iblkZWj3Fcj
+#  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
+  STARKNET_RPC_URL: https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the source code
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Setup docker
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      # Build and export the beerus docker image
+      - name: Build and export
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: beerus:${{ env.BEERUS_VERSION }}
+          outputs: type=docker,dest=/tmp/beerus.tar
+      # Upload the beerus docker image as an artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: beerus
+          path: /tmp/beerus.tar
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      # Checkout the source code
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Install hurl
+      - name: Install dependencies
+        run: |
+          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
+          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
+      # Download the beerus docker image
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: beerus
+          path: /tmp
+      # Load the beerus docker image
+      - name: Load docker image
+        run: |
+          docker load --input /tmp/beerus.tar
+          docker image ls -a
+      # Run beerus RPC in the background
+      - name: Run beerus
+        run: |
+          docker run -d -p 3030:3030 -p 3031:3031 --env ETHEREUM_CHECKPOINT="0xfabd6159076eef20feae3fd90e78a260c400999e07cbb6ba7363b1a1cc05d653" --env ETHEREUM_NETWORK="mainnet" --env ETHEREUM_CONSENSUS_RPC_URL="https://www.lightclientdata.org" --env ETHEREUM_EXECUTION_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU" --env STARKNET_RPC_URL="https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd" beerus:ci
+          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+      # Execute hurl tests
+#      - name: Execute the end-to-end tests
+#        id: e2e_test
+#        run: |
+#          ./e2e-tests.sh
+#        continue-on-error: true
+      # Execute every hurl apart
+      # Run the hurl test for eth_getStorageAt
+      - name: test eth_getStorageAt
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getStorageAt.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getTransactionReceipt
+      - name: test eth_getTransactionReceipt
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionReceipt.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getTransactionCount
+      - name: test eth_getTransactionCount
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionCount.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_syncing
+      - name: test eth_syncing
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_syncing.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getBalance
+      - name: test eth_getBalance
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBalance.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getCode
+      - name: test eth_getCode
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getCode.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_gasPrice
+      - name: test eth_gasPrice
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_gasPrice.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getLogs
+      - name: test eth_getLogs
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getLogs.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getTransactionByBlockHashAndIndex
+      - name: test eth_getTransactionByBlockHashAndIndex
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionByBlockHashAndIndex.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_sendRawTransaction
+      - name: test eth_sendRawTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_sendRawTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_coinbase
+      - name: test eth_coinbase
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_coinbase.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getBlockTransactionCountByNumber
+      - name: test eth_getBlockTransactionCountByNumber
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockTransactionCountByNumber.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_chainId
+      - name: test eth_chainId
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_chainId.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_blockNumber
+      - name: test eth_blockNumber
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_blockNumber.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getTransactionByHash
+      - name: test eth_getTransactionByHash
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getTransactionByHash.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_call
+      - name: test eth_call
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_call.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getBlockTransactionCountByHash
+      - name: test eth_getBlockTransactionCountByHash
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockTransactionCountByHash.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getBlockByHash
+      - name: test eth_getBlockByHash
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockByHash.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_getBlockByNumber
+      - name: test eth_getBlockByNumber
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_getBlockByNumber.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_maxPriorityFeePerGas
+      - name: test eth_maxPriorityFeePerGas
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_maxPriorityFeePerGas.hurl
+        continue-on-error: true
+      # Run the hurl test for eth_estimateGas
+      - name: test eth_estimateGas
+        run: hurl --test --max-time=30 examples/beerus-rpc/eth/eth_estimateGas.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getClassHashAt
+      - name: test starknet_getClassHashAt
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClassHashAt.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getClassAt
+      - name: test starknet_getClassAt
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClassAt.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getEvents
+      - name: test starknet_getEvents
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getEvents.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_chainId
+      - name: test starknet_chainId
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_chainId.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getEstimateFee
+      - name: test starknet_getEstimateFee
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getEstimateFee.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getClass
+      - name: test starknet_getClass
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getClass.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getTransactionByHash
+      - name: test starknet_getTransactionByHash
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionByHash.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getBlockTransactionCount
+      - name: test starknet_getBlockTransactionCount
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockTransactionCount.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getTransactionByBlockIdAndIndex
+      - name: test starknet_getTransactionByBlockIdAndIndex
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionByBlockIdAndIndex.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getStorageAt
+      - name: test starknet_getStorageAt
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getStorageAt.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_blockNumber
+      - name: test starknet_blockNumber
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_blockNumber.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getBlockWithTxs
+      - name: test starknet_getBlockWithTxs
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockWithTxs.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_blockHashAndNumber
+      - name: test starknet_blockHashAndNumber
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_blockHashAndNumber.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_syncing
+      - name: test starknet_syncing
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_syncing.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getNonce
+      - name: test starknet_getNonce
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getNonce.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_call
+      - name: test starknet_call
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_call.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_pendingTransactions
+      - name: test starknet_pendingTransactions
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_pendingTransactions.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getStateUpdate
+      - name: test starknet_getStateUpdate
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getStateUpdate.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getBlockWithTxHashes
+      - name: test starknet_getBlockWithTxHashes
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getBlockWithTxHashes.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getTransactionReceipt
+      - name: test starknet_getTransactionReceipt
+        run: hurl --test --max-time=30 examples/beerus-rpc/starknet/starknet_getTransactionReceipt.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_message_nonce
+      - name: test starknet_l1_to_l2_message_nonce
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_nonce.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_messages
+      - name: test starknet_l1_to_l2_messages
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_messages.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addDeployAccountTransaction
+      - name: test starknet_addDeployAccountTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeployAccountTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addDeclareTransaction
+      - name: test starknet_addDeclareTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addDeclareTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l2_to_l1_messages
+      - name: test starknet_l2_to_l1_messages
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l2_to_l1_messages.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_getContractStorageProof
+      - name: test starknet_getContractStorageProof
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_getContractStorageProof.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_addInvokeTransaction
+      - name: test starknet_addInvokeTransaction
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_addInvokeTransaction.hurl
+        continue-on-error: true
+      # Run the hurl test for starknet_l1_to_l2_message_cancellations
+      - name: test starknet_l1_to_l2_message_cancellations
+        run: hurl --test --max-time=30 examples/beerus-rpc/additional/starknet_l1_to_l2_message_cancellations.hurl
+        continue-on-error: true
+      # Capture docker logs
+      - name: Capture docker logs
+        run: |
+          docker ps
+          docker logs $(docker ps -q) >& docker_logs.txt
+          cat docker_logs.txt
+      # Upload the docker logs
+      - name: Upload docker logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: docker-logs
+          path: docker_logs.txt
+      # Generate job summary
+      - name: Generate job summary
+        run: cat summary.md >> $GITHUB_STEP_SUMMARY
+      # Fail the job if the script step has failed
+      - name: Check for script failure
+        run: |
+          if [[ "${{ steps.e2e_test.outcome }}" == "failure" ]]; then
+            exit 1
+          fi
