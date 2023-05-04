@@ -63,10 +63,6 @@ jobs:
         run: |
           docker load --input /tmp/beerus.tar
           docker image ls -a
-      # Run beerus RPC in the background
-      - name: Remove outdated containerts
-        run: docker rm -f $(docker ps -a -q)
-        continue-on-error: true
       - name: Run beerus
         run: |
           docker compose up -d
