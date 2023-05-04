@@ -15,6 +15,7 @@ This is a summary of the different methods tested.
 | additional | starknet_getContractStorageProof | :x: |
 | additional | starknet_addInvokeTransaction | :x: |
 | starknet | starknet_getEvents | :x: |
+| starknet | starknet_getNonce | :x: |
 
 ### Succeeding Methods
 
@@ -54,7 +55,6 @@ This is a summary of the different methods tested.
 | starknet | starknet_getBlockWithTxs | :heavy_check_mark: |
 | starknet | starknet_blockHashAndNumber | :heavy_check_mark: |
 | starknet | starknet_syncing | :heavy_check_mark: |
-| starknet | starknet_getNonce | :heavy_check_mark: |
 | starknet | starknet_call | :heavy_check_mark: |
 | starknet | starknet_pendingTransactions | :heavy_check_mark: |
 | starknet | starknet_getStateUpdate | :heavy_check_mark: |

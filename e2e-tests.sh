@@ -5,7 +5,7 @@ succeeding_files=()
 failing_files=()
 
 # Use find to get all .hurl files in the examples directory and its subdirectories
-all_files=$(find examples/beerus-rpc/starknet -name "*.hurl")
+all_files=$(find examples -name "*.hurl")
 
 # Count all files, removing leading spaces
 total_files=$(echo "$all_files" | wc -l | tr -d ' ')
@@ -32,8 +32,6 @@ do
         failing_files+=("$file")
     fi
 
-    # Wait 10s before each test to avoid timeouts?
-    sleep 10
 done <<< "$all_files"
 
 # Display failing files

@@ -132,7 +132,7 @@ impl BeerusLightClient {
             let poll_interval_secs = self.config.get_poll_interval();
 
             // Define function that will loop
-            let task = async move {
+            let _task = async move {
                 loop {
                     let state_root = ethereum_clone
                         .lock()
@@ -187,8 +187,8 @@ impl BeerusLightClient {
                 }
             };
             // Spawn loop function
-            #[cfg(feature = "std")]
-            tokio::spawn(task);
+            //#[cfg(feature = "std")]
+            // tokio::spawn(task);
         };
         Ok(())
     }
