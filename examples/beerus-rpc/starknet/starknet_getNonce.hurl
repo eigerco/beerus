@@ -3,7 +3,9 @@ Content-Type: application/json
 {
     "jsonrpc": "2.0",
     "method": "starknet_getNonce",
-    "params": [],
+    "params": [
+        "0x010b6c96d364cf182964fbd4a3438a5ae84cab990770c07994f9cb99fd26f6dc"
+    ],
     "id":1
 }
 
