@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-use std::{str::FromStr, thread, time};
+use std::{str::FromStr, time};
 
 #[cfg(not(feature = "std"))]
 use gloo_timers::callback::Interval;
@@ -132,7 +132,7 @@ impl BeerusLightClient {
             let poll_interval_secs = self.config.get_poll_interval();
 
             // Define function that will loop
-            let _task = async move {
+            let task = async move {
                 loop {
                     let state_root = ethereum_clone
                         .lock()
@@ -183,12 +183,12 @@ impl BeerusLightClient {
                             error!("Error getting block: {}", err);
                         }
                     }
-                    thread::sleep(time::Duration::from_secs(poll_interval_secs));
+                    tokio::time::sleep(time::Duration::from_secs(poll_interval_secs)).await;
                 }
             };
             // Spawn loop function
-            //#[cfg(feature = "std")]
-            // tokio::spawn(task);
+            #[cfg(feature = "std")]
+            tokio::spawn(task);
         };
         Ok(())
     }
