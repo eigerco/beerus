@@ -1,0 +1,15 @@
+[book]
+authors = ["dpinones"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Beerus Documentation"
+
+[output.html]
+# disable numeric section labels
+no-section-label = true 
+git-repository-url = "https://github.com/keep-starknet-strange/beerus"
+git-repository-icon = "fa-github"
+
+[output.html.fold]
+enable = true
