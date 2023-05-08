@@ -63,10 +63,18 @@ jobs:
         run: |
           docker load --input /tmp/beerus.tar
           docker image ls -a
-      - name: Run beerus
+      - name: extract beerus from the image
         run: |
-          docker compose up -d
-          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+          docker create --name beerus-container beerus:ci
+          docker cp beerus-container:/usr/local/bin/beerus-rpc beerus-rpc
+          chmod +x beerus-rpc
+      # run beerus binary
+      - name: Run Beerus Binary
+        run: ./beerus-rpc
+#      - name: Run beerus
+#        run: |
+#          docker compose up -d
+#          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       - name: Run end-to-end tests
         id: e2e_test
         run: ./e2e-tests.sh
