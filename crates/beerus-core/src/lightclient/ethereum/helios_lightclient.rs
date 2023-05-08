@@ -175,8 +175,8 @@ impl EthereumLightClient for HeliosLightClient {
     async fn starknet_state_root(&self) -> Result<U256> {
         // Corresponds to the StarkNet core contract function `stateRoot`.
         // The function signature is `stateRoot() -> (uint256)`.
-        // The function selector is `0x95d8ecA2`.
-        let data = vec![0x95, 0xd8, 0xec, 0xa2];
+        // The function selector is `0x9588ecA2`.
+        let data = vec![0x95, 0x88, 0xec, 0xa2];
 
         // Build the call options.
         let call_opts = CallOpts {
