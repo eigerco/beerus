@@ -1,15 +1,30 @@
 [book]
-authors = ["dpinones"]
+authors = ["dpinones", "glihm"]
 language = "en"
 multilingual = false
 src = "src"
 title = "Beerus Documentation"
 
+[rust]
+edition = "2021"
+
+[build]
+extra-watch-dirs = ["po", "third_party"]
+
+[preprocessor.gettext]
+after = ["links"]
+
 [output.html]
+curly-quotes = true
+additional-css = ["css/language-picker.css"]
+git-repository-url = "https://github.com/keep-starknet-strange/beerus"
+# edit-url-template = "https://github.com/keep-starknet-strange/beerus/edit/main/{path}"
 # disable numeric section labels
 no-section-label = true 
-git-repository-url = "https://github.com/keep-starknet-strange/beerus"
-git-repository-icon = "fa-github"
 
 [output.html.fold]
 enable = true
+level = 0
+
+[output.html.playground]
+editable = true
