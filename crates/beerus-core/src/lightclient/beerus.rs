@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-use std::{str::FromStr, time};
+use std::{str::FromStr, thread, time};
 
 #[cfg(not(feature = "std"))]
 use gloo_timers::callback::Interval;
@@ -183,7 +183,7 @@ impl BeerusLightClient {
                             error!("Error getting block: {}", err);
                         }
                     }
-                    tokio::time::sleep(time::Duration::from_secs(poll_interval_secs)).await;
+                    thread::sleep(time::Duration::from_secs(poll_interval_secs));
                 }
             };
             // Spawn loop function
