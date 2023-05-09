@@ -126,7 +126,6 @@ impl BeerusLightClient {
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
 
-            let ethereum_clone = self.ethereum_lightclient.clone();
             let starknet_clone = self.starknet_lightclient.clone();
             let node_clone = self.node.clone();
             let poll_interval_secs = self.config.get_poll_interval();
@@ -134,24 +133,6 @@ impl BeerusLightClient {
             // Define function that will loop
             let task = async move {
                 loop {
-                    let state_root = ethereum_clone
-                        .read()
-                        .await
-                        .starknet_state_root()
-                        .await
-                        .unwrap();
-
-                    let last_proven_block = ethereum_clone
-                        .read()
-                        .await
-                        .starknet_last_proven_block()
-                        .await
-                        .unwrap();
-
-                    // TODO: these logs don't get caught by the main thread
-                    info!("State Root: {state_root}");
-                    info!("Block Number: {last_proven_block}");
-
                     match starknet_clone
                         .get_block_with_txs(&BlockId::Tag(StarknetBlockTag::Latest))
                         .await
@@ -161,7 +142,6 @@ impl BeerusLightClient {
                             let mut data = node_clone.write().await;
                             match block {
                                 MaybePendingBlockWithTxs::Block(block) => {
-                                    // if block.block_number > data.block_number && block.block_number == last_proven_block
                                     if block.block_number > data.block_number
                                         && 0 < block.block_number
                                     {
