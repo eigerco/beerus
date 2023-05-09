@@ -5,14 +5,15 @@ services:
     image: "beerus:${BEERUS_VERSION:-latest}"
     ports:
       - '3030:3030'
-      - '3031:3031'
     environment:
+      # Inject required env variables into the container
       ETHEREUM_NETWORK: "mainnet"
-      ETHEREUM_CONSENSUS_RPC_URL: "https://www.lightclientdata.org"
-      ETHEREUM_EXECUTION_RPC_URL: "https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU"
-      STARKNET_RPC_URL: "https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd"
+      ETHEREUM_CONSENSUS_RPC_URL: "${ETHEREUM_CONSENSUS_RPC_URL}"
+      ETHEREUM_EXECUTION_RPC_URL: "${ETHEREUM_EXECUTION_RPC_URL}"
+      STARKNET_RPC_URL: "${STARKNET_RPC_URL}"
     deploy:
       resources:
+        # Define small resource limitations to mimic a low-spec hardware
         limits:
           cpus: "2"
           memory: "200m"
