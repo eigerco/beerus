@@ -11,8 +11,8 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --all --locked --release
 
-FROM debian:buster-slim AS runtime
-#RUN apt-get update && apt-get install -y ca-certificates
+FROM ubuntu:22.04 AS runtime
+RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=builder /beerus/target/release/beerus-rpc /usr/local/bin/
 LABEL description="Docker image for Beerus, light client for Starknet." \
       image.authors="Keep Starknet Strange team." \
