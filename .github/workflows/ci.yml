@@ -83,12 +83,8 @@ jobs:
         with:
           name: beerus.log
           path: beerus.log
+        if: always()
       # Generate job summary
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
-      # Fail the job if the script step has failed
-      - name: Check for script failure
-        run: |
-          if [[ "${{ steps.e2e_test.outcome }}" == "failure" ]]; then
-            exit 1
-          fi
+        if: always()
