@@ -1,12 +1,9 @@
 [book]
-authors = ["dpinones", "glihm"]
+authors = ["Beerus Team"]
 language = "en"
 multilingual = false
 src = "src"
 title = "Beerus Documentation"
-
-[rust]
-edition = "2021"
 
 [build]
 extra-watch-dirs = ["po", "third_party"]
@@ -18,8 +15,6 @@ after = ["links"]
 curly-quotes = true
 additional-css = ["css/language-picker.css"]
 git-repository-url = "https://github.com/keep-starknet-strange/beerus"
-# edit-url-template = "https://github.com/keep-starknet-strange/beerus/edit/main/{path}"
-# disable numeric section labels
 no-section-label = true 
 
 [output.html.fold]
