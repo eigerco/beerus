@@ -17,50 +17,7 @@ succeeding_files=()
 failing_files=()
 
 # Use find to get all .hurl files in the examples directory and its subdirectories
-#all_files=$(find examples -name "*.hurl" | sort)
-all_files="examples/beerus-rpc/additional/starknet_addDeclareTransaction.hurl
-examples/beerus-rpc/additional/starknet_addDeployAccountTransaction.hurl
-examples/beerus-rpc/additional/starknet_addInvokeTransaction.hurl
-examples/beerus-rpc/additional/starknet_getContractStorageProof.hurl
-examples/beerus-rpc/eth/eth_blockNumber.hurl
-examples/beerus-rpc/eth/eth_call.hurl
-examples/beerus-rpc/eth/eth_chainId.hurl
-examples/beerus-rpc/eth/eth_coinbase.hurl
-examples/beerus-rpc/eth/eth_estimateGas.hurl
-examples/beerus-rpc/eth/eth_gasPrice.hurl
-examples/beerus-rpc/eth/eth_getBalance.hurl
-examples/beerus-rpc/eth/eth_getBlockByHash.hurl
-examples/beerus-rpc/eth/eth_getBlockByNumber.hurl
-examples/beerus-rpc/eth/eth_getBlockTransactionCountByHash.hurl
-examples/beerus-rpc/eth/eth_getBlockTransactionCountByNumber.hurl
-examples/beerus-rpc/eth/eth_getCode.hurl
-examples/beerus-rpc/eth/eth_getLogs.hurl
-examples/beerus-rpc/eth/eth_getStorageAt.hurl
-examples/beerus-rpc/eth/eth_getTransactionByBlockHashAndIndex.hurl
-examples/beerus-rpc/eth/eth_getTransactionByHash.hurl
-examples/beerus-rpc/eth/eth_getTransactionCount.hurl
-examples/beerus-rpc/eth/eth_getTransactionReceipt.hurl
-examples/beerus-rpc/eth/eth_maxPriorityFeePerGas.hurl
-examples/beerus-rpc/eth/eth_sendRawTransaction.hurl
-examples/beerus-rpc/eth/eth_syncing.hurl
-examples/beerus-rpc/starknet/starknet_blockHashAndNumber.hurl
-examples/beerus-rpc/starknet/starknet_blockNumber.hurl
-examples/beerus-rpc/starknet/starknet_call.hurl
-examples/beerus-rpc/starknet/starknet_chainId.hurl
-examples/beerus-rpc/starknet/starknet_getBlockTransactionCount.hurl
-examples/beerus-rpc/starknet/starknet_getBlockWithTxHashes.hurl
-examples/beerus-rpc/starknet/starknet_getBlockWithTxs.hurl
-examples/beerus-rpc/starknet/starknet_getClass.hurl
-examples/beerus-rpc/starknet/starknet_getClassAt.hurl
-examples/beerus-rpc/starknet/starknet_getClassHashAt.hurl
-examples/beerus-rpc/starknet/starknet_getEstimateFee.hurl
-examples/beerus-rpc/starknet/starknet_getEvents.hurl
-examples/beerus-rpc/starknet/starknet_getStateUpdate.hurl
-examples/beerus-rpc/starknet/starknet_getTransactionByBlockIdAndIndex.hurl
-examples/beerus-rpc/starknet/starknet_getTransactionByHash.hurl
-examples/beerus-rpc/starknet/starknet_getTransactionReceipt.hurl
-examples/beerus-rpc/starknet/starknet_pendingTransactions.hurl
-examples/beerus-rpc/starknet/starknet_syncing.hurl"
+all_files=$(find examples -name "*.hurl" | sort)
 
 # Count all files, removing leading spaces
 total_files=$(echo "$all_files" | wc -l | tr -d ' ')
