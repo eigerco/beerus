@@ -93,7 +93,7 @@ impl BeerusLightClient {
         starknet_lightclient_raw: Box<dyn StarkNetLightClient>,
     ) -> Self {
         // Create a new Ethereum light client.
-        let ethereum_lightclient = Arc::new(RwLock::new(ethereum_lightclient_raw));
+        let ethereum_lightclient = Arc::new(RwLock::with_max_readers(ethereum_lightclient_raw, 1));
         // Create a new StarkNet light client.
         let starknet_lightclient = Arc::new(starknet_lightclient_raw);
         let starknet_core_abi = include_str!("../resources/starknet_core_abi.json");
