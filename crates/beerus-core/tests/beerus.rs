@@ -161,7 +161,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .send_raw_transaction(bytes)
             .await
@@ -202,7 +202,7 @@ mod tests {
         // Send raw transaction.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .send_raw_transaction(bytes)
             .await;
@@ -245,7 +245,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_balance(&addr, block)
             .await
@@ -289,7 +289,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_balance(&addr, block)
             .await;
@@ -332,7 +332,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_nonce(&addr, block)
             .await
@@ -376,7 +376,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_nonce(&addr, block)
             .await;
@@ -413,7 +413,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_number()
             .await;
@@ -450,7 +450,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_chain_id()
             .await
@@ -488,7 +488,7 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_code(&addr, block)
             .await;
@@ -534,7 +534,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_code(&addr, block)
             .await;
@@ -572,7 +572,7 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_count(&address, block)
             .await;
@@ -616,7 +616,7 @@ mod tests {
         // Query the transaction of the Ethereum address from a given block.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_count(&address, block)
             .await;
@@ -653,7 +653,7 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_number(block)
             .await;
@@ -696,7 +696,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_number(block)
             .await;
@@ -757,7 +757,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_number(BlockTag::Number(expected_block_number), false)
             .await;
@@ -797,7 +797,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_number(BlockTag::Latest, false)
             .await;
@@ -834,7 +834,7 @@ mod tests {
         // When
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_hash(&hash)
             .await;
@@ -877,7 +877,7 @@ mod tests {
         // Query the balance of the Ethereum address.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_hash(&hash)
             .await;
@@ -922,7 +922,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_by_hash(&tx_hash)
             .await;
@@ -967,7 +967,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_by_hash(&tx_hash)
             .await;
@@ -1008,7 +1008,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_gas_price()
             .await;
@@ -1050,7 +1050,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_gas_price()
             .await;
@@ -1097,7 +1097,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .estimate_gas(&call_opts)
             .await;
@@ -1143,7 +1143,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .estimate_gas(&call_opts)
             .await;
@@ -1205,7 +1205,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_hash(hash.as_ref(), false)
             .await;
@@ -1247,7 +1247,7 @@ mod tests {
 
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_hash(hash.as_ref(), false)
             .await;
@@ -1288,7 +1288,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_priority_fee()
             .await;
@@ -1330,7 +1330,7 @@ mod tests {
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_priority_fee()
             .await;
@@ -1415,7 +1415,7 @@ mod tests {
         // Perform the test call.
         let starknet_state_root = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_state_root()
             .await
@@ -1448,7 +1448,7 @@ mod tests {
         // Perform the test call.
         let starknet_state_root_result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_state_root()
             .await;
@@ -1489,7 +1489,7 @@ mod tests {
         // Perform the test call.
         let starknet_block_number = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_last_proven_block()
             .await
@@ -1523,7 +1523,7 @@ mod tests {
         // Perform the test call.
         let starknet_state_root_result = beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_state_root()
             .await;
@@ -2565,7 +2565,7 @@ mod tests {
     //     // Query the transaction data given a hash on Ethereum.
     //     let result = beerus
     //         .ethereum_lightclient
-    //         .read()
+    //         .lock()
     //         .await
     //         .get_logs(
     //             &Some("finalized".to_string()),
@@ -2610,7 +2610,7 @@ mod tests {
     //     // Query the transaction data given a hash on Ethereum.
     //     let result = beerus
     //         .ethereum_lightclient
-    //         .read()
+    //         .lock()
     //         .await
     //         .get_logs(&None, &None, &None, &None, &None)
     //         .await;
