@@ -3,20 +3,14 @@ name: continuous integration
 on:
   schedule:
     - cron: "0 8 * * *"
-  pull_request:
-    branches:
-      - main
 
 # The following urls will soon be removed, API keys invalidated and RPC urls will be provided as secrets
 env:
   BEERUS_VERSION: ci
   ETHEREUM_NETWORK: mainnet
-#  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
-  ETHEREUM_CONSENSUS_RPC_URL: https://www.lightclientdata.org
-#  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
-  ETHEREUM_EXECUTION_RPC_URL: https://eth-mainnet.g.alchemy.com/v2/nveGwZH-6VJciyEwZb3C1iblkZWj3Fcj
-#  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
-  STARKNET_RPC_URL: https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd
+  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
+  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
+  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
 
 jobs:
   build:
