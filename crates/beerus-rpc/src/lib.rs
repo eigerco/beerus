@@ -64,7 +64,7 @@ impl BeerusRpcServer for BeerusRpc {
         let balance = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_balance(&address, block)
             .await
@@ -84,7 +84,7 @@ impl BeerusRpcServer for BeerusRpc {
         let tx_count = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_count(&address, block)
             .await
@@ -99,7 +99,7 @@ impl BeerusRpcServer for BeerusRpc {
         let tx_count = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_hash(&hash)
             .await
@@ -115,7 +115,7 @@ impl BeerusRpcServer for BeerusRpc {
         let tx_count = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_transaction_count_by_number(block)
             .await
@@ -130,7 +130,7 @@ impl BeerusRpcServer for BeerusRpc {
         let code = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_code(&address, block)
             .await
@@ -142,7 +142,7 @@ impl BeerusRpcServer for BeerusRpc {
         let res = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .call(&opts, block)
             .await
@@ -154,7 +154,7 @@ impl BeerusRpcServer for BeerusRpc {
         let gas_estimation = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .estimate_gas(&opts)
             .await
@@ -167,7 +167,7 @@ impl BeerusRpcServer for BeerusRpc {
         let chain_id = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_chain_id()
             .await
@@ -180,7 +180,7 @@ impl BeerusRpcServer for BeerusRpc {
         let gas_price = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_gas_price()
             .await
@@ -193,7 +193,7 @@ impl BeerusRpcServer for BeerusRpc {
         let max_priority_fee_per_gas = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_priority_fee()
             .await
@@ -206,7 +206,7 @@ impl BeerusRpcServer for BeerusRpc {
         let block_number = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_number()
             .await
@@ -222,7 +222,7 @@ impl BeerusRpcServer for BeerusRpc {
     ) -> Result<Option<ExecutionBlock>, Error> {
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_number(block, full_tx)
             .await
@@ -238,7 +238,7 @@ impl BeerusRpcServer for BeerusRpc {
             parse_eth_hash(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_block_by_hash(&hash, full_tx)
             .await
@@ -251,7 +251,7 @@ impl BeerusRpcServer for BeerusRpc {
         let raw_tx = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .send_raw_transaction(&bytes)
             .await
@@ -268,7 +268,7 @@ impl BeerusRpcServer for BeerusRpc {
             H256::from_str(tx_hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_receipt(&tx_hash)
             .await
@@ -283,7 +283,7 @@ impl BeerusRpcServer for BeerusRpc {
             H256::from_str(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_by_hash(&tx_hash)
             .await
@@ -299,7 +299,7 @@ impl BeerusRpcServer for BeerusRpc {
             parse_eth_hash(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_transaction_by_block_hash_and_index(&block_hash, index)
             .await
@@ -309,7 +309,7 @@ impl BeerusRpcServer for BeerusRpc {
     async fn eth_coinbase(&self) -> Result<Address, Error> {
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .coinbase()
             .await
@@ -319,7 +319,7 @@ impl BeerusRpcServer for BeerusRpc {
     async fn eth_syncing(&self) -> Result<SyncingStatus, Error> {
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .syncing()
             .await
@@ -329,7 +329,7 @@ impl BeerusRpcServer for BeerusRpc {
     async fn eth_get_logs(&self, filter: Filter) -> Result<Vec<Log>, Error> {
         self.beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_logs(&filter)
             .await
@@ -347,7 +347,7 @@ impl BeerusRpcServer for BeerusRpc {
         let storage = self
             .beerus
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .get_storage_at(&address, slot, block)
             .await
