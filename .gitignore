@@ -23,6 +23,9 @@ target/
 # Environment files
 .env
 
+# Node Modules
+node_modules
+
 # Beerus Wasm Example Files
 crates/beerus-js/node_modules
 crates/beerus-js/pkg/
