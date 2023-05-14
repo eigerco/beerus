@@ -24,6 +24,7 @@
 
 - [Report a Bug](#report-a-bug)
 - [Request a Feature](#request-a-feature)
+- [Roadmap](#roadmap)
 - [About](#about)
   - [Built With](#built-with)
 - [Architecture](#architecture)
@@ -37,12 +38,10 @@
     - [Config](#config)
       - [Config File](#config-file)
       - [Environment Variables](#environment-variables)
-    - [Beerus CLI](#beerus-cli)
-      - [Beerus CLI](#beerus-cli-1)
     - [Beerus RPC](#beerus-rpc)
       - [Beerus RPC](#beerus-rpc-1)
       - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Roadmap](#roadmap)
+- [Work in progress](#work-in-progress)
 - [Support](#support)
 - [Project assistance](#project-assistance)
 - [Contributing](#contributing)
@@ -53,7 +52,10 @@
 </details>
 
 ---
+## Roadmap
+We have big plans for Beerus. Check out the Roadmap!
 
+[![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
 ## About
 
 Beerus is a StarkNet Light Client inspired by and using
@@ -83,14 +85,14 @@ storage value of a StarkNet contract.
 
 Here are all the endpoints supported by Beerus in tag v0.2.0
 
-*Starknet endpoints* (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
 
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `starknet_getBlockWithTxHashes`            | :white_check_mark: |
 | `starknet_getBlockWithTxs`                 | :white_check_mark: |
 | `starknet_getStateUpdate`                  | :white_check_mark: |
-| `starknet_getStorageAt`                    | :x:                |
+| `starknet_getStorageAt`                    | :white_check_mark: |
 | `starknet_getTransactionByHash`            | :white_check_mark: |
 | `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
 | `starknet_getTransactionReceipt`           | :white_check_mark: |
@@ -98,24 +100,24 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_getClassHashAt`                  | :white_check_mark: |
 | `starknet_getClassAt`                      | :white_check_mark: |
 | `starknet_getBlockTransactionCount`        | :white_check_mark: |
-| `starknet_call`                            | :x:                |
+| `starknet_call`                            | :white_check_mark: |
 | `starknet_estimateFee`                     | :white_check_mark: |
 | `starknet_blockNumber`                     | :white_check_mark: |
 | `starknet_blockHashAndNumber`              | :white_check_mark: |
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getEvents`                       | :white_check_mark: |
+| `starknet_getEvents`                       | :x:                |
 | `starknet_getNonce`                        | :white_check_mark: |
 
 
-*Ethereum endpoints* (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
+*Ethereum endpoints* (21) (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `eth_getBalance`                           | :white_check_mark: |
 | `eth_getTransactionCount`                  | :white_check_mark: |
 | `eth_getCode`                              | :white_check_mark: |
-| `eth_call`                                 | :white_check_mark: |
+| `eth_call`                                 | :x:                |
 | `eth_estimateGas`                          | :white_check_mark: |
 | `eth_getChainId`                           | :white_check_mark: |
 | `eth_gasPrice`                             | :white_check_mark: |
@@ -123,24 +125,26 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `eth_blockNumber`                          | :white_check_mark: |
 | `eth_getBlockByNumber`                     | :white_check_mark: |
 | `eth_getBlockByHash`                       | :white_check_mark: |
-| `eth_sendRawTransaction`                   | :white_check_mark: |
+| `eth_sendRawTransaction`                   | :x:                |
 | `eth_getTransactionReceipt`                | :white_check_mark: |
 | `eth_getLogs`                              | :white_check_mark: |
-| `eth_getStorageAt`                         | :white_check_mark: |
-| `eth_getBlockTransactionCountByHash`       | :white_check_mark: |
+| `eth_getStorageAt`                         | :x:                |
+| `eth_getBlockTransactionCountByHash`       | :x:                |
 | `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
 | `eth_coinbase`                             | :white_check_mark: |
 | `eth_syncing`                              | :white_check_mark: |
+| `eth_getTransactionByHash`                 | :white_check_mark: |
+| `eth_getTransactionByBlockHashAndIndex`    | :white_check_mark: |
 
-*Additional endpoints*:
+*Additional endpoints* (8):
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `starknet_l1_to_l2_messages`               | :white_check_mark: |
 | `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
 | `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
 | `starknet_l2_to_l1_messages`               | :white_check_mark: |
-| `starknet_addDeclareTransaction`           | :white_check_mark: |
-| `starknet_addDeployAccountTransaction`     | :white_check_mark: |
+| `starknet_addDeclareTransaction`           | :x:                |
+| `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
 
@@ -217,14 +221,6 @@ cp examples/.env.example .env
 source .env
 ```
 
-#### [Beerus CLI](https://github.com/keep-starknet-strange/beerus/blob/main/docs/beerus-cli/cli.md)
-
-##### Beerus CLI
-
-```bash
-cargo run --bin beerus starknet query-state-root
-```
-
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
 ##### Beerus RPC
@@ -258,7 +254,7 @@ npm run build
 # open developer console
 ```
 
-## Roadmap
+## Work in progress
 
 See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
 a list of proposed features (and known issues).
@@ -339,6 +335,25 @@ Thanks goes to these wonderful people
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bbrandtom"><img src="https://avatars.githubusercontent.com/u/45038918?v=4?s=100" width="100px;" alt="Tom Brand"/><br /><sub><b>Tom Brand</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=bbrandtom" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ftupas"><img src="https://avatars.githubusercontent.com/u/35031356?v=4?s=100" width="100px;" alt="ftupas"/><br /><sub><b>ftupas</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=ftupas" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=pscott" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/phklive"><img src="https://avatars.githubusercontent.com/u/42912740?v=4?s=100" width="100px;" alt="Paul-Henry Kajfasz"/><br /><sub><b>Paul-Henry Kajfasz</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=phklive" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/robinstraub"><img src="https://avatars.githubusercontent.com/u/17799181?v=4?s=100" width="100px;" alt="Robin Straub"/><br /><sub><b>Robin Straub</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=robinstraub" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/bigherc18"><img src="https://avatars.githubusercontent.com/u/126212764?v=4?s=100" width="100px;" alt="bigherc18"/><br /><sub><b>bigherc18</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=bigherc18" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kelvyne"><img src="https://avatars.githubusercontent.com/u/8125532?v=4?s=100" width="100px;" alt="Lakhdar Slaim"/><br /><sub><b>Lakhdar Slaim</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=Kelvyne" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/lndavis"><img src="https://avatars.githubusercontent.com/u/40670744?v=4?s=100" width="100px;" alt="Lance N. Davis"/><br /><sub><b>Lance N. Davis</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=lancenonce" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tinoh9"><img src="https://avatars.githubusercontent.com/u/97869487?v=4?s=100" width="100px;" alt="Tino Huynh"/><br /><sub><b>Tino Huynh</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=tinoh9" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/irisdv"><img src="https://avatars.githubusercontent.com/u/8224462?v=4?s=100" width="100px;" alt="Iris"/><br /><sub><b>Iris</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=irisdv" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Aragar199"><img src="https://avatars.githubusercontent.com/u/14187644?v=4?s=100" width="100px;" alt="Alex Ponce"/><br /><sub><b>Alex Ponce</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=Aragar199" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/dpinones"><img src="https://avatars.githubusercontent.com/u/30808181?v=4?s=100" width="100px;" alt="Damián Piñones"/><br /><sub><b>Damián Piñones</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=dpinones" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/glihm"><img src="https://avatars.githubusercontent.com/u/7962849?v=4?s=100" width="100px;" alt="glihm"/><br /><sub><b>glihm</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=glihm" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fkrause98"><img src="https://avatars.githubusercontent.com/u/56402156?v=4?s=100" width="100px;" alt="Francisco Krause Arnim"/><br /><sub><b>Francisco Krause Arnim</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=fkrause98" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/joshualyguessennd"><img src="https://avatars.githubusercontent.com/u/75019812?v=4?s=100" width="100px;" alt="joshualyguessennd"/><br /><sub><b>joshualyguessennd</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=joshualyguessennd" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/dubzn"><img src="https://avatars.githubusercontent.com/u/58611754?v=4?s=100" width="100px;" alt="Santiago Galván (Dub)"/><br /><sub><b>Santiago Galván (Dub)</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=dubzn" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/chirag-bgh"><img src="https://avatars.githubusercontent.com/u/76247491?v=4?s=100" width="100px;" alt="chirag-bgh"/><br /><sub><b>chirag-bgh</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=chirag-bgh" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/greged93"><img src="https://avatars.githubusercontent.com/u/82421016?v=4?s=100" width="100px;" alt="greged93"/><br /><sub><b>greged93</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=greged93" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>

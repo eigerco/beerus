@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  beerus-rpc:
+    image: "beerus:${BEERUS_VERSION:-latest}"
+    ports:
+      - '3030:3030'
+    environment:
+      # Inject required env variables into the container
+      ETHEREUM_NETWORK: "${ETHEREUM_NETWORK:-mainnet}"
+      ETHEREUM_CONSENSUS_RPC_URL: "${ETHEREUM_CONSENSUS_RPC_URL}"
+      ETHEREUM_EXECUTION_RPC_URL: "${ETHEREUM_EXECUTION_RPC_URL}"
+      STARKNET_RPC_URL: "${STARKNET_RPC_URL}"
+    deploy:
+      resources:
+        # Define small resource limitations to mimic a low-spec hardware
+        limits:
+          cpus: "2"
+          memory: "200m"

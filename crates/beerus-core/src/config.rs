@@ -6,6 +6,7 @@ use helios::config::{checkpoints, networks::Network};
 #[cfg(feature = "std")]
 use log::{error, info};
 use serde::Deserialize;
+use shellexpand;
 #[cfg(feature = "std")]
 use std::{env, fs, net::SocketAddr, path::PathBuf, str::FromStr};
 
@@ -35,6 +36,7 @@ pub struct Config {
     pub beerus_rpc_address: Option<SocketAddr>,
     #[cfg(feature = "std")]
     pub helios_rpc_address: Option<u16>,
+    pub ethereum_checkpoint: Option<String>,
 }
 
 impl Config {
@@ -69,7 +71,7 @@ impl Config {
         config.ethereum_execution_rpc = string_env_or_die("ETHEREUM_EXECUTION_RPC_URL");
         config.starknet_rpc = string_env_or_die("STARKNET_RPC_URL");
         if let Ok(dir) = std::env::var("DATA_DIR") {
-            config.data_dir = PathBuf::from(dir);
+            config.data_dir = PathBuf::from(shellexpand::tilde(&dir).to_string());
         }
 
         if let Ok(raw_addr) = std::env::var("BEERUS_RPC_ADDR") {
@@ -80,6 +82,12 @@ impl Config {
 
         if let Ok(raw_addr) = std::env::var("HELIOS_RPC_ADDR") {
             config.helios_rpc_address = Some(raw_addr.parse().unwrap());
+        }
+
+        if let Ok(ethereum_checkpoint) = std::env::var("ETHEREUM_CHECKPOINT") {
+            config.ethereum_checkpoint = ethereum_checkpoint_parse(&ethereum_checkpoint);
+        } else {
+            config.ethereum_checkpoint = None;
         }
 
         config
@@ -187,6 +195,7 @@ impl Config {
     pub fn clean_env() {
         env::remove_var("BEERUS_CONFIG");
         env::remove_var("ETHEREUM_NETWORK");
+        env::remove_var("ETHEREUM_CHECKPOINT");
         env::remove_var("ETHEREUM_CONSENSUS_RPC_URL");
         env::remove_var("ETHEREUM_EXECUTION_RPC_URL");
         env::remove_var("STARKNET_RPC_URL");
@@ -207,6 +216,45 @@ fn string_env_or_die(env_var: &str) -> String {
     }
 }
 
+/// Parses a checkpoint for helios light client.
+///
+/// Expected values are:
+///   * "clear" -> clear any saved checkpoint and helios will re-sync.
+///   * "0x...." -> explicit checkpoint hex string to use.
+///   * Any other string -> panic.
+#[cfg(feature = "std")]
+fn ethereum_checkpoint_parse(checkpoint: &str) -> Option<String> {
+    if checkpoint == "clear" {
+        return Some(checkpoint.to_string());
+    }
+
+    if checkpoint.starts_with("0x") {
+        let stripped = checkpoint.strip_prefix("0x").unwrap_or(checkpoint);
+        if stripped.len() != 64 {
+            panic!(
+                "Checkpoint is expected to be a 32 bytes hex string starting with \
+		    '0x' or 'clear'. For example: \
+		    0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68. \
+		    Checkpoint found: {:?}.",
+                checkpoint.to_string()
+            );
+        }
+
+        return match hex::decode(stripped) {
+            Ok(_) => Some(stripped.to_string()),
+            Err(_) => panic!("Helios checkpoint is expected to be a valid hex string."),
+        };
+    }
+
+    panic!(
+        "Checkpoint is expected to be a 32 bytes hex string starting with \
+	    '0x' or 'clear'. For example: \
+	    0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68. \
+	    Checkpoint found: {:?}.",
+        checkpoint.to_string()
+    );
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -216,12 +264,14 @@ impl Default for Config {
             starknet_rpc: "http://localhost:9545".to_string(),
             starknet_core_contract_address: Address::from_str(STARKNET_GOERLI_CC_ADDRESS).unwrap(),
             #[cfg(feature = "std")]
-            data_dir: PathBuf::from(DEFAULT_DATA_DIR),
+            data_dir: PathBuf::from(shellexpand::tilde(DEFAULT_DATA_DIR).to_string()),
             poll_interval_secs: Some(DEFAULT_POLL_INTERVAL_SECS),
             #[cfg(feature = "std")]
             beerus_rpc_address: Some(SocketAddr::from_str(DEFAULT_BEERUS_RPC_ADDR).unwrap()),
             #[cfg(feature = "std")]
             helios_rpc_address: Some(DEFAULT_HELIOS_RPC_ADDR),
+            #[cfg(feature = "std")]
+            ethereum_checkpoint: None,
         }
     }
 }

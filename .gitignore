@@ -23,6 +23,9 @@ target/
 # Environment files
 .env
 
+# Node Modules
+node_modules
+
 # Beerus Wasm Example Files
 crates/beerus-js/node_modules
 crates/beerus-js/pkg/
@@ -30,3 +33,7 @@ crates/beerus-js/dist/*
 !crates/beerus-js/dist/index.html
 crates/beerus-js/package-lock.json
 crates/beerus-js/Cargo.lock
+
+# Beerus Documentation
+book/book
+*~
