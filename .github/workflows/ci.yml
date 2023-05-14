@@ -1,0 +1,82 @@
+name: continuous integration
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+
+env:
+  BEERUS_VERSION: ci
+  ETHEREUM_NETWORK: ${{ secrets.ETHEREUM_NETWORK }}
+  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
+  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
+  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the source code
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Setup docker
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      # Build and export the beerus docker image
+      - name: Build and export
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: beerus:${{ env.BEERUS_VERSION }}
+          outputs: type=docker,dest=/tmp/beerus.tar
+      # Upload the beerus docker image as an artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: beerus
+          path: /tmp/beerus.tar
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      # Checkout the source code
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Install hurl
+      - name: Install dependencies
+        run: |
+          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
+          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
+      # Download the beerus docker image
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: beerus
+          path: /tmp
+      # Load the beerus docker image
+      - name: Load docker image
+        run: |
+          docker load --input /tmp/beerus.tar
+          docker image ls -a
+      # Run beerus RPC in the background
+      - name: Run beerus
+        run: |
+          docker compose up -d 
+          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+      # Run end-to-end tests
+      - name: Run end-to-end tests
+        id: e2e_test
+        run: ./e2e-tests.sh
+      # Upload the docker logs
+      - name: Upload docker logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: beerus.log
+          path: beerus.log
+        if: always()
+      # Generate job summary
+      - name: Generate job summary
+        run: cat summary.md >> $GITHUB_STEP_SUMMARY
+        if: always()
