@@ -127,6 +127,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "lancenonce",
+      "name": "Lance N. Davis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40670744?v=4",
+      "profile": "https://linktr.ee/lndavis",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
