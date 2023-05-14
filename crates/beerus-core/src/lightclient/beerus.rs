@@ -6,7 +6,7 @@ use gloo_timers::callback::Interval;
 #[cfg(not(feature = "std"))]
 use wasm_bindgen_futures::spawn_local;
 
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 #[cfg(not(feature = "std"))]
 use core::str::FromStr;
@@ -71,7 +71,7 @@ pub struct BeerusLightClient {
     /// Global configuration.
     pub config: Config,
     /// Ethereum light client.
-    pub ethereum_lightclient: Arc<RwLock<Box<dyn EthereumLightClient>>>,
+    pub ethereum_lightclient: Arc<Mutex<Box<dyn EthereumLightClient>>>,
     /// StarkNet light client.
     pub starknet_lightclient: Arc<Box<dyn StarkNetLightClient>>,
     /// Sync status.
@@ -93,7 +93,7 @@ impl BeerusLightClient {
         starknet_lightclient_raw: Box<dyn StarkNetLightClient>,
     ) -> Self {
         // Create a new Ethereum light client.
-        let ethereum_lightclient = Arc::new(RwLock::new(ethereum_lightclient_raw));
+        let ethereum_lightclient = Arc::new(Mutex::new(ethereum_lightclient_raw));
         // Create a new StarkNet light client.
         let starknet_lightclient = Arc::new(starknet_lightclient_raw);
         let starknet_core_abi = include_str!("../resources/starknet_core_abi.json");
@@ -121,7 +121,7 @@ impl BeerusLightClient {
     pub async fn start(&mut self) -> Result<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
-            self.ethereum_lightclient.write().await.start().await?;
+            self.ethereum_lightclient.lock().await.start().await?;
             // Start the StarkNet light client.
             self.starknet_lightclient.start().await?;
             self.sync_status = SyncStatus::Synced;
@@ -135,14 +135,14 @@ impl BeerusLightClient {
             let task = async move {
                 loop {
                     let state_root = ethereum_clone
-                        .read()
+                        .lock()
                         .await
                         .starknet_state_root()
                         .await
                         .unwrap();
 
                     let last_proven_block = ethereum_clone
-                        .read()
+                        .lock()
                         .await
                         .starknet_last_proven_block()
                         .await
@@ -301,7 +301,7 @@ impl BeerusLightClient {
     ) -> Result<FieldElement> {
         let last_block = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_last_proven_block()
             .await?
@@ -338,7 +338,7 @@ impl BeerusLightClient {
 
         let last_block = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_last_proven_block()
             .await?
@@ -384,7 +384,7 @@ impl BeerusLightClient {
     pub async fn starknet_get_nonce(&self, address: FieldElement) -> Result<FieldElement> {
         let last_block = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_last_proven_block()
             .await?
@@ -428,7 +428,7 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
@@ -468,7 +468,7 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
@@ -508,7 +508,7 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
@@ -543,7 +543,7 @@ impl BeerusLightClient {
         // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
             .await?;
@@ -611,7 +611,7 @@ impl BeerusLightClient {
         let cloned_node = self.node.read().await;
         let state_root = self
             .ethereum_lightclient
-            .read()
+            .lock()
             .await
             .starknet_state_root()
             .await?
