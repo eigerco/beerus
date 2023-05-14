@@ -129,6 +129,15 @@
       ]
     },
     {
+      "login": "irisdv",
+      "name": "Iris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8224462?v=4",
+      "profile": "https://github.com/irisdv",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "Aragar199",
       "name": "Alex Ponce",
       "avatar_url": "https://avatars.githubusercontent.com/u/14187644?v=4",
@@ -137,6 +146,7 @@
         "code"
       ]
     },
+    {
       "login": "glihm",
       "name": "glihm",
       "avatar_url": "https://avatars.githubusercontent.com/u/7962849?v=4",
