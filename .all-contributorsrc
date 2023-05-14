@@ -127,6 +127,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "irisdv",
+      "name": "Iris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8224462?v=4",
+      "profile": "https://github.com/irisdv",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
