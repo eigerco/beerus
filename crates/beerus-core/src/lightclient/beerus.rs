@@ -381,18 +381,12 @@ impl BeerusLightClient {
     ///
     /// `Ok(FieldElement)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_get_nonce(&self, address: FieldElement) -> Result<FieldElement> {
-        let last_block = self
-            .ethereum_lightclient
-            .lock()
-            .await
-            .starknet_last_proven_block()
-            .await?
-            .as_u64();
-
-        self.starknet_lightclient
-            .get_nonce(last_block, address)
-            .await
+    pub async fn starknet_get_nonce(
+        &self,
+        address: FieldElement,
+        block_id: &BlockId,
+    ) -> Result<FieldElement> {
+        self.starknet_lightclient.get_nonce(block_id, address).await
     }
 
     /// Return the timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
