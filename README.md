@@ -85,14 +85,14 @@ storage value of a StarkNet contract.
 
 Here are all the endpoints supported by Beerus in tag v0.2.0
 
-*Starknet endpoints* (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
 
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `starknet_getBlockWithTxHashes`            | :white_check_mark: |
 | `starknet_getBlockWithTxs`                 | :white_check_mark: |
 | `starknet_getStateUpdate`                  | :white_check_mark: |
-| `starknet_getStorageAt`                    | :x:                |
+| `starknet_getStorageAt`                    | :white_check_mark: |
 | `starknet_getTransactionByHash`            | :white_check_mark: |
 | `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
 | `starknet_getTransactionReceipt`           | :white_check_mark: |
@@ -100,24 +100,24 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_getClassHashAt`                  | :white_check_mark: |
 | `starknet_getClassAt`                      | :white_check_mark: |
 | `starknet_getBlockTransactionCount`        | :white_check_mark: |
-| `starknet_call`                            | :x:                |
+| `starknet_call`                            | :white_check_mark: |
 | `starknet_estimateFee`                     | :white_check_mark: |
 | `starknet_blockNumber`                     | :white_check_mark: |
 | `starknet_blockHashAndNumber`              | :white_check_mark: |
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getEvents`                       | :white_check_mark: |
+| `starknet_getEvents`                       | :x:                |
 | `starknet_getNonce`                        | :white_check_mark: |
 
 
-*Ethereum endpoints* (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
+*Ethereum endpoints* (21) (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `eth_getBalance`                           | :white_check_mark: |
 | `eth_getTransactionCount`                  | :white_check_mark: |
 | `eth_getCode`                              | :white_check_mark: |
-| `eth_call`                                 | :white_check_mark: |
+| `eth_call`                                 | :x:                |
 | `eth_estimateGas`                          | :white_check_mark: |
 | `eth_getChainId`                           | :white_check_mark: |
 | `eth_gasPrice`                             | :white_check_mark: |
@@ -125,26 +125,26 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `eth_blockNumber`                          | :white_check_mark: |
 | `eth_getBlockByNumber`                     | :white_check_mark: |
 | `eth_getBlockByHash`                       | :white_check_mark: |
-| `eth_sendRawTransaction`                   | :white_check_mark: |
+| `eth_sendRawTransaction`                   | :x:                |
 | `eth_getTransactionReceipt`                | :white_check_mark: |
 | `eth_getLogs`                              | :white_check_mark: |
-| `eth_getStorageAt`                         | :white_check_mark: |
-| `eth_getBlockTransactionCountByHash`       | :white_check_mark: |
+| `eth_getStorageAt`                         | :x:                |
+| `eth_getBlockTransactionCountByHash`       | :x:                |
 | `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
 | `eth_coinbase`                             | :white_check_mark: |
 | `eth_syncing`                              | :white_check_mark: |
 | `eth_getTransactionByHash`                 | :white_check_mark: |
 | `eth_getTransactionByBlockHashAndIndex`    | :white_check_mark: |
 
-*Additional endpoints*:
+*Additional endpoints* (8):
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
 | `starknet_l1_to_l2_messages`               | :white_check_mark: |
 | `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
 | `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
 | `starknet_l2_to_l1_messages`               | :white_check_mark: |
-| `starknet_addDeclareTransaction`           | :white_check_mark: |
-| `starknet_addDeployAccountTransaction`     | :white_check_mark: |
+| `starknet_addDeclareTransaction`           | :x:                |
+| `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
 
