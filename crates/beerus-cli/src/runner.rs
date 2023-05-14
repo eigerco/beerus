@@ -83,19 +83,15 @@ pub async fn run(beerus: BeerusLightClient, cli: Cli) -> Result<CommandResponse>
                 starknet::query_starknet_state_root(beerus).await
             }
             StarkNetSubCommands::QueryContract {
-                contract_address,
-                entry_point_selector,
+                address,
+                selector,
                 calldata,
-                block_id_type,
-                block_id,
             } => {
                 starknet::query_starknet_contract_view(
                     beerus,
-                    contract_address.to_string(),
-                    entry_point_selector.to_string(),
+                    address.to_string(),
+                    selector.to_string(),
                     calldata.clone(),
-                    block_id_type.to_string(),
-                    block_id.to_string(),
                 )
                 .await
             }

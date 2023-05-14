@@ -29,7 +29,7 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
         BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
-        DeployTransaction, FeeEstimate, InvokeTransaction, L1HandlerTransaction,
+        DeployTransaction, FeeEstimate, FunctionCall, InvokeTransaction, L1HandlerTransaction,
         MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
         Transaction,
     },
@@ -308,6 +308,45 @@ impl BeerusLightClient {
             .as_u64();
         self.starknet_lightclient
             .get_storage_at(contract_address, storage_key, last_block)
+            .await
+    }
+
+    /// Call starknet contract view.
+    /// This function is used to call a view function of a StarkNet contract.
+    /// WARNING: This function is untrusted as there's no access list on StarkNet (yet @Avihu).
+    ///
+    /// # Arguments
+    /// * `contract_address` - The StarkNet contract address.
+    /// * `entry_point_selector` - The entry point selector.
+    /// * `calldata` - The calldata.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(Vec<FieldElement>)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    pub async fn starknet_call_contract(
+        &self,
+        contract_address: FieldElement,
+        entry_point_selector: FieldElement,
+        calldata: Vec<FieldElement>,
+    ) -> Result<Vec<FieldElement>> {
+        let opts = FunctionCall {
+            contract_address,
+            entry_point_selector,
+            calldata,
+        };
+
+        let last_block = self
+            .ethereum_lightclient
+            .read()
+            .await
+            .starknet_last_proven_block()
+            .await?
+            .as_u64();
+
+        // Call the StarkNet light client.
+        self.starknet_lightclient
+            .call(opts, &BlockId::Number(last_block))
             .await
     }
 

@@ -164,22 +164,14 @@ pub enum StarkNetSubCommands {
     /// Query a StarkNet contract view.
     QueryContract {
         /// The address of the contract to query
-        #[arg(short, long, value_name = "CONTRACT_ADDRESS")]
-        contract_address: String,
+        #[arg(short, long, value_name = "ADDRESS")]
+        address: String,
         /// The selector of the function to call
-        #[arg(short, long, value_name = "ENTRY_POINT_SELECTOR")]
-        entry_point_selector: String,
+        #[arg(short, long, value_name = "SELECTOR")]
+        selector: String,
         /// The calldata of the function to call
         #[arg(long, value_name = "CALLDATA", use_value_delimiter = true)]
         calldata: Vec<String>,
-        /// Type of block identifier
-        /// eg. hash, number, tag
-        #[arg(short, long, value_name = "BLOCK_ID_TYPE")]
-        block_id_type: String,
-        /// The block identifier
-        /// eg. 0x123, 123, pending, or latest
-        #[arg(short, long, value_name = "BLOCK_ID")]
-        block_id: String,
     },
     QueryGetStorageAt {
         /// The address of the contract to query
