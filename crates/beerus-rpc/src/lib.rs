@@ -384,11 +384,15 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
-    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String, Error> {
+    async fn starknet_get_nonce(
+        &self,
+        contract_address: String,
+        block_id: BlockId,
+    ) -> Result<String, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
         let nonce = self
             .beerus
-            .starknet_get_nonce(contract_address)
+            .starknet_get_nonce(contract_address, &block_id)
             .await
             .unwrap()
             .to_string();

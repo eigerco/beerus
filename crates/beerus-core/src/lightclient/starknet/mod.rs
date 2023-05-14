@@ -49,7 +49,7 @@ pub trait StarkNetLightClient: Send + Sync {
         key: FieldElement,
         block_number: u64,
     ) -> Result<FieldElement>;
-    async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement>;
+    async fn get_nonce(&self, block_id: &BlockId, address: FieldElement) -> Result<FieldElement>;
     async fn chain_id(&self) -> Result<FieldElement>;
     async fn block_number(&self) -> Result<u64>;
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber>;
@@ -228,12 +228,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(FieldElement)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn get_nonce(&self, _block_number: u64, address: FieldElement) -> Result<FieldElement> {
+    async fn get_nonce(&self, block_id: &BlockId, address: FieldElement) -> Result<FieldElement> {
         self.client
-            .get_nonce(
-                &starknet::providers::jsonrpc::models::BlockId::Number(_block_number),
-                address,
-            )
+            .get_nonce(block_id, address)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
