@@ -4,10 +4,9 @@ on:
   schedule:
     - cron: "0 8 * * *"
 
-# The following urls will soon be removed, API keys invalidated and RPC urls will be provided as secrets
 env:
   BEERUS_VERSION: ci
-  ETHEREUM_NETWORK: mainnet
+  ETHEREUM_NETWORK: ${{ secrets.ETHEREUM_NETWORK }}
   ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
   ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
   STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
