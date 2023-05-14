@@ -136,6 +136,60 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "tinoh9",
+      "name": "Tino Huynh",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97869487?v=4",
+      "profile": "https://github.com/tinoh9",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "irisdv",
+      "name": "Iris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8224462?v=4",
+      "profile": "https://github.com/irisdv",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Aragar199",
+      "name": "Alex Ponce",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14187644?v=4",
+      "profile": "https://github.com/Aragar199",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "glihm",
+      "name": "glihm",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7962849?v=4",
+      "profile": "https://github.com/glihm",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "phklive",
+      "name": "Paul-Henry Kajfasz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42912740?v=4",
+      "profile": "https://github.com/phklive",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "dpinones",
+      "name": "Damián Piñones",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30808181?v=4",
+      "profile": "https://github.com/dpinones",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
