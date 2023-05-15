@@ -295,7 +295,7 @@ pub trait BeerusRpc {
         signature: Vec<String>,
         nonce: String,
         contract_class: String,
-        sender_address: String,        compiled_class_hash: String,
+        sender_address: String,
     ) -> Result<DeclareTransactionResult, Error>;
 
     #[method(name = "starknet_pendingTransactions")]
