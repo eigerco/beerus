@@ -653,6 +653,7 @@ impl BeerusRpcServer for BeerusRpc {
         nonce: String,
         contract_class: String,
         sender_address: String,
+        compile_class_hash: String,
     ) -> Result<DeclareTransactionResult, Error> {
         let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
         let _version: u64 = version.parse().unwrap();
@@ -661,6 +662,7 @@ impl BeerusRpcServer for BeerusRpc {
             .map(|x| FieldElement::from_str(x).unwrap())
             .collect();
         let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
+        let _compiled_class_hash = compile_class_hash;
 
         let contract_class_bytes = contract_class.as_bytes();
         let contract_class = serde_json::from_slice(contract_class_bytes)?;

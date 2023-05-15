@@ -296,6 +296,7 @@ pub trait BeerusRpc {
         nonce: String,
         contract_class: String,
         sender_address: String,
+        compiled_class_hash: String,
     ) -> Result<DeclareTransactionResult, Error>;
 
     #[method(name = "starknet_pendingTransactions")]
