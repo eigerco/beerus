@@ -1,7 +1,10 @@
 pub mod api;
+pub mod models;
 pub mod utils;
 
 use crate::api::{BeerusApiError, BeerusRpcServer};
+use crate::models::EventFilterWithPage;
+
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
     lightclient::starknet::storage_proof::GetProofOutput,
@@ -25,9 +28,9 @@ use starknet::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
         BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage, FeeEstimate,
-        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
+        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
 };
@@ -633,14 +636,16 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn starknet_get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        custom_filter: EventFilterWithPage,
     ) -> Result<EventsPage, Error> {
         Ok(self
             .beerus
             .starknet_lightclient
-            .get_events(filter, continuation_token, chunk_size)
+            .get_events(
+                custom_filter.filter,
+                custom_filter.page.continuation_token,
+                custom_filter.page.chunk_size,
+            )
             .await
             .unwrap())
     }

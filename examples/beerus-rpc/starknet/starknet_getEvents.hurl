@@ -3,7 +3,16 @@ Content-Type: application/json
 {
   "jsonrpc": "2.0",
   "method": "starknet_getEvents",
-  "params": [],
+  "params": {
+    "custom_filter": {
+      "filter": {
+        "address": "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7"
+      },
+      "page": {
+        "chunk_size": 10
+      }
+    }
+  },
   "id": 1
 }
 
