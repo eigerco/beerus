@@ -175,7 +175,7 @@ impl EthereumLightClient for HeliosLightClient {
     async fn starknet_state_root(&self) -> Result<U256> {
         // Corresponds to the StarkNet core contract function `stateRoot`.
         // The function signature is `stateRoot() -> (uint256)`.
-        // The function selector is `0x95d8ecA2`.
+        // The function selector is `0x9588ecA2`.
         let data = vec![0x95, 0x88, 0xec, 0xa2];
 
         // Build the call options.
@@ -251,31 +251,6 @@ impl HeliosLightClient {
 
         #[cfg(not(feature = "std"))]
         let helios_light_client: Client<ConfigDB> = builder.build()?;
-
-        Ok(Self {
-            helios_light_client,
-            starknet_core_contract_address: config.starknet_core_contract_address,
-        })
-    }
-
-    #[cfg(feature = "std")]
-    pub async fn new_rpc(config: Config) -> eyre::Result<Self> {
-        // Build the Helios wrapped light client.
-        let mut builder = ClientBuilder::new()
-            .network(config.ethereum_network()?)
-            .consensus_rpc(config.ethereum_consensus_rpc.as_str())
-            .execution_rpc(config.ethereum_execution_rpc.as_str())
-            .load_external_fallback()
-            .data_dir(config.data_dir.clone())
-            .rpc_port(config.helios_rpc_address.unwrap());
-
-        builder = HeliosLightClient::load_checkpoint(
-            builder,
-            config.ethereum_checkpoint,
-            config.data_dir.clone(),
-        );
-
-        let helios_light_client: Client<FileDB> = builder.build()?;
 
         Ok(Self {
             helios_light_client,

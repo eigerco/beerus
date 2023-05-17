@@ -17,7 +17,7 @@ async fn main() {
     let config = Config::from_env();
 
     info!("creating Ethereum(Helios) lightclient...");
-    let ethereum_lightclient = match HeliosLightClient::new_rpc(config.clone()).await {
+    let ethereum_lightclient = match HeliosLightClient::new(config.clone()).await {
         Ok(ethereum_lightclient) => ethereum_lightclient,
         Err(err) => {
             error! {"{}", err};

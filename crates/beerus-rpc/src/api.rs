@@ -174,7 +174,11 @@ pub trait BeerusRpc {
     async fn starknet_chain_id(&self) -> Result<String, Error>;
 
     #[method(name = "starknet_getNonce")]
-    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String, Error>;
+    async fn starknet_get_nonce(
+        &self,
+        contract_address: String,
+        block_id: BlockId,
+    ) -> Result<String, Error>;
 
     #[method(name = "starknet_blockNumber")]
     async fn starknet_block_number(&self) -> Result<u64, Error>;
