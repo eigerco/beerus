@@ -3,6 +3,11 @@ name: continuous integration
 on:
   schedule:
     - cron: "0 8 * * *"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'The branch to build'
+        required: true
 
 env:
   BEERUS_VERSION: ci
@@ -69,13 +74,6 @@ jobs:
       - name: Run end-to-end tests
         id: e2e_test
         run: ./e2e-tests.sh
-      # Upload the docker logs
-      - name: Upload docker logs
-        uses: actions/upload-artifact@v3
-        with:
-          name: beerus.log
-          path: beerus.log
-        if: always()
       # Generate job summary
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
