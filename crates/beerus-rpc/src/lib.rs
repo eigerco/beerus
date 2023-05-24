@@ -22,8 +22,7 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-        BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
         DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage, FeeEstimate,
         FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
@@ -68,7 +67,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_balance(&address, block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(balance))
     }
@@ -88,7 +87,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_transaction_count(&address, block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(tx_count))
     }
@@ -103,7 +102,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_block_transaction_count_by_hash(&hash)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(tx_count))
     }
@@ -119,7 +118,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_block_transaction_count_by_number(block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(tx_count))
     }
@@ -134,7 +133,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_code(&address, block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
         Ok(format!("0x{}", hex::encode(code)))
     }
 
@@ -146,7 +145,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .call(&opts, block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
         Ok(format!("0x{}", hex::encode(res)))
     }
 
@@ -158,7 +157,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .estimate_gas(&opts)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(gas_estimation))
     }
@@ -171,7 +170,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_chain_id()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(chain_id))
     }
@@ -184,7 +183,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_gas_price()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(gas_price))
     }
@@ -197,7 +196,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_priority_fee()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(max_priority_fee_per_gas))
     }
@@ -210,7 +209,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_block_number()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(hex_string!(block_number))
     }
@@ -226,7 +225,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_block_by_number(block, full_tx)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_get_block_by_hash(
@@ -242,7 +241,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_block_by_hash(&hash, full_tx)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_send_raw_transaction(&self, bytes: &str) -> Result<String, Error> {
@@ -255,7 +254,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .send_raw_transaction(&bytes)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
 
         Ok(raw_tx.to_string())
     }
@@ -272,7 +271,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_transaction_receipt(&tx_hash)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_get_transaction_by_hash(
@@ -287,7 +286,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_transaction_by_hash(&tx_hash)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_get_transaction_by_block_hash_and_index(
@@ -303,7 +302,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_transaction_by_block_hash_and_index(&block_hash, index)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_coinbase(&self) -> Result<Address, Error> {
@@ -313,7 +312,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .coinbase()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_syncing(&self) -> Result<SyncingStatus, Error> {
@@ -323,7 +322,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .syncing()
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_get_logs(&self, filter: Filter) -> Result<Vec<Log>, Error> {
@@ -333,7 +332,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_logs(&filter)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))
     }
 
     async fn eth_get_storage_at(
@@ -351,7 +350,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await
             .get_storage_at(&address, slot, block)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))?;
+            .map_err(|e| Error::from(anyhow::anyhow!(e.to_string())))?;
         Ok(storage.to_string())
     }
 
@@ -384,11 +383,15 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
     }
 
-    async fn starknet_get_nonce(&self, contract_address: String) -> Result<String, Error> {
+    async fn starknet_get_nonce(
+        &self,
+        contract_address: String,
+        block_id: BlockId,
+    ) -> Result<String, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
         let nonce = self
             .beerus
-            .starknet_get_nonce(contract_address)
+            .starknet_get_nonce(contract_address, &block_id)
             .await
             .unwrap()
             .to_string();
@@ -643,40 +646,13 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn starknet_add_declare_transaction(
         &self,
-        version: String,
-        max_fee: String,
-        signature: Vec<String>,
-        nonce: String,
-        contract_class: String,
-        sender_address: String,
+        declare_transaction: BroadcastedDeclareTransaction,
     ) -> Result<DeclareTransactionResult, Error> {
-        let max_fee: FieldElement = FieldElement::from_str(&max_fee).unwrap();
-        let _version: u64 = version.parse().unwrap();
-        let signature = signature
-            .iter()
-            .map(|x| FieldElement::from_str(x).unwrap())
-            .collect();
-        let nonce: FieldElement = FieldElement::from_str(&nonce).unwrap();
-
-        let contract_class_bytes = contract_class.as_bytes();
-        let contract_class = serde_json::from_slice(contract_class_bytes)?;
-        let sender_address: FieldElement = FieldElement::from_str(&sender_address).unwrap();
-
-        let declare_transaction =
-            BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
-                max_fee,
-                signature,
-                nonce,
-                contract_class,
-                sender_address,
-            });
-
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .add_declare_transaction(&declare_transaction)
             .await
-            .unwrap())
+            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
     }
 
     async fn starknet_pending_transactions(&self) -> Result<Vec<StarknetTransaction>, Error> {

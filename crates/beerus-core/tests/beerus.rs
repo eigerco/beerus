@@ -24,14 +24,14 @@ mod tests {
         core::types::FieldElement,
         macros::selector,
         providers::jsonrpc::models::{
-            BlockHashAndNumber, BlockId, BlockStatus, BlockWithTxHashes, BlockWithTxs,
-            BroadcastedDeclareTransaction, BroadcastedDeclareTransactionV1,
-            BroadcastedDeployTransaction, BroadcastedInvokeTransaction,
-            BroadcastedInvokeTransactionV0, ContractClass, DeclareTransactionResult,
-            DeployTransactionResult, EventFilter, FeeEstimate, InvokeTransaction,
-            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
+            BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
+            BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
+            DeclareTransactionResult, DeployTransactionResult, EventFilter, FeeEstimate,
+            InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
+            InvokeTransactionV0, LegacyContractClass, LegacyContractEntryPoint,
+            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
@@ -1726,8 +1726,11 @@ mod tests {
             "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
         )
         .unwrap();
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
+
         // Get nonce
-        let res = beerus.starknet_get_nonce(address).await.unwrap();
+        let res = beerus.starknet_get_nonce(address, &block_id).await.unwrap();
 
         assert_eq!(res, expected_result);
     }
@@ -1760,8 +1763,10 @@ mod tests {
         )
         .unwrap();
 
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
+
         // Get Nonce.
-        let res = beerus.starknet_get_nonce(address).await;
+        let res = beerus.starknet_get_nonce(address, &block_id).await;
 
         // Assert that the result is correct.
         assert!(res.is_err());
