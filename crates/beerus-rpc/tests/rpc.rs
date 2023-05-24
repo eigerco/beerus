@@ -5,7 +5,8 @@ mod tests {
 
     use crate::common::setup_beerus_rpc;
     use beerus_core::starknet_helper::create_mock_get_events;
-    use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
+    use beerus_rpc::api::BeerusRpcServer;
+    use beerus_rpc::errors::BeerusApiError;
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
@@ -13,6 +14,7 @@ mod tests {
         InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes, SyncStatusType,
         Transaction,
     };
+
     #[tokio::test]
     async fn starknet_block_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;

@@ -1,7 +1,8 @@
 pub mod api;
+pub mod errors;
 pub mod utils;
 
-use crate::api::{BeerusApiError, BeerusRpcServer};
+use crate::api::BeerusRpcServer;
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
     lightclient::starknet::storage_proof::GetProofOutput,
@@ -15,6 +16,7 @@ use jsonrpsee::{
 };
 
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use errors::BeerusApiError;
 use ethers::types::{
     Address, Filter, Log, SyncingStatus, Transaction as EthTransaction, TransactionReceipt, H256,
     U256,
@@ -408,7 +410,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .get_transaction_by_hash(tx_hash_felt)
             .await
-            .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
+            .map_err(|_| Error::from(BeerusApiError::TransactionHashNotFound))
     }
 
     async fn starknet_get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, Error> {

@@ -28,7 +28,6 @@ use starknet::{
     },
 };
 use url::Url;
-
 pub mod storage_proof;
 
 // #[cfg(feature="std")]
