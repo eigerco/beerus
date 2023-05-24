@@ -2,56 +2,53 @@
 name: release
 
 on:
-  # push:
-  #   tags:
-  #     - '*'
-
   push:
-    branch: feat/477-docker-publish
+    tags:
+      - '*'
 
 jobs:
-  # release:
-  #   name: Release for ${{ matrix.os }}
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - os: ubuntu-latest
-  #           artifact_name: beerus-linux-x86_64.tar.gz
-  #           asset_name: beerus-linux-x86_64.tar.gz
-  #         - os: macos-latest
-  #           artifact_name: beerus-darwin-x86_64.tar.gz
-  #           asset_name: beerus-darwin-x86_64.tar.gz
+  release:
+    name: Release for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: beerus-linux-x86_64.tar.gz
+            asset_name: beerus-linux-x86_64.tar.gz
+          - os: macos-latest
+            artifact_name: beerus-darwin-x86_64.tar.gz
+            asset_name: beerus-darwin-x86_64.tar.gz
 
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
 
-  #     - name: Install Toolchain
-  #       run: |
-  #         rustup set profile minimal
-  #         rustup update --no-self-update stable
+      - name: Install Toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update stable
           
-  #     - name: Cache Deps
-  #       uses: Swatinem/rust-cache@v2
-  #       with:
-  #         cache-on-failure: true
+      - name: Cache Deps
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
-  #     - name: Build
-  #       run: cargo build --release
+      - name: Build
+        run: cargo build --release
 
-  #     - name: Create Tarball
-  #       run: >
-  #         tar -C target/release -czvf ${{ matrix.artifact_name }}
-  #         beerus beerus-rpc
+      - name: Create Tarball
+        run: >
+          tar -C target/release -czvf ${{ matrix.artifact_name }}
+          beerus beerus-rpc
 
-  #     - name: Upload binaries to release
-  #       uses: svenstaro/upload-release-action@v2
-  #       with:
-  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-  #         file: ${{ matrix.artifact_name }}
-  #         asset_name: ${{ matrix.asset_name }}
-  #         tag: ${{ github.ref }}
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
 
   docker-publish:
     runs-on: ubuntu-latest
@@ -68,4 +65,4 @@ jobs:
           push: true
           tags: >
             ghcr.io/${{ github.repository }}:latest,
-            ghcr.io/${{ github.repository }}:test
+            ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }}
