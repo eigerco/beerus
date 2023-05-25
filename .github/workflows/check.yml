@@ -13,7 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-# TODO: add back llvm codecov when we beerus-rpc testing 
 jobs:
   test:
     name: test
@@ -22,16 +21,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all -- -q --test-threads=2
-
-  clippy:
-    name: clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2          
-      - run: cargo clippy --all -- -D warnings -A too-many-arguments
+      - run: cargo test --all
 
   lint:
     name: lint
@@ -40,7 +30,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all -- --check
+      - run: |
+          cargo fmt --all -- --check
+          cargo clippy --all -- -D warnings -A too-many-arguments
 
   # TODO: Add back in once Helios supports
   #   - ref(https://github.com/keep-starknet-strange/beerus/issues/383)
@@ -60,15 +52,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup rust toolchain
-        run: rustup show
-      - name: Set-Up
-        run: >
-          sudo apt-get update && sudo apt-get install -y clang llvm libudev-dev protobuf-compiler && cargo install cargo-tarpaulin
+      - name: Install Rust
+        run: rustup update stable
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
       - uses: Swatinem/rust-cache@v2
-      - name: Coverage
-        run: cargo tarpaulin --workspace --skip-clean --avoid-cfg-tarpaulin
-      - name: Upload coverage to codecov.io
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
           fail_ci_if_error: true
