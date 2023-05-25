@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all -- -q --test-threads=2
+      - run: cargo test --all
 
   lint:
     name: lint
@@ -52,15 +52,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup rust toolchain
-        run: rustup show
-      - name: Set-Up
-        run: >
-          sudo apt-get update && sudo apt-get install -y clang llvm libudev-dev protobuf-compiler && cargo install cargo-tarpaulin
-      - uses: Swatinem/rust-cache@v2
-      - name: Coverage
-        run: cargo tarpaulin --workspace --skip-clean --avoid-cfg-tarpaulin
-      - name: Upload coverage to codecov.io
+      - name: Install Rust
+        run: rustup update stable
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
           fail_ci_if_error: true
