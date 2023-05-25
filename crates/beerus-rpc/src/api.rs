@@ -307,7 +307,7 @@ pub trait BeerusRpc {
     async fn starknet_call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error>;
 
     #[method(name = "starknet_getStorageAt")]

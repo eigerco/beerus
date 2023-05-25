@@ -687,11 +687,11 @@ impl BeerusRpcServer for BeerusRpc {
     async fn starknet_call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error> {
         self.beerus
             .starknet_lightclient
-            .call(request, block_number)
+            .call(request, &block_id)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
