@@ -11,7 +11,7 @@ HTTP 200
 [Captures]
 block_hash: jsonpath "$.result.hash"
 
-POST http://0.0.0.0:3031
+POST http://0.0.0.0:3030
 Content-Type: application/json
 {
     "jsonrpc":"2.0",

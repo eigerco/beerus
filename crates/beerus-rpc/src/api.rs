@@ -15,10 +15,10 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedInvokeTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
-        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
+        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
+        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
 };
@@ -290,12 +290,7 @@ pub trait BeerusRpc {
     #[method(name = "starknet_addDeclareTransaction")]
     async fn starknet_add_declare_transaction(
         &self,
-        version: String,
-        max_fee: String,
-        signature: Vec<String>,
-        nonce: String,
-        contract_class: String,
-        sender_address: String,
+        declare_transaction: BroadcastedDeclareTransaction,
     ) -> Result<DeclareTransactionResult, Error>;
 
     #[method(name = "starknet_pendingTransactions")]
@@ -312,7 +307,7 @@ pub trait BeerusRpc {
     async fn starknet_call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error>;
 
     #[method(name = "starknet_getStorageAt")]
