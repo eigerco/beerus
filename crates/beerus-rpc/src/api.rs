@@ -16,8 +16,8 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
-        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
-        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
+        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
         MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
