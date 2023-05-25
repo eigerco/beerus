@@ -282,11 +282,12 @@ fn mock_starknet_call() -> Mock {
         .unwrap(),
         calldata: Vec::new(),
     };
-    let block_id = BlockId::Number(33482);
+    let latest_block = BlockId::Tag(BlockTag::Latest);
 
     Mock::given(method(Method::POST))
         .and(body_json(StarknetRpcBaseData::starknet_call((
-            &request, &block_id,
+            &request,
+            &latest_block,
         ))))
         .respond_with(
             response_template_with_status(StatusCode::OK)
