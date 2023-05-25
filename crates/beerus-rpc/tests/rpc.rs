@@ -222,10 +222,9 @@ mod tests {
             .unwrap(),
             calldata: Vec::new(),
         };
-        let block_number: u64 = 33482;
 
         let call_result: Vec<FieldElement> = beerus_rpc
-            .starknet_call(request, block_number)
+            .starknet_call(request, BlockId::Tag(BlockTag::Latest))
             .await
             .unwrap();
         let expected: Vec<FieldElement> = vec![FieldElement::from_hex_be("298305742194").unwrap()];
