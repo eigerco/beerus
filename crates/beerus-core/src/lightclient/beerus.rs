@@ -298,17 +298,36 @@ impl BeerusLightClient {
         &self,
         contract_address: FieldElement,
         storage_key: FieldElement,
+        block_id: &BlockId,
     ) -> Result<FieldElement> {
-        let last_block = self
+        let last_proven_block = self
             .ethereum_lightclient
             .lock()
             .await
             .starknet_last_proven_block()
             .await?
             .as_u64();
-        self.starknet_lightclient
-            .get_storage_at(contract_address, storage_key, last_block)
-            .await
+
+        if let BlockId::Number(block_number) = block_id {
+            if block_number <= &last_proven_block {
+                return self
+                    .starknet_lightclient
+                    .get_storage_at(contract_address, storage_key, block_id)
+                    .await;
+            }
+        } else if let MaybePendingBlockWithTxHashes::Block(block) = self
+            .starknet_lightclient
+            .get_block_with_tx_hashes(block_id)
+            .await?
+        {
+            if block.block_number <= last_proven_block {
+                return self
+                    .starknet_lightclient
+                    .get_storage_at(contract_address, storage_key, block_id)
+                    .await;
+            }
+        }
+        Err(eyre::eyre!("BlockId is not proven yet"))
     }
 
     /// Call starknet contract view.
