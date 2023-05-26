@@ -37,7 +37,7 @@ pub mod storage_proof;
 #[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
-    async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
+    async fn call(&self, opts: FunctionCall, block_id: &BlockId) -> Result<Vec<FieldElement>>;
     async fn estimate_fee(
         &self,
         tx: BroadcastedTransaction,
@@ -179,12 +179,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(Vec<FieldElement>)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn call(&self, request: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>> {
+    async fn call(&self, request: FunctionCall, block_id: &BlockId) -> Result<Vec<FieldElement>> {
         self.client
-            .call(
-                request,
-                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
-            )
+            .call(request, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
