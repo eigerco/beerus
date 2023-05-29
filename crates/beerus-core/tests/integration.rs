@@ -32,10 +32,13 @@ mod test {
             .return_once(move || Ok(U256::from(1)));
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+
+        let block_id = BlockId::Number(1);
         let storage_var = beerus
             .starknet_get_storage_at(
                 FieldElement::from_str("0x00").unwrap(),
                 FieldElement::from_str("0x00").unwrap(),
+                &block_id,
             )
             .await
             .unwrap();
@@ -53,17 +56,19 @@ mod test {
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
         let expected_error = "Ethereum light client error";
-
         // Mock the `start` method of the Ethereum light client.
         helios_lightclient
             .expect_starknet_last_proven_block()
             .return_once(move || Err(eyre!(expected_error)));
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+
+        let block_id = BlockId::Number(1);
         let res = beerus
             .starknet_get_storage_at(
                 FieldElement::from_str("0x00").unwrap(),
                 FieldElement::from_str("0x00").unwrap(),
+                &block_id,
             )
             .await;
         assert_eq!(mock_request.hits(), 0);
