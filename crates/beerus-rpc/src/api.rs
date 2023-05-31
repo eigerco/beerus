@@ -1,3 +1,5 @@
+use crate::models::EventFilterWithPage;
+
 use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
 use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use jsonrpsee::{
@@ -14,8 +16,8 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
-        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
-        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
+        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
         MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
@@ -282,9 +284,7 @@ pub trait BeerusRpc {
     #[method(name = "starknet_getEvents")]
     async fn starknet_get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        custom_filter: EventFilterWithPage,
     ) -> Result<EventsPage, Error>;
 
     #[method(name = "starknet_addDeclareTransaction")]
@@ -307,7 +307,7 @@ pub trait BeerusRpc {
     async fn starknet_call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error>;
 
     #[method(name = "starknet_getStorageAt")]
@@ -315,5 +315,6 @@ pub trait BeerusRpc {
         &self,
         contract_address: String,
         key: String,
+        block_id: BlockId,
     ) -> Result<FieldElement, Error>;
 }

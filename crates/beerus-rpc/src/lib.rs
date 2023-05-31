@@ -1,7 +1,10 @@
 pub mod api;
+pub mod models;
 pub mod utils;
 
 use crate::api::{BeerusApiError, BeerusRpcServer};
+use crate::models::EventFilterWithPage;
+
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
     lightclient::starknet::storage_proof::GetProofOutput,
@@ -24,9 +27,9 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage, FeeEstimate,
-        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
+        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
         Transaction as StarknetTransaction,
     },
 };
@@ -632,14 +635,16 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn starknet_get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        custom_filter: EventFilterWithPage,
     ) -> Result<EventsPage, Error> {
         Ok(self
             .beerus
             .starknet_lightclient
-            .get_events(filter, continuation_token, chunk_size)
+            .get_events(
+                custom_filter.filter,
+                custom_filter.page.continuation_token,
+                custom_filter.page.chunk_size,
+            )
             .await
             .unwrap())
     }
@@ -687,11 +692,11 @@ impl BeerusRpcServer for BeerusRpc {
     async fn starknet_call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: BlockId,
     ) -> Result<Vec<FieldElement>, Error> {
         self.beerus
             .starknet_lightclient
-            .call(request, block_number)
+            .call(request, &block_id)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))
     }
@@ -700,6 +705,7 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         contract_address: String,
         key: String,
+        block_id: BlockId,
     ) -> Result<FieldElement, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address)
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
@@ -707,7 +713,7 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
 
         self.beerus
-            .starknet_get_storage_at(contract_address, key)
+            .starknet_get_storage_at(contract_address, key, &block_id)
             .await
             .map_err(|_| Error::from(BeerusApiError::ContractError))
     }

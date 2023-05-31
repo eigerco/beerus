@@ -37,7 +37,7 @@ pub mod storage_proof;
 #[cfg_attr(not(feature = "std"), async_trait(?Send))]
 pub trait StarkNetLightClient: Send + Sync {
     async fn start(&self) -> Result<()>;
-    async fn call(&self, opts: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>>;
+    async fn call(&self, opts: FunctionCall, block_id: &BlockId) -> Result<Vec<FieldElement>>;
     async fn estimate_fee(
         &self,
         tx: BroadcastedTransaction,
@@ -47,7 +47,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement>;
     async fn get_nonce(&self, block_id: &BlockId, address: FieldElement) -> Result<FieldElement>;
     async fn chain_id(&self) -> Result<FieldElement>;
@@ -157,14 +157,10 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement> {
         self.client
-            .get_storage_at(
-                address,
-                key,
-                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
-            )
+            .get_storage_at(address, key, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
@@ -183,12 +179,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// `Ok(Vec<FieldElement>)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn call(&self, request: FunctionCall, block_number: u64) -> Result<Vec<FieldElement>> {
+    async fn call(&self, request: FunctionCall, block_id: &BlockId) -> Result<Vec<FieldElement>> {
         self.client
-            .call(
-                request,
-                &starknet::providers::jsonrpc::models::BlockId::Number(block_number),
-            )
+            .call(request, block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }

@@ -6,6 +6,7 @@ mod tests {
     use crate::common::setup_beerus_rpc;
     use beerus_core::starknet_helper::create_mock_get_events;
     use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
+    use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
@@ -13,6 +14,7 @@ mod tests {
         InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes, SyncStatusType,
         Transaction,
     };
+
     #[tokio::test]
     async fn starknet_block_number_ok() {
         let beerus_rpc = setup_beerus_rpc().await;
@@ -60,10 +62,15 @@ mod tests {
         let continuation_token = Some("1000".to_string());
         let chunk_size = 1000;
 
-        let events_page = beerus_rpc
-            .starknet_get_events(filter, continuation_token, chunk_size)
-            .await
-            .unwrap();
+        let custom_filter = EventFilterWithPage {
+            filter,
+            page: ResultPageRequest {
+                continuation_token,
+                chunk_size,
+            },
+        };
+
+        let events_page = beerus_rpc.starknet_get_events(custom_filter).await.unwrap();
 
         let (expected_events_page, _) = create_mock_get_events();
 
@@ -222,10 +229,9 @@ mod tests {
             .unwrap(),
             calldata: Vec::new(),
         };
-        let block_number: u64 = 33482;
 
         let call_result: Vec<FieldElement> = beerus_rpc
-            .starknet_call(request, block_number)
+            .starknet_call(request, BlockId::Tag(BlockTag::Latest))
             .await
             .unwrap();
         let expected: Vec<FieldElement> = vec![FieldElement::from_hex_be("298305742194").unwrap()];
