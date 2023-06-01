@@ -20,10 +20,11 @@ use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
 use crate::{config::Config, ethers_helper};
 use ethabi::Uint as U256;
 use ethers::{abi::Abi, types::H160};
-use eyre::Result;
+use eyre::Result as EyreResult;
 use helios::types::{BlockTag, CallOpts};
 #[cfg(feature = "std")]
 use log::{debug, error, info, warn};
+use starknet::providers::jsonrpc::JsonRpcError;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
@@ -34,7 +35,6 @@ use starknet::{
         Transaction,
     },
 };
-
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
@@ -118,7 +118,7 @@ impl BeerusLightClient {
     /// Start Beerus light client and synchronize with Ethereum and StarkNet.
     #[cfg(feature = "std")]
 
-    pub async fn start(&mut self) -> Result<()> {
+    pub async fn start(&mut self) -> EyreResult<()> {
         if let SyncStatus::NotSynced = self.sync_status {
             // Start the Ethereum light client.
             self.ethereum_lightclient.lock().await.start().await?;
@@ -283,53 +283,64 @@ impl BeerusLightClient {
     }
 
     /// Get the storage at a given address/key.
-    /// This function is used to get the storage at a given address and key.
     ///
     /// # Arguments
     ///
-    /// * `contract_address` - The StarkNet contract address.
-    /// * `storage_key` - The storage key.
+    /// * `contract_address` - The StarkNet contract address as a `FieldElement`.
+    /// * `storage_key` - The storage key as a `FieldElement`.
     ///
     /// # Returns
     ///
-    /// `Ok(FieldElement)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    /// Returns a `Result` containing the storage value as a `FieldElement`
+    /// if the operation was successful, or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn starknet_get_storage_at(
         &self,
         contract_address: FieldElement,
         storage_key: FieldElement,
-    ) -> Result<FieldElement> {
+    ) -> Result<FieldElement, JsonRpcError> {
         let last_block = self
             .ethereum_lightclient
             .lock()
             .await
             .starknet_last_proven_block()
-            .await?
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?
             .as_u64();
+
         self.starknet_lightclient
             .get_storage_at(contract_address, storage_key, last_block)
             .await
     }
 
-    /// Call starknet contract view.
-    /// This function is used to call a view function of a StarkNet contract.
-    /// WARNING: This function is untrusted as there's no access list on StarkNet (yet @Avihu).
+    /// Call a view function of a StarkNet contract.
     ///
     /// # Arguments
-    /// * `contract_address` - The StarkNet contract address.
-    /// * `entry_point_selector` - The entry point selector.
-    /// * `calldata` - The calldata.
+    ///
+    /// * `contract_address` - The StarkNet contract address as a `FieldElement`.
+    /// * `entry_point_selector` - The entry point selector as a `FieldElement`.
+    /// * `calldata` - The calldata as a vector of `FieldElement`.
     ///
     /// # Returns
     ///
-    /// `Ok(Vec<FieldElement>)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    /// Returns a `Result` containing the result of the function call as a vector of `FieldElement`
+    /// if the operation was successful, or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn starknet_call_contract(
         &self,
         contract_address: FieldElement,
         entry_point_selector: FieldElement,
         calldata: Vec<FieldElement>,
-    ) -> Result<Vec<FieldElement>> {
+    ) -> Result<Vec<FieldElement>, JsonRpcError> {
         let opts = FunctionCall {
             contract_address,
             entry_point_selector,
@@ -341,64 +352,84 @@ impl BeerusLightClient {
             .lock()
             .await
             .starknet_last_proven_block()
-            .await?
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?
             .as_u64();
 
-        // Call the StarkNet light client.
         self.starknet_lightclient.call(opts, last_block).await
     }
 
-    /// Estimate the fee for a given StarkNet transaction
-    /// This function is used to estimate the fee for a given StarkNet transaction.
+    /// Estimate the fee for a given StarkNet transaction.
     ///
     /// # Arguments
-    /// * `request` - The broadcasted transaction.
-    /// * `block_id` - The block identifier.
+    ///
+    /// * `request` - The broadcasted transaction as a `BroadcastedTransaction`.
+    /// * `block_id` - The block identifier indicating the block for fee estimation.
     ///
     /// # Returns
     ///
-    /// `Ok(FeeEstimate)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    /// Returns a `Result` containing the fee estimate as a `FeeEstimate` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn starknet_estimate_fee(
         &self,
         request: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<FeeEstimate> {
-        // Call the StarkNet light client.
+    ) -> Result<FeeEstimate, JsonRpcError> {
         self.starknet_lightclient
             .estimate_fee(request, block_id)
             .await
     }
 
     /// Get the nonce at a given address.
-    /// This function is used to get the nonce at a given address.
     ///
     /// # Arguments
     ///
-    /// * `contract_address` - The StarkNet contract address.
+    /// * `address` - The StarkNet contract address as a `FieldElement`.
+    /// * `block_id` - The block identifier indicating the block to retrieve the nonce from.
     ///
     /// # Returns
     ///
-    /// `Ok(FieldElement)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    /// Returns a `Result` containing the nonce as a `FieldElement` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn starknet_get_nonce(
         &self,
         address: FieldElement,
         block_id: &BlockId,
-    ) -> Result<FieldElement> {
+    ) -> Result<FieldElement, JsonRpcError> {
         self.starknet_lightclient.get_nonce(block_id, address).await
     }
 
-    /// Return the timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
-    /// The function returns 0 if cancelL1ToL2Message was never called.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get the timestamp at the time `cancelL1ToL2Message` was called with a message matching `msg_hash`,
+    /// or 0 if `cancelL1ToL2Message` was never called.
+    ///
     /// # Arguments
-    /// * `msg_hash` - The message hash as bytes32.
+    ///
+    /// * `msg_hash` - The message hash as a `U256`.
+    ///
     /// # Returns
-    /// `Ok(U256)` if the operation was successful - The timestamp at the time cancelL1ToL2Message was called with a message matching 'msg_hash'.
-    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if cancelL1ToL2Message was never called.
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256> {
+    ///
+    /// Returns a `Result` containing the timestamp as a `U256` if the operation was successful and there is a matching message hash,
+    /// or `Ok(U256::zero())` if the operation was successful but there is no matching message hash,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn starknet_l1_to_l2_message_cancellations(
+        &self,
+        msg_hash: U256,
+    ) -> Result<U256, JsonRpcError> {
         // Convert the message hash to bytes32.
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
         // Encode the function data.
@@ -406,7 +437,12 @@ impl BeerusLightClient {
             msg_hash_bytes32,
             self.starknet_core_abi.clone(),
             "l1ToL2MessageCancellations",
-        )?;
+        )
+        .map_err(|e| JsonRpcError {
+            code: 520,
+            message: e.to_string(),
+        })?;
+
         let data = data.to_vec();
 
         // Build the call options.
@@ -425,31 +461,49 @@ impl BeerusLightClient {
             .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
-            .await?;
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?;
+
         Ok(U256::from_big_endian(&call_response))
     }
 
-    /// Return the msg_fee + 1 from the L1ToL2Message hash'. 0 if there is no matching msg_hash
-    /// The function returns 0 if L1ToL2Message was never called.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get the `msg_fee + 1` from the `L1ToL2Message` hash', or 0 if there is no matching `msg_hash`.
+    /// The function returns 0 if `L1ToL2Message` was never called.
+    ///
     /// # Arguments
-    /// * `msg_hash` - The message hash as bytes32.
+    ///
+    /// * `msg_hash` - The message hash as a `U256`.
+    ///
     /// # Returns
-    /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L1ToL2Message hash'.
-    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no match on the message hash
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256> {
-        // Convert the message hash to bytes32.
+    ///
+    /// Returns a `Result` containing the `msg_fee + 1` as a `U256` if the operation was successful and there is a matching message hash,
+    /// or `Ok(U256::zero())` if the operation was successful but there is no matching message hash,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, JsonRpcError> {
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
-        // Encode the function data.
         let data = ethers_helper::encode_function_data(
             msg_hash_bytes32,
             self.starknet_core_abi.clone(),
             "l1ToL2Messages",
-        )?;
+        )
+        .map_err(|e| JsonRpcError {
+            code: 520,
+            message: e.to_string(),
+        })?;
+
         let data = data.to_vec();
 
-        // Build the call options.
         let call_opts = CallOpts {
             from: None,
             to: Some(self.starknet_core_contract_address),
@@ -459,37 +513,49 @@ impl BeerusLightClient {
             data: Some(data),
         };
 
-        // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
             .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
-            .await?;
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?;
         Ok(U256::from_big_endian(&call_response))
     }
 
-    ///  Returns the msg_fee + 1 for the message with the given 'msgHash', or 0 if no message with such a hash is pending.
-    /// The function returns 0 if L2ToL1Message was never called.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get the msg_fee + 1 for the message with the given `msg_hash`, or 0 if no message with such a hash is pending.
+    /// The function returns 0 if `L2ToL1Message` was never called.
+    ///
     /// # Arguments
-    /// * `msg_hash` - The message hash as bytes32.
+    ///
+    /// * `msg_hash` - The message hash as a `U256`.
+    ///
     /// # Returns
-    /// `Ok(U256)` if the operation was successful - The msg_fee + 1 from the L2ToL1Message hash'.
-    /// `Ok(U256::zero())` if the operation was successful - The function returns 0 if there is no matching message hash
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256> {
-        // Convert the message hash to bytes32.
+    ///
+    /// Returns a `Result` containing the `msg_fee + 1` as a `U256` if the operation was successful and there is a matching message hash,
+    /// or `Ok(U256::zero())` if the operation was successful but there is no matching message hash,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, JsonRpcError> {
         let msg_hash_bytes32 = ethers_helper::u256_to_bytes32_type(msg_hash);
-        // Encode the function data.
         let data = ethers_helper::encode_function_data(
             msg_hash_bytes32,
             self.starknet_core_abi.clone(),
             "l2ToL1Messages",
-        )?;
+        )
+        .map_err(|e| JsonRpcError {
+            code: 520,
+            message: e.to_string(),
+        })?;
+
         let data = data.to_vec();
 
-        // Build the call options.
         let call_opts = CallOpts {
             from: None,
             to: Some(self.starknet_core_contract_address),
@@ -505,26 +571,38 @@ impl BeerusLightClient {
             .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
-            .await?;
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?;
+
         Ok(U256::from_big_endian(&call_response))
     }
 
-    /// Return the nonce for the L1ToL2Message bridge.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
-    /// # Arguments
+    /// Get the nonce for the L1-to-L2 message in the StarkNet Core contract.
+    ///
     /// # Returns
-    /// `Ok(U256)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256> {
-        // Encode the function data.
+    ///
+    /// Returns a `Result` containing the nonce as a `U256` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256, JsonRpcError> {
         let data = ethers_helper::encode_function_data(
             (),
             self.starknet_core_abi.clone(),
             "l1ToL2MessageNonce",
-        )?;
+        )
+        .map_err(|e| JsonRpcError {
+            code: 520,
+            message: e.to_string(),
+        })?;
+
         let data = data.to_vec();
 
-        // Build the call options.
         let call_opts = CallOpts {
             from: None,
             to: Some(self.starknet_core_contract_address),
@@ -534,36 +612,46 @@ impl BeerusLightClient {
             data: Some(data),
         };
 
-        // Call the StarkNet core contract.
         let call_response = self
             .ethereum_lightclient
             .lock()
             .await
             .call(&call_opts, BlockTag::Latest)
-            .await?;
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?;
+
         Ok(U256::from_big_endian(&call_response))
     }
 
-    /// Return block with transactions.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get the block with transactions for the specified block identifier.
+    ///
     /// # Arguments
-    /// BlockId
+    ///
+    /// * `block_id` - The block identifier.
+    ///
     /// # Returns
-    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
-        // Get block_number from block_id
+    ///
+    /// Returns a `Result` containing the `MaybePendingBlockWithTxs` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn get_block_with_txs(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxs, JsonRpcError> {
         let block_number = match block_id {
             BlockId::Number(number) => *number,
             BlockId::Tag(_) => self.starknet_lightclient.block_number().await.unwrap(),
             BlockId::Hash(_) => self.starknet_lightclient.block_number().await.unwrap(),
         };
-        // Clone the node_data
         let node_data = self.node.read().await.clone();
 
-        // Check if block_number its smaller or equal payload
         if block_number <= node_data.block_number {
-            // Get state_root for current block_number
             let payload_block = node_data.payload.get(&block_number).unwrap();
             Ok(MaybePendingBlockWithTxs::Block(payload_block.clone()))
         } else {
@@ -571,14 +659,17 @@ impl BeerusLightClient {
         }
     }
 
-    /// Return block hash and number of latest block.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
-    /// # Arguments
-    /// None
+    /// Get the block hash and number of the current block.
+    ///
     /// # Returns
-    /// `Ok(BlockHashAndNumber)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
-    pub async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber> {
+    ///
+    /// Returns a `Result` containing the `BlockHashAndNumber` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn get_block_hash_and_number(&self) -> Result<BlockHashAndNumber, JsonRpcError> {
         let cloned_node = self.node.read().await;
         let payload = cloned_node.payload.clone();
 
@@ -588,31 +679,49 @@ impl BeerusLightClient {
                 block_hash: block.block_hash,
                 block_number: block.block_number,
             }),
-            _ => Err(eyre::eyre!("Block not found")),
+            _ => Err(JsonRpcError {
+                code: 24,
+                message: "Block not found".to_string(),
+            }),
         }
     }
 
-    /// Return transaction receipt of a transaction.
+    /// Return the transaction receipt of a transaction.
+    ///
     /// # Arguments
-    /// * `tx_hash` - The transaction hash as String.
+    ///
+    /// * `tx_hash` - The transaction hash as a String.
+    ///
     /// # Returns
-    /// `Ok(MaybePendingTransactionReceipt)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    ///
+    /// Returns `Ok(MaybePendingTransactionReceipt)` if the operation was successful, or an `Err(eyre::Report)` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn starknet_get_transaction_receipt(
         &self,
         tx_hash: String,
-    ) -> Result<MaybePendingTransactionReceipt> {
+    ) -> Result<MaybePendingTransactionReceipt, JsonRpcError> {
         let cloned_node = self.node.read().await;
         let state_root = self
             .ethereum_lightclient
             .lock()
             .await
             .starknet_state_root()
-            .await?
+            .await
+            .map_err(|e| JsonRpcError {
+                code: 520,
+                message: e.to_string(),
+            })?
             .to_string();
 
         if cloned_node.state_root != state_root {
-            return Err(eyre::eyre!("State root mismatch"));
+            // TODO: Select a correct error code for "State root missmatch", now its UNKNOWN ERROR
+            return Err(JsonRpcError {
+                code: 520,
+                message: "State root mismatch".to_string(),
+            });
         }
 
         let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
@@ -620,19 +729,29 @@ impl BeerusLightClient {
             .starknet_lightclient
             .get_transaction_receipt(tx_hash_felt)
             .await?;
+
         Ok(tx_receipt)
     }
-    /// Return block with transaction hashes.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+
+    /// Get the block with transaction hashes for a given block identifier.
+    ///
     /// # Arguments
-    /// BlockId
+    ///
+    /// * `block_id` - The block identifier.
+    ///
     /// # Returns
-    /// `Ok(MaybePendingBlockWithTxHashes)` if the operation was successful.
-    /// `Err(eyre::Report)` if the operation failed.
+    ///
+    /// Returns a `Result` containing a `MaybePendingBlockWithTxHashes` if the operation was successful, or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure. Possible error codes include:
+    ///
+    /// - `24`: Block not found.
     pub async fn get_block_with_tx_hashes(
         &self,
         block_id: &BlockId,
-    ) -> Result<MaybePendingBlockWithTxHashes> {
+    ) -> Result<MaybePendingBlockWithTxHashes, JsonRpcError> {
         let cloned_node = self.node.read().await;
         let payload = cloned_node.payload.clone();
 
@@ -645,10 +764,14 @@ impl BeerusLightClient {
                 match block {
                     Some(block) => Some(block),
                     None => {
-                        return Err(eyre::eyre!(
-                            "Block with hash {} not found in the payload.",
-                            block_hash
-                        ))
+                        // TODO: Select a correct error code for "Block with hash {} not found in the payload.", now its BLOCK_NOT_FOUND
+                        return Err(JsonRpcError {
+                            code: 24,
+                            message: format!(
+                                "Block with hash {} not found in the payload.",
+                                block_hash
+                            ),
+                        });
                     }
                 }
             }
@@ -661,9 +784,12 @@ impl BeerusLightClient {
                     match block {
                         Some(block) => Some(block),
                         None => {
-                            return Err(eyre::eyre!(
-                                "Block with pending status not found in the payload."
-                            ))
+                            // TODO: Select a correct error code for "Block with pending status not found in the payload.", now its BLOCK NOT FOUND
+                            return Err(JsonRpcError {
+                                code: 24,
+                                message: "Block with pending status not found in the payload."
+                                    .to_string(),
+                            });
                         }
                     }
                 }
@@ -709,18 +835,32 @@ impl BeerusLightClient {
                 };
                 Ok(MaybePendingBlockWithTxHashes::Block(block_with_tx_hashes))
             }
-            _ => Err(eyre::eyre!("Error while retrieving block.")),
+            // TODO: Select a correct error code for "Error while retrieving block.", now its BLOCK NOT FOUND
+            _ => Err(JsonRpcError {
+                code: 24,
+                message: "Error while retrieving block.".to_string(),
+            }),
         }
     }
 
-    /// Return transaction by inputed hash
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get a transaction by its hash.
+    ///
     /// # Arguments
-    /// tx_hash: String
+    ///
+    /// * `tx_hash` - The transaction hash as a string.
+    ///
     /// # Returns
-    /// Transaction
-    pub async fn get_transaction_by_hash(&self, tx_hash: String) -> Result<Transaction> {
-        let hash = FieldElement::from_str(&tx_hash)?;
+    ///
+    /// Returns a `Result` containing the `Transaction` if the operation was successful, or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn get_transaction_by_hash(
+        &self,
+        tx_hash: String,
+    ) -> Result<Transaction, JsonRpcError> {
+        let hash = FieldElement::from_str(&tx_hash).map_err(|_| invalid_call_data("hash"))?;
 
         let transaction = self
             .starknet_lightclient
@@ -730,17 +870,27 @@ impl BeerusLightClient {
 
         Ok(transaction)
     }
-    /// Return transaction by block number and index of transaction.
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+
+    /// Get a transaction by the block identifier and transaction index.
+    ///
     /// # Arguments
-    /// block_id: &BlockId, index: u64
+    ///
+    /// * `block_id` - The identifier of the block.
+    /// * `index` - The index of the transaction within the block.
+    ///
     /// # Returns
-    /// Transaction
+    ///
+    /// Returns a `Result` containing the `Transaction` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
     pub async fn get_transaction_by_block_and_index(
         &self,
         block_id: &BlockId,
         index: u64,
-    ) -> Result<Transaction> {
+    ) -> Result<Transaction, JsonRpcError> {
         let block_with_txs = self.get_block_with_txs(block_id).await.unwrap();
 
         let transactions = match block_with_txs {
@@ -751,14 +901,29 @@ impl BeerusLightClient {
         Ok(transactions[index as usize].clone())
     }
 
-    /// Return transaction count of requested block
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
+    /// Get the transaction count of a requested block.
+    ///
     /// # Arguments
-    /// block_id: &BlockId
+    ///
+    /// * `block_id` - The identifier of the block.
+    ///
     /// # Returns
-    /// transaction_count: usize
-    pub async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<usize> {
-        let block_with_txs = self.get_block_with_txs(block_id).await.unwrap();
+    ///
+    /// Returns a `Result` containing the transaction count as `usize` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure
+    pub async fn get_block_transaction_count(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<usize, JsonRpcError> {
+        let block_with_txs = self
+            .starknet_lightclient
+            .get_block_with_txs(block_id)
+            .await
+            .unwrap();
 
         let transactions = match block_with_txs {
             MaybePendingBlockWithTxs::Block(block) => block.transactions,
@@ -770,20 +935,26 @@ impl BeerusLightClient {
         Ok(transaction_count)
     }
 
-    ///  Returns the pending transactions in the starknet transaction pool
-    /// See https://github.com/starknet-io/starknet-addresses for the StarkNet core contract address on different networks.
-    /// # Arguments
+    /// Returns the pending transactions in the StarkNet transaction pool.
+    ///
     /// # Returns
-    /// `Ok(U256)` if the operation was successful - A vector of pending transactions
-    /// `Err(eyre::Report)` if the operation failed - No pending transactions found.
-    pub async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>> {
+    ///
+    /// Returns a `Result` containing a vector of pending transactions if the operation was successful (`Ok`), or an `Err` containing a `JsonRpcError` if the operation failed - indicating that no pending transactions were found.
+    ///
+    /// # Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    pub async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, JsonRpcError> {
         let transactions_result = self.starknet_lightclient.pending_transactions().await;
 
-        let transactions = match transactions_result {
-            Ok(transactions) => transactions,
-            Err(err) => return Err(eyre::eyre!("Failed to get pending transactions: {}", err)),
-        };
-
-        Ok(transactions)
+        match transactions_result {
+            Ok(transactions) => Ok(transactions),
+            Err(err) => Err(err),
+        }
     }
+}
+
+fn invalid_call_data(param: &str) -> JsonRpcError {
+    let message = format!("Invalid params: cannot parse '{}'.", param);
+    JsonRpcError { code: 400, message }
 }

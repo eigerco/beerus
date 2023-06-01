@@ -2,120 +2,235 @@ use jsonrpsee::{
     core::Error,
     types::error::{CallError, ErrorObject},
 };
+use starknet::providers::jsonrpc::JsonRpcError;
+
+pub const FAILED_TO_RECEIVE_TRANSACTION: i64 = 1;
+pub const CONTRACT_NOT_FOUND: i64 = 20;
+pub const INVALID_MESSAGE_SELECTOR: i64 = 21;
+pub const INVALID_CALL_DATA: i64 = 22;
+pub const BLOCK_NOT_FOUND: i64 = 24;
+pub const TRANSACTION_HASH_NOT_FOUND: i64 = 25;
+pub const INVALID_TRANSACTION_INDEX: i64 = 27;
+pub const CLASS_HASH_NOT_FOUND: i64 = 28;
+pub const PAGE_SIZE_TOO_BIG: i64 = 31;
+pub const NO_BLOCKS: i64 = 32;
+pub const INVALID_CONTINUATION_TOKEN: i64 = 33;
+pub const TOO_MANY_KEYS_IN_FILTER: i64 = 34;
+pub const FAILED_TO_FETCH_PENDING_TRANSACTIONS: i64 = 38;
+pub const CONTRACT_ERROR: i64 = 40;
+pub const INVALID_CONTRACT_CLASS: i64 = 50;
+pub const INTERNAL_SERVER_ERROR: i64 = 500;
+pub const PROOF_LIMIT_EXCEEDED: i64 = 10000;
+pub const UNKNOWN_ERROR: i64 = 520;
+pub const INVALID_PARAMS: i64 = 400;
 
 /// JSON-RPC error codes
-#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum BeerusApiError {
-    /// Failed to write transaction
     #[error("Failed to write transaction")]
-    FailedToReceiveTransaction,
-    /// Contract not found
+    FailedToReceiveTransaction(i64, String),
     #[error("Contract not found")]
-    ContractNotFound,
-    /// Invalid message selector
+    ContractNotFound(i64, String),
     #[error("Invalid message selector")]
-    InvalidMessageSelector,
-    /// Invalid call data
+    InvalidMessageSelector(i64, String),
     #[error("Invalid call data")]
-    InvalidCallData,
-    /// Block not found
+    InvalidCallData(i64, String),
     #[error("Block not found")]
-    BlockNotFound,
-    /// Transaction hash not found
+    BlockNotFound(i64, String),
     #[error("Transaction hash not found")]
-    TransactionHashNotFound,
-    /// Invalid transaction index in a block
+    TransactionHashNotFound(i64, String),
     #[error("Invalid transaction index in a block")]
-    InvalidTransactionIndex,
-    /// Class hash not found
+    InvalidTransactionIndex(i64, String),
     #[error("Class hash not found")]
-    ClassHashNotFound,
-    /// Requested page size is too big
+    ClassHashNotFound(i64, String),
     #[error("Requested page size is too big")]
-    PageSizeTooBig,
-    /// There are no blocks
+    PageSizeTooBig(i64, String),
     #[error("There are no blocks")]
-    NoBlocks,
-    /// The supplied continuation token is invalid or unknown
+    NoBlocks(i64, String),
     #[error("The supplied continuation token is invalid or unknown")]
-    InvalidContinuationToken,
-    /// Contract error
+    InvalidContinuationToken(i64, String),
     #[error("Contract error")]
-    ContractError,
-    /// Invalid contract class
+    ContractError(i64, String),
     #[error("Invalid contract class")]
-    InvalidContractClass,
-    /// Failed to fetch pending transactions
+    InvalidContractClass(i64, String),
     #[error("Failed to fetch pending transactions")]
-    FailedToFetchPendingTransactions,
-    /// Internal server error
+    FailedToFetchPendingTransactions(i64, String),
     #[error("Internal server error")]
-    InternalServerError,
-    /// Too many storage keys requested
+    InternalServerError(i64, String),
     #[error("Too many storage keys requested")]
-    ProofLimitExceeded,
-    /// Too many keys provided in a filter
+    ProofLimitExceeded(i64, String),
     #[error("Too many keys provided in a filter")]
-    TooManyKeysInFilter,
+    TooManyKeysInFilter(i64, String),
+    #[error("Unknown error")]
+    UnknownError(i64, String),
+    #[error("Invalid params")]
+    InvalidParams(i64, String),
 }
 
-impl TryFrom<i32> for BeerusApiError {
-    type Error = ();
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Ok(match value {
-            1 => BeerusApiError::FailedToReceiveTransaction,
-            20 => BeerusApiError::ContractNotFound,
-            21 => BeerusApiError::InvalidMessageSelector,
-            22 => BeerusApiError::InvalidCallData,
-            24 => BeerusApiError::BlockNotFound,
-            25 => BeerusApiError::TransactionHashNotFound,
-            27 => BeerusApiError::InvalidTransactionIndex,
-            28 => BeerusApiError::ClassHashNotFound,
-            31 => BeerusApiError::PageSizeTooBig,
-            32 => BeerusApiError::NoBlocks,
-            33 => BeerusApiError::InvalidContinuationToken,
-            34 => BeerusApiError::TooManyKeysInFilter,
-            38 => BeerusApiError::FailedToFetchPendingTransactions,
-            40 => BeerusApiError::ContractError,
-            50 => BeerusApiError::InvalidContractClass,
-            500 => BeerusApiError::InternalServerError,
-            10000 => BeerusApiError::ProofLimitExceeded,
-            _ => return Err(()),
-        })
-    }
+pub fn invalid_call_data(param: &str) -> Error {
+    let message = format!("Invalid params: cannot parse '{}'.", param);
+    Error::from(BeerusApiError::InvalidParams(INVALID_PARAMS, message))
 }
 
-impl TryFrom<BeerusApiError> for i32 {
-    type Error = ();
-    fn try_from(value: BeerusApiError) -> Result<Self, Self::Error> {
-        Ok(match value {
-            BeerusApiError::FailedToReceiveTransaction => 1,
-            BeerusApiError::ContractNotFound => 20,
-            BeerusApiError::InvalidMessageSelector => 21,
-            BeerusApiError::InvalidCallData => 22,
-            BeerusApiError::BlockNotFound => 24,
-            BeerusApiError::TransactionHashNotFound => 25,
-            BeerusApiError::InvalidTransactionIndex => 27,
-            BeerusApiError::ClassHashNotFound => 28,
-            BeerusApiError::PageSizeTooBig => 31,
-            BeerusApiError::NoBlocks => 32,
-            BeerusApiError::InvalidContinuationToken => 33,
-            BeerusApiError::TooManyKeysInFilter => 34,
-            BeerusApiError::FailedToFetchPendingTransactions => 38,
-            BeerusApiError::ContractError => 40,
-            BeerusApiError::InvalidContractClass => 50,
-            BeerusApiError::InternalServerError => 500,
-            BeerusApiError::ProofLimitExceeded => 10000,
-        })
+// The conversion from JsonRpcError to BeerusApiError is done based on the error code.
+// I avoid directly using BeerusApiError::from(JsonRpcError.code) because the JsonRpcError
+// may contain an error message from lower layers, and we want to prevent any loss of information.
+impl From<JsonRpcError> for BeerusApiError {
+    fn from(err: JsonRpcError) -> Self {
+        match err.code {
+            FAILED_TO_RECEIVE_TRANSACTION => BeerusApiError::FailedToReceiveTransaction(
+                FAILED_TO_RECEIVE_TRANSACTION,
+                err.message,
+            ),
+            CONTRACT_NOT_FOUND => BeerusApiError::ContractNotFound(CONTRACT_NOT_FOUND, err.message),
+            INVALID_MESSAGE_SELECTOR => {
+                BeerusApiError::InvalidMessageSelector(INVALID_MESSAGE_SELECTOR, err.message)
+            }
+            INVALID_CALL_DATA => BeerusApiError::InvalidCallData(INVALID_CALL_DATA, err.message),
+            BLOCK_NOT_FOUND => BeerusApiError::BlockNotFound(BLOCK_NOT_FOUND, err.message),
+            TRANSACTION_HASH_NOT_FOUND => {
+                BeerusApiError::TransactionHashNotFound(TRANSACTION_HASH_NOT_FOUND, err.message)
+            }
+            INVALID_TRANSACTION_INDEX => {
+                BeerusApiError::InvalidTransactionIndex(INVALID_TRANSACTION_INDEX, err.message)
+            }
+            CLASS_HASH_NOT_FOUND => {
+                BeerusApiError::ClassHashNotFound(CLASS_HASH_NOT_FOUND, err.message)
+            }
+            PAGE_SIZE_TOO_BIG => BeerusApiError::PageSizeTooBig(PAGE_SIZE_TOO_BIG, err.message),
+            NO_BLOCKS => BeerusApiError::NoBlocks(NO_BLOCKS, err.message),
+            INVALID_CONTINUATION_TOKEN => {
+                BeerusApiError::InvalidContinuationToken(INVALID_CONTINUATION_TOKEN, err.message)
+            }
+            TOO_MANY_KEYS_IN_FILTER => {
+                BeerusApiError::TooManyKeysInFilter(TOO_MANY_KEYS_IN_FILTER, err.message)
+            }
+            FAILED_TO_FETCH_PENDING_TRANSACTIONS => {
+                BeerusApiError::FailedToFetchPendingTransactions(
+                    FAILED_TO_FETCH_PENDING_TRANSACTIONS,
+                    err.message,
+                )
+            }
+            CONTRACT_ERROR => BeerusApiError::ContractError(CONTRACT_ERROR, err.message),
+            INVALID_CONTRACT_CLASS => {
+                BeerusApiError::InvalidContractClass(INVALID_CONTRACT_CLASS, err.message)
+            }
+            INTERNAL_SERVER_ERROR => {
+                BeerusApiError::InternalServerError(INTERNAL_SERVER_ERROR, err.message)
+            }
+            PROOF_LIMIT_EXCEEDED => {
+                BeerusApiError::ProofLimitExceeded(PROOF_LIMIT_EXCEEDED, err.message)
+            }
+            _ => BeerusApiError::UnknownError(UNKNOWN_ERROR, err.message),
+        }
     }
 }
 
 impl From<BeerusApiError> for Error {
     fn from(err: BeerusApiError) -> Self {
+        let code: i64 = err.clone().into();
+        let message: String = err.to_string();
         Error::Call(CallError::Custom(ErrorObject::owned(
-            err as i32,
-            err.to_string(),
+            code as i32,
+            message,
             None::<()>,
         )))
+    }
+}
+
+// The conversion from i64 to BeerusApiError will include the default messages and codes.
+impl From<i64> for BeerusApiError {
+    fn from(value: i64) -> BeerusApiError {
+        match value {
+            FAILED_TO_RECEIVE_TRANSACTION => BeerusApiError::FailedToReceiveTransaction(
+                FAILED_TO_RECEIVE_TRANSACTION,
+                "Failed to write transaction".into(),
+            ),
+            CONTRACT_NOT_FOUND => {
+                BeerusApiError::ContractNotFound(CONTRACT_NOT_FOUND, "Contract not found".into())
+            }
+            INVALID_MESSAGE_SELECTOR => BeerusApiError::InvalidMessageSelector(
+                INVALID_MESSAGE_SELECTOR,
+                "Invalid message selector".into(),
+            ),
+            INVALID_CALL_DATA => {
+                BeerusApiError::InvalidCallData(INVALID_CALL_DATA, "Invalid call data".into())
+            }
+            BLOCK_NOT_FOUND => {
+                BeerusApiError::BlockNotFound(BLOCK_NOT_FOUND, "Block not found".into())
+            }
+            TRANSACTION_HASH_NOT_FOUND => BeerusApiError::TransactionHashNotFound(
+                TRANSACTION_HASH_NOT_FOUND,
+                "Transaction hash not found".into(),
+            ),
+            INVALID_TRANSACTION_INDEX => BeerusApiError::InvalidTransactionIndex(
+                INVALID_TRANSACTION_INDEX,
+                "Invalid transaction index in a block".into(),
+            ),
+            CLASS_HASH_NOT_FOUND => BeerusApiError::ClassHashNotFound(
+                CLASS_HASH_NOT_FOUND,
+                "Class hash not found".into(),
+            ),
+            PAGE_SIZE_TOO_BIG => BeerusApiError::PageSizeTooBig(
+                PAGE_SIZE_TOO_BIG,
+                "Requested page size is too big".into(),
+            ),
+            NO_BLOCKS => BeerusApiError::NoBlocks(NO_BLOCKS, "There are no blocks".into()),
+            INVALID_CONTINUATION_TOKEN => BeerusApiError::InvalidContinuationToken(
+                INVALID_CONTINUATION_TOKEN,
+                "The supplied continuation token is invalid or unknown".into(),
+            ),
+            TOO_MANY_KEYS_IN_FILTER => BeerusApiError::TooManyKeysInFilter(
+                TOO_MANY_KEYS_IN_FILTER,
+                "Too many keys provided in a filter".into(),
+            ),
+            FAILED_TO_FETCH_PENDING_TRANSACTIONS => {
+                BeerusApiError::FailedToFetchPendingTransactions(
+                    FAILED_TO_FETCH_PENDING_TRANSACTIONS,
+                    "Failed to fetch pending transactions".into(),
+                )
+            }
+            CONTRACT_ERROR => {
+                BeerusApiError::ContractError(CONTRACT_ERROR, "Contract error".into())
+            }
+            INVALID_CONTRACT_CLASS => BeerusApiError::InvalidContractClass(
+                INVALID_CONTRACT_CLASS,
+                "Invalid contract class".into(),
+            ),
+            INTERNAL_SERVER_ERROR => BeerusApiError::InternalServerError(
+                INTERNAL_SERVER_ERROR,
+                "Internal server error".into(),
+            ),
+            PROOF_LIMIT_EXCEEDED => BeerusApiError::ProofLimitExceeded(
+                PROOF_LIMIT_EXCEEDED,
+                "Too many storage keys requested".into(),
+            ),
+            _ => BeerusApiError::UnknownError(UNKNOWN_ERROR, "Unknown error".into()),
+        }
+    }
+}
+
+impl From<BeerusApiError> for i64 {
+    fn from(value: BeerusApiError) -> i64 {
+        match value {
+            BeerusApiError::FailedToReceiveTransaction(code, _) => code,
+            BeerusApiError::ContractNotFound(code, _) => code,
+            BeerusApiError::InvalidMessageSelector(code, _) => code,
+            BeerusApiError::InvalidCallData(code, _) => code,
+            BeerusApiError::BlockNotFound(code, _) => code,
+            BeerusApiError::TransactionHashNotFound(code, _) => code,
+            BeerusApiError::InvalidTransactionIndex(code, _) => code,
+            BeerusApiError::ClassHashNotFound(code, _) => code,
+            BeerusApiError::PageSizeTooBig(code, _) => code,
+            BeerusApiError::NoBlocks(code, _) => code,
+            BeerusApiError::InvalidContinuationToken(code, _) => code,
+            BeerusApiError::TooManyKeysInFilter(code, _) => code,
+            BeerusApiError::FailedToFetchPendingTransactions(code, _) => code,
+            BeerusApiError::ContractError(code, _) => code,
+            BeerusApiError::InvalidContractClass(code, _) => code,
+            BeerusApiError::InternalServerError(code, _) => code,
+            BeerusApiError::ProofLimitExceeded(code, _) => code,
+            _ => 520, // Unknown error
+        }
     }
 }
