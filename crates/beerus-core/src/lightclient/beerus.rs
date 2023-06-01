@@ -35,6 +35,7 @@ use starknet::{
         Transaction,
     },
 };
+
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyncStatus {
@@ -301,22 +302,37 @@ impl BeerusLightClient {
         &self,
         contract_address: FieldElement,
         storage_key: FieldElement,
+        block_id: &BlockId,
     ) -> Result<FieldElement, JsonRpcError> {
-        let last_block = self
+        let last_proven_block = self
             .ethereum_lightclient
             .lock()
             .await
             .starknet_last_proven_block()
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?
+            .map_err(|e| rpc_unknown_error(e.to_string()))?
             .as_u64();
 
-        self.starknet_lightclient
-            .get_storage_at(contract_address, storage_key, last_block)
-            .await
+        if let BlockId::Number(block_number) = block_id {
+            if block_number <= &last_proven_block {
+                return self
+                    .starknet_lightclient
+                    .get_storage_at(contract_address, storage_key, block_id)
+                    .await;
+            }
+        } else if let MaybePendingBlockWithTxHashes::Block(block) = self
+            .starknet_lightclient
+            .get_block_with_tx_hashes(block_id)
+            .await?
+        {
+            if block.block_number <= last_proven_block {
+                return self
+                    .starknet_lightclient
+                    .get_storage_at(contract_address, storage_key, block_id)
+                    .await;
+            }
+        }
+        Err(rpc_unknown_error("BlockId is not proven yet".to_string()))
     }
 
     /// Call a view function of a StarkNet contract.
@@ -353,13 +369,12 @@ impl BeerusLightClient {
             .await
             .starknet_last_proven_block()
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?
+            .map_err(|e| rpc_unknown_error(e.to_string()))?
             .as_u64();
 
-        self.starknet_lightclient.call(opts, last_block).await
+        self.starknet_lightclient
+            .call(opts, &BlockId::Number(last_block))
+            .await
     }
 
     /// Estimate the fee for a given StarkNet transaction.
@@ -438,10 +453,7 @@ impl BeerusLightClient {
             self.starknet_core_abi.clone(),
             "l1ToL2MessageCancellations",
         )
-        .map_err(|e| JsonRpcError {
-            code: 520,
-            message: e.to_string(),
-        })?;
+        .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         let data = data.to_vec();
 
@@ -462,14 +474,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?;
+            .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         Ok(U256::from_big_endian(&call_response))
     }
@@ -497,10 +502,7 @@ impl BeerusLightClient {
             self.starknet_core_abi.clone(),
             "l1ToL2Messages",
         )
-        .map_err(|e| JsonRpcError {
-            code: 520,
-            message: e.to_string(),
-        })?;
+        .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         let data = data.to_vec();
 
@@ -519,10 +521,8 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?;
+            .map_err(|e| rpc_unknown_error(e.to_string()))?;
+
         Ok(U256::from_big_endian(&call_response))
     }
 
@@ -549,10 +549,7 @@ impl BeerusLightClient {
             self.starknet_core_abi.clone(),
             "l2ToL1Messages",
         )
-        .map_err(|e| JsonRpcError {
-            code: 520,
-            message: e.to_string(),
-        })?;
+        .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         let data = data.to_vec();
 
@@ -572,10 +569,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?;
+            .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         Ok(U256::from_big_endian(&call_response))
     }
@@ -596,10 +590,7 @@ impl BeerusLightClient {
             self.starknet_core_abi.clone(),
             "l1ToL2MessageNonce",
         )
-        .map_err(|e| JsonRpcError {
-            code: 520,
-            message: e.to_string(),
-        })?;
+        .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         let data = data.to_vec();
 
@@ -618,10 +609,7 @@ impl BeerusLightClient {
             .await
             .call(&call_opts, BlockTag::Latest)
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?;
+            .map_err(|e| rpc_unknown_error(e.to_string()))?;
 
         Ok(U256::from_big_endian(&call_response))
     }
@@ -710,18 +698,12 @@ impl BeerusLightClient {
             .await
             .starknet_state_root()
             .await
-            .map_err(|e| JsonRpcError {
-                code: 520,
-                message: e.to_string(),
-            })?
+            .map_err(|e| rpc_unknown_error(e.to_string()))?
             .to_string();
 
         if cloned_node.state_root != state_root {
             // TODO: Select a correct error code for "State root missmatch", now its UNKNOWN ERROR
-            return Err(JsonRpcError {
-                code: 520,
-                message: "State root mismatch".to_string(),
-            });
+            return Err(rpc_unknown_error("State root mismatch".to_string()));
         }
 
         let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
@@ -957,4 +939,8 @@ impl BeerusLightClient {
 fn invalid_call_data(param: &str) -> JsonRpcError {
     let message = format!("Invalid params: cannot parse '{}'.", param);
     JsonRpcError { code: 400, message }
+}
+
+fn rpc_unknown_error(message: String) -> JsonRpcError {
+    JsonRpcError { code: 520, message }
 }

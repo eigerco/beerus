@@ -45,7 +45,7 @@ pub trait StarkNetLightClient: Send + Sync {
     async fn call(
         &self,
         opts: FunctionCall,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<Vec<FieldElement>, JsonRpcError>;
 
     async fn estimate_fee(
@@ -58,7 +58,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement, JsonRpcError>;
 
     async fn get_nonce(
@@ -219,10 +219,10 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn call(
         &self,
         request: FunctionCall,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<Vec<FieldElement>, JsonRpcError> {
         self.client
-            .call(request, &BlockId::Number(block_number))
+            .call(request, block_id)
             .await
             .map_err(|e| Self::map_to_rpc_error("call", e))
     }
@@ -273,10 +273,10 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         address: FieldElement,
         key: FieldElement,
-        block_number: u64,
+        block_id: &BlockId,
     ) -> Result<FieldElement, JsonRpcError> {
         self.client
-            .get_storage_at(address, key, &BlockId::Number(block_number))
+            .get_storage_at(address, key, block_id)
             .await
             .map_err(|e| Self::map_to_rpc_error("get_storage_at", e))
     }
@@ -485,7 +485,8 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| Self::map_to_rpc_error("get_events", e))
     }
 
-    /// Get information about the sync status of the node.
+    /// Get an object about the sync status, or false if the node is not synching.
+    /// An object about the sync status, or false if the node is not synching.
     ///
     /// # Returns
     ///

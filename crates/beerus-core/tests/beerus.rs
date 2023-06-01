@@ -1655,8 +1655,12 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
+        let block_id = BlockId::Number(10);
         // Perform the test call.
-        let res = beerus.starknet_get_storage_at(address, key).await.unwrap();
+        let res = beerus
+            .starknet_get_storage_at(address, key, &block_id)
+            .await
+            .unwrap();
 
         assert_eq!(res, expected_result);
     }
@@ -1677,7 +1681,6 @@ mod tests {
         ethereum_lightclient_mock
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
-
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
             config,
@@ -1690,9 +1693,11 @@ mod tests {
         )
         .unwrap();
         let key = selector!("ERC20_name");
-
+        let block_id = BlockId::Number(10);
         // Perform the test call.
-        let res = beerus.starknet_get_storage_at(address, key).await;
+        let res = beerus
+            .starknet_get_storage_at(address, key, &block_id)
+            .await;
 
         // Assert that the result is correct.
         assert!(res.is_err());
