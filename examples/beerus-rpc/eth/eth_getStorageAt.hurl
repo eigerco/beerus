@@ -5,8 +5,8 @@ Content-Type: application/json
     "jsonrpc": "2.0",
     "method": "eth_getStorageAt",
     "params": [
-        "0x407d73d8a49eeb85d32cf465507dd71d507100c1",
-        "0x0",
+        "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
         "latest"
     ]
 }

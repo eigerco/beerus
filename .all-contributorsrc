@@ -151,7 +151,7 @@
       "name": "Santiago Galván (Dub)",
       "avatar_url": "https://avatars.githubusercontent.com/u/58611754?v=4",
       "profile": "https://github.com/dubzn",
-       "contributions": [
+      "contributions": [
         "code"
       ]
     },
@@ -250,6 +250,15 @@
       "name": "Damián Piñones",
       "avatar_url": "https://avatars.githubusercontent.com/u/30808181?v=4",
       "profile": "https://github.com/dpinones",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "betacodd",
+      "name": "Betacodd",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97968794?v=4",
+      "profile": "https://github.com/betacodd",
       "contributions": [
         "code"
       ]
