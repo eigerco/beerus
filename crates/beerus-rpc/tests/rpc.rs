@@ -4,7 +4,9 @@ mod common;
 mod tests {
 
     use crate::common::setup_beerus_rpc;
-    use beerus_core::starknet_helper::create_mock_get_events;
+    use beerus_core::starknet_helper::{
+        create_mock_broadcasted_transaction, create_mock_get_events,
+    };
     use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
     use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
     use jsonrpsee::types::error::ErrorObjectOwned;
@@ -102,7 +104,7 @@ mod tests {
             )
             .unwrap(),
         );
-        let broadcasted_transaction = "{ \"type\": \"INVOKE\", \"nonce\": \"0x0\", \"max_fee\": \"0x12C72866EFA9B\", \"version\": \"0x0\", \"signature\": [ \"0x10E400D046147777C2AC5645024E1EE81C86D90B52D76AB8A8125E5F49612F9\", \"0x0ADB92739205B4626FEFB533B38D0071EB018E6FF096C98C17A6826B536817B\" ], \"contract_address\": \"0x0019fcae2482de8fb3afaf8d4b219449bec93a5928f02f58eef645cc071767f4\", \"calldata\": [ \"0x0000000000000000000000000000000000000000000000000000000000000001\", \"0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7\", \"0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e\", \"0x0000000000000000000000000000000000000000000000000000000000000000\", \"0x0000000000000000000000000000000000000000000000000000000000000003\", \"0x0000000000000000000000000000000000000000000000000000000000000003\", \"0x04681402a7ab16c41f7e5d091f32fe9b78de096e0bd5962ce5bd7aaa4a441f64\", \"0x000000000000000000000000000000000000000000000000001d41f6331e6800\", \"0x0000000000000000000000000000000000000000000000000000000000000000\", \"0x0000000000000000000000000000000000000000000000000000000000000001\" ], \"entry_point_selector\": \"0x015d40a3d6ca2ac30f4031e42be28da9b056fef9bb7357ac5e85627ee876e5ad\" }".to_string();
+        let broadcasted_transaction = create_mock_broadcasted_transaction();
 
         let expected = FeeEstimate {
             gas_consumed: 0x1de6,
@@ -111,7 +113,7 @@ mod tests {
         };
 
         let actual = beerus_rpc
-            .starknet_estimate_fee(block_hash, broadcasted_transaction)
+            .starknet_estimate_fee(block_hash, broadcasted_transaction.0)
             .await
             .unwrap();
 

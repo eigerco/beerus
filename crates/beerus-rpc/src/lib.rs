@@ -2,9 +2,10 @@ pub mod api;
 pub mod models;
 pub mod utils;
 
-use crate::api::{BeerusApiError, BeerusRpcServer};
+use crate::api::{
+    BeerusApiError, BeerusRpcServer, BLOCK_NOT_FOUND, CONTRACT_ERROR, CONTRACT_NOT_FOUND,
+};
 use crate::models::EventFilterWithPage;
-
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
     lightclient::starknet::storage_proof::GetProofOutput,
@@ -673,20 +674,21 @@ impl BeerusRpcServer for BeerusRpc {
     async fn starknet_estimate_fee(
         &self,
         block_id: BlockId,
-        broadcasted_transaction: String,
+        broadcasted_transaction: BroadcastedTransaction,
     ) -> Result<FeeEstimate, Error> {
-        let broadcasted_transaction: BroadcastedTransaction =
-            serde_json::from_str(&broadcasted_transaction).map_err(|e| {
-                Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string())))
-            })?;
-
-        let estimate_fee = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .estimate_fee(broadcasted_transaction, &block_id)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(estimate_fee)
+            .map_err(|e| {
+                let error_type: String = e.to_string();
+                match error_type.as_str() {
+                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
+                    CONTRACT_ERROR => Error::from(BeerusApiError::ContractError),
+                    CONTRACT_NOT_FOUND => Error::from(BeerusApiError::ContractNotFound),
+                    _ => Error::from(BeerusApiError::ContractError),
+                }
+            })
     }
 
     async fn starknet_call(
