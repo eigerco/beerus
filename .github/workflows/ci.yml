@@ -78,3 +78,14 @@ jobs:
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
         if: always()
+      # Save docker logs
+      - name: Save logs
+        run: docker-compose logs > service_logs.txt
+        if: always()
+      # export docker logs as an artifact
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: service_logs
+          path: service_logs.txt
+        if: always()
