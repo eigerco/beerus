@@ -10,7 +10,7 @@ Content-Type: application/json
       },
       "broadcasted_transaction": {
         "type": "INVOKE",
-        "nonce": "0x0",
+        "nonce": "0x3",
         "max_fee": "0x12C72866EFA9B",
         "version": "0x0",
         "signature": [ "0x10E400D046147777C2AC5645024E1EE81C86D90B52D76AB8A8125E5F49612F9", "0x0ADB92739205B4626FEFB533B38D0071EB018E6FF096C98C17A6826B536817B" ],
