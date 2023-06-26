@@ -268,7 +268,7 @@ impl HeliosLightClient {
     /// Uses the same style as helios, take ownership and return it.
     #[cfg(feature = "std")]
     fn load_checkpoint(
-        builder: ClientBuilder,
+        mut builder: ClientBuilder,
         ethereum_checkpoint: Option<String>,
         data_dir: PathBuf,
     ) -> ClientBuilder {
@@ -291,13 +291,16 @@ impl HeliosLightClient {
             };
         }
 
+        // Set the fallback service
+        builder = builder.fallback("https://sync-mainnet.beaconcha.in");
+
         // Checkpoint is at this point expected to be a hex string without 0x prefix,
         // already stripped during environment variable parsing.
         // Example: 85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68.
         let checkpoint_str =
             ethereum_checkpoint.expect("Checkpoint is expected to be Some(String) at this point.");
 
-        log::info!("Loading helios checkpoint 0x{:?}.", checkpoint_str);
+        log::info!("Loading helios checkpoint {:?}.", checkpoint_str);
         builder.checkpoint(&checkpoint_str)
     }
 }
