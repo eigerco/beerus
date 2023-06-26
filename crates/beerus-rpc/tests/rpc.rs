@@ -4,11 +4,11 @@ mod common;
 mod tests {
 
     use crate::common::setup_beerus_rpc;
-    use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
     use beerus_core::starknet_helper::{
         create_mock_broadcasted_transaction, create_mock_get_events,
     };
     use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
+    use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
     use jsonrpsee::types::error::ErrorObjectOwned;
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{
@@ -113,11 +113,7 @@ mod tests {
         };
 
         let actual = beerus_rpc
-<<<<<<< HEAD
-            .starknet_estimate_fee(block_hash, broadcasted_transaction)
-=======
-            .estimate_fee(block_hash, broadcasted_transaction.0)
->>>>>>> 45fb0c3 (Refactor starknet_getEstimateFee + error handling)
+            .starknet_estimate_fee(block_hash, broadcasted_transaction.0)
             .await
             .unwrap();
 

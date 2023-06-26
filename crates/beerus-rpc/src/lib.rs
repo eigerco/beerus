@@ -2,12 +2,10 @@ pub mod api;
 pub mod models;
 pub mod utils;
 
-use crate::models::EventFilterWithPage;
 use crate::api::{
     BeerusApiError, BeerusRpcServer, BLOCK_NOT_FOUND, CONTRACT_ERROR, CONTRACT_NOT_FOUND,
 };
-use beerus_core::lightclient::starknet::storage_proof::GetProofOutput;
-
+use crate::models::EventFilterWithPage;
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
     lightclient::starknet::storage_proof::GetProofOutput,
@@ -663,18 +661,14 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
     }
 
-<<<<<<< HEAD
     async fn starknet_pending_transactions(&self) -> Result<Vec<StarknetTransaction>, Error> {
         let transactions_result = self
             .beerus
-=======
-    async fn pending_transactions(&self) -> Result<Vec<Transaction>, Error> {
-        self.beerus
->>>>>>> 45fb0c3 (Refactor starknet_getEstimateFee + error handling)
             .starknet_lightclient
             .pending_transactions()
             .await
-            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions))
+            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions));
+        Ok(transactions_result.unwrap())
     }
 
     async fn starknet_estimate_fee(

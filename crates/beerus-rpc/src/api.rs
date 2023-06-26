@@ -15,11 +15,11 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-        ContractClass, DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate,
-        FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction as StarknetTransaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
+        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
+        EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
     },
 };
 pub const BLOCK_NOT_FOUND: &str = "Block not found";
