@@ -3,9 +3,7 @@ pub mod errors;
 pub mod models;
 pub mod utils;
 
-use crate::api::{
-    BeerusApiError, BeerusRpcServer,
-};
+use crate::api::BeerusRpcServer;
 use crate::models::EventFilterWithPage;
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
@@ -16,7 +14,6 @@ use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
-    types::error::CallError,
 };
 
 use crate::errors::{invalid_call_data, INTERNAL_SERVER_ERROR, INVALID_CALL_DATA};

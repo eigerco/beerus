@@ -7,7 +7,7 @@ mod tests {
     use beerus_core::starknet_helper::{
         create_mock_broadcasted_transaction, create_mock_get_events,
     };
-    use beerus_rpc::api::{BeerusApiError, BeerusRpcServer};
+    use beerus_rpc::api::{BeerusRpcServer};
     use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
     use starknet::core::types::FieldElement;
     use starknet::providers::jsonrpc::models::{

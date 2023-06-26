@@ -18,9 +18,6 @@ use starknet::{
         StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
     },
 };
-pub const BLOCK_NOT_FOUND: &str = "Block not found";
-pub const CONTRACT_NOT_FOUND: &str = "Contract not found";
-pub const CONTRACT_ERROR: &str = "Contract error";
 
 #[rpc(server)]
 pub trait BeerusRpc {
