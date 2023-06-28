@@ -15,7 +15,6 @@ env:
   ETHEREUM_NETWORK: ${{ secrets.ETHEREUM_NETWORK }}
   ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
   ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
-  ETHEREUM_CHECKPOINT: "0x6994337840845b922cfd8d90a9f283e936f77a61eceb41b0e4b083ac5269e37a"
   STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
 
 jobs:
@@ -70,7 +69,7 @@ jobs:
       # Run beerus RPC in the background
       - name: Run beerus
         run: |
-          docker compose up -d 
+          docker compose up
           hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
       # Run end-to-end tests
       - name: Run end-to-end tests
