@@ -11,6 +11,7 @@ services:
       ETHEREUM_CONSENSUS_RPC_URL: "${ETHEREUM_CONSENSUS_RPC_URL}"
       ETHEREUM_EXECUTION_RPC_URL: "${ETHEREUM_EXECUTION_RPC_URL}"
       STARKNET_RPC_URL: "${STARKNET_RPC_URL}"
+      ETHEREUM_CHECKPOINT: "0x6994337840845b922cfd8d90a9f283e936f77a61eceb41b0e4b083ac5269e37a"
     deploy:
       resources:
         # Define small resource limitations to mimic a low-spec hardware
