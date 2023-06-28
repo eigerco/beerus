@@ -117,7 +117,10 @@ do
         status_badge="❌"
     fi
 
-    outputs+=$(echo -e "\
+    # Only add failing tests to the output, otherwise it exceeds github md report limit
+    if [ $status -ne 0 ]
+    then
+        outputs+=$(echo -e "\
 <details>\n
 <summary>$file $status_badge</summary>\n\
 \n\
@@ -127,6 +130,7 @@ $output\n\
 \`\`\`\n\
 \n\
 </details>") >> "$markdown_file"
+    fi
 done <<< "$all_files"
 
 # Display failing files
