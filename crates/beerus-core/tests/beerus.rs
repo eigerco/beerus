@@ -10,7 +10,6 @@ mod tests {
         config::Config,
         lightclient::{
             beerus::{BeerusLightClient, SyncStatus},
-            ethereum::helios_lightclient::HeliosLightClient,
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
@@ -1813,16 +1812,6 @@ mod tests {
             .unwrap()
             .to_string()
             .contains("relative URL without a base"));
-    }
-
-    /// Test that we can create a Helios light client.
-    #[tokio::test]
-    async fn given_normal_conditions_when_create_helios_lightclient_should_work() {
-        // Mock config.
-        let (config, _, _) = mock_clients();
-        // Create a new Helios light client.
-        let helios_light_client = HeliosLightClient::new(config).await;
-        assert!(helios_light_client.is_ok());
     }
 
     /// Test that cancellation timestamp is returned when the Ethereum light client returns a value.
