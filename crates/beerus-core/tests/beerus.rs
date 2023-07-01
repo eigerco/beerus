@@ -27,7 +27,8 @@ mod tests {
             BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
             BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
             BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+            BroadcastedInvokeTransactionV1, BroadcastedTransaction, ContractClass,
             DeclareTransactionResult, DeployTransactionResult, EventFilter, FeeEstimate,
             InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
             InvokeTransactionV0, LegacyContractClass, LegacyContractEntryPoint,
@@ -1629,6 +1630,89 @@ mod tests {
         assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
+    /// Test that starknet estimated fee is returned when the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_estimate_fee_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_result = FeeEstimate {
+            gas_consumed: 0,
+            gas_price: 0,
+            overall_fee: 0,
+        };
+
+        // Set the expected return value for the Ethereum light client mock.
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .times(1)
+            .return_once(|_request, _block_id| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+                max_fee: FieldElement::from_hex_be("0").unwrap(),
+                signature: Vec::<FieldElement>::new(),
+                nonce: FieldElement::from_hex_be("0").unwrap(),
+                sender_address: FieldElement::from_hex_be("0").unwrap(),
+                calldata: Vec::<FieldElement>::new(),
+            },
+        ));
+        let block_id = BlockId::Number(10);
+
+        // Perform the test estimate.
+        let res = beerus.starknet_estimate_fee(request, &block_id).await;
+
+        // // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet estimate_fee return an error when the StarkNet Light client returns an error
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_estimate_fee_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = "Wrong url";
+
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .return_once(move |_block_nb, _address| Err(eyre!(expected_error)));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+                max_fee: FieldElement::from_hex_be("0").unwrap(),
+                signature: Vec::<FieldElement>::new(),
+                nonce: FieldElement::from_hex_be("0").unwrap(),
+                sender_address: FieldElement::from_hex_be("0").unwrap(),
+                calldata: Vec::<FieldElement>::new(),
+            },
+        ));
+        let block_id = BlockId::Number(10);
+
+        // Perform the test estimate.
+        let res = beerus.starknet_estimate_fee(request, &block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error);
+    }
+
     /// Test that starknet storage value is returned when the Starknet light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_storage_at_should_work() {
@@ -1837,7 +1921,7 @@ mod tests {
         assert_eq!(res, expected_result);
     }
 
-    /// Test that starknet get_nonce.
+    /// Test that starknet get_nonce return an error when the StarkNet Light client returns an error
     #[tokio::test]
     async fn given_starknet_lightclient_returns_error_when_starknet_get_nonce_should_fail_with_same_error(
     ) {
