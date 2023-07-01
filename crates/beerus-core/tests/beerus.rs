@@ -591,7 +591,7 @@ mod tests {
     /// It tests the `get_transaction_count` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
     {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -672,7 +672,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_number` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -853,7 +853,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -941,7 +941,7 @@ mod tests {
     /// It tests the `query_transaction_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1027,7 +1027,7 @@ mod tests {
     /// It tests the `gas_price` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1112,7 +1112,7 @@ mod tests {
 
     /// Test the `estimate_gas` method when the Ethereum light client returns an error.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1307,7 +1307,7 @@ mod tests {
     /// It tests the `priority_fee` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -2135,6 +2135,167 @@ mod tests {
         // Assert that the result is correct.
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), expected_error);
+    }
+
+    /// Test that starknet block is returned when a block number is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_number_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let test_block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(test_block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(10);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block is returned when a block tag is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_tag_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let test_block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(test_block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        starknet_lightclient_mock
+            .expect_block_number()
+            .times(1)
+            .return_once(|| Ok(10));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block is returned when a block hash is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_hash_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let test_block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(test_block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        starknet_lightclient_mock
+            .expect_block_number()
+            .times(1)
+            .return_once(|| Ok(10));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_hex_be("0").unwrap());
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    // Test that starknet block return an error when the StarkNet Light client returns an error
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_block_with_txs_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = "Wrong url";
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .return_once(move |_block_id| Err(eyre!(expected_error)));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(10);
+
+        // // Perform the get_block_with_txs
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
     /// Test the `block_number` method when everything is fine.
