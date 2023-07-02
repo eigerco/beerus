@@ -113,6 +113,22 @@ mod tests {
         assert_eq!(cfg.ethereum_network, "goerli");
     }
 
+    ///Test `from_env` with unacceptable ethereum_network
+    ///It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_network_env_erroneous_setting_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "sepolia");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let _cfg = Config::from_env();
+    }
+
     /// Env Var `BEERUS_CONFIG`
     /// Should override the config parsing to the file
     #[test]
