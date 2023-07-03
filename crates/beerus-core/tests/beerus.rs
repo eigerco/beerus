@@ -9,7 +9,7 @@ mod tests {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::{BeerusLightClient, SyncStatus},
+            beerus::{BeerusLightClient, NodeData, SyncStatus},
             ethereum::helios_lightclient::HeliosLightClient,
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
@@ -37,7 +37,8 @@ mod tests {
             Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
         },
     };
-    use std::str::FromStr;
+    use std::{collections::BTreeMap, str::FromStr, sync::Arc};
+    use tokio::sync::RwLock;
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -2177,6 +2178,49 @@ mod tests {
         assert!(res.is_ok());
     }
 
+    /// Test that starknet block is returned when a block number is given and the Starknet light client returns a value(second scenerio).
+    #[tokio::test]
+    async fn given_block_number_second_scenerio_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let block_number = 10;
+
+        let test_block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut test_btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        test_btree_map.insert(block_number, test_block_with_tx_hashes);
+
+        let test_node = NodeData {
+            block_number,
+            state_root: String::from("0"),
+            payload: test_btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(test_node));
+
+        let block_id = BlockId::Number(10);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
     /// Test that starknet block is returned when a block tag is given and the Starknet light client returns a value.
     #[tokio::test]
     async fn given_block_tag_when_starknet_get_block_with_txs_should_work() {
@@ -2296,6 +2340,70 @@ mod tests {
         // Assert that the result is correct.
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error);
+    }
+
+    /// Test that starknet block hash and number is returned when the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_condition_starknet_get_block_hash_and_number_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let block_number = 10;
+
+        let test_block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut test_btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        test_btree_map.insert(block_number, test_block_with_tx_hashes);
+
+        let test_node = NodeData {
+            block_number,
+            state_root: String::from("0"),
+            payload: test_btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        beerus.node = Arc::new(RwLock::new(test_node));
+
+        let res = beerus.get_block_hash_and_number().await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block hash and number returns error when block number is not found in payload but Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_error_condition_starknet_get_block_hash_and_number_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let res = beerus.get_block_hash_and_number().await;
+
+        let expected_error = "Block not found";
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
     }
 
     /// Test the `block_number` method when everything is fine.
