@@ -97,6 +97,27 @@ mod tests {
         assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
     }
 
+    /////////////////////////////my addition////////////////
+    /// Test `from_env` function with "goerli" set as ETHEREUM_NETWORK
+    #[test]
+    #[serial]
+    fn ethereum_network_env_goerli_setting_returns_config() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "goerli");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.ethereum_network, "goerli");
+        assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
+        assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
+        assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
+    }
+
+    /////////////////END//////////////////////////////////////////
+
     /// Test `from_env` function when `ETHEREUM_NETWORK` is not set.
     /// It should use the default value.
     /// The default value is `goerli`.
