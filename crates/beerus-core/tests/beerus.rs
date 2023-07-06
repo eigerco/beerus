@@ -31,10 +31,11 @@ mod tests {
             BroadcastedInvokeTransactionV1, BroadcastedTransaction, ContractClass,
             DeclareTransactionResult, DeployTransactionResult, EventFilter, FeeEstimate,
             InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
-            InvokeTransactionV0, LegacyContractClass, LegacyContractEntryPoint,
-            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
-            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
+            InvokeTransactionV0, InvokeTransactionV1, LegacyContractClass,
+            LegacyContractEntryPoint, LegacyEntryPointsByType, MaybePendingBlockWithTxHashes,
+            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
+            TransactionStatus,
         },
     };
     use std::{collections::BTreeMap, str::FromStr, sync::Arc};
@@ -2406,7 +2407,7 @@ mod tests {
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
     }
 
-    /// Test that starknet gets transaction receipt Starknet light client and Ethereum light mock returns a value.
+    /// Test that starknet gets transaction receipt when Starknet light client and Ethereum light mock returns a value.
     #[tokio::test]
     async fn given_normal_condition_starknet_get_transaction_receipt_should_work() {
         // Mock config, ethereum light client and starknet light client.
@@ -2523,6 +2524,43 @@ mod tests {
         // Assert that the result is correct.
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test that starknet gets transaction hash when Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_condition_get_transaction_by_hash_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+
+        let invoke_tx_v1 = InvokeTransactionV1 {
+            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
+            max_fee: FieldElement::from_hex_be("0").unwrap(),
+            signature: Vec::<FieldElement>::new(),
+            nonce: FieldElement::from_hex_be("0").unwrap(),
+            sender_address: FieldElement::from_hex_be("0x").unwrap(),
+            calldata: Vec::<FieldElement>::new(),
+        };
+
+        let expected_result = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+
+        starknet_lightclient_mock
+            .expect_get_transaction_by_hash()
+            .times(1)
+            .return_once(|_tx_hash| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let res = beerus.get_transaction_by_hash(tx_hash).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
     }
 
     /// Test the `block_number` method when everything is fine.
