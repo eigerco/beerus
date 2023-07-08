@@ -57,6 +57,16 @@ mod tests {
         );
     }
 
+    /////////////////////////////////my addition//////////////////////////
+    #[test]
+    #[should_panic]
+    fn missing_config_file_panics() {
+        let missing_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/file/that/doesnt/exist.toml"));
+    }
+
+    /////////////////////////////end//////////////////////////////////////
+
     /// Test `default` function.
     /// It should return the correct value.
     #[test]
