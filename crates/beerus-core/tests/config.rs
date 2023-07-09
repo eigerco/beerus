@@ -1,4 +1,3 @@
-//triggering CI
 #![cfg(not(target_arch = "wasm32"))]
 
 #[cfg(test)]
@@ -57,7 +56,6 @@ mod tests {
         );
     }
 
-    /////////////////////////////////my addition//////////////////////////
     /// Test `from_file` function with a bad config file.
     /// It should fail.
     #[test]
@@ -75,8 +73,6 @@ mod tests {
         let _missing_file_config: Config =
             Config::from_file(&PathBuf::from("tests/file/that/doesnt/exist.toml"));
     }
-
-    /////////////////////////////end//////////////////////////////////////
 
     /// Test `default` function.
     /// It should return the correct value.
@@ -100,7 +96,6 @@ mod tests {
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
 
-    ////////////////////my_addition//////////////////////
     #[test]
     #[serial]
     fn none_from_poll_interval_secs_returns_default_val() {
@@ -109,8 +104,6 @@ mod tests {
         cfg.poll_interval_secs = None;
         assert_eq!(cfg.get_poll_interval(), DEFAULT_POLL_INTERVAL_SECS);
     }
-
-    /////////////////////////////end//////////////////////////////
 
     /// Test `from_env` function.
     #[test]
@@ -130,7 +123,6 @@ mod tests {
         assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
     }
 
-    /////////////////////////////my addition////////////////
     /// Test `from_env` function with "goerli" set as ETHEREUM_NETWORK
     #[test]
     #[serial]
@@ -148,8 +140,6 @@ mod tests {
         assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
         assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
     }
-
-    /////////////////END//////////////////////////////////////////
 
     /// Test `from_env` function when `ETHEREUM_NETWORK` is not set.
     /// It should use the default value.
@@ -266,7 +256,6 @@ mod tests {
         let _cfg = Config::from_env();
     }
 
-    ////////////////////////////my_addition/////////////////////////////////
     /// Test ethereum custom checkpoint with almost allowed valued.
     /// It should panic
     #[test]
@@ -289,8 +278,6 @@ mod tests {
 
         let _cfg = Config::from_env();
     }
-
-    /////////////////////end//////////////////////////////////////
 
     /// Test ethereum custom checkpoint with unexpected random string.
     /// It should panic.
