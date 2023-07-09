@@ -103,15 +103,10 @@ mod tests {
     ////////////////////my_addition//////////////////////
     #[test]
     #[serial]
-    fn none_from_get_poll_interval_returns_default_val() {
-        Config::clean_env();
-        env::set_var("ETHEREUM_NETWORK", "mainnet");
-        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
-        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
-        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
-        env::set_var("DATA_DIR", "/tmp");
+    fn none_from_poll_interval_secs_returns_default_val() {
+        let mut cfg = Config::default();
 
-        let cfg = Config::from_env();
+        cfg.poll_interval_secs = None;
         assert_eq!(cfg.get_poll_interval(), DEFAULT_POLL_INTERVAL_SECS);
     }
 
