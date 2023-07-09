@@ -63,7 +63,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn bad_config_file_panics() {
-        let goerli_file_config: Config =
+        let _goerli_file_config: Config =
             Config::from_file(&PathBuf::from("tests/common/data/bad.toml"));
     }
 
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn missing_config_file_panics() {
-        let missing_file_config: Config =
+        let _missing_file_config: Config =
             Config::from_file(&PathBuf::from("tests/file/that/doesnt/exist.toml"));
     }
 
@@ -99,6 +99,23 @@ mod tests {
 
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
+
+    ////////////////////my_addition//////////////////////
+    #[test]
+    #[serial]
+    fn none_from_get_poll_interval_returns_default_val() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.get_poll_interval(), DEFAULT_POLL_INTERVAL_SECS);
+    }
+
+    /////////////////////////////end//////////////////////////////
 
     /// Test `from_env` function.
     #[test]
@@ -253,6 +270,32 @@ mod tests {
 
         let _cfg = Config::from_env();
     }
+
+    ////////////////////////////my_addition/////////////////////////////////
+    /// Test ethereum custom checkpoint with almost allowed valued.
+    /// It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_bad_hex_suffix() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "clear");
+
+        let _cfg = Config::from_env();
+
+        env::set_var(
+            "ETHEREUM_CHECKPOINT",
+            "0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfax0",
+        );
+
+        let _cfg = Config::from_env();
+    }
+
+    /////////////////////end//////////////////////////////////////
 
     /// Test ethereum custom checkpoint with unexpected random string.
     /// It should panic.
