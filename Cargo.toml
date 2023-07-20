@@ -26,3 +26,22 @@ eyre = "0.6.8"
 log = "0.4.17"
 serde = "1.0.156"
 primitive-types = "0.12.1"
+
+[dev-dependencies]
+beerus-rpc = { path = "./crates/beerus-rpc" }
+beerus-core.workspace = true
+starknet.workspace = true
+ethers.workspace = true
+eyre.workspace = true
+log.workspace = true
+serde.workspace = true
+primitive-types.workspace = true
+helios.workspace = true
+jsonrpsee = { version = "0.16", features = ["full"] }
+thiserror = "1.0.26"
+tokio = { version = "1.26.0", features = ["full"] }
+serde_json = "1.0.64"
+env_logger = "0.10.0"
+anyhow = "1.0.69"
+serde_with = "2.3.1"
+hex = "0.4.3"
