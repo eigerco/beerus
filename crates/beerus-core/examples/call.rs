@@ -1,17 +1,3 @@
-// use std::{path::PathBuf, str::FromStr};
-
-// use env_logger::Env;
-// use ethers::{types::Address, utils};
-// use eyre::Result;
-// use helios::{config::networks::Network, prelude::*};
-
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{BlockId, FunctionCall},
-};
-
-use std::str::FromStr;
-
 use beerus_core::{
     config::Config,
     lightclient::{
@@ -19,25 +5,16 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-// use beerus_rpc::BeerusRpc;
 use env_logger::Env;
-use log::{error, info};
-// use std::process::exit;
 use eyre::Result;
-use std::env;
-use std::time::Duration;
-use tokio::time::sleep;
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{BlockId, FunctionCall},
+};
+use std::str::FromStr;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // setting BEERUS_CONFIG env loads config from provided file
-    env::set_var(
-        "BEERUS_CONFIG",
-        format!(
-            "{}/examples/mainnet.toml",
-            env::var("CARGO_MANIFEST_DIR").unwrap()
-        ),
-    );
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let config = Config::from_env();
@@ -63,9 +40,10 @@ async fn main() -> Result<()> {
     };
     let block_id = BlockId::Number(33482);
 
-    beerus
+    let res = beerus
         .starknet_lightclient
         .call(calldata, &block_id)
         .await?;
+    println!("{:?}", res);
     Ok(())
 }

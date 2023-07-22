@@ -221,6 +221,55 @@ cp examples/.env.example .env
 source .env
 ```
 
+#### Examples
+```bash
+cargo run -p beerus-core --example basic
+```
+Using config from .toml file
+```bash
+BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
+```
+
+### Using Beerus as a Library
+
+Beerus can be imported into any Rust project.
+
+```rust
+use env_logger::Env;
+use eyre::Result;
+use beerus_core::{
+  config::Config,
+  lightclient::{
+    beerus::BeerusLightClient, ethereum::helios_lightclient::HeliosLightClient,
+    starknet::StarkNetLightClientImpl,
+  },
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+  let config = Config::from_env();
+
+  let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
+  let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
+  let mut beerus = BeerusLightClient::new(
+    config.clone(),
+    Box::new(ethereum_lightclient),
+    Box::new(starknet_lightclient),
+  );
+  beerus.start().await?;
+  let res = beerus
+          .ethereum_lightclient
+          .lock()
+          .await
+          .get_block_number()
+          .await?;
+  println!("{:?}", res);
+  Ok(())
+}
+```
+
+
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
 ##### Beerus RPC

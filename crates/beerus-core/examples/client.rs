@@ -1,10 +1,3 @@
-// use std::{path::PathBuf, str::FromStr};
-
-// use env_logger::Env;
-// use ethers::{types::Address, utils};
-// use eyre::Result;
-// use helios::{config::networks::Network, prelude::*};
-
 use beerus_core::{
     config::Config,
     lightclient::{
@@ -12,14 +5,9 @@ use beerus_core::{
         starknet::StarkNetLightClientImpl,
     },
 };
-// use beerus_rpc::BeerusRpc;
 use env_logger::Env;
-use log::{error, info};
-// use std::process::exit;
 use eyre::Result;
 use std::env;
-use std::time::Duration;
-use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -34,11 +22,12 @@ async fn main() -> Result<()> {
     // Set the ethereum execution rpc url
     env::set_var(
         "ETHEREUM_EXECUTION_RPC_URL",
-        "https://eth-mainnet.g.alchemy.com/v2/gVuEP7oUExvEzNWpUf5L3Gc-BC1NYqSi",
+        "https://eth-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>",
     );
     // Set the data dir
     env::set_var("DATA_DIR", "~/.beerus/tmp");
-    // Set the checkpoint to the last known checkpoint
+    // Set the checkpoint to the last known checkpoint.
+    // Checkpoints can be found, for example, here https://sync.invis.tools/
     env::set_var(
         "ETHEREUM_CHECKPOINT",
         "0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f",
@@ -47,7 +36,7 @@ async fn main() -> Result<()> {
     // Set the Starknet rpc url
     env::set_var(
         "STARKNET_RPC_URL",
-        "https://starknet-mainnet.infura.io/v3/b0eeb1b7e0704005ae91bae55bf527w9c",
+        "https://starknet-mainnet.infura.io/v3/<YOUR_API_KEY>",
     );
     // Set Beerus rpc address
     env::set_var("BEERUS_RPC_ADDR", "0.0.0.0:3030");
@@ -57,12 +46,11 @@ async fn main() -> Result<()> {
 
     let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
     let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
-    let mut beerus = BeerusLightClient::new(
+    let _beerus = BeerusLightClient::new(
         config.clone(),
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
     );
-
     println!("Constructed Beerus client!");
     Ok(())
 }

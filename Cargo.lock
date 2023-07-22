@@ -444,25 +444,6 @@ dependencies = [
 [[package]]
 name = "beerus"
 version = "0.2.0"
-dependencies = [
- "anyhow",
- "beerus-core",
- "beerus-rpc",
- "env_logger",
- "ethers",
- "eyre",
- "helios",
- "hex",
- "jsonrpsee 0.16.2",
- "log",
- "primitive-types 0.12.1",
- "serde",
- "serde_json",
- "serde_with",
- "starknet",
- "thiserror",
- "tokio",
-]
 
 [[package]]
 name = "beerus-core"
@@ -470,6 +451,7 @@ version = "0.2.0"
 dependencies = [
  "async-trait",
  "cargo-husky",
+ "env_logger",
  "ethabi",
  "ethers",
  "eyre",
