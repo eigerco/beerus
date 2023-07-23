@@ -7,6 +7,7 @@ mod tests {
         STARKNET_GOERLI_CC_ADDRESS,
     };
     use ethers::types::Address;
+    use helios::config::networks::Network;
     use serial_test::serial;
     use shellexpand;
     use std::env;
@@ -112,6 +113,19 @@ mod tests {
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "goerli");
     }
+
+    ////////////////////my_addition//////////////////////////////////////////////////////
+    /// Test `etheruem_network()` function when `ETHEREUM_NETWORK` is set to mainnet.
+    /// It should return the Network value wrapped in a result.
+    #[test]
+    #[serial]
+    fn ethereum_network_env_set_mainnet() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        let result = cfg.ethereum_network();
+
+        assert_eq!(result.unwrap(), Network::MAINNET);
+    }
+    ////////////////////////////////////////end/////////////////////////////////////
 
     /// Env Var `BEERUS_CONFIG`
     /// Should override the config parsing to the file
