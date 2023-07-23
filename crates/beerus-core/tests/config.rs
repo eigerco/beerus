@@ -272,7 +272,7 @@ mod tests {
     }
 
     /// Tests that checkpoints are fetched properly by get_checkpoint method
-    /// when ethereum_netework is set to mainnet
+    /// when ethereum_netework is set to goerli
     #[tokio::test]
     async fn call_get_checkpoint_should_return_ok_given_goerli_config() {
         let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/goerli.toml"));
