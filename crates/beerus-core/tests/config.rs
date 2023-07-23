@@ -57,7 +57,6 @@ mod tests {
         );
     }
 
-    ////////////////////my_addition//////////////////////////////////////////////////////
     /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to mainnet.
     /// It should return the Network value wrapped in a result.
     #[test]
@@ -81,7 +80,6 @@ mod tests {
             "Expected an error due to invalid network"
         );
     }
-    ////////////////////////////////////////end/////////////////////////////////////
 
     /// Test `default` function.
     /// It should return the correct value.
@@ -273,7 +271,6 @@ mod tests {
         let _cfg = Config::from_env();
     }
 
-    ////////////////////////////my_addition///////////////////////////////////
     /// Tests that checkpoints are fetched properly by get_checkpoint method
     /// when ethereum_netework is set to mainnet
     #[tokio::test]
@@ -304,5 +301,4 @@ mod tests {
         let value = cfg.get_checkpoint().await;
         assert!(value.is_err(), "Expected an error due to invalid network");
     }
-    /////////////////////////////////end////////////////////////////////////////
 }
