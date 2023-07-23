@@ -119,11 +119,21 @@ mod tests {
     /// It should return the Network value wrapped in a result.
     #[test]
     #[serial]
-    fn ethereum_network_env_set_mainnet() {
+    fn ethereum_network_config_set_mainnet() {
         let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
         let result = cfg.ethereum_network();
 
         assert_eq!(result.unwrap(), Network::MAINNET);
+    }
+
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_wrong_network() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+        let result = cfg.ethereum_network();
+
+        assert!(result.is_err(), "Expected an error due to invalid network");
     }
     ////////////////////////////////////////end/////////////////////////////////////
 
