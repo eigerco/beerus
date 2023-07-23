@@ -57,6 +57,32 @@ mod tests {
         );
     }
 
+    ////////////////////my_addition//////////////////////////////////////////////////////
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to mainnet.
+    /// It should return the Network value wrapped in a result.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_mainnet() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+
+        assert_eq!(cfg.ethereum_network().unwrap(), Network::MAINNET);
+    }
+
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to invalid network.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_wrong_network() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+
+        assert!(
+            cfg.ethereum_network().is_err(),
+            "Expected an error due to invalid network"
+        );
+    }
+    ////////////////////////////////////////end/////////////////////////////////////
+
     /// Test `default` function.
     /// It should return the correct value.
     #[test]
@@ -113,29 +139,6 @@ mod tests {
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "goerli");
     }
-
-    ////////////////////my_addition//////////////////////////////////////////////////////
-    /// Test `etheruem_network()` function when `ETHEREUM_NETWORK` is set to mainnet.
-    /// It should return the Network value wrapped in a result.
-    #[test]
-    #[serial]
-    fn ethereum_network_config_set_mainnet() {
-        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
-        let result = cfg.ethereum_network();
-
-        assert_eq!(result.unwrap(), Network::MAINNET);
-    }
-
-    #[test]
-    #[serial]
-    fn ethereum_network_config_set_wrong_network() {
-        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
-        cfg.ethereum_network = "sepolia".into();
-        let result = cfg.ethereum_network();
-
-        assert!(result.is_err(), "Expected an error due to invalid network");
-    }
-    ////////////////////////////////////////end/////////////////////////////////////
 
     /// Env Var `BEERUS_CONFIG`
     /// Should override the config parsing to the file
