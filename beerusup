@@ -64,7 +64,7 @@ install_beerus() {
     ARCHITECTURE="$(uname -m)"
 
     echo "Pulling $NAME release..."
-    PLATFORM_RELEASE="${NAME}_${PLATFORM}_${ARCHITECTURE}"
+    PLATFORM_RELEASE="${NAME}-${PLATFORM}-${ARCHITECTURE}"
     TARBALL_URL="https://github.com/$PROJECT_REPO/releases/download/${LATEST_VER}/${PLATFORM_RELEASE}.tar.gz"
     
     find $PROJECT_BIN ! -name "$INSTALLER" -type f -exec rm {} +
