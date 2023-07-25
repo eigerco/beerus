@@ -14,13 +14,13 @@ on:
 env:
   BEERUS_VERSION: "ci"
   ETHEREUM_NETWORK: "mainnet"
-#  ETHEREUM_CONSENSUS_RPC_URL: "https://www.lightclientdata.org"
-#  ETHEREUM_EXECUTION_RPC_URL: "https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU"
+  ETHEREUM_CONSENSUS_RPC_URL: "https://www.lightclientdata.org"
+  ETHEREUM_EXECUTION_RPC_URL: "https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU"
   STARKNET_RPC_URL: "https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd"
   ETHEREUM_CHECKPOINT: "0x6994337840845b922cfd8d90a9f283e936f77a61eceb41b0e4b083ac5269e37a"
 #  ETHEREUM_NETWORK: ${{ secrets.ETHEREUM_NETWORK }}
-  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
-  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
+#  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
+#  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
 #  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
 
 jobs:
