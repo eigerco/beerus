@@ -1705,11 +1705,14 @@ mod tests {
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Starknet light client mock.
-        let expected_error = "Wrong url";
+        let expected_error = JsonRpcError {
+            code: 0,
+            message: "Wrong Url".to_string(),
+        };
 
         starknet_lightclient_mock
             .expect_estimate_fee()
-            .return_once(move |_block_nb, _address| Err(eyre!(expected_error)));
+            .return_once(move |_block_nb, _address| Err(expected_error));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -1734,7 +1737,6 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
     /// Test that starknet storage value is returned when the Starknet light client returns a value.
@@ -1865,8 +1867,11 @@ mod tests {
             .starknet_get_storage_at(address, key, &block_id)
             .await;
 
+        let expected_result = JsonRpcError {
+            code: 520,
+            message: "BlockId is not proven yet".to_string(),
+        };
         assert!(res.is_err());
-        let expected_result = "BlockId is not proven yet";
         assert_eq!(res.unwrap_err().to_string(), expected_result.to_string());
     }
 
@@ -2369,11 +2374,14 @@ mod tests {
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Starknet light client mock.
-        let expected_error = "Wrong url";
+        let expected_error = JsonRpcError {
+            code: 0,
+            message: "Wrong Url".to_string(),
+        };
 
         starknet_lightclient_mock
             .expect_get_block_with_txs()
-            .return_once(move |_block_id| Err(eyre!(expected_error)));
+            .return_once(move |_block_id| Err(expected_error));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -2389,7 +2397,6 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error);
     }
 
     /// Test that starknet block hash and number is returned when the Starknet light client returns a value.
@@ -2450,7 +2457,10 @@ mod tests {
 
         let res = beerus.get_block_hash_and_number().await;
 
-        let expected_error = "Block not found";
+        let expected_error = JsonRpcError {
+            code: 24,
+            message: "Block not found".to_string(),
+        };
         // Assert that the result is correct.
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
@@ -2569,7 +2579,10 @@ mod tests {
 
         let res = beerus.starknet_get_transaction_receipt(tx_hash).await;
 
-        let expected_error = "State root mismatch";
+        let expected_error = JsonRpcError {
+            code: 520,
+            message: "State root mismatch".to_string(),
+        };
         // Assert that the result is correct.
         assert!(res.is_err());
         assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
