@@ -201,6 +201,12 @@ well.
 | ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
 | STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
 
+To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
+
+| Env Var | TOML | Mainnet |
+|---|---|----------------------------------------------------------|
+| ETHEREUM_CHECKPOINT | ethereum_checkpoint | 0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f |
+
 ##### Config File
 
 Beerus is configurable via a config toml. If you have set the env var
@@ -225,7 +231,7 @@ source .env
 ```bash
 cargo run -p beerus-core --example basic
 ```
-Using config from .toml file
+Using config from `.toml` file
 ```bash
 BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
 ```
@@ -258,13 +264,16 @@ async fn main() -> Result<()> {
     Box::new(starknet_lightclient),
   );
   beerus.start().await?;
-  let res = beerus
+  let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
+  println!("{:?}", current_starknet_block);
+
+  let current_ethereum_block = beerus
           .ethereum_lightclient
           .lock()
           .await
           .get_block_number()
           .await?;
-  println!("{:?}", res);
+  println!("{:?}", current_ethereum_block);
   Ok(())
 }
 ```

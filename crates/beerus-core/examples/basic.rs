@@ -21,12 +21,16 @@ async fn main() -> Result<()> {
         Box::new(starknet_lightclient),
     );
     beerus.start().await?;
-    let res = beerus
+
+    let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
+    println!("{:?}", current_starknet_block);
+
+    let current_ethereum_block = beerus
         .ethereum_lightclient
         .lock()
         .await
         .get_block_number()
         .await?;
-    println!("{:?}", res);
+    println!("{:?}", current_ethereum_block);
     Ok(())
 }
