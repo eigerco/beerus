@@ -1,10 +1,9 @@
 pub mod api;
+pub mod errors;
 pub mod models;
 pub mod utils;
 
-use crate::api::{
-    BeerusApiError, BeerusRpcServer, BLOCK_NOT_FOUND, CONTRACT_ERROR, CONTRACT_NOT_FOUND,
-};
+use crate::api::BeerusRpcServer;
 use crate::models::EventFilterWithPage;
 use beerus_core::{
     ethers_helper::{parse_eth_address, parse_eth_hash},
@@ -15,10 +14,11 @@ use helios::types::{BlockTag, CallOpts, ExecutionBlock};
 use jsonrpsee::{
     core::{async_trait, Error},
     server::{ServerBuilder, ServerHandle},
-    types::error::CallError,
 };
 
+use crate::errors::{invalid_call_data, INTERNAL_SERVER_ERROR, INVALID_CALL_DATA};
 use beerus_core::lightclient::beerus::BeerusLightClient;
+use errors::BeerusApiError;
 use ethers::types::{
     Address, Filter, Log, SyncingStatus, Transaction as EthTransaction, TransactionReceipt, H256,
     U256,
@@ -50,7 +50,7 @@ impl BeerusRpc {
         let server = ServerBuilder::new()
             .build(self.beerus.config.beerus_rpc_address.unwrap())
             .await
-            .map_err(|_| Error::from(BeerusApiError::InternalServerError))?;
+            .map_err(|_| Error::from(BeerusApiError::from(INTERNAL_SERVER_ERROR)))?;
 
         let addr = server.local_addr()?;
         let handle = server.start(self.into_rpc())?;
@@ -62,8 +62,8 @@ impl BeerusRpc {
 impl BeerusRpcServer for BeerusRpc {
     // Ethereum methods
     async fn eth_get_balance(&self, address: &str, block: BlockTag) -> Result<String, Error> {
-        let address =
-            Address::from_str(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let address = Address::from_str(address)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         let balance = self
             .beerus
             .ethereum_lightclient
@@ -81,8 +81,8 @@ impl BeerusRpcServer for BeerusRpc {
         address: &str,
         block: BlockTag,
     ) -> Result<String, Error> {
-        let address =
-            parse_eth_address(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let address = parse_eth_address(address)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
 
         let tx_count = self
             .beerus
@@ -97,8 +97,8 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn eth_get_block_transaction_count_by_hash(&self, hash: &str) -> Result<String, Error> {
-        let hash =
-            parse_eth_hash(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let hash = parse_eth_hash(hash)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         let tx_count = self
             .beerus
             .ethereum_lightclient
@@ -128,8 +128,8 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn eth_get_code(&self, address: &str, block: BlockTag) -> Result<String, Error> {
-        let address =
-            parse_eth_address(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let address = parse_eth_address(address)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         let code = self
             .beerus
             .ethereum_lightclient
@@ -237,8 +237,8 @@ impl BeerusRpcServer for BeerusRpc {
         hash: &str,
         full_tx: bool,
     ) -> Result<Option<ExecutionBlock>, Error> {
-        let hash =
-            parse_eth_hash(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let hash = parse_eth_hash(hash)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         self.beerus
             .ethereum_lightclient
             .lock()
@@ -249,8 +249,8 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn eth_send_raw_transaction(&self, bytes: &str) -> Result<String, Error> {
-        let bytes =
-            parse_eth_hash(bytes).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let bytes = parse_eth_hash(bytes)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         let raw_tx = self
             .beerus
             .ethereum_lightclient
@@ -267,8 +267,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         tx_hash: &str,
     ) -> Result<Option<TransactionReceipt>, Error> {
-        let tx_hash =
-            H256::from_str(tx_hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let tx_hash = H256::from_str(tx_hash)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         self.beerus
             .ethereum_lightclient
             .lock()
@@ -282,8 +282,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         hash: &str,
     ) -> Result<Option<EthTransaction>, Error> {
-        let tx_hash =
-            H256::from_str(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let tx_hash = H256::from_str(hash)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         self.beerus
             .ethereum_lightclient
             .lock()
@@ -298,8 +298,8 @@ impl BeerusRpcServer for BeerusRpc {
         hash: &str,
         index: usize,
     ) -> Result<Option<EthTransaction>, Error> {
-        let block_hash =
-            parse_eth_hash(hash).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let block_hash = parse_eth_hash(hash)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         self.beerus
             .ethereum_lightclient
             .lock()
@@ -345,8 +345,8 @@ impl BeerusRpcServer for BeerusRpc {
         slot: H256,
         block: BlockTag,
     ) -> Result<String, Error> {
-        let address =
-            parse_eth_address(address).map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let address = parse_eth_address(address)
+            .map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?;
         let storage = self
             .beerus
             .ethereum_lightclient
@@ -360,11 +360,10 @@ impl BeerusRpcServer for BeerusRpc {
 
     // Starknet methods
     async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_l2_to_l1_messages(msg_hash)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_chain_id(&self) -> Result<String, Error> {
@@ -373,10 +372,9 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .chain_id()
             .await
-            .unwrap()
-            .to_string();
+            .map_err(|e| Error::from(BeerusApiError::from(e)))?;
 
-        Ok(chain_id)
+        Ok(chain_id.to_string())
     }
 
     async fn starknet_block_number(&self) -> Result<u64, Error> {
@@ -384,7 +382,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .block_number()
             .await
-            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_nonce(
@@ -392,47 +390,46 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: String,
         block_id: BlockId,
     ) -> Result<String, Error> {
-        let contract_address = FieldElement::from_hex_be(&contract_address).unwrap();
+        let contract_address = FieldElement::from_hex_be(&contract_address)
+            .map_err(|_| invalid_call_data("contract_address"))?;
+
         let nonce = self
             .beerus
             .starknet_get_nonce(contract_address, &block_id)
             .await
-            .unwrap()
-            .to_string();
-        Ok(nonce)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))?;
+
+        Ok(nonce.to_string())
     }
 
     async fn starknet_get_transaction_by_hash(
         &self,
         tx_hash: &str,
     ) -> Result<StarknetTransaction, Error> {
-        let tx_hash_felt = FieldElement::from_hex_be(tx_hash)
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+        let tx_hash_felt =
+            FieldElement::from_hex_be(tx_hash).map_err(|_| invalid_call_data("tx_hash_felt"))?;
+
         self.beerus
             .starknet_lightclient
             .get_transaction_by_hash(tx_hash_felt)
             .await
-            .map_err(|_| Error::from(BeerusApiError::TxnHashNotFound))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, Error> {
-        let block_transaction_count = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_block_transaction_count(&block_id)
             .await
-            .unwrap();
-
-        Ok(block_transaction_count)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_block_hash_and_number(&self) -> Result<BlockHashAndNumber, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .block_hash_and_number()
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_contract_storage_proof(
@@ -442,7 +439,8 @@ impl BeerusRpcServer for BeerusRpc {
         keys: Vec<String>,
     ) -> Result<GetProofOutput, Error> {
         let contract_address = FieldElement::from_str(&contract_address)
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
+
         let keys: Result<Vec<FieldElement>, _> =
             keys.iter().map(|k| FieldElement::from_str(k)).collect();
 
@@ -450,11 +448,11 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .get_contract_storage_proof(
                 contract_address,
-                keys.map_err(|_| Error::from(BeerusApiError::InvalidCallData))?,
+                keys.map_err(|_| Error::from(BeerusApiError::from(INVALID_CALL_DATA)))?,
                 &block_id,
             )
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_class_at(
@@ -462,13 +460,14 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         contract_address: String,
     ) -> Result<ContractClass, Error> {
-        let contract_address = FieldElement::from_str(&contract_address).unwrap();
-        Ok(self
-            .beerus
+        let contract_address = FieldElement::from_str(&contract_address)
+            .map_err(|_| invalid_call_data("contract_address"))?;
+
+        self.beerus
             .starknet_lightclient
             .get_class_at(&block_id, contract_address)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_add_invoke_transaction(
@@ -479,7 +478,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .add_invoke_transaction(&invoke_transaction)
             .await
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_block_with_tx_hashes(
@@ -490,7 +489,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .get_block_with_tx_hashes(&block_id)
             .await
-            .map_err(|_| Error::from(BeerusApiError::BlockNotFound))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_transaction_by_block_id_and_index(
@@ -498,76 +497,75 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         index: &str,
     ) -> Result<StarknetTransaction, Error> {
-        let index = u64::from_str(index)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
-        let result = self
-            .beerus
+        let index = u64::from_str(index).map_err(|_| invalid_call_data("index"))?;
+
+        self.beerus
             .starknet_lightclient
             .get_transaction_by_block_id_and_index(&block_id, index)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(result)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_block_with_txs(
         &self,
         block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxs, Error> {
-        let result = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_block_with_txs(&block_id)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-        Ok(result)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_state_update(&block_id)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_syncing(&self) -> Result<SyncStatusType, Error> {
-        let sync_status_type = self.beerus.starknet_lightclient.syncing().await.unwrap();
-        Ok(sync_status_type)
+        self.beerus
+            .starknet_lightclient
+            .syncing()
+            .await
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_l1_to_l2_messages(msg_hash)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256, Error> {
-        let nonce = self.beerus.starknet_l1_to_l2_message_nonce().await.unwrap();
-        Ok(nonce)
+        self.beerus
+            .starknet_l1_to_l2_message_nonce()
+            .await
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_l1_to_l2_message_cancellations(msg_hash)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_transaction_receipt(
         &self,
         tx_hash: String,
     ) -> Result<MaybePendingTransactionReceipt, Error> {
-        let tx_hash_felt = FieldElement::from_hex_be(&tx_hash).unwrap();
-        Ok(self
-            .beerus
+        let tx_hash_felt =
+            FieldElement::from_hex_be(&tx_hash).map_err(|_| invalid_call_data("tx_hash_felt"))?;
+
+        self.beerus
             .starknet_lightclient
             .get_transaction_receipt(tx_hash_felt)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_class_hash_at(
@@ -575,14 +573,14 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         contract_address: String,
     ) -> Result<FieldElement, Error> {
-        let contract_address = FieldElement::from_str(&contract_address).unwrap();
+        let contract_address = FieldElement::from_str(&contract_address)
+            .map_err(|_| invalid_call_data("contract_address"))?;
 
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_class_hash_at(&block_id, contract_address)
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_class(
@@ -590,16 +588,14 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         class_hash: String,
     ) -> Result<ContractClass, Error> {
-        let class_hash = FieldElement::from_str(&class_hash)
-            .map_err(|e| Error::Call(CallError::InvalidParams(anyhow::anyhow!(e.to_string()))))?;
-        let result = self
-            .beerus
+        let class_hash =
+            FieldElement::from_str(&class_hash).map_err(|_| invalid_call_data("class_hash"))?;
+
+        self.beerus
             .starknet_lightclient
             .get_class(&block_id, class_hash)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-
-        Ok(result)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_add_deploy_account_transaction(
@@ -610,36 +606,42 @@ impl BeerusRpcServer for BeerusRpc {
         constructor_calldata: Vec<String>,
     ) -> Result<DeployTransactionResult, Error> {
         let contract_class_bytes = contract_class.as_bytes();
-        let contract_class = serde_json::from_slice(contract_class_bytes).unwrap();
-        let version: u64 = version.parse().unwrap();
-        let contract_address_salt: FieldElement =
-            FieldElement::from_str(&contract_address_salt).unwrap();
+
+        let contract_class = serde_json::from_slice(contract_class_bytes)
+            .map_err(|_| invalid_call_data("contract_class"))?;
+
+        let version: u64 = version.parse().map_err(|_| invalid_call_data("version"))?;
+
+        let contract_address_salt: FieldElement = FieldElement::from_str(&contract_address_salt)
+            .map_err(|_| invalid_call_data("contract_address_salt"))?;
+
         let constructor_calldata = constructor_calldata
             .iter()
-            .map(|x| FieldElement::from_str(x).unwrap())
+            .map(|x| {
+                FieldElement::from_str(x)
+                    .map_err(|_| invalid_call_data("constructor_calldata"))
+                    .unwrap()
+            })
             .collect();
+
         let deploy_transaction = BroadcastedDeployTransaction {
             contract_class,
             version,
             contract_address_salt,
             constructor_calldata,
         };
-        let result = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .add_deploy_transaction(&deploy_transaction)
             .await
-            .map_err(|e| Error::Call(CallError::Failed(anyhow::anyhow!(e.to_string()))))?;
-
-        Ok(result)
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_events(
         &self,
         custom_filter: EventFilterWithPage,
     ) -> Result<EventsPage, Error> {
-        Ok(self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .get_events(
                 custom_filter.filter,
@@ -647,7 +649,7 @@ impl BeerusRpcServer for BeerusRpc {
                 custom_filter.page.chunk_size,
             )
             .await
-            .unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_add_declare_transaction(
@@ -658,17 +660,15 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .add_declare_transaction(&declare_transaction)
             .await
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_pending_transactions(&self) -> Result<Vec<StarknetTransaction>, Error> {
-        let transactions_result = self
-            .beerus
+        self.beerus
             .starknet_lightclient
             .pending_transactions()
             .await
-            .map_err(|_| Error::from(BeerusApiError::FailedToFetchPendingTransactions));
-        Ok(transactions_result.unwrap())
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_estimate_fee(
@@ -680,15 +680,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .estimate_fee(broadcasted_transaction, &block_id)
             .await
-            .map_err(|e| {
-                let error_type: String = e.to_string();
-                match error_type.as_str() {
-                    BLOCK_NOT_FOUND => Error::from(BeerusApiError::BlockNotFound),
-                    CONTRACT_ERROR => Error::from(BeerusApiError::ContractError),
-                    CONTRACT_NOT_FOUND => Error::from(BeerusApiError::ContractNotFound),
-                    _ => Error::from(BeerusApiError::ContractError),
-                }
-            })
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_call(
@@ -700,7 +692,7 @@ impl BeerusRpcServer for BeerusRpc {
             .starknet_lightclient
             .call(request, &block_id)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
     async fn starknet_get_storage_at(
@@ -710,13 +702,13 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<FieldElement, Error> {
         let contract_address = FieldElement::from_hex_be(&contract_address)
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
-        let key = FieldElement::from_hex_be(&key)
-            .map_err(|_| Error::from(BeerusApiError::InvalidCallData))?;
+            .map_err(|_| invalid_call_data("contract_address"))?;
+
+        let key = FieldElement::from_hex_be(&key).map_err(|_| invalid_call_data("key"))?;
 
         self.beerus
             .starknet_get_storage_at(contract_address, key, &block_id)
             .await
-            .map_err(|_| Error::from(BeerusApiError::ContractError))
+            .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 }
