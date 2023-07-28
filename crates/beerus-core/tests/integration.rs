@@ -11,11 +11,13 @@ mod test {
         starknet::StarkNetLightClientImpl,
     };
     use ethers::types::U256;
-    use eyre::eyre;
     #[cfg(not(target_arch = "wasm32"))]
     use httpmock::prelude::*;
+    use starknet::providers::jsonrpc::JsonRpcError;
     use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
     use std::str::FromStr;
+
+    const UNKNOWN_ERROR_CODE: i64 = 520;
 
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_storage_at_should_work() {
@@ -55,11 +57,16 @@ mod test {
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
-        let expected_error = "Ethereum light client error";
         // Mock the `start` method of the Ethereum light client.
         helios_lightclient
             .expect_starknet_last_proven_block()
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
 
@@ -73,7 +80,10 @@ mod test {
             .await;
         assert_eq!(mock_request.hits(), 0);
         assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+        assert_eq!(
+            res.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
     }
 
     #[tokio::test]
@@ -114,12 +124,17 @@ mod test {
 
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let mut helios_lightclient = MockEthereumLightClient::new();
-        let expected_error = "Ethereum light client error";
 
         // Mock the `start` method of the Ethereum light client.
         helios_lightclient
             .expect_starknet_last_proven_block()
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
         let beerus =
             BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
         let res = beerus
@@ -131,7 +146,10 @@ mod test {
             .await;
         assert_eq!(mock_request.hits(), 0);
         assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+        assert_eq!(
+            res.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
     }
 
     #[tokio::test]

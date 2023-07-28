@@ -20,6 +20,7 @@ mod tests {
 
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
+    use starknet::providers::jsonrpc::JsonRpcError;
     use starknet::{
         core::types::FieldElement,
         macros::selector,
@@ -37,6 +38,14 @@ mod tests {
         },
     };
     use std::str::FromStr;
+
+    const UNKNOWN_ERROR_CODE: i64 = 520;
+    const TRANSACTION_HASH_NOT_FOUND_CODE: i64 = 25;
+
+    const STARKNET_LIGHT_CLIENT_ERROR: &str = "StarkNet light client error";
+    const WRONG_URL: &str = "Wrong Url";
+    const NETWORK_FAILURE: &str = "Network Failure";
+    const TRANSACTION_HASH_NOT_FOUND: &str = "Transaction hash not found";
 
     #[test]
     fn when_call_new_then_should_return_beerus_lightclient() {
@@ -1032,12 +1041,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "ethereum_lightclient_error";
-
         // Mock dependencies.
         ethereum_lightclient_mock
             .expect_get_gas_price()
-            .return_once(move || Err(eyre::eyre!("ethereum_lightclient_error")));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -1059,7 +1072,10 @@ mod tests {
         // Assert that the `gas_price` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `gas_price` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
     }
 
     /// Test the `estimate_gas` method when everything is fine.
@@ -1593,12 +1609,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        // Set the expected return value for the Starknet light client mock.
-        let expected_error = "Wrong url";
         starknet_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_req, _block_nb| Err(eyre!(expected_error)));
+            .return_once(move |_req, _block_nb| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: WRONG_URL.to_string(),
+                })
+            });
+
         ethereum_lightclient_mock
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
@@ -1610,7 +1630,7 @@ mod tests {
         );
 
         // Perform the test call.
-        let res = beerus
+        let result = beerus
             .starknet_call_contract(
                 FieldElement::from_hex_be(
                     "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
@@ -1625,8 +1645,10 @@ mod tests {
             .await;
 
         // Assert that the result is correct.
-        assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error);
+        assert!(result.is_err());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, WRONG_URL.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test that starknet storage value is returned when the Starknet light client returns a value.
@@ -1769,12 +1791,15 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        // Set the expected return value for the Starknet light client mock.
-        let expected_error = "Wrong url";
         starknet_lightclient_mock
             .expect_get_storage_at()
             .times(1)
-            .return_once(move |_address, _key, _block_nb| Err(eyre!(expected_error)));
+            .return_once(move |_address, _key, _block_nb| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: WRONG_URL.to_string(),
+                })
+            });
         ethereum_lightclient_mock
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
@@ -1792,13 +1817,16 @@ mod tests {
         let key = selector!("ERC20_name");
         let block_id = BlockId::Number(10);
         // Perform the test call.
-        let res = beerus
+        let result = beerus
             .starknet_get_storage_at(address, key, &block_id)
             .await;
 
         // Assert that the result is correct.
-        assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error);
+        assert!(result.is_err());
+
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, WRONG_URL.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test that starknet get_nonce.
@@ -1844,11 +1872,14 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        // Set the expected return value for the Starknet light client mock.
-        let expected_error = "Wrong url";
         starknet_lightclient_mock
             .expect_get_nonce()
-            .return_once(move |_block_nb, _address| Err(eyre!(expected_error)));
+            .return_once(move |_block_nb, _address| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: WRONG_URL.to_string(),
+                })
+            });
         ethereum_lightclient_mock
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
@@ -1868,11 +1899,13 @@ mod tests {
         let block_id = BlockId::Tag(StarknetBlockTag::Latest);
 
         // Get Nonce.
-        let res = beerus.starknet_get_nonce(address, &block_id).await;
+        let result = beerus.starknet_get_nonce(address, &block_id).await;
 
         // Assert that the result is correct.
-        assert!(res.is_err());
-        assert_eq!(res.unwrap_err().to_string(), expected_error);
+        assert!(result.is_err());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, WRONG_URL.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test that with a correct url we can create StarkNet light client.
@@ -1966,11 +1999,16 @@ mod tests {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Ethereum light client mock.
-        let expected_error = "Ethereum client out of sync";
         ethereum_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .return_once(move |_call_opts, _block_tag| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum client out of sync".to_string(),
+                }
+                .into())
+            });
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -1986,7 +2024,10 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), expected_error);
+        assert_eq!(
+            result.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum client out of sync\"".to_string()
+        );
     }
 
     /// Test that msg_fee + 1 for the message with the given 'msgHash is returned when the Ethereum light client returns a value.
@@ -2032,11 +2073,16 @@ mod tests {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Ethereum light client mock.
-        let expected_error = "ethereum_lightclient_error";
         ethereum_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .return_once(move |_call_opts, _block_tag| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -2050,7 +2096,10 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), expected_error);
+        assert_eq!(
+            result.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
     }
 
     /// Test the `block_number` method when everything is fine.
@@ -2094,13 +2143,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `block_number` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_block_number()
             .times(1)
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2115,7 +2167,9 @@ mod tests {
         // Assert that the `block_number` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `block_number` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2161,13 +2215,17 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "Ethereum light client error";
-
         // Mock the next call to the Ethereum light client (starknet_core.l1ToL2MessageNonce)
         ethereum_lightclient_mock
             .expect_call()
             .times(1)
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .return_once(move |_call_opts, _block_tag| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2181,7 +2239,10 @@ mod tests {
         // Assert that the `block_number` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `block_number` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        assert_eq!(
+            result.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2239,13 +2300,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `block_number` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_block_hash_and_number()
             .times(1)
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2260,7 +2324,9 @@ mod tests {
         // Assert that the `block_hash_and_number` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `block_number` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2318,13 +2384,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_class` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_class()
             .times(1)
-            .return_once(move |_block_id, _class_hash| Err(eyre!(expected_error)));
+            .return_once(move |_block_id, _class_hash| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2344,7 +2413,9 @@ mod tests {
         // Assert that the `get_class` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_class` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2392,10 +2463,15 @@ mod tests {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Set the expected return value for the Ethereum light client mock.
-        let expected_error = "Ethereum_lightclient_error";
         ethereum_lightclient_mock
             .expect_call()
-            .return_once(move |_call_opts, _block_tag| Err(eyre!(expected_error)));
+            .return_once(move |_call_opts, _block_tag| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: "Ethereum lightclient error".to_string(),
+                }
+                .into())
+            });
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new(
@@ -2409,7 +2485,10 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), expected_error);
+        assert_eq!(
+            result.unwrap_err().message,
+            "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
+        );
     }
 
     /// Test the `get_class_hash` method when everything is fine.
@@ -2461,12 +2540,15 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_class_hash` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_class_hash_at()
-            .return_once(move |_, _| Err(eyre!(expected_error)));
+            .return_once(move |_, _| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2485,7 +2567,9 @@ mod tests {
         // Assert that the `get_class_hash` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_class_hash` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test the `get_class_at` method when everything is fine.
@@ -2541,13 +2625,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_class_at` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_class_at()
             .times(1)
-            .return_once(move |_block_id, _contract_address| Err(eyre!(expected_error)));
+            .return_once(move |_block_id, _contract_address| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2567,7 +2654,9 @@ mod tests {
         // Assert that the `get_class_at` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_class_at` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2618,13 +2707,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_block_transaction_count` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_block_transaction_count()
             .times(1)
-            .return_once(move |_block_id| Err(eyre!(expected_error)));
+            .return_once(move |_block_id| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2643,7 +2735,9 @@ mod tests {
         // Assert that the `get_block_transaction_count` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_block_transaction_count` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2785,13 +2879,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_events` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_events()
             .times(1)
-            .return_once(move |_, _, _| Err(eyre!(expected_error)));
+            .return_once(move |_, _, _| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2817,7 +2914,9 @@ mod tests {
         // Assert that the `get_events` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_events` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2909,13 +3008,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `syncing` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_syncing()
             .times(1)
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -2930,7 +3032,9 @@ mod tests {
         // Assert that the `get_class_at` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `syncing` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -2993,13 +3097,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `estimate_fee` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_estimate_fee()
             .times(1)
-            .return_once(move |_, _| Err(eyre!(expected_error)));
+            .return_once(move |_, _| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3019,7 +3126,9 @@ mod tests {
         // Assert that the `estimate_fee` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `estimate_fee` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
     }
 
     /// Test the `get_state_update` when everything is fine.
@@ -3088,13 +3197,20 @@ mod tests {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
-        let expected = "error decoding response body: data did not match any variant of untagged enum JsonRpcResponse";
+        let error_message = "error decoding response body: data did not match any variant of untagged enum JsonRpcResponse";
+
         // Mock the `get_state` method of the Ethereum light client.
         // Given
         // Mock dependencies
         starknet_lightclient_mock
             .expect_get_state_update()
-            .return_once(move |_| Err(eyre::eyre!(expected)));
+            .return_once(move |_| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: error_message.to_string(),
+                })
+            });
+
         // When
         let beerus = BeerusLightClient::new(
             config.clone(),
@@ -3111,7 +3227,9 @@ mod tests {
         // Assert that the `get_state_update` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_state_update` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, error_message.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test the `add_invoke_transaction` when everything is fine.
@@ -3185,7 +3303,7 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = concat!(
+        let error_message = concat!(
             "Non valid combination of from_block, to_block and blockhash. ",
             "If you want to filter blocks, then ",
             "you can only use either from_block and to_block or blockhash, not both",
@@ -3194,7 +3312,12 @@ mod tests {
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_add_invoke_transaction()
-            .return_once(move |_| Err(eyre::eyre!(expected_error.clone())));
+            .return_once(move |_| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: error_message.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3231,7 +3354,9 @@ mod tests {
         // Assert that the `add_invoke_transaction` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `add_invoke_transaction` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, error_message.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test the `add_deploy_transaction` when everything is fine.
@@ -3323,7 +3448,7 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = concat!(
+        let error_message = concat!(
             "Non valid combination of from_block, to_block and blockhash. ",
             "If you want to filter blocks, then ",
             "you can only use either from_block and to_block or blockhash, not both",
@@ -3332,7 +3457,12 @@ mod tests {
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_add_deploy_transaction()
-            .return_once(move |_| Err(eyre::eyre!(expected_error.clone())));
+            .return_once(move |_| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: error_message.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3386,7 +3516,9 @@ mod tests {
         // Assert that the `add_deploy_transaction` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `add_deploy_transaction` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, error_message.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     /// Test the `get_block_with_txs` method when everything is fine.
@@ -3456,13 +3588,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_block_with_txs` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_block_with_txs()
             .times(1)
-            .return_once(move |_block_id| Err(eyre!(expected_error)));
+            .return_once(move |_block_id| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3481,7 +3616,9 @@ mod tests {
         // Assert that the `get_block_with_txs` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_block_with_txs` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -3556,13 +3693,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `get_transaction_by_block_id_and_index` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_transaction_by_block_id_and_index()
             .times(1)
-            .return_once(move |_block_id, _index| Err(eyre!(expected_error)));
+            .return_once(move |_block_id, _index| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3582,7 +3722,9 @@ mod tests {
         // Assert that the `get_transaction_by_block_id_and_index` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_transaction_by_block_id_and_index` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -3634,13 +3776,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
-
         // Mock the `pending_transactions` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_pending_transactions()
             .times(1)
-            .return_once(move || Err(eyre!(expected_error)));
+            .return_once(move || {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: STARKNET_LIGHT_CLIENT_ERROR.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3655,7 +3800,9 @@ mod tests {
         // Assert that the `pending_transactions` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `pending_transactions` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, STARKNET_LIGHT_CLIENT_ERROR.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -3716,14 +3863,16 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error =
-            r#"Error: JSON-RPC error: code=25, message="Transaction hash not found""#;
-
         // Mock the `get_transaction_receipt` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_transaction_receipt()
             .times(1)
-            .return_once(move |_| Err(eyre!(expected_error)));
+            .return_once(move |_| {
+                Err(JsonRpcError {
+                    code: TRANSACTION_HASH_NOT_FOUND_CODE,
+                    message: TRANSACTION_HASH_NOT_FOUND.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3741,7 +3890,10 @@ mod tests {
         // Assert that the `get_transaction_receipt` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
         // Assert that the error returned by the `get_transaction_receipt` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, TRANSACTION_HASH_NOT_FOUND.to_string());
+        assert_eq!(result_err.code, TRANSACTION_HASH_NOT_FOUND_CODE);
+
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -3813,13 +3965,19 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = "StarkNet light client error";
+        let expected_code = UNKNOWN_ERROR_CODE;
+        let expected_message = "StarkNet light client error";
 
         // Mock the `get_block_with_tx_hashes` method of the StarkNet light client.
         starknet_lightclient_mock
             .expect_get_block_with_tx_hashes()
             .times(1)
-            .return_once(move |_block_id| Err(eyre!(expected_error)));
+            .return_once(move |_block_id| {
+                Err(JsonRpcError {
+                    code: expected_code,
+                    message: expected_message.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -3837,8 +3995,10 @@ mod tests {
         // Then
         // Assert that the `get_block_with_tx_hashes` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
+        let unwraped_err = result.unwrap_err();
         // Assert that the error returned by the `get_block_with_tx_hashes` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        assert_eq!(unwraped_err.message, expected_message);
+        assert_eq!(unwraped_err.code, expected_code);
         // Assert that the sync status of the Beerus light client is `SyncStatus::NotSynced`.
         assert_eq!(beerus.sync_status().clone(), SyncStatus::NotSynced);
     }
@@ -3994,7 +4154,7 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_error = concat!(
+        let expected_message = concat!(
             "Non valid combination of from_block, to_block and blockhash. ",
             "If you want to filter blocks, then ",
             "you can only use either from_block and to_block or blockhash, not both",
@@ -4003,7 +4163,12 @@ mod tests {
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_add_declare_transaction()
-            .return_once(move |_| Err(eyre::eyre!(expected_error.clone())));
+            .return_once(move |_| {
+                Err(JsonRpcError {
+                    code: UNKNOWN_ERROR_CODE,
+                    message: expected_message.to_string(),
+                })
+            });
 
         // When
         let beerus = BeerusLightClient::new(
@@ -4058,8 +4223,11 @@ mod tests {
         // Then
         // Assert that the `add_declare_transaction` method of the Beerus light client returns `Err`.
         assert!(result.is_err());
+
         // Assert that the error returned by the `add_declare_transaction` method of the Beerus light client is the expected error.
-        assert_eq!(result.unwrap_err().to_string(), expected_error.to_string());
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, expected_message);
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
     #[tokio::test]
@@ -4070,12 +4238,15 @@ mod tests {
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
         // The expected error is what is returned from the API Error
-        let expected_error = "Network Failure";
+        let expected_error = JsonRpcError {
+            code: UNKNOWN_ERROR_CODE,
+            message: NETWORK_FAILURE.to_string(),
+        };
 
         // Mock dependencies.
         starknet_lightclient_mock
             .expect_pending_transactions()
-            .return_once(move || Err(eyre!(expected_error))); // Return a network error
+            .return_once(move || Err(expected_error)); // Return a network error
 
         let beerus = BeerusLightClient::new(
             config.clone(),
@@ -4095,9 +4266,8 @@ mod tests {
         // assert_eq!(actual_error, expected_error);
 
         // Assert that the error returned by the `starknet_pending_transactions` method of the Beerus light client is the expected error.
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Failed to get pending transactions: Network Failure"
-        );
+        let result_err = result.unwrap_err();
+        assert_eq!(result_err.message, NETWORK_FAILURE.to_string());
+        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 }
