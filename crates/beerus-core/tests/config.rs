@@ -56,6 +56,24 @@ mod tests {
         );
     }
 
+    /// Test `from_file` function with a bad config file.
+    /// It should fail.
+    #[test]
+    #[should_panic]
+    fn bad_config_file_panics() {
+        let _goerli_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/common/data/bad.toml"));
+    }
+
+    /// Test `from_file` function with missing config file.
+    /// It should fail.
+    #[test]
+    #[should_panic]
+    fn missing_config_file_panics() {
+        let _missing_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/file/that/doesnt/exist.toml"));
+    }
+
     /// Test `default` function.
     /// It should return the correct value.
     #[test]
@@ -78,6 +96,15 @@ mod tests {
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
 
+    #[test]
+    #[serial]
+    fn none_from_poll_interval_secs_returns_default_val() {
+        let mut cfg = Config::default();
+
+        cfg.poll_interval_secs = None;
+        assert_eq!(cfg.get_poll_interval(), DEFAULT_POLL_INTERVAL_SECS);
+    }
+
     /// Test `from_env` function.
     #[test]
     #[serial]
@@ -91,6 +118,24 @@ mod tests {
 
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "mainnet");
+        assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
+        assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
+        assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
+    }
+
+    /// Test `from_env` function with "goerli" set as ETHEREUM_NETWORK
+    #[test]
+    #[serial]
+    fn ethereum_network_env_goerli_setting_returns_config() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "goerli");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.ethereum_network, "goerli");
         assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
         assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
         assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
@@ -111,6 +156,22 @@ mod tests {
 
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "goerli");
+    }
+
+    ///Test `from_env` with unacceptable ethereum_network
+    ///It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_network_env_erroneous_setting_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "sepolia");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let _cfg = Config::from_env();
     }
 
     /// Env Var `BEERUS_CONFIG`
@@ -190,6 +251,29 @@ mod tests {
         env::set_var(
             "ETHEREUM_CHECKPOINT",
             "0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfa68",
+        );
+
+        let _cfg = Config::from_env();
+    }
+
+    /// Test ethereum custom checkpoint with almost allowed valued.
+    /// It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_bad_hex_suffix() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "clear");
+
+        let _cfg = Config::from_env();
+
+        env::set_var(
+            "ETHEREUM_CHECKPOINT",
+            "0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfax0",
         );
 
         let _cfg = Config::from_env();
