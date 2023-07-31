@@ -7,6 +7,7 @@ mod tests {
         STARKNET_GOERLI_CC_ADDRESS,
     };
     use ethers::types::Address;
+    use helios::config::networks::Network;
     use serial_test::serial;
     use shellexpand;
     use std::env;
@@ -53,6 +54,30 @@ mod tests {
         assert_eq!(
             goerli_file_config.poll_interval_secs,
             Some(DEFAULT_POLL_INTERVAL_SECS)
+        );
+    }
+
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to mainnet.
+    /// It should return the Network value wrapped in a result.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_mainnet() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+
+        assert_eq!(cfg.ethereum_network().unwrap(), Network::MAINNET);
+    }
+
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to invalid network.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_wrong_network() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+
+        assert!(
+            cfg.ethereum_network().is_err(),
+            "Expected an error due to invalid network"
         );
     }
 
@@ -328,5 +353,36 @@ mod tests {
         );
 
         let _cfg = Config::from_env();
+    }
+
+    /// Tests that checkpoints are fetched properly by get_checkpoint method
+    /// when ethereum_netework is set to goerli
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_ok_given_goerli_config() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/goerli.toml"));
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_ok(), "Error fetching checkpoint");
+    }
+
+    /// Tests that checkpoints are fetched properly by get_checkpoint method
+    /// when ethereum_netework is set to mainnet
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_ok_given_mainnet_config() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_ok(), "Error fetching checkpoint");
+    }
+
+    /// Tests that an Err is returned by get_checkpoint method
+    /// when ethereum_netework is set to invalid network
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_err_given_invalid_network_config() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_err(), "Expected an error due to invalid network");
     }
 }
