@@ -80,7 +80,7 @@ mod tests {
             "Expected an error due to invalid network"
         );
     }
-  
+
     /// Test `from_file` function with a bad config file.
     /// It should fail.
     #[test]
