@@ -9,7 +9,7 @@ mod tests {
     use beerus_core::{
         config::Config,
         lightclient::{
-            beerus::{BeerusLightClient, SyncStatus},
+            beerus::{BeerusLightClient, NodeData, SyncStatus},
             ethereum::helios_lightclient::HeliosLightClient,
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
@@ -28,16 +28,19 @@ mod tests {
             BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
             BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
             BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
+            BroadcastedInvokeTransactionV1, BroadcastedTransaction, ContractClass,
             DeclareTransactionResult, DeployTransactionResult, EventFilter, FeeEstimate,
             InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
-            InvokeTransactionV0, LegacyContractClass, LegacyContractEntryPoint,
-            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
-            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
+            InvokeTransactionV0, InvokeTransactionV1, LegacyContractClass,
+            LegacyContractEntryPoint, LegacyEntryPointsByType, MaybePendingBlockWithTxHashes,
+            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
+            SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
+            TransactionStatus,
         },
     };
-    use std::str::FromStr;
+    use std::{collections::BTreeMap, str::FromStr, sync::Arc};
+    use tokio::sync::RwLock;
 
     const UNKNOWN_ERROR_CODE: i64 = 520;
     const TRANSACTION_HASH_NOT_FOUND_CODE: i64 = 25;
@@ -599,7 +602,7 @@ mod tests {
     /// It tests the `get_transaction_count` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_then_error_is_propagated()
     {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -680,7 +683,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_number` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_number_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -861,7 +864,7 @@ mod tests {
     /// It tests the `get_block_transaction_count_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_tx_count_by_block_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -949,7 +952,7 @@ mod tests {
     /// It tests the `query_transaction_by_hash` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_transaction_by_hash_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1035,7 +1038,7 @@ mod tests {
     /// It tests the `gas_price` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_gas_price_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1127,7 +1130,7 @@ mod tests {
 
     /// Test the `estimate_gas` method when the Ethereum light client returns an error.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_estimate_gas_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1322,7 +1325,7 @@ mod tests {
     /// It tests the `priority_fee` method of the Beerus light client.
     /// It tests the error handling of the `start` method of the Beerus light client.
     #[tokio::test]
-    async fn giver_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
+    async fn given_ethereum_lightclient_returns_error_when_query_priority_fee_then_error_is_propagated(
     ) {
         // Given
         // Mock config, ethereum light client and starknet light client.
@@ -1651,6 +1654,91 @@ mod tests {
         assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
     }
 
+    /// Test that starknet estimated fee is returned when the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_estimate_fee_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let expected_result = FeeEstimate {
+            gas_consumed: 0,
+            gas_price: 0,
+            overall_fee: 0,
+        };
+
+        // Set the expected return value for the Ethereum light client mock.
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .times(1)
+            .return_once(|_request, _block_id| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+                max_fee: FieldElement::from_hex_be("0").unwrap(),
+                signature: Vec::<FieldElement>::new(),
+                nonce: FieldElement::from_hex_be("0").unwrap(),
+                sender_address: FieldElement::from_hex_be("0").unwrap(),
+                calldata: Vec::<FieldElement>::new(),
+            },
+        ));
+        let block_id = BlockId::Number(10);
+
+        // Perform the test estimate.
+        let res = beerus.starknet_estimate_fee(request, &block_id).await;
+
+        // // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet estimate_fee return an error when the StarkNet Light client returns an error
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_estimate_fee_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = JsonRpcError {
+            code: 0,
+            message: "Wrong Url".to_string(),
+        };
+
+        starknet_lightclient_mock
+            .expect_estimate_fee()
+            .return_once(move |_block_nb, _address| Err(expected_error));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+            BroadcastedInvokeTransactionV1 {
+                max_fee: FieldElement::from_hex_be("0").unwrap(),
+                signature: Vec::<FieldElement>::new(),
+                nonce: FieldElement::from_hex_be("0").unwrap(),
+                sender_address: FieldElement::from_hex_be("0").unwrap(),
+                calldata: Vec::<FieldElement>::new(),
+            },
+        ));
+        let block_id = BlockId::Number(10);
+
+        // Perform the test estimate.
+        let res = beerus.starknet_estimate_fee(request, &block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+    }
+
     /// Test that starknet storage value is returned when the Starknet light client returns a value.
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_storage_at_should_work() {
@@ -1779,8 +1867,11 @@ mod tests {
             .starknet_get_storage_at(address, key, &block_id)
             .await;
 
+        let expected_result = JsonRpcError {
+            code: 520,
+            message: "BlockId is not proven yet".to_string(),
+        };
         assert!(res.is_err());
-        let expected_result = "BlockId is not proven yet";
         assert_eq!(res.unwrap_err().to_string(), expected_result.to_string());
     }
 
@@ -1865,7 +1956,7 @@ mod tests {
         assert_eq!(res, expected_result);
     }
 
-    /// Test that starknet get_nonce.
+    /// Test that starknet get_nonce return an error when the StarkNet Light client returns an error
     #[tokio::test]
     async fn given_starknet_lightclient_returns_error_when_starknet_get_nonce_should_fail_with_same_error(
     ) {
@@ -2100,6 +2191,438 @@ mod tests {
             result.unwrap_err().message,
             "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
         );
+    }
+
+    /// Test that starknet block is returned when a block number is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_number_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(10);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block is returned when a block number is given and the Starknet light client returns a value(second scenerio).
+    #[tokio::test]
+    async fn given_block_number_second_scenerio_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let block_number = 10;
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Number(10);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block is returned when a block tag is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_tag_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        starknet_lightclient_mock
+            .expect_block_number()
+            .times(1)
+            .return_once(|| Ok(10));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block is returned when a block hash is given and the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_block_hash_when_starknet_get_block_with_txs_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number: 10,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
+
+        // // Set the expected return value for the Starknet light client mock.
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_result));
+
+        starknet_lightclient_mock
+            .expect_block_number()
+            .times(1)
+            .return_once(|| Ok(10));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Hash(FieldElement::from_hex_be("0").unwrap());
+
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    // Test that starknet block return an error when the StarkNet Light client returns an error
+    #[tokio::test]
+    async fn given_starknet_lightclient_returns_error_when_starknet_get_block_with_txs_should_fail_with_same_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        // Set the expected return value for the Starknet light client mock.
+        let expected_error = JsonRpcError {
+            code: 0,
+            message: "Wrong Url".to_string(),
+        };
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .return_once(move |_block_id| Err(expected_error));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(10);
+
+        // // Perform the get_block_with_txs
+        let res = beerus.get_block_with_txs(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_err());
+    }
+
+    /// Test that starknet block hash and number is returned when the Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_condition_get_block_hash_and_number_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let block_number = 10;
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let res = beerus.get_block_hash_and_number().await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet block hash and number returns error when block number is not found in payload but Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_error_condition_when_get_block_hash_and_number_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let res = beerus.get_block_hash_and_number().await;
+
+        let expected_error = JsonRpcError {
+            code: 24,
+            message: "Block not found".to_string(),
+        };
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test that starknet gets transaction receipt when Starknet light client and Ethereum light mock returns a value.
+    #[tokio::test]
+    async fn given_normal_condition_starknet_get_transaction_receipt_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+
+        let tx_receipt = TransactionReceipt::Invoke(InvokeTransactionReceipt {
+            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
+            actual_fee: FieldElement::from_hex_be("10").unwrap(),
+            status: TransactionStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0x5678").unwrap(),
+            block_number: 10,
+            messages_sent: Vec::<_>::new(),
+            events: Vec::<_>::new(),
+        });
+
+        let expected_result = MaybePendingTransactionReceipt::Receipt(tx_receipt);
+
+        ethereum_lightclient_mock
+            .expect_starknet_state_root()
+            .times(1)
+            .return_once(|| Ok(U256::from("1")));
+
+        starknet_lightclient_mock
+            .expect_get_transaction_receipt()
+            .times(1)
+            .return_once(|_tx_hash| Ok(expected_result));
+
+        let block_number = 10;
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("1"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let res = beerus.starknet_get_transaction_receipt(tx_hash).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets transaction receipt returns error when state root on node data is not equal to ethereum light client state root.
+    #[tokio::test]
+    async fn given_error_condition_when_starknet_get_transaction_receipt_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        ethereum_lightclient_mock
+            .expect_starknet_state_root()
+            .times(1)
+            .return_once(|| Ok(U256::from("0x1234")));
+
+        let block_number = 10;
+
+        let block_with_tx_hashes = BlockWithTxs {
+            status: BlockStatus::AcceptedOnL2,
+            block_hash: FieldElement::from_hex_be("0").unwrap(),
+            parent_hash: FieldElement::from_hex_be("0").unwrap(),
+            block_number,
+            new_root: FieldElement::from_hex_be("0").unwrap(),
+            timestamp: 10,
+            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+            transactions: Vec::new(),
+        };
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let tx_hash = String::from("0x1234");
+
+        let res = beerus.starknet_get_transaction_receipt(tx_hash).await;
+
+        let expected_error = JsonRpcError {
+            code: 520,
+            message: "State root mismatch".to_string(),
+        };
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test that starknet gets transaction hash when Starknet light client returns a value.
+    #[tokio::test]
+    async fn given_normal_condition_get_transaction_by_hash_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+
+        let invoke_tx_v1 = InvokeTransactionV1 {
+            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
+            max_fee: FieldElement::from_hex_be("0").unwrap(),
+            signature: Vec::<FieldElement>::new(),
+            nonce: FieldElement::from_hex_be("0").unwrap(),
+            sender_address: FieldElement::from_hex_be("0x").unwrap(),
+            calldata: Vec::<FieldElement>::new(),
+        };
+
+        let expected_result = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+
+        starknet_lightclient_mock
+            .expect_get_transaction_by_hash()
+            .times(1)
+            .return_once(|_tx_hash| Ok(expected_result));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let res = beerus.get_transaction_by_hash(tx_hash).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
     }
 
     /// Test the `block_number` method when everything is fine.

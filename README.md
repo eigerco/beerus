@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Beerus</h1>
-    <img src="docs/images/beerus.png" height="200">
+    <img src="docs/images/beerus.png" height="250">
   <br />
   <br />
   <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
