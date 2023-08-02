@@ -188,6 +188,7 @@ if [ ${#failing_files[@]} -gt 0 ]
 then
     # TODO: As of 02/08/2023 some hurl tests are consistently failing. Once those are fixed enable back exiting with an error code
     # exit 1
+    exit 0
 fi
 
 exit 0
