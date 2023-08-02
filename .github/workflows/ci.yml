@@ -8,7 +8,6 @@ on:
       branch:
         description: 'The branch to build'
         required: true
-  pull_request:
 
 
 env:
