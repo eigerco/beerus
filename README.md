@@ -201,6 +201,12 @@ well.
 | ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
 | STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
 
+To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
+
+| Env Var | TOML | Mainnet |
+|---|---|----------------------------------------------------------|
+| ETHEREUM_CHECKPOINT | ethereum_checkpoint | 0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f |
+
 ##### Config File
 
 Beerus is configurable via a config toml. If you have set the env var
@@ -220,6 +226,58 @@ Beerus is configurable through environment variables.
 cp examples/.env.example .env
 source .env
 ```
+
+#### Examples
+```bash
+cargo run -p beerus-core --example basic
+```
+Using config from `.toml` file
+```bash
+BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
+```
+
+### Using Beerus as a Library
+
+Beerus can be imported into any Rust project.
+
+```rust
+use env_logger::Env;
+use eyre::Result;
+use beerus_core::{
+  config::Config,
+  lightclient::{
+    beerus::BeerusLightClient, ethereum::helios_lightclient::HeliosLightClient,
+    starknet::StarkNetLightClientImpl,
+  },
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+  let config = Config::from_env();
+
+  let ethereum_lightclient = HeliosLightClient::new(config.clone()).await?;
+  let starknet_lightclient = StarkNetLightClientImpl::new(&config)?;
+  let mut beerus = BeerusLightClient::new(
+    config.clone(),
+    Box::new(ethereum_lightclient),
+    Box::new(starknet_lightclient),
+  );
+  beerus.start().await?;
+  let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
+  println!("{:?}", current_starknet_block);
+
+  let current_ethereum_block = beerus
+          .ethereum_lightclient
+          .lock()
+          .await
+          .get_block_number()
+          .await?;
+  println!("{:?}", current_ethereum_block);
+  Ok(())
+}
+```
+
 
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
