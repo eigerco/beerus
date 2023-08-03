@@ -561,7 +561,7 @@ mod tests {
     /// Test the `get_transaction_count` method when everything is fine.
     /// This test mocks external dependencies.
     /// It does not test the `get_transaction_count` method of the external dependencies.
-    /// It tests the `get_transaction_count` method of the Beerus light client.    
+    /// It tests the `get_transaction_count` method of the Beerus light client.
     #[tokio::test]
     async fn given_normal_conditions_when_query_tx_count_then_ok() {
         let (config, mut ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
@@ -1673,7 +1673,7 @@ mod tests {
             .return_once(|_request, _block_id| Ok(expected_result));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1715,7 +1715,7 @@ mod tests {
             .return_once(move |_block_nb, _address| Err(expected_error));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2219,7 +2219,7 @@ mod tests {
             .return_once(|_block_id| Ok(expected_result));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2262,7 +2262,7 @@ mod tests {
         };
 
         // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2307,7 +2307,7 @@ mod tests {
             .return_once(|| Ok(10));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2352,7 +2352,7 @@ mod tests {
             .return_once(|| Ok(10));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2384,7 +2384,7 @@ mod tests {
             .return_once(move |_block_id| Err(expected_error));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2428,7 +2428,7 @@ mod tests {
         };
 
         // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2449,7 +2449,7 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2519,7 +2519,7 @@ mod tests {
         };
 
         // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2567,7 +2567,7 @@ mod tests {
         };
 
         // Create a new Beerus light client.
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2613,7 +2613,7 @@ mod tests {
             .return_once(|_tx_hash| Ok(expected_result));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),

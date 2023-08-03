@@ -93,7 +93,7 @@ pub struct BeerusLightClient {
 
 impl BeerusLightClient {
     /// Create a new Beerus Light Client service.
-    pub async fn new(config: Config) -> Result<Self> {
+    pub async fn new(config: Config) -> EyreResult<Self> {
         info!("creating Ethereum(Helios) lightclient...");
         let ethereum_lightclient_raw = HeliosLightClient::new(config.clone()).await?;
 
