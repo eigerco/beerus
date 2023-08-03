@@ -7,6 +7,7 @@ mod tests {
         STARKNET_GOERLI_CC_ADDRESS,
     };
     use ethers::types::Address;
+    use helios::config::networks::Network;
     use serial_test::serial;
     use shellexpand;
     use std::env;
@@ -56,6 +57,48 @@ mod tests {
         );
     }
 
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to mainnet.
+    /// It should return the Network value wrapped in a result.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_mainnet() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+
+        assert_eq!(cfg.ethereum_network().unwrap(), Network::MAINNET);
+    }
+
+    /// Test `etheruem_network()` method when `ETHEREUM_NETWORK` is set to invalid network.
+    /// It should return an error.
+    #[test]
+    #[serial]
+    fn ethereum_network_config_set_wrong_network() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+
+        assert!(
+            cfg.ethereum_network().is_err(),
+            "Expected an error due to invalid network"
+        );
+    }
+
+    /// Test `from_file` function with a bad config file.
+    /// It should fail.
+    #[test]
+    #[should_panic]
+    fn bad_config_file_panics() {
+        let _goerli_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/common/data/bad.toml"));
+    }
+
+    /// Test `from_file` function with missing config file.
+    /// It should fail.
+    #[test]
+    #[should_panic]
+    fn missing_config_file_panics() {
+        let _missing_file_config: Config =
+            Config::from_file(&PathBuf::from("tests/file/that/doesnt/exist.toml"));
+    }
+
     /// Test `default` function.
     /// It should return the correct value.
     #[test]
@@ -78,6 +121,15 @@ mod tests {
         assert_eq!(conf.poll_interval_secs, Some(DEFAULT_POLL_INTERVAL_SECS));
     }
 
+    #[test]
+    #[serial]
+    fn none_from_poll_interval_secs_returns_default_val() {
+        let mut cfg = Config::default();
+
+        cfg.poll_interval_secs = None;
+        assert_eq!(cfg.get_poll_interval(), DEFAULT_POLL_INTERVAL_SECS);
+    }
+
     /// Test `from_env` function.
     #[test]
     #[serial]
@@ -91,6 +143,24 @@ mod tests {
 
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "mainnet");
+        assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
+        assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
+        assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
+    }
+
+    /// Test `from_env` function with "goerli" set as ETHEREUM_NETWORK
+    #[test]
+    #[serial]
+    fn ethereum_network_env_goerli_setting_returns_config() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "goerli");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let cfg = Config::from_env();
+        assert_eq!(cfg.ethereum_network, "goerli");
         assert_eq!(cfg.ethereum_consensus_rpc, "http://localhost:8545");
         assert_eq!(cfg.ethereum_execution_rpc, "http://localhost:8545");
         assert_eq!(cfg.starknet_rpc, "http://localhost:8545");
@@ -111,6 +181,22 @@ mod tests {
 
         let cfg = Config::from_env();
         assert_eq!(cfg.ethereum_network, "goerli");
+    }
+
+    ///Test `from_env` with unacceptable ethereum_network
+    ///It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_network_env_erroneous_setting_panics() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "sepolia");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("DATA_DIR", "/tmp");
+
+        let _cfg = Config::from_env();
     }
 
     /// Env Var `BEERUS_CONFIG`
@@ -195,6 +281,29 @@ mod tests {
         let _cfg = Config::from_env();
     }
 
+    /// Test ethereum custom checkpoint with almost allowed valued.
+    /// It should panic
+    #[test]
+    #[serial]
+    #[should_panic]
+    fn ethereum_checkpoint_bad_hex_suffix() {
+        Config::clean_env();
+        env::set_var("ETHEREUM_NETWORK", "mainnet");
+        env::set_var("ETHEREUM_CONSENSUS_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_EXECUTION_RPC_URL", "http://localhost:8545");
+        env::set_var("STARKNET_RPC_URL", "http://localhost:8545");
+        env::set_var("ETHEREUM_CHECKPOINT", "clear");
+
+        let _cfg = Config::from_env();
+
+        env::set_var(
+            "ETHEREUM_CHECKPOINT",
+            "0x85e6151a246e8fdba36db27a0c7678a575346272fe978c9281e13a8b26cdfax0",
+        );
+
+        let _cfg = Config::from_env();
+    }
+
     /// Test ethereum custom checkpoint with unexpected random string.
     /// It should panic.
     #[test]
@@ -244,5 +353,36 @@ mod tests {
         );
 
         let _cfg = Config::from_env();
+    }
+
+    /// Tests that checkpoints are fetched properly by get_checkpoint method
+    /// when ethereum_netework is set to goerli
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_ok_given_goerli_config() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/goerli.toml"));
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_ok(), "Error fetching checkpoint");
+    }
+
+    /// Tests that checkpoints are fetched properly by get_checkpoint method
+    /// when ethereum_netework is set to mainnet
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_ok_given_mainnet_config() {
+        let cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_ok(), "Error fetching checkpoint");
+    }
+
+    /// Tests that an Err is returned by get_checkpoint method
+    /// when ethereum_netework is set to invalid network
+    #[tokio::test]
+    async fn call_get_checkpoint_should_return_err_given_invalid_network_config() {
+        let mut cfg: Config = Config::from_file(&PathBuf::from("tests/common/data/mainnet.toml"));
+        cfg.ethereum_network = "sepolia".into();
+
+        let value = cfg.get_checkpoint().await;
+        assert!(value.is_err(), "Expected an error due to invalid network");
     }
 }
