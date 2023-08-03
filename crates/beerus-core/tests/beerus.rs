@@ -57,7 +57,7 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -90,7 +90,7 @@ mod tests {
             .return_once(move || Ok(()));
 
         // When
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -125,7 +125,7 @@ mod tests {
             .return_once(move || Err(eyre!(expected_error)));
 
         // When
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -162,7 +162,7 @@ mod tests {
             .return_once(move |_| Ok(expected_value));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -203,7 +203,7 @@ mod tests {
             .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -242,7 +242,7 @@ mod tests {
             .return_once(move |_, _| Ok((123).into()));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -286,7 +286,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -329,7 +329,7 @@ mod tests {
             .return_once(move |_, _| Ok(123));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -373,7 +373,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -417,7 +417,7 @@ mod tests {
             .return_once(move || Ok(expected_block_number));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -454,7 +454,7 @@ mod tests {
             .return_once(move || Ok(expected_get_chain_id));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -486,7 +486,7 @@ mod tests {
         ethereum_lightclient_mock
             .expect_get_code()
             .return_once(move |_, _| Ok(expected_code));
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -531,7 +531,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -571,7 +571,7 @@ mod tests {
         ethereum_lightclient_mock
             .expect_get_transaction_count()
             .return_once(move |_, _| Ok(expected_result));
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -616,7 +616,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -653,7 +653,7 @@ mod tests {
         ethereum_lightclient_mock
             .expect_get_block_transaction_count_by_number()
             .return_once(move |_| Ok(expected_code));
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -697,7 +697,7 @@ mod tests {
             .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -761,7 +761,7 @@ mod tests {
             .return_once(move |_, _| Ok(_expected_block));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -801,7 +801,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre!(_expected_error)));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -834,7 +834,7 @@ mod tests {
         ethereum_lightclient_mock
             .expect_get_block_transaction_count_by_hash()
             .return_once(move |_| Ok(expected_code));
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -878,7 +878,7 @@ mod tests {
             .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -921,7 +921,7 @@ mod tests {
             .expect_get_transaction_by_hash()
             .return_once(move |_| Ok(Some(_transaction)));
 
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -966,7 +966,7 @@ mod tests {
             .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1010,7 +1010,7 @@ mod tests {
             .expect_get_gas_price()
             .return_once(move || Ok(gas_price));
 
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1056,7 +1056,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1106,7 +1106,7 @@ mod tests {
             .expect_estimate_gas()
             .return_once(move |_| Ok(gas));
 
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1152,7 +1152,7 @@ mod tests {
             .return_once(move |_| Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1214,7 +1214,7 @@ mod tests {
             .return_once(move |_, _| Ok(_expected_block));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1256,7 +1256,7 @@ mod tests {
             .return_once(move |_, _| Err(eyre!(_expected_error)));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1297,7 +1297,7 @@ mod tests {
             .expect_get_priority_fee()
             .return_once(move || Ok(priority_fee));
 
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1339,7 +1339,7 @@ mod tests {
             .return_once(move || Err(eyre::eyre!("ethereum_lightclient_error")));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1388,7 +1388,7 @@ mod tests {
             .return_once(move || Err(eyre!(expected_error)));
 
         // When
-        let mut beerus = BeerusLightClient::new(
+        let mut beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1425,7 +1425,7 @@ mod tests {
             .return_once(move || Ok(expected_starknet_state_root));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1458,7 +1458,7 @@ mod tests {
             .return_once(move || Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1499,7 +1499,7 @@ mod tests {
             .return_once(move || Ok(expected_starknet_block_number));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1533,7 +1533,7 @@ mod tests {
             .return_once(move || Err(eyre!(expected_error)));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1578,7 +1578,7 @@ mod tests {
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10000)));
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1626,7 +1626,7 @@ mod tests {
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1754,7 +1754,7 @@ mod tests {
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1813,7 +1813,7 @@ mod tests {
             .return_once(move || Ok(U256::from(10)));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1848,7 +1848,7 @@ mod tests {
             .return_once(move || Ok(U256::from(10)));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1895,7 +1895,7 @@ mod tests {
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(10)));
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1937,7 +1937,7 @@ mod tests {
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(0)));
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -1976,7 +1976,7 @@ mod tests {
             .return_once(move || Ok(U256::from(10)));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2066,7 +2066,7 @@ mod tests {
             .return_once(move |_call_opts, _block_tag| Ok(expected_timestamp_bytes));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2102,7 +2102,7 @@ mod tests {
             });
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2140,7 +2140,7 @@ mod tests {
             .return_once(move |_call_opts, _block_tag| Ok(expected_timestamp_bytes));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2176,7 +2176,7 @@ mod tests {
             });
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2642,7 +2642,7 @@ mod tests {
             .return_once(move || Ok(expected_block_number));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2678,7 +2678,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2718,7 +2718,7 @@ mod tests {
             .return_once(move |_call_opts, _block_tag| Ok(expected_nonce_bytes));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2751,7 +2751,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2792,7 +2792,7 @@ mod tests {
             .return_once(move || Ok(expected_block_hash_and_number));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2835,7 +2835,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2873,7 +2873,7 @@ mod tests {
             .return_once(move |_block_id, _class_hash| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2919,7 +2919,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2962,7 +2962,7 @@ mod tests {
             .return_once(move |_call_opts, _block_tag| Ok(expected_fee_bytes));
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -2997,7 +2997,7 @@ mod tests {
             });
 
         // Create a new Beerus light client.
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config,
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3032,7 +3032,7 @@ mod tests {
             .return_once(move |_, _| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3074,7 +3074,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3114,7 +3114,7 @@ mod tests {
             .return_once(move |_block_id, _contract_address| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3160,7 +3160,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3201,7 +3201,7 @@ mod tests {
             .return_once(move |_block_id| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3242,7 +3242,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3281,7 +3281,7 @@ mod tests {
     //         .expect_get_logs()
     //         .return_once(move |_, _, _, _, _| Ok(vec![Log::default()]));
     //     // When
-    //     let beerus = BeerusLightClient::new(
+    //     let beerus = BeerusLightClient::new_from_clients(
     //         config.clone(),
     //         Box::new(ethereum_lightclient_mock),
     //         Box::new(starknet_lightclient_mock),
@@ -3326,7 +3326,7 @@ mod tests {
     //         .expect_get_logs()
     //         .return_once(move |_, _, _, _, _| Err(eyre::eyre!(expected_error.clone())));
     //     // When
-    //     let beerus = BeerusLightClient::new(
+    //     let beerus = BeerusLightClient::new_from_clients(
     //         config.clone(),
     //         Box::new(ethereum_lightclient_mock),
     //         Box::new(starknet_lightclient_mock),
@@ -3364,7 +3364,7 @@ mod tests {
             .return_once(move |_, _, _| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3414,7 +3414,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3464,7 +3464,7 @@ mod tests {
             .return_once(move || Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3503,7 +3503,7 @@ mod tests {
             .return_once(move || Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3543,7 +3543,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3585,7 +3585,7 @@ mod tests {
             .return_once(move |_, _| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3632,7 +3632,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3683,7 +3683,7 @@ mod tests {
             .expect_get_state_update()
             .return_once(move |_| Ok(expected));
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3735,7 +3735,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3776,7 +3776,7 @@ mod tests {
             .expect_add_invoke_transaction()
             .return_once(move |_| Ok(expected_result));
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3843,7 +3843,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3904,7 +3904,7 @@ mod tests {
             .expect_add_deploy_transaction()
             .return_once(move |_| Ok(expected_result));
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -3988,7 +3988,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4081,7 +4081,7 @@ mod tests {
             .return_once(move |_block_id| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4123,7 +4123,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4185,7 +4185,7 @@ mod tests {
             .return_once(move |_block_id, _index| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4228,7 +4228,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4271,7 +4271,7 @@ mod tests {
             .return_once(move || Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4311,7 +4311,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4359,7 +4359,7 @@ mod tests {
             .return_once(move |_| Ok(closure_return));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4398,7 +4398,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4458,7 +4458,7 @@ mod tests {
             .return_once(move |_block_id| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4503,7 +4503,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4567,7 +4567,7 @@ mod tests {
             .return_once(move |_| Ok(expected_result));
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4608,7 +4608,7 @@ mod tests {
             .expect_add_declare_transaction()
             .return_once(move |_| Ok(expected_result));
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4694,7 +4694,7 @@ mod tests {
             });
 
         // When
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
@@ -4771,7 +4771,7 @@ mod tests {
             .expect_pending_transactions()
             .return_once(move || Err(expected_error)); // Return a network error
 
-        let beerus = BeerusLightClient::new(
+        let beerus = BeerusLightClient::new_from_clients(
             config.clone(),
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
