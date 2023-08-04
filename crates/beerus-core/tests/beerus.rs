@@ -50,8 +50,34 @@ mod tests {
     const NETWORK_FAILURE: &str = "Network Failure";
     const TRANSACTION_HASH_NOT_FOUND: &str = "Transaction hash not found";
 
+    #[tokio::test]
+    async fn when_call_new_then_should_return_beerus_lightclient() {
+        use std::env;
+        // Given
+        // Mock config from env vars
+        env::set_var(
+            "ETHEREUM_CONSENSUS_RPC_URL",
+            "https://www.lightclientdata.org",
+        );
+        env::set_var(
+            "ETHEREUM_EXECUTION_RPC_URL",
+            "https://eth-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>",
+        );
+        env::set_var(
+            "STARKNET_RPC_URL",
+            "https://starknet-mainnet.infura.io/v3/<YOUR_API_KEY>",
+        );
+        let config = Config::from_env();
+
+        // When
+        let beerus = BeerusLightClient::new(config.clone()).await.unwrap();
+
+        // Then
+        assert!(beerus.config.eq(&config));
+    }
+
     #[test]
-    fn when_call_new_then_should_return_beerus_lightclient() {
+    fn when_call_new_from_clients_then_should_return_beerus_lightclient() {
         // Given
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
