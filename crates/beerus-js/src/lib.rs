@@ -7,7 +7,6 @@ use beerus_core::{
     config::Config,
     lightclient::{
         beerus::BeerusLightClient, beerus::SyncStatus,
-        ethereum::helios_lightclient::HeliosLightClient, starknet::StarkNetLightClientImpl,
     },
 };
 
@@ -36,11 +35,7 @@ impl BeerusClient {
 
         let cfg = Config::from_args(network, consensus_rpc, execution_rpc, starknet_rpc);
 
-        let eth_lc = HeliosLightClient::new(cfg.clone()).await.unwrap();
-
-        let starknet_lc = StarkNetLightClientImpl::new(&cfg).unwrap();
-
-        let mut beerus = BeerusLightClient::new(cfg, Box::new(eth_lc), Box::new(starknet_lc));
+        let mut beerus = BeerusLightClient::new(cfg);
 
         beerus.start().await.unwrap();
 

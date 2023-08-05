@@ -14,7 +14,7 @@ async fn main() {
     let mut beerus = match BeerusLightClient::new(config.clone()).await {
         Ok(beerus) => beerus,
         Err(err) => {
-            error!("{}", err);
+            error! {"{}", err};
             exit(1);
         }
     };
