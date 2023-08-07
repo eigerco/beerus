@@ -144,7 +144,7 @@ pub async fn setup_beerus_rpc() -> BeerusRpc {
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
 
-    let beerus_client = BeerusLightClient::new(
+    let beerus_client = BeerusLightClient::new_from_clients(
         config,
         Box::new(ethereum_lightclient),
         Box::new(starknet_lightclient),
