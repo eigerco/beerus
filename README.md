@@ -58,9 +58,9 @@ We have big plans for Beerus. Check out the Roadmap!
 [![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
 ## About
 
-Beerus is a StarkNet Light Client inspired by and using
+Beerus is a Starknet Light Client inspired by and using
 [helios](https://github.com/a16z/helios/). The goal is to provide a simple and
-easy to use client to query StarkNet state and interact with contracts.
+easy to use client to query Starknet state and interact with contracts.
 
 ### Built With
 
@@ -77,7 +77,7 @@ Here is a high level overview of the architecture of Beerus.
 ### Simple usage overview
 
 Here is a simple overview of how Beerus work. The example is for querying a
-storage value of a StarkNet contract.
+storage value of a Starknet contract.
 
 [![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
 
@@ -189,7 +189,7 @@ the eth_getProof endpoint).
 Ethereum consensus layer RPC URL (must be a consensus node that supports the
 light client beacon chain api)
 
-For StarkNet node for the moment you can use Infura but soon
+For Starknet node for the moment you can use Infura but soon
 [verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
 will be implemented in Pathfinder nodes, and so will these nodes be working as
 well.
