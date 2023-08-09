@@ -6,6 +6,8 @@ Content-Type: application/json
   "params": {
     "custom_filter": {
       "filter": {
+        "from_block": {"block_number": 800},
+        "to_block": {"block_number": 1701},
         "address": "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7"
       },
       "page": {
