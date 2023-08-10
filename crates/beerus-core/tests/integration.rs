@@ -32,8 +32,11 @@ mod test {
         helios_lightclient
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(1)));
-        let beerus =
-            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
 
         let block_id = BlockId::Number(1);
         let storage_var = beerus
@@ -67,8 +70,11 @@ mod test {
                 }
                 .into())
             });
-        let beerus =
-            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
 
         let block_id = BlockId::Number(1);
         let res = beerus
@@ -101,8 +107,11 @@ mod test {
         helios_lightclient
             .expect_starknet_last_proven_block()
             .return_once(move || Ok(U256::from(1)));
-        let beerus =
-            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
         let storage_var = beerus
             .starknet_call_contract(
                 FieldElement::from_str("0x00").unwrap(),
@@ -135,8 +144,11 @@ mod test {
                 }
                 .into())
             });
-        let beerus =
-            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
         let res = beerus
             .starknet_call_contract(
                 FieldElement::from_str("0x00").unwrap(),
@@ -161,8 +173,11 @@ mod test {
         let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
         let helios_lightclient = MockEthereumLightClient::new();
 
-        let beerus =
-            BeerusLightClient::new(config, Box::new(helios_lightclient), starknet_lightclient);
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
 
         let (mock, expected_proof) = mock_get_contract_storage_proof(&server);
 

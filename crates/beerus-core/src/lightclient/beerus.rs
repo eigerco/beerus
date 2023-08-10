@@ -17,7 +17,13 @@ use crate::stdlib::vec::Vec;
 use crate::stdlib::{collections::BTreeMap, sync::Arc};
 
 use super::{ethereum::EthereumLightClient, starknet::StarkNetLightClient};
-use crate::{config::Config, ethers_helper};
+use crate::{
+    config::Config,
+    ethers_helper,
+    lightclient::{
+        ethereum::helios_lightclient::HeliosLightClient, starknet::StarkNetLightClientImpl,
+    },
+};
 use ethabi::Uint as U256;
 use ethers::{abi::Abi, types::H160};
 use eyre::Result as EyreResult;
@@ -87,11 +93,28 @@ pub struct BeerusLightClient {
 
 impl BeerusLightClient {
     /// Create a new Beerus Light Client service.
-    pub fn new(
+    pub async fn new(config: Config) -> EyreResult<Self> {
+        info!("creating Ethereum(Helios) lightclient...");
+        let ethereum_lightclient_raw = HeliosLightClient::new(config.clone()).await?;
+
+        info!("creating Starknet lightclient...");
+        let starknet_lightclient_raw = StarkNetLightClientImpl::new(&config)?;
+
+        let beerus = BeerusLightClient::new_from_clients(
+            config.clone(),
+            Box::new(ethereum_lightclient_raw),
+            Box::new(starknet_lightclient_raw),
+        );
+        Ok(beerus)
+    }
+
+    /// Create a new Beerus Light Client service with the provided
+    /// custom Ethereum and Starknet clients
+    pub fn new_from_clients(
         config: Config,
-        //TODO: Check if we should just have &str as arguments
         ethereum_lightclient_raw: Box<dyn EthereumLightClient>,
         starknet_lightclient_raw: Box<dyn StarkNetLightClient>,
+        //TODO: Check if we should just have &str as arguments
     ) -> Self {
         // Create a new Ethereum light client.
         let ethereum_lightclient = Arc::new(Mutex::new(ethereum_lightclient_raw));

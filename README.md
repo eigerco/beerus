@@ -58,9 +58,9 @@ We have big plans for Beerus. Check out the Roadmap!
 [![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
 ## About
 
-Beerus is a StarkNet Light Client inspired by and using
+Beerus is a Starknet Light Client inspired by and using
 [helios](https://github.com/a16z/helios/). The goal is to provide a simple and
-easy to use client to query StarkNet state and interact with contracts.
+easy to use client to query Starknet state and interact with contracts.
 
 ### Built With
 
@@ -77,7 +77,7 @@ Here is a high level overview of the architecture of Beerus.
 ### Simple usage overview
 
 Here is a simple overview of how Beerus work. The example is for querying a
-storage value of a StarkNet contract.
+storage value of a Starknet contract.
 
 [![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
 
@@ -189,7 +189,7 @@ the eth_getProof endpoint).
 Ethereum consensus layer RPC URL (must be a consensus node that supports the
 light client beacon chain api)
 
-For StarkNet node for the moment you can use Infura but soon
+For Starknet node for the moment you can use Infura but soon
 [verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
 will be implemented in Pathfinder nodes, and so will these nodes be working as
 well.
@@ -200,6 +200,12 @@ well.
 | ETHEREUM_EXECUTION_RPC_URL | ethereum_consensus_rpc | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
 | ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
 | STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
+
+To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
+
+| Env Var | TOML | Mainnet |
+|---|---|----------------------------------------------------------|
+| ETHEREUM_CHECKPOINT | ethereum_checkpoint | 0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f |
 
 ##### Config File
 
@@ -220,6 +226,47 @@ Beerus is configurable through environment variables.
 cp examples/.env.example .env
 source .env
 ```
+
+#### Examples
+```bash
+cargo run -p beerus-core --example basic
+```
+Using config from `.toml` file
+```bash
+BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
+```
+
+### Using Beerus as a Library
+
+Beerus can be imported into any Rust project.
+
+```rust
+use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
+use env_logger::Env;
+use eyre::Result;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+  let config = Config::from_env();
+
+  let mut beerus = BeerusLightClient::new(config.clone()).await?;
+  beerus.start().await?;
+
+  let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
+  println!("{:?}", current_starknet_block);
+
+  let current_ethereum_block = beerus
+          .ethereum_lightclient
+          .lock()
+          .await
+          .get_block_number()
+          .await?;
+  println!("{:?}", current_ethereum_block);
+  Ok(())
+}
+```
+
 
 #### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
 
