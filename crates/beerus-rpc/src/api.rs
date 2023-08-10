@@ -11,11 +11,12 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
-        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+        BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult,
+        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
         MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction, BroadcastedDeployAccountTransaction, DeployAccountTransactionResult,
+        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
     },
 };
 

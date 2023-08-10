@@ -16,16 +16,16 @@ use ethers::providers::{Http, Provider};
 use eyre::Result as EyreResult;
 use reqwest::Error as ReqwestError;
 use serde::Serialize;
-use starknet::providers::jsonrpc::models::{BroadcastedDeployAccountTransaction, DeployAccountTransactionResult};
 use starknet::providers::jsonrpc::{JsonRpcClientError, JsonRpcError};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-            ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter,
-            EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+            BroadcastedDeployAccountTransaction, BroadcastedDeployTransaction,
+            BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
+            DeclareTransactionResult, DeployAccountTransactionResult, DeployTransactionResult,
+            EventFilter, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
         },

@@ -26,12 +26,13 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+        BroadcastedDeployAccountTransaction, BroadcastedDeployTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
-        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction as StarknetTransaction, DeployAccountTransaction, BroadcastedDeployAccountTransaction, DeployAccountTransactionResult,
+        DeclareTransactionResult, DeployAccountTransaction, DeployAccountTransactionResult,
+        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
+        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
     },
 };
 use std::net::SocketAddr;
