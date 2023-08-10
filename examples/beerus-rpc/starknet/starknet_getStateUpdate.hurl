@@ -6,7 +6,7 @@ Content-Type: application/json
     "params": [
         "latest"
     ],
-    "id": 1
+    "id": 0
 }
 
 HTTP 200

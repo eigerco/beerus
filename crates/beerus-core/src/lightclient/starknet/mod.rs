@@ -183,6 +183,7 @@ impl StarkNetLightClientImpl {
         method_name: &str,
         client_error: JsonRpcClientError<ReqwestError>,
     ) -> JsonRpcError {
+        dbg!(&client_error);
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));
         match error {
             Ok(rpc_error) => rpc_error,
