@@ -15,7 +15,7 @@ use starknet::{
         BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
         EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
         MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+        StateUpdate, SyncStatusType, Transaction as StarknetTransaction, BroadcastedDeployAccountTransaction, DeployAccountTransactionResult,
     },
 };
 
@@ -222,11 +222,8 @@ pub trait BeerusRpc {
     #[method(name = "starknet_addDeployAccountTransaction")]
     async fn starknet_add_deploy_account_transaction(
         &self,
-        contract_class: String,
-        version: String,
-        contract_address_salt: String,
-        constructor_calldata: Vec<String>,
-    ) -> Result<DeployTransactionResult, Error>;
+        deploy_account_transaction: BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, Error>;
 
     #[method(name = "starknet_getEvents")]
     async fn starknet_get_events(
