@@ -13,10 +13,10 @@ use starknet::{
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
         BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult,
-        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
+        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction as StarknetTransaction,
     },
 };
 

@@ -27,12 +27,11 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-        BroadcastedDeployAccountTransaction, BroadcastedDeployTransaction,
-        BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployAccountTransaction, DeployAccountTransactionResult,
-        DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+        BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
+        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction as StarknetTransaction,
     },
 };
 use std::net::SocketAddr;
