@@ -14,17 +14,7 @@ mod tests {
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
-    };
-    use ethabi::Uint as U256;
-    use ethers::types::{Address, Transaction, H256};
-
-    use eyre::eyre;
-    use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
-    use starknet::providers::jsonrpc::JsonRpcError;
-    use starknet::{
-        core::types::FieldElement,
-        macros::selector,
-        providers::jsonrpc::models::{
+        types::{
             BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
             BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
             BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
@@ -39,6 +29,13 @@ mod tests {
             TransactionStatus,
         },
     };
+    use ethabi::Uint as U256;
+    use ethers::types::{Address, Transaction, H256};
+
+    use eyre::eyre;
+    use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
+    use starknet::providers::jsonrpc::JsonRpcError;
+    use starknet::{core::types::FieldElement, macros::selector};
     use std::{collections::BTreeMap, str::FromStr, sync::Arc};
     use tokio::sync::RwLock;
 

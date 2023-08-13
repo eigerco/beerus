@@ -20,7 +20,13 @@ beerus-core = { path = "./crates/beerus-core" }
 helios = { git = "https://github.com/a16z/helios", rev = "f63e4142c8c8094cdf94cf8d1ef1cb637a7eac98" }
 
 #TODO: update with version tag instead of hash rev when available
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "f0c61aa5978a3a2aa6160f0675ba4217209a17a1" }
+# new
+#starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "f0c61aa5978a3a2aa6160f0675ba4217209a17a1" }
+# 3.0.1
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d8eb791034285928780cc042a3a53c6f7f8527e0" }
+# stable
+#starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "e72cc0a4b3ea67c7691ebec58300da3c21f0abb2" }
+
 ethers = "2.0.2"
 eyre = "0.6.8"
 log = "0.4.17"

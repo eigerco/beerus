@@ -16,21 +16,17 @@ use ethers::providers::{Http, Provider};
 use eyre::Result as EyreResult;
 use reqwest::Error as ReqwestError;
 use serde::Serialize;
-use starknet::providers::jsonrpc::{JsonRpcClientError, JsonRpcError};
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::{
-        models::{
-            BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-            ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter,
-            EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
-        },
-        HttpTransport, JsonRpcClient,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
+    BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
+    DeployTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement, FunctionCall,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
 };
+use starknet::providers::jsonrpc::{
+    HttpTransport, JsonRpcClient, JsonRpcClientError, JsonRpcError,
+};
+use starknet::providers::{Provider as StarknetProvider, ProviderError};
 use url::Url;
 mod errors;
 pub mod storage_proof;
@@ -181,7 +177,7 @@ impl StarkNetLightClientImpl {
     /// The mapped `JsonRpcError`.
     fn map_to_rpc_error(
         method_name: &str,
-        client_error: JsonRpcClientError<ReqwestError>,
+        client_error: ProviderError<JsonRpcClientError<ReqwestError>>,
     ) -> JsonRpcError {
         dbg!(&client_error);
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));

@@ -30,17 +30,14 @@ use eyre::Result as EyreResult;
 use helios::types::{BlockTag, CallOpts};
 #[cfg(feature = "std")]
 use log::{debug, error, info, warn};
-use starknet::providers::jsonrpc::JsonRpcError;
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
-        BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
-        DeployTransaction, FeeEstimate, FunctionCall, InvokeTransaction, L1HandlerTransaction,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        Transaction,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
+    BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
+    DeployTransaction, FeeEstimate, FieldElement, FunctionCall, InvokeTransaction,
+    L1HandlerTransaction, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, Transaction,
 };
+use starknet::providers::jsonrpc::JsonRpcError;
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]

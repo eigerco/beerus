@@ -1,13 +1,10 @@
 use eyre::{eyre, Result};
 use serde_json::{json, Value};
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, ContractAbiEntry, ContractClass, EmittedEvent, EventsPage,
-        LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType, StructAbiEntry,
-        StructAbiType, StructMember, SyncStatus, SyncStatusType,
-    },
+use starknet::core::types::{
+    BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+    BroadcastedTransaction, CompressedLegacyContractClass, ContractClass, EmittedEvent, EventsPage,
+    FieldElement, LegacyContractAbiEntry, LegacyContractEntryPoint, LegacyEntryPointsByType,
+    LegacyStructAbiEntry, LegacyStructAbiType, LegacyStructMember, SyncStatus, SyncStatusType,
 };
 
 #[cfg(feature = "std")]
@@ -54,7 +51,7 @@ pub fn block_id_string_to_block_id_type(block_id_type: &str, block_id: &str) -> 
 /// # Returns
 /// Tuple of a mock ContractClass object and its equivalent JSON Value
 pub fn create_mock_contract_class() -> (ContractClass, Value) {
-    let mock_contract_class = ContractClass::Legacy(LegacyContractClass {
+    let mock_contract_class = ContractClass::Legacy(CompressedLegacyContractClass {
         program: vec![1, 2, 3],
         entry_points_by_type: LegacyEntryPointsByType {
             constructor: vec![LegacyContractEntryPoint {
@@ -70,17 +67,17 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
                 selector: FieldElement::from_str("789").unwrap(),
             }],
         },
-        abi: Some(vec![ContractAbiEntry::Struct(StructAbiEntry {
-            r#type: StructAbiType::Struct,
+        abi: Some(vec![LegacyContractAbiEntry::Struct(LegacyStructAbiEntry {
+            r#type: LegacyStructAbiType::Struct,
             name: "Uint256".to_string(),
             size: 2,
             members: vec![
-                StructMember {
+                LegacyStructMember {
                     name: "low".to_string(),
                     r#type: "felt".to_string(),
                     offset: 0,
                 },
-                StructMember {
+                LegacyStructMember {
                     name: "high".to_string(),
                     r#type: "felt".to_string(),
                     offset: 1,
@@ -255,7 +252,6 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
             )
             .unwrap(),
             calldata: vec![
-                FieldElement::from_hex_be("1").unwrap(),
                 FieldElement::from_hex_be(
                     "7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10",
                 )
@@ -305,10 +301,7 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
 mod tests {
     use std::str::FromStr;
 
-    use starknet::{
-        core::types::FieldElement,
-        providers::jsonrpc::models::{BlockId, BlockTag},
-    };
+    use starknet::core::types::{BlockId, BlockTag, FieldElement};
 
     #[tokio::test]
     async fn test_block_id_string_to_block_id_type() {
