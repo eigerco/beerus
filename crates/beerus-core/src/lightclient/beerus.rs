@@ -406,7 +406,7 @@ impl BeerusLightClient {
     ///
     /// # Returns
     ///
-    /// Returns a `Result` containing the fee estimate as a `FeeEstimate` if the operation was successful,
+    /// Returns a `Result` containing the fee estimate as a `Vec<FeeEstimate` if the operation was successful,
     /// or an `Err` containing a `JsonRpcError` if the operation failed.
     ///
     /// # Errors
@@ -416,7 +416,7 @@ impl BeerusLightClient {
         &self,
         request: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<FeeEstimate, JsonRpcError> {
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
         self.starknet_lightclient
             .estimate_fee(request, block_id)
             .await

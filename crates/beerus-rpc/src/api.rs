@@ -8,15 +8,14 @@ use ethers::types::{
     Address, Filter, Log, SyncingStatus, Transaction as EthTransaction, TransactionReceipt, H256,
     U256,
 };
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
-        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+    ContractClass, DeclareTransactionResult, DeployAccountTransactionResult,
+    DeployTransactionResult, EventsPage, FeeEstimate, FieldElement, FunctionCall,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType,
+    Transaction as StarknetTransaction,
 };
 
 #[rpc(server)]
@@ -185,7 +184,10 @@ pub trait BeerusRpc {
     ) -> Result<MaybePendingBlockWithTxs, Error>;
 
     #[method(name = "starknet_getStateUpdate")]
-    async fn starknet_get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error>;
+    async fn starknet_get_state_update(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingStateUpdate, Error>;
 
     #[method(name = "starknet_syncing")]
     async fn starknet_syncing(&self) -> Result<SyncStatusType, Error>;
@@ -222,11 +224,8 @@ pub trait BeerusRpc {
     #[method(name = "starknet_addDeployAccountTransaction")]
     async fn starknet_add_deploy_account_transaction(
         &self,
-        contract_class: String,
-        version: String,
-        contract_address_salt: String,
-        constructor_calldata: Vec<String>,
-    ) -> Result<DeployTransactionResult, Error>;
+        deploy_account_transaction: BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, Error>;
 
     #[method(name = "starknet_getEvents")]
     async fn starknet_get_events(
@@ -248,7 +247,7 @@ pub trait BeerusRpc {
         &self,
         block_id: BlockId,
         broadcasted_transaction: BroadcastedTransaction,
-    ) -> Result<FeeEstimate, Error>;
+    ) -> Result<Vec<FeeEstimate>, Error>;
 
     #[method(name = "starknet_call")]
     async fn starknet_call(

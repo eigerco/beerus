@@ -16,12 +16,14 @@ use ethers::providers::{Http, Provider};
 use eyre::Result as EyreResult;
 use reqwest::Error as ReqwestError;
 use serde::Serialize;
+use starknet::core::types::*;
 use starknet::core::types::{
-    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-    BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
-    DeployTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement, FunctionCall,
-    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+    ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
+    FeeEstimate, FieldElement, FunctionCall, InvokeTransactionResult,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MaybePendingTransactionReceipt, SyncStatusType, Transaction,
 };
 use starknet::providers::jsonrpc::{
     HttpTransport, JsonRpcClient, JsonRpcClientError, JsonRpcError,
@@ -48,7 +50,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         tx: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<FeeEstimate, JsonRpcError>;
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError>;
 
     async fn get_storage_at(
         &self,
@@ -87,7 +89,10 @@ pub trait StarkNetLightClient: Send + Sync {
         contract_address: FieldElement,
     ) -> Result<ContractClass, JsonRpcError>;
 
-    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate, JsonRpcError>;
+    async fn get_state_update(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingStateUpdate, JsonRpcError>;
 
     async fn get_events(
         &self,
@@ -102,10 +107,14 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         invoke_transaction: &BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, JsonRpcError>;
-    async fn add_deploy_transaction(
+    // async fn add_deploy_transaction(
+    //     &self,
+    //     deploy_transaction: &BroadcastedDeployTransaction,
+    // ) -> Result<DeployTransactionResult, JsonRpcError>;
+    async fn add_deploy_account_transaction(
         &self,
-        deploy_transaction: &BroadcastedDeployTransaction,
-    ) -> Result<DeployTransactionResult, JsonRpcError>;
+        deploy_account_transaction: &BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, JsonRpcError>;
 
     async fn get_transaction_by_hash(
         &self,
@@ -243,9 +252,9 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         &self,
         tx: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<FeeEstimate, JsonRpcError> {
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
         self.client
-            .estimate_fee(tx, block_id)
+            .estimate_fee(vec![tx], block_id)
             .await
             .map_err(|e| Self::map_to_rpc_error("estimate_fee", e))
     }
@@ -441,13 +450,16 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// # Returns
     ///
-    /// Returns a `Result` containing the `StateUpdate` if the operation was successful,
+    /// Returns a `Result` containing the `MaybePendingStateUpdate` if the operation was successful,
     /// or an `Err` containing a `JsonRpcError` if the operation failed.
     ///
     /// ## Errors
     ///
     /// This method can return a `JsonRpcError` in case of failure.
-    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate, JsonRpcError> {
+    async fn get_state_update(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingStateUpdate, JsonRpcError> {
         self.client
             .get_state_update(block_id)
             .await
@@ -538,15 +550,15 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// ## Errors
     ///
     /// This method can return a `JsonRpcError` in case of failure.
-    async fn add_deploy_transaction(
-        &self,
-        deploy_transaction: &BroadcastedDeployTransaction,
-    ) -> Result<DeployTransactionResult, JsonRpcError> {
-        self.client
-            .add_deploy_transaction(deploy_transaction)
-            .await
-            .map_err(|e| Self::map_to_rpc_error("add_deploy_transaction", e))
-    }
+    // async fn add_deploy_transaction(
+    //     &self,
+    //     deploy_transaction: &BroadcastedDeployTransaction,
+    // ) -> Result<DeployTransactionResult, JsonRpcError> {
+    //     self.client
+    //         .add_deploy_transaction(deploy_transaction)
+    //         .await
+    //         .map_err(|e| Self::map_to_rpc_error("add_deploy_transaction", e))
+    // }
 
     /// Get the transaction that matches the given hash.
     ///
@@ -570,6 +582,30 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .get_transaction_by_hash(hash)
             .await
             .map_err(|e| Self::map_to_rpc_error("get_transaction_by_hash", e))
+    }
+    /// Add an deploy account transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `deploy_account_transaction`: Account transaction data.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the `DeployAccountTransactionResult` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// ## Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+
+    async fn add_deploy_account_transaction(
+        &self,
+        deploy_account_transaction: &BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, JsonRpcError> {
+        self.client
+            .add_deploy_account_transaction(deploy_account_transaction)
+            .await
+            .map_err(|e| Self::map_to_rpc_error("add_deploy_account_transaction", e))
     }
 
     /// Get the block with transaction hashes of a given block.

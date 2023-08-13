@@ -3909,79 +3909,79 @@ mod tests {
     /// This test mocks external dependencies.
     /// It does not test the `add_deploy_transaction` method of the external dependencies.
     /// It tests the `add_deploy_transaction` method of the Beerus light client.
-    #[tokio::test]
-    async fn given_normal_conditions_when_query_add_deploy_transaction_then_ok() {
-        // Given
-        // Mock config, ethereum light client and starknet light client.
-        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
-
-        let expected_result = DeployTransactionResult {
-            transaction_hash: FieldElement::from_str("0x01").unwrap(),
-            contract_address: FieldElement::from_str("0x01").unwrap(),
-        };
-        let expected_result_value = expected_result.clone();
-        // Mock the `add_deploy_transaction` method of the Ethereum light client.
-        // Given
-        // Mock dependencies
-        starknet_lightclient_mock
-            .expect_add_deploy_transaction()
-            .return_once(move |_| Ok(expected_result));
-        // When
-        let beerus = BeerusLightClient::new_from_clients(
-            config.clone(),
-            Box::new(ethereum_lightclient_mock),
-            Box::new(starknet_lightclient_mock),
-        );
-
-        let program = vec![];
-        let constructor = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-
-        let external = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-
-        let l1_handler = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-        let entry_points_by_type = LegacyEntryPointsByType {
-            constructor,
-            external,
-            l1_handler,
-        };
-        let abi = None;
-
-        let contract_class = ContractClass::Legacy(LegacyContractClass {
-            program,
-            entry_points_by_type,
-            abi,
-        });
-
-        let deploy_transaction = BroadcastedDeployTransaction {
-            contract_class,
-            version: 10,
-            contract_address_salt: FieldElement::from_str("0").unwrap(),
-            constructor_calldata: vec![],
-        };
-        // Query the transaction data given a hash on Ethereum.
-        let result = beerus
-            .starknet_lightclient
-            .add_deploy_transaction(&deploy_transaction)
-            .await;
-
-        // Then
-        // Assert that the `add_deploy_transaction` method of the Beerus light client returns `Ok`.
-        assert!(result.is_ok());
-        // Assert that the code returned by the `add_deploy_transaction` method of the Beerus light client is the expected code.
-        assert_eq!(
-            format!("{result:?}"),
-            format!("Ok({expected_result_value:?})")
-        );
-    }
+    // #[tokio::test]
+    // async fn given_normal_conditions_when_query_add_deploy_transaction_then_ok() {
+    //     // Given
+    //     // Mock config, ethereum light client and starknet light client.
+    //     let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+    //
+    //     let expected_result = DeployTransactionResult {
+    //         transaction_hash: FieldElement::from_str("0x01").unwrap(),
+    //         contract_address: FieldElement::from_str("0x01").unwrap(),
+    //     };
+    //     let expected_result_value = expected_result.clone();
+    //     // Mock the `add_deploy_transaction` method of the Ethereum light client.
+    //     // Given
+    //     // Mock dependencies
+    //     starknet_lightclient_mock
+    //         .expect_add_deploy_transaction()
+    //         .return_once(move |_| Ok(expected_result));
+    //     // When
+    //     let beerus = BeerusLightClient::new_from_clients(
+    //         config.clone(),
+    //         Box::new(ethereum_lightclient_mock),
+    //         Box::new(starknet_lightclient_mock),
+    //     );
+    //
+    //     let program = vec![];
+    //     let constructor = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //
+    //     let external = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //
+    //     let l1_handler = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //     let entry_points_by_type = LegacyEntryPointsByType {
+    //         constructor,
+    //         external,
+    //         l1_handler,
+    //     };
+    //     let abi = None;
+    //
+    //     let contract_class = ContractClass::Legacy(LegacyContractClass {
+    //         program,
+    //         entry_points_by_type,
+    //         abi,
+    //     });
+    //
+    //     let deploy_transaction = BroadcastedDeployTransaction {
+    //         contract_class,
+    //         version: 10,
+    //         contract_address_salt: FieldElement::from_str("0").unwrap(),
+    //         constructor_calldata: vec![],
+    //     };
+    //     // Query the transaction data given a hash on Ethereum.
+    //     let result = beerus
+    //         .starknet_lightclient
+    //         .add_deploy_transaction(&deploy_transaction)
+    //         .await;
+    //
+    //     // Then
+    //     // Assert that the `add_deploy_transaction` method of the Beerus light client returns `Ok`.
+    //     assert!(result.is_ok());
+    //     // Assert that the code returned by the `add_deploy_transaction` method of the Beerus light client is the expected code.
+    //     assert_eq!(
+    //         format!("{result:?}"),
+    //         format!("Ok({expected_result_value:?})")
+    //     );
+    // }
 
     /// Test the `add_deploy_transaction` method when the Ethereum light client returns an error.
     /// This test mocks external dependencies.

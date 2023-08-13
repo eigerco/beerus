@@ -23,16 +23,14 @@ use ethers::types::{
     Address, Filter, Log, SyncingStatus, Transaction as EthTransaction, TransactionReceipt, H256,
     U256,
 };
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployTransaction,
-        BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-        DeclareTransactionResult, DeployTransactionResult, EventsPage, FeeEstimate, FunctionCall,
-        InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction as StarknetTransaction,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+    ContractClass, DeclareTransactionResult, DeployAccountTransactionResult,
+    DeployTransactionResult, EventsPage, FeeEstimate, FieldElement, FunctionCall,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType,
+    Transaction as StarknetTransaction,
 };
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -517,7 +515,10 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
-    async fn starknet_get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error> {
+    async fn starknet_get_state_update(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingStateUpdate, Error> {
         self.beerus
             .starknet_lightclient
             .get_state_update(&block_id)
@@ -600,39 +601,11 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn starknet_add_deploy_account_transaction(
         &self,
-        contract_class: String,
-        version: String,
-        contract_address_salt: String,
-        constructor_calldata: Vec<String>,
-    ) -> Result<DeployTransactionResult, Error> {
-        let contract_class_bytes = contract_class.as_bytes();
-
-        let contract_class = serde_json::from_slice(contract_class_bytes)
-            .map_err(|_| invalid_call_data("contract_class"))?;
-
-        let version: u64 = version.parse().map_err(|_| invalid_call_data("version"))?;
-
-        let contract_address_salt: FieldElement = FieldElement::from_str(&contract_address_salt)
-            .map_err(|_| invalid_call_data("contract_address_salt"))?;
-
-        let constructor_calldata = constructor_calldata
-            .iter()
-            .map(|x| {
-                FieldElement::from_str(x)
-                    .map_err(|_| invalid_call_data("constructor_calldata"))
-                    .unwrap()
-            })
-            .collect();
-
-        let deploy_transaction = BroadcastedDeployTransaction {
-            contract_class,
-            version,
-            contract_address_salt,
-            constructor_calldata,
-        };
+        deploy_account_transaction: BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, Error> {
         self.beerus
             .starknet_lightclient
-            .add_deploy_transaction(&deploy_transaction)
+            .add_deploy_account_transaction(&deploy_account_transaction)
             .await
             .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
@@ -675,7 +648,7 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         block_id: BlockId,
         broadcasted_transaction: BroadcastedTransaction,
-    ) -> Result<FeeEstimate, Error> {
+    ) -> Result<Vec<FeeEstimate>, Error> {
         self.beerus
             .starknet_lightclient
             .estimate_fee(broadcasted_transaction, &block_id)
