@@ -2766,9 +2766,9 @@ mod tests {
         assert!(res.is_ok());
     }
 
-    /// Test that starknet gets transaction count when Starknet light client returns a value and when `MaybePendingBlockWithTxs::Block` is returned
+    /// Test that starknet gets block transaction count when Starknet light client returns a value and when `MaybePendingBlockWithTxs::Block` is returned
     #[tokio::test]
-    async fn given_normal_condition_and_block_get_transaction_count_should_work() {
+    async fn given_normal_condition_and_block_get_block_transaction_count_should_work() {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
@@ -2825,9 +2825,9 @@ mod tests {
         assert_eq!(res.unwrap(), 1);
     }
 
-    /// Test that starknet gets transaction by block and index when Starknet light client returns a value and when `MaybePendingBlockWithTxs::PendingBlock` is returned
+    /// Test that starknet gets block transaction count when Starknet light client returns a value and when `MaybePendingBlockWithTxs::PendingBlock` is returned
     #[tokio::test]
-    async fn given_normal_condition_and_pending_block_get_transaction_count_should_work() {
+    async fn given_normal_condition_and_pending_block_get_block_transaction_count_should_work() {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
