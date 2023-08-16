@@ -10,8 +10,7 @@ use beerus_rpc::BeerusRpc;
 use reqwest::{Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockId, BlockTag, EventFilter, FunctionCall};
+use starknet::core::types::{BlockId, BlockTag, EventFilter, FieldElement, FunctionCall};
 use std::path::PathBuf;
 use wiremock::{
     matchers::{body_json, method},

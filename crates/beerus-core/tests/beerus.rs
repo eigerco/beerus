@@ -14,28 +14,30 @@ mod tests {
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
         starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
-        types::{
-            BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
-            BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
-            BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-            BroadcastedInvokeTransactionV1, BroadcastedTransaction, ContractClass,
-            DeclareTransactionResult, DeployTransactionResult, EventFilter, FeeEstimate,
-            InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
-            InvokeTransactionV0, InvokeTransactionV1, LegacyContractClass,
-            LegacyContractEntryPoint, LegacyEntryPointsByType, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateDiff, StateUpdate,
-            SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
-            TransactionStatus,
-        },
     };
     use ethabi::Uint as U256;
     use ethers::types::{Address, Transaction, H256};
 
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
+    use starknet::core::types::contract::legacy::LegacyContractClass;
     use starknet::providers::jsonrpc::JsonRpcError;
-    use starknet::{core::types::FieldElement, macros::selector};
+    use starknet::{
+        core::types::{
+            BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
+            BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
+            BroadcastedDeclareTransactionV1, BroadcastedInvokeTransaction,
+            BroadcastedInvokeTransactionV0, BroadcastedInvokeTransactionV1, BroadcastedTransaction,
+            CompressedLegacyContractClass, ContractClass, DeclareTransactionResult,
+            DeployTransactionResult, EventFilter, FeeEstimate, FieldElement, InvokeTransaction,
+            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
+            InvokeTransactionV1, LegacyContractEntryPoint, LegacyEntryPointsByType,
+            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
+            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
+        },
+        macros::selector,
+    };
     use std::{collections::BTreeMap, str::FromStr, sync::Arc};
     use tokio::sync::RwLock;
 
@@ -1683,11 +1685,11 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_result = FeeEstimate {
+        let expected_result = vec![FeeEstimate {
             gas_consumed: 0,
             gas_price: 0,
             overall_fee: 0,
-        };
+        }];
 
         // Set the expected return value for the Ethereum light client mock.
         starknet_lightclient_mock
@@ -3605,7 +3607,7 @@ mod tests {
 
         starknet_lightclient_mock
             .expect_estimate_fee()
-            .return_once(move |_, _| Ok(expected_result));
+            .return_once(move |_, _| Ok(vec![expected_result]));
 
         // When
         let beerus = BeerusLightClient::new_from_clients(
@@ -3692,13 +3694,15 @@ mod tests {
             new_root: felt.clone(),
             old_root: felt.clone(),
             state_diff: StateDiff {
-                deployed_contracts: vec![],
                 storage_diffs: vec![],
-                declared_contract_hashes: vec![],
+                deprecated_declared_classes: vec![],
+                declared_classes: vec![],
+                deployed_contracts: vec![],
+                replaced_classes: vec![],
                 nonces: vec![],
             },
         };
-        let expected = expected_result.clone();
+        let expected = MaybePendingStateUpdate::Update(expected_result.clone());
         // Mock the `get_state_update` method of the Starknet light client.
         // Given
         // Mock dependencies
@@ -3721,16 +3725,18 @@ mod tests {
         // Then
         // Assert that the `get_state_update` method of the Beerus light client returns `Ok`.
         assert!(result.is_ok());
+        assert!(matches!(
+            result.as_ref().unwrap(),
+            MaybePendingStateUpdate::Update { .. }
+        ));
         // Assert that the code returned by the `get_state_update` method of the Beerus light client is the expected code.
-
-        // Note:
-        // StateUpdate does not implement Eq, so I do the asserts this way.
-        assert_eq!(
-            result.as_ref().unwrap().block_hash,
-            expected_result.block_hash
-        );
-        assert_eq!(result.as_ref().unwrap().new_root, expected_result.new_root);
-        assert_eq!(result.as_ref().unwrap().old_root, expected_result.old_root);
+        if let MaybePendingStateUpdate::Update(result) = result.as_ref().unwrap() {
+            // Note:
+            // StateUpdate does not implement Eq, so I do the asserts this way.
+            assert_eq!(result.block_hash, expected_result.block_hash);
+            assert_eq!(result.new_root, expected_result.new_root);
+            assert_eq!(result.old_root, expected_result.old_root);
+        }
     }
 
     /// Test the `get_state_update` when starknet light client returns an error.
@@ -3987,85 +3993,85 @@ mod tests {
     /// This test mocks external dependencies.
     /// It does not test the `add_deploy_transaction` method of the external dependencies.
     /// It tests the `add_deploy_transaction` method of the Beerus light client.
-    #[tokio::test]
-    async fn given_ethereum_lightclient_returns_error_when_query_add_deploy_transaction_then_error_is_propagated(
-    ) {
-        // Given
-        // Mock config, ethereum light client and starknet light client.
-        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
-
-        let error_message = concat!(
-            "Non valid combination of from_block, to_block and blockhash. ",
-            "If you want to filter blocks, then ",
-            "you can only use either from_block and to_block or blockhash, not both",
-        );
-
-        // Mock dependencies.
-        starknet_lightclient_mock
-            .expect_add_deploy_transaction()
-            .return_once(move |_| {
-                Err(JsonRpcError {
-                    code: UNKNOWN_ERROR_CODE,
-                    message: error_message.to_string(),
-                })
-            });
-
-        // When
-        let beerus = BeerusLightClient::new_from_clients(
-            config.clone(),
-            Box::new(ethereum_lightclient_mock),
-            Box::new(starknet_lightclient_mock),
-        );
-
-        let program = vec![];
-        let constructor = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-
-        let external = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-
-        let l1_handler = vec![LegacyContractEntryPoint {
-            offset: 10,
-            selector: FieldElement::from_str("0").unwrap(),
-        }];
-        let entry_points_by_type = LegacyEntryPointsByType {
-            constructor,
-            external,
-            l1_handler,
-        };
-        let abi = None;
-
-        let contract_class = ContractClass::Legacy(LegacyContractClass {
-            program,
-            entry_points_by_type,
-            abi,
-        });
-
-        let deploy_transaction = BroadcastedDeployTransaction {
-            contract_class,
-            version: 10,
-            contract_address_salt: FieldElement::from_str("0").unwrap(),
-            constructor_calldata: vec![],
-        };
-
-        // Query the transaction data given a hash on Ethereum.
-        let result = beerus
-            .starknet_lightclient
-            .add_deploy_transaction(&deploy_transaction)
-            .await;
-
-        // Then
-        // Assert that the `add_deploy_transaction` method of the Beerus light client returns `Err`.
-        assert!(result.is_err());
-        // Assert that the error returned by the `add_deploy_transaction` method of the Beerus light client is the expected error.
-        let result_err = result.unwrap_err();
-        assert_eq!(result_err.message, error_message.to_string());
-        assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
-    }
+    // #[tokio::test]
+    // async fn given_ethereum_lightclient_returns_error_when_query_add_deploy_transaction_then_error_is_propagated(
+    // ) {
+    //     // Given
+    //     // Mock config, ethereum light client and starknet light client.
+    //     let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+    //
+    //     let error_message = concat!(
+    //         "Non valid combination of from_block, to_block and blockhash. ",
+    //         "If you want to filter blocks, then ",
+    //         "you can only use either from_block and to_block or blockhash, not both",
+    //     );
+    //
+    //     // Mock dependencies.
+    //     starknet_lightclient_mock
+    //         .expect_add_deploy_transaction()
+    //         .return_once(move |_| {
+    //             Err(JsonRpcError {
+    //                 code: UNKNOWN_ERROR_CODE,
+    //                 message: error_message.to_string(),
+    //             })
+    //         });
+    //
+    //     // When
+    //     let beerus = BeerusLightClient::new_from_clients(
+    //         config.clone(),
+    //         Box::new(ethereum_lightclient_mock),
+    //         Box::new(starknet_lightclient_mock),
+    //     );
+    //
+    //     let program = vec![];
+    //     let constructor = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //
+    //     let external = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //
+    //     let l1_handler = vec![LegacyContractEntryPoint {
+    //         offset: 10,
+    //         selector: FieldElement::from_str("0").unwrap(),
+    //     }];
+    //     let entry_points_by_type = LegacyEntryPointsByType {
+    //         constructor,
+    //         external,
+    //         l1_handler,
+    //     };
+    //     let abi = None;
+    //
+    //     let contract_class = ContractClass::Legacy(CompressedLegacyContractClass {
+    //         program,
+    //         entry_points_by_type,
+    //         abi,
+    //     });
+    //
+    //     let deploy_transaction = BroadcastedDeployTransaction {
+    //         contract_class,
+    //         version: 10,
+    //         contract_address_salt: FieldElement::from_str("0").unwrap(),
+    //         constructor_calldata: vec![],
+    //     };
+    //
+    //     // Query the transaction data given a hash on Ethereum.
+    //     let result = beerus
+    //         .starknet_lightclient
+    //         .add_deploy_transaction(&deploy_transaction)
+    //         .await;
+    //
+    //     // Then
+    //     // Assert that the `add_deploy_transaction` method of the Beerus light client returns `Err`.
+    //     assert!(result.is_err());
+    //     // Assert that the error returned by the `add_deploy_transaction` method of the Beerus light client is the expected error.
+    //     let result_err = result.unwrap_err();
+    //     assert_eq!(result_err.message, error_message.to_string());
+    //     assert_eq!(result_err.code, UNKNOWN_ERROR_CODE);
+    // }
 
     /// Test the `get_block_with_txs` method when everything is fine.
     /// This test mocks external dependencies.
@@ -4659,11 +4665,11 @@ mod tests {
         };
         let abi = None;
 
-        let contract_class: LegacyContractClass = LegacyContractClass {
+        let contract_class = Arc::new(CompressedLegacyContractClass {
             program,
             entry_points_by_type,
             abi,
-        };
+        });
 
         let declare_transaction =
             BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {
@@ -4745,11 +4751,11 @@ mod tests {
         };
         let abi = None;
 
-        let contract_class: LegacyContractClass = LegacyContractClass {
+        let contract_class = Arc::new(CompressedLegacyContractClass {
             program,
             entry_points_by_type,
             abi,
-        };
+        });
 
         let declare_transaction =
             BroadcastedDeclareTransaction::V1(BroadcastedDeclareTransactionV1 {

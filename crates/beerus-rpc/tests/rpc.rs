@@ -9,11 +9,10 @@ mod tests {
     };
     use beerus_rpc::api::BeerusRpcServer;
     use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
-    use starknet::core::types::FieldElement;
-    use starknet::providers::jsonrpc::models::{
-        BlockId, BlockStatus, BlockTag, BlockWithTxHashes, EventFilter, FeeEstimate, FunctionCall,
-        InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes, SyncStatusType,
-        Transaction,
+    use starknet::core::types::{
+        BlockId, BlockStatus, BlockTag, BlockWithTxHashes, EventFilter, FeeEstimate, FieldElement,
+        FunctionCall, InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes,
+        SyncStatusType, Transaction,
     };
 
     #[tokio::test]
@@ -112,10 +111,10 @@ mod tests {
             overall_fee: 0xaf8f402b6194,
         };
 
-        let actual = beerus_rpc
+        let actual = &beerus_rpc
             .starknet_estimate_fee(block_hash, broadcasted_transaction.0)
             .await
-            .unwrap();
+            .unwrap()[0];
 
         assert_eq!(expected.gas_consumed, actual.gas_consumed);
         assert_eq!(expected.gas_price, actual.gas_price);
