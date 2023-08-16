@@ -7,6 +7,7 @@ use crate::stdlib::string::String;
 use crate::stdlib::vec::Vec;
 
 use core::convert::TryFrom;
+use log::error;
 
 #[cfg(feature = "std")]
 use mockall::automock;
@@ -188,7 +189,10 @@ impl StarkNetLightClientImpl {
         method_name: &str,
         client_error: ProviderError<JsonRpcClientError<ReqwestError>>,
     ) -> JsonRpcError {
-        dbg!(&client_error);
+        error!(
+            "StarkNetLightClientImpl error on method {}: {:#?}",
+            method_name, &client_error
+        );
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));
         match error {
             Ok(rpc_error) => rpc_error,
@@ -253,6 +257,7 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
         tx: BroadcastedTransaction,
         block_id: &BlockId,
     ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
+        dbg!(&tx);
         self.client
             .estimate_fee(vec![tx], block_id)
             .await
