@@ -1,7 +1,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 pub mod common;
-use common::mock_clients;
+use common::{mock_block_with_txs, mock_broadcasted_transaction, mock_clients, mock_invoke_tx_v1};
 
 #[cfg(test)]
 mod tests {
@@ -28,17 +28,16 @@ mod tests {
             BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
             BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
             BroadcastedDeclareTransactionV1, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0,
-            BroadcastedInvokeTransactionV1, BroadcastedTransaction, ContractClass,
+            BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV0, ContractClass,
             DeclareTransaction, DeclareTransactionResult, DeclareTransactionV1,
             DeclareTransactionV2, DeployAccountTransaction, DeployTransaction,
             DeployTransactionResult, EventFilter, FeeEstimate, InvokeTransaction,
             InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            InvokeTransactionV1, L1HandlerTransaction, LegacyContractClass,
-            LegacyContractEntryPoint, LegacyEntryPointsByType, MaybePendingBlockWithTxHashes,
-            MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, PendingBlockWithTxs,
-            StateDiff, StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
-            TransactionReceipt, TransactionStatus,
+            L1HandlerTransaction, LegacyContractClass, LegacyContractEntryPoint,
+            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingTransactionReceipt, PendingBlockWithTxs, StateDiff, StateUpdate,
+            SyncStatusType, Transaction as StarknetTransaction, TransactionReceipt,
+            TransactionStatus,
         },
     };
     use std::{collections::BTreeMap, str::FromStr, sync::Arc};
@@ -1707,15 +1706,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-                max_fee: FieldElement::from_hex_be("0").unwrap(),
-                signature: Vec::<FieldElement>::new(),
-                nonce: FieldElement::from_hex_be("0").unwrap(),
-                sender_address: FieldElement::from_hex_be("0").unwrap(),
-                calldata: Vec::<FieldElement>::new(),
-            },
-        ));
+        let request = mock_broadcasted_transaction();
         let block_id = BlockId::Number(10);
 
         // Perform the test estimate.
@@ -1749,15 +1740,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-                max_fee: FieldElement::from_hex_be("0").unwrap(),
-                signature: Vec::<FieldElement>::new(),
-                nonce: FieldElement::from_hex_be("0").unwrap(),
-                sender_address: FieldElement::from_hex_be("0").unwrap(),
-                calldata: Vec::<FieldElement>::new(),
-            },
-        ));
+        let request = mock_broadcasted_transaction();
         let block_id = BlockId::Number(10);
 
         // Perform the test estimate.
@@ -2227,16 +2210,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2267,18 +2247,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2310,16 +2285,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2355,16 +2327,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2433,18 +2402,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2524,18 +2488,13 @@ mod tests {
             .times(1)
             .return_once(|_tx_hash| Ok(expected_result));
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2572,18 +2531,13 @@ mod tests {
             .times(1)
             .return_once(|| Ok(U256::from("0x1234")));
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2624,14 +2578,7 @@ mod tests {
 
         let tx_hash = String::from("0x1234");
 
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash.clone());
 
         let expected_transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
 
@@ -2661,36 +2608,15 @@ mod tests {
 
         let status = BlockStatus::Pending;
         let block_hash = FieldElement::from_dec_str("01").unwrap();
-        let parent_hash = FieldElement::from_dec_str("01").unwrap();
         let block_number = 0;
-        let new_root = FieldElement::from_dec_str("01").unwrap();
-        let timestamp: u64 = 0;
-        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
-        let block = BlockWithTxs {
-            status,
-            block_hash,
-            parent_hash,
-            block_number,
-            new_root,
-            timestamp,
-            sequencer_address,
-            transactions,
-        };
-
-        let expected_block_with_txs = MaybePendingBlockWithTxs::Block(block);
+        let block_with_txs = mock_block_with_txs(transactions, block_number, status, block_hash);
+        let expected_block_with_txs = MaybePendingBlockWithTxs::Block(block_with_txs);
 
         starknet_lightclient_mock
             .expect_get_block_with_txs()
@@ -2726,14 +2652,7 @@ mod tests {
         let sequencer_address = FieldElement::from_dec_str("01").unwrap();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
@@ -2776,35 +2695,14 @@ mod tests {
 
         let status = BlockStatus::Pending;
         let block_hash = FieldElement::from_dec_str("01").unwrap();
-        let parent_hash = FieldElement::from_dec_str("01").unwrap();
         let block_number = 0;
-        let new_root = FieldElement::from_dec_str("01").unwrap();
-        let timestamp: u64 = 0;
-        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
-        let block = BlockWithTxs {
-            status,
-            block_hash,
-            parent_hash,
-            block_number,
-            new_root,
-            timestamp,
-            sequencer_address,
-            transactions,
-        };
-
+        let block = mock_block_with_txs(transactions, block_number, status, block_hash);
         let expected_block_with_txs = MaybePendingBlockWithTxs::Block(block);
 
         starknet_lightclient_mock
@@ -2838,14 +2736,7 @@ mod tests {
         let sequencer_address = FieldElement::from_dec_str("01").unwrap();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
@@ -2885,29 +2776,16 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
         let block_number = 10;
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0x").unwrap();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2940,30 +2818,16 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
         let block_number = 1;
         let block_hash = FieldElement::from_hex_be("0xff").unwrap();
+        let status = BlockStatus::AcceptedOnL2;
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash,
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -3024,29 +2888,16 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
         let block_number = 1;
+        let block_hash = FieldElement::from_hex_be("0x").unwrap();
+        let status = BlockStatus::AcceptedOnL2;
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -3080,29 +2931,16 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
         let block_number = 1;
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::Pending,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -3136,29 +2974,16 @@ mod tests {
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
         let tx_hash = String::from("0x1234");
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
         let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
         let transactions = vec![transaction];
 
         let block_number = 1;
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -3206,15 +3031,13 @@ mod tests {
         let entry_point_selector = FieldElement::from_hex_be(&hash).unwrap();
         let class_hash = FieldElement::from_hex_be(&hash).unwrap();
         let block_hash = FieldElement::from_hex_be(&hash).unwrap();
-        let parent_hash = FieldElement::from_hex_be(&hash).unwrap();
-        let new_root = FieldElement::from_hex_be(&hash).unwrap();
-        let sequencer_address = FieldElement::from_hex_be(&hash).unwrap();
         let compiled_class_hash = FieldElement::from_hex_be(&hash).unwrap();
         let calldata = Vec::<FieldElement>::new();
         let contract_address_salt = FieldElement::from_hex_be(&hash).unwrap();
         let constructor_calldata = Vec::<FieldElement>::new();
         let version = 1;
         let block_number = 1;
+        let status = BlockStatus::AcceptedOnL2;
 
         // Invoke Transaction V0
         let invoke_tx_v0 =
@@ -3230,14 +3053,7 @@ mod tests {
 
         // Invoke Transaction V1
         let invoke_tx_v1 =
-            StarknetTransaction::Invoke(InvokeTransaction::V1(InvokeTransactionV1 {
-                transaction_hash,
-                max_fee,
-                signature: signature.clone(),
-                nonce,
-                sender_address,
-                calldata: calldata.clone(),
-            }));
+            StarknetTransaction::Invoke(InvokeTransaction::V1(mock_invoke_tx_v1(hash)));
 
         // L1 Handler Transaction
         let l1_handler_tx = StarknetTransaction::L1Handler(L1HandlerTransaction {
@@ -3303,16 +3119,8 @@ mod tests {
             deploy_account_tx,
         ];
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash,
-            parent_hash,
-            block_number,
-            new_root,
-            timestamp: 10,
-            sequencer_address,
-            transactions,
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
