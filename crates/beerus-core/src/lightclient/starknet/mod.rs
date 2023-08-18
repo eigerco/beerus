@@ -49,9 +49,15 @@ pub trait StarkNetLightClient: Send + Sync {
 
     async fn estimate_fee(
         &self,
-        tx: BroadcastedTransaction,
+        txs: Vec<BroadcastedTransaction>,
         block_id: &BlockId,
     ) -> Result<Vec<FeeEstimate>, JsonRpcError>;
+
+    async fn estimate_fee_single(
+        &self,
+        tx: BroadcastedTransaction,
+        block_id: &BlockId,
+    ) -> Result<FeeEstimate, JsonRpcError>;
 
     async fn get_storage_at(
         &self,
@@ -189,16 +195,17 @@ impl StarkNetLightClientImpl {
         method_name: &str,
         client_error: ProviderError<JsonRpcClientError<ReqwestError>>,
     ) -> JsonRpcError {
-        error!(
+        dbg!(
             "StarkNetLightClientImpl error on method {}: {:#?}",
-            method_name, &client_error
+            method_name,
+            &client_error
         );
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));
         match error {
             Ok(rpc_error) => rpc_error,
             Err(unknown_error) => JsonRpcError {
                 code: 520,
-                message: format!("[{}] {}", method_name, unknown_error),
+                message: format!("[{}] {}", method_name, unknown_error.message),
             },
         }
     }
@@ -237,6 +244,32 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| Self::map_to_rpc_error("call", e))
     }
 
+    /// Estimate the fee for a multiple StarkNet transactions.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - The vector of broadcasted transactions.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the vector of fee estimates if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// ## Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    async fn estimate_fee(
+        &self,
+        txs: Vec<BroadcastedTransaction>,
+        block_id: &BlockId,
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
+        self.client
+            .estimate_fee(txs, block_id)
+            .await
+            .map_err(|e| Self::map_to_rpc_error("estimate_fee", e))
+    }
+
     /// Estimate the fee for a given StarkNet transaction.
     ///
     /// # Arguments
@@ -252,14 +285,13 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// ## Errors
     ///
     /// This method can return a `JsonRpcError` in case of failure.
-    async fn estimate_fee(
+    async fn estimate_fee_single(
         &self,
         tx: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
-        dbg!(&tx);
+    ) -> Result<FeeEstimate, JsonRpcError> {
         self.client
-            .estimate_fee(vec![tx], block_id)
+            .estimate_fee_single(tx, block_id)
             .await
             .map_err(|e| Self::map_to_rpc_error("estimate_fee", e))
     }

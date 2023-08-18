@@ -3619,17 +3619,17 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let (tx, _) = create_mock_broadcasted_transaction();
 
-        let result = beerus
+        let result = &beerus
             .starknet_lightclient
-            .estimate_fee(tx, &block_id)
+            .estimate_fee_single(tx, &block_id)
             .await
-            .unwrap();
+            .unwrap()[0];
 
         // Then
         // Assert that the estimated fee returned by the `estimate_fee` method of the Beerus light client
         // is the expected estimated gas fee
         assert_eq!(
-            serde_json::to_string(&result).unwrap(),
+            serde_json::to_string(result).unwrap(),
             expected_result_string,
         )
     }
@@ -3667,7 +3667,7 @@ mod tests {
 
         let result = beerus
             .starknet_lightclient
-            .estimate_fee(tx, &block_id)
+            .estimate_fee_single(tx, &block_id)
             .await;
 
         // Then

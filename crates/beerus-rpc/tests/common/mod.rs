@@ -139,6 +139,8 @@ pub async fn setup_wiremock() -> String {
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mut config = Config::from_file(&PathBuf::from("tests/common/data/test.toml"));
     config.starknet_rpc = setup_wiremock().await;
+    // dbg!(&config.starknet_rpc);
+    // config.starknet_rpc = String::from("http://127.0.0.1:5000");
 
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
@@ -152,8 +154,9 @@ pub async fn setup_beerus_rpc() -> BeerusRpc {
 }
 
 fn mock_block_number() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::block_number(())))
+        .and(body_json(StarknetRpcBaseData::block_number(stub)))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockNumber.json"),
             "application/json",
@@ -162,6 +165,9 @@ fn mock_block_number() -> Mock {
 
 fn mock_get_block_transaction_count() -> Mock {
     let latest_block = BlockId::Tag(BlockTag::Latest);
+    dbg!(serde_json::to_string(
+        &StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block])
+    ));
     Mock::given(method("POST"))
         .and(body_json(
             StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block]),
@@ -217,8 +223,9 @@ fn mock_get_events() -> Mock {
 }
 
 fn mock_starknet_syncing() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::starknet_syncing(())))
+        .and(body_json(StarknetRpcBaseData::starknet_syncing(stub)))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_syncing.json"),
             "application/json",
@@ -226,9 +233,10 @@ fn mock_starknet_syncing() -> Mock {
 }
 
 fn mock_starknet_block_hash_and_number() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
         .and(body_json(
-            StarknetRpcBaseData::starknet_block_hash_and_number(()),
+            StarknetRpcBaseData::starknet_block_hash_and_number(stub),
         ))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockHashAndNumber.json"),

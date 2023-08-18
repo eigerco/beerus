@@ -111,10 +111,10 @@ mod tests {
             overall_fee: 0xaf8f402b6194,
         };
 
-        let actual = &beerus_rpc
+        let actual = beerus_rpc
             .starknet_estimate_fee(block_hash, broadcasted_transaction.0)
             .await
-            .unwrap()[0];
+            .unwrap();
 
         assert_eq!(expected.gas_consumed, actual.gas_consumed);
         assert_eq!(expected.gas_price, actual.gas_price);

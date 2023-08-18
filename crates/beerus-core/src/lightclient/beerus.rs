@@ -416,9 +416,9 @@ impl BeerusLightClient {
         &self,
         request: BroadcastedTransaction,
         block_id: &BlockId,
-    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
+    ) -> Result<FeeEstimate, JsonRpcError> {
         self.starknet_lightclient
-            .estimate_fee(request, block_id)
+            .estimate_fee_single(request, block_id)
             .await
     }
 

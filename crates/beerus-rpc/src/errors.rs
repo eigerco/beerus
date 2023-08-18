@@ -128,11 +128,12 @@ impl From<JsonRpcError> for BeerusApiError {
 
 impl From<BeerusApiError> for Error {
     fn from(err: BeerusApiError) -> Self {
-        let code: i64 = err.clone().into();
-        let message: String = err.to_string();
+        // Todo :: consider this conversion seems to be not convenient, cause
+        //         we use only error code and message and ignoring generated thiserror msg
+        let (code, msg) = err.clone().into();
         Error::Call(CallError::Custom(ErrorObject::owned(
             code as i32,
-            message,
+            msg,
             None::<()>,
         )))
     }
@@ -210,27 +211,28 @@ impl From<i64> for BeerusApiError {
     }
 }
 
-impl From<BeerusApiError> for i64 {
-    fn from(value: BeerusApiError) -> i64 {
+impl From<BeerusApiError> for (i64, String) {
+    fn from(value: BeerusApiError) -> (i64, String) {
         match value {
-            BeerusApiError::FailedToReceiveTransaction(code, _) => code,
-            BeerusApiError::ContractNotFound(code, _) => code,
-            BeerusApiError::InvalidMessageSelector(code, _) => code,
-            BeerusApiError::InvalidCallData(code, _) => code,
-            BeerusApiError::BlockNotFound(code, _) => code,
-            BeerusApiError::TransactionHashNotFound(code, _) => code,
-            BeerusApiError::InvalidTransactionIndex(code, _) => code,
-            BeerusApiError::ClassHashNotFound(code, _) => code,
-            BeerusApiError::PageSizeTooBig(code, _) => code,
-            BeerusApiError::NoBlocks(code, _) => code,
-            BeerusApiError::InvalidContinuationToken(code, _) => code,
-            BeerusApiError::TooManyKeysInFilter(code, _) => code,
-            BeerusApiError::FailedToFetchPendingTransactions(code, _) => code,
-            BeerusApiError::ContractError(code, _) => code,
-            BeerusApiError::InvalidContractClass(code, _) => code,
-            BeerusApiError::InternalServerError(code, _) => code,
-            BeerusApiError::ProofLimitExceeded(code, _) => code,
-            _ => 520, // Unknown error
+            BeerusApiError::FailedToReceiveTransaction(code, msg) => (code, msg),
+            BeerusApiError::ContractNotFound(code, msg) => (code, msg),
+            BeerusApiError::InvalidMessageSelector(code, msg) => (code, msg),
+            BeerusApiError::InvalidCallData(code, msg) => (code, msg),
+            BeerusApiError::BlockNotFound(code, msg) => (code, msg),
+            BeerusApiError::TransactionHashNotFound(code, msg) => (code, msg),
+            BeerusApiError::InvalidTransactionIndex(code, msg) => (code, msg),
+            BeerusApiError::ClassHashNotFound(code, msg) => (code, msg),
+            BeerusApiError::PageSizeTooBig(code, msg) => (code, msg),
+            BeerusApiError::NoBlocks(code, msg) => (code, msg),
+            BeerusApiError::InvalidContinuationToken(code, msg) => (code, msg),
+            BeerusApiError::TooManyKeysInFilter(code, msg) => (code, msg),
+            BeerusApiError::FailedToFetchPendingTransactions(code, msg) => (code, msg),
+            BeerusApiError::ContractError(code, msg) => (code, msg),
+            BeerusApiError::InvalidContractClass(code, msg) => (code, msg),
+            BeerusApiError::InternalServerError(code, msg) => (code, msg),
+            BeerusApiError::ProofLimitExceeded(code, msg) => (code, msg),
+            BeerusApiError::UnknownError(code, msg) => (code, msg),
+            _ => (520, String::from("Unknown")), // Unknown error
         }
     }
 }

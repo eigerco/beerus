@@ -9,7 +9,7 @@ pub struct JsonRpcClientErrorWrapper(StarknetProviderError<JsonRpcClientError<Re
 #[derive(Debug, thiserror::Error)]
 #[error("unable to map JsonRpcErrorClient type to JsonRpcError type")]
 pub struct JsonRpcClientConversionError {
-    message: String,
+    pub message: String,
 }
 
 pub struct StarknetErrorCodeWrapper {

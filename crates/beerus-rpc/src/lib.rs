@@ -648,10 +648,10 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         block_id: BlockId,
         broadcasted_transaction: BroadcastedTransaction,
-    ) -> Result<Vec<FeeEstimate>, Error> {
+    ) -> Result<FeeEstimate, Error> {
         self.beerus
             .starknet_lightclient
-            .estimate_fee(broadcasted_transaction, &block_id)
+            .estimate_fee_single(broadcasted_transaction, &block_id)
             .await
             .map_err(|e| Error::from(BeerusApiError::from(e)))
     }

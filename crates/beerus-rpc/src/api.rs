@@ -247,7 +247,7 @@ pub trait BeerusRpc {
         &self,
         block_id: BlockId,
         broadcasted_transaction: BroadcastedTransaction,
-    ) -> Result<Vec<FeeEstimate>, Error>;
+    ) -> Result<FeeEstimate, Error>;
 
     #[method(name = "starknet_call")]
     async fn starknet_call(
