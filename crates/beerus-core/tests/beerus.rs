@@ -13,7 +13,7 @@ mod tests {
             ethereum::helios_lightclient::HeliosLightClient,
             starknet::{StarkNetLightClient, StarkNetLightClientImpl},
         },
-        starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
+        starknet_helper::create_mock_broadcasted_transaction,
     };
     use ethabi::Uint as U256;
     use ethers::types::{Address, Transaction, H256};
@@ -4139,7 +4139,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
         let (tx, _) = create_mock_broadcasted_transaction();
 
         let result = beerus
@@ -4185,7 +4185,7 @@ mod tests {
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
-        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
         let (tx, _) = create_mock_broadcasted_transaction();
 
         let result = beerus
@@ -4237,7 +4237,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
         // Query the transaction data given a hash on Ethereum.
-        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
         let result = beerus
             .starknet_lightclient
             .get_state_update(&block_id)
@@ -4288,7 +4288,7 @@ mod tests {
             Box::new(ethereum_lightclient_mock),
             Box::new(starknet_lightclient_mock),
         );
-        let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
         let result = beerus
             .starknet_lightclient
             .get_state_update(&block_id)
