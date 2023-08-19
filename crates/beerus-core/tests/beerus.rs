@@ -1,7 +1,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 pub mod common;
-use common::mock_clients;
+use common::{mock_block_with_txs, mock_broadcasted_transaction, mock_clients, mock_invoke_tx_v1};
 
 #[cfg(test)]
 mod tests {
@@ -1704,15 +1704,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-                max_fee: FieldElement::from_hex_be("0").unwrap(),
-                signature: Vec::<FieldElement>::new(),
-                nonce: FieldElement::from_hex_be("0").unwrap(),
-                sender_address: FieldElement::from_hex_be("0").unwrap(),
-                calldata: Vec::<FieldElement>::new(),
-            },
-        ));
+        let request = mock_broadcasted_transaction();
         let block_id = BlockId::Number(10);
 
         // Perform the test estimate.
@@ -1746,15 +1738,7 @@ mod tests {
             Box::new(starknet_lightclient_mock),
         );
 
-        let request = BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
-            BroadcastedInvokeTransactionV1 {
-                max_fee: FieldElement::from_hex_be("0").unwrap(),
-                signature: Vec::<FieldElement>::new(),
-                nonce: FieldElement::from_hex_be("0").unwrap(),
-                sender_address: FieldElement::from_hex_be("0").unwrap(),
-                calldata: Vec::<FieldElement>::new(),
-            },
-        ));
+        let request = mock_broadcasted_transaction();
         let block_id = BlockId::Number(10);
 
         // Perform the test estimate.
@@ -2224,16 +2208,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2264,18 +2245,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2307,16 +2283,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2352,16 +2325,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number: 10,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+        let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let expected_result = MaybePendingBlockWithTxs::Block(block_with_tx_hashes);
 
@@ -2430,18 +2400,13 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2521,18 +2486,13 @@ mod tests {
             .times(1)
             .return_once(|_tx_hash| Ok(expected_result));
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2569,18 +2529,13 @@ mod tests {
             .times(1)
             .return_once(|| Ok(U256::from("0x1234")));
 
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
         let block_number = 10;
+        let transactions = Vec::<StarknetTransaction>::new();
 
-        let block_with_tx_hashes = BlockWithTxs {
-            status: BlockStatus::AcceptedOnL2,
-            block_hash: FieldElement::from_hex_be("0").unwrap(),
-            parent_hash: FieldElement::from_hex_be("0").unwrap(),
-            block_number,
-            new_root: FieldElement::from_hex_be("0").unwrap(),
-            timestamp: 10,
-            sequencer_address: FieldElement::from_hex_be("0").unwrap(),
-            transactions: Vec::new(),
-        };
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
 
         let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
         btree_map.insert(block_number, block_with_tx_hashes);
@@ -2621,21 +2576,14 @@ mod tests {
 
         let tx_hash = String::from("0x1234");
 
-        let invoke_tx_v1 = InvokeTransactionV1 {
-            transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
-            max_fee: FieldElement::from_hex_be("0").unwrap(),
-            signature: Vec::<FieldElement>::new(),
-            nonce: FieldElement::from_hex_be("0").unwrap(),
-            sender_address: FieldElement::from_hex_be("0x").unwrap(),
-            calldata: Vec::<FieldElement>::new(),
-        };
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash.clone());
 
-        let expected_result = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let expected_transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
 
         starknet_lightclient_mock
             .expect_get_transaction_by_hash()
             .times(1)
-            .return_once(|_tx_hash| Ok(expected_result));
+            .return_once(|_tx_hash| Ok(expected_transaction));
 
         // Create a new Beerus light client.
         let beerus = BeerusLightClient::new_from_clients(
@@ -2648,6 +2596,579 @@ mod tests {
 
         // Assert that the result is correct.
         assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets transaction by block and index when Starknet light client returns a value and when `MaybePendingBlockWithTxs::Block` is returned
+    #[tokio::test]
+    async fn given_normal_condition_and_block_get_transaction_by_block_and_index_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_dec_str("01").unwrap();
+        let block_number = 0;
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_with_txs = mock_block_with_txs(transactions, block_number, status, block_hash);
+        let expected_block_with_txs = MaybePendingBlockWithTxs::Block(block_with_txs);
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_block_with_txs));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(1);
+        let index = 0;
+        let res = beerus
+            .get_transaction_by_block_and_index(&block_id, index)
+            .await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets transaction by block and index when Starknet light client returns a value and when `MaybePendingBlockWithTxs::PendingBlock` is returned
+    #[tokio::test]
+    async fn given_normal_condition_and_pending_block_get_transaction_by_block_and_index_should_work(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let parent_hash = FieldElement::from_dec_str("01").unwrap();
+        let timestamp: u64 = 0;
+        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let pending_block = PendingBlockWithTxs {
+            timestamp,
+            sequencer_address,
+            transactions,
+            parent_hash,
+        };
+
+        let expected_block_with_txs = MaybePendingBlockWithTxs::PendingBlock(pending_block);
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_block_with_txs));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(1);
+        let index = 0;
+        let res = beerus
+            .get_transaction_by_block_and_index(&block_id, index)
+            .await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block transaction count when Starknet light client returns a value and when `MaybePendingBlockWithTxs::Block` is returned
+    #[tokio::test]
+    async fn given_normal_condition_and_block_get_block_transaction_count_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_dec_str("01").unwrap();
+        let block_number = 0;
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block = mock_block_with_txs(transactions, block_number, status, block_hash);
+        let expected_block_with_txs = MaybePendingBlockWithTxs::Block(block);
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_block_with_txs));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(1);
+        let res = beerus.get_block_transaction_count(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 1);
+    }
+
+    /// Test that starknet gets block transaction count when Starknet light client returns a value and when `MaybePendingBlockWithTxs::PendingBlock` is returned
+    #[tokio::test]
+    async fn given_normal_condition_and_pending_block_get_block_transaction_count_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
+
+        let parent_hash = FieldElement::from_dec_str("01").unwrap();
+        let timestamp: u64 = 0;
+        let sequencer_address = FieldElement::from_dec_str("01").unwrap();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let pending_block = PendingBlockWithTxs {
+            timestamp,
+            sequencer_address,
+            transactions,
+            parent_hash,
+        };
+
+        let expected_block_with_txs = MaybePendingBlockWithTxs::PendingBlock(pending_block);
+
+        starknet_lightclient_mock
+            .expect_get_block_with_txs()
+            .times(1)
+            .return_once(|_block_id| Ok(expected_block_with_txs));
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_id = BlockId::Number(1);
+        let res = beerus.get_block_transaction_count(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 1);
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and `block_id` is a number
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_number_get_block_with_tx_hashes_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_number = 10;
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0x").unwrap();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Number(10);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and `block_id` is a hash
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_hash_get_block_with_tx_hashes_should_work() {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_number = 1;
+        let block_hash = FieldElement::from_hex_be("0xff").unwrap();
+        let status = BlockStatus::AcceptedOnL2;
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Hash(block_hash);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and `block_id` is a hash and hash not found
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_hash_and_hash_not_found_then_get_block_with_tx_hashes_should_return_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_hash = FieldElement::from_hex_be("0xff").unwrap();
+        let block_id = BlockId::Hash(block_hash);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        let expected_error = JsonRpcError {
+            code: 24,
+            message: format!("Block with hash {} not found in the payload.", block_hash),
+        };
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and `block_id` is a latest tag
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_latest_tag_then_get_block_with_tx_hashes_should_work(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_number = 1;
+        let block_hash = FieldElement::from_hex_be("0x").unwrap();
+        let status = BlockStatus::AcceptedOnL2;
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Latest);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and `block_id` is a pending tag
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_pending_tag_then_get_block_with_tx_hashes_should_work(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_number = 1;
+        let status = BlockStatus::Pending;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Pending);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value, `block_id` is a pending tag and pending tag not found
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_pending_tag_and_pending_tag_not_found_then_get_block_with_tx_hashes_should_return_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let tx_hash = String::from("0x1234");
+        let invoke_tx_v1 = mock_invoke_tx_v1(tx_hash);
+        let transaction = StarknetTransaction::Invoke(InvokeTransaction::V1(invoke_tx_v1));
+        let transactions = vec![transaction];
+
+        let block_number = 1;
+        let status = BlockStatus::AcceptedOnL2;
+        let block_hash = FieldElement::from_hex_be("0").unwrap();
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Tag(StarknetBlockTag::Pending);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        let expected_error = JsonRpcError {
+            code: 24,
+            message: "Block with pending status not found in the payload.".to_string(),
+        };
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value and all transaction are contained in block
+    #[tokio::test]
+    async fn given_normal_condition_and_block_contains_all_transaction_types_then_get_block_with_tx_hashes_should_work(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        let hash = String::from("0x1234");
+        let transaction_hash = FieldElement::from_hex_be(&hash).unwrap();
+        let max_fee = FieldElement::from_hex_be("0").unwrap();
+        let signature = Vec::<FieldElement>::new();
+        let nonce = FieldElement::from_hex_be("0").unwrap();
+        let contract_address = FieldElement::from_hex_be(&hash).unwrap();
+        let sender_address = FieldElement::from_hex_be(&hash).unwrap();
+        let entry_point_selector = FieldElement::from_hex_be(&hash).unwrap();
+        let class_hash = FieldElement::from_hex_be(&hash).unwrap();
+        let block_hash = FieldElement::from_hex_be(&hash).unwrap();
+        let compiled_class_hash = FieldElement::from_hex_be(&hash).unwrap();
+        let calldata = Vec::<FieldElement>::new();
+        let contract_address_salt = FieldElement::from_hex_be(&hash).unwrap();
+        let constructor_calldata = Vec::<FieldElement>::new();
+        let version = 1;
+        let block_number = 1;
+        let status = BlockStatus::AcceptedOnL2;
+
+        // Invoke Transaction V0
+        let invoke_tx_v0 =
+            StarknetTransaction::Invoke(InvokeTransaction::V0(InvokeTransactionV0 {
+                transaction_hash,
+                max_fee,
+                signature: signature.clone(),
+                nonce,
+                contract_address,
+                entry_point_selector,
+                calldata: calldata.clone(),
+            }));
+
+        // Invoke Transaction V1
+        let invoke_tx_v1 =
+            StarknetTransaction::Invoke(InvokeTransaction::V1(mock_invoke_tx_v1(hash)));
+
+        // L1 Handler Transaction
+        let l1_handler_tx = StarknetTransaction::L1Handler(L1HandlerTransaction {
+            transaction_hash,
+            version,
+            nonce: 1,
+            contract_address,
+            entry_point_selector,
+            calldata,
+        });
+
+        // Declare Transaction V1
+        let declare_v1_tx =
+            StarknetTransaction::Declare(DeclareTransaction::V1(DeclareTransactionV1 {
+                transaction_hash,
+                max_fee,
+                signature: signature.clone(),
+                nonce,
+                class_hash,
+                sender_address,
+            }));
+
+        // Declare Transaction V2
+        let declare_v2_tx =
+            StarknetTransaction::Declare(DeclareTransaction::V2(DeclareTransactionV2 {
+                transaction_hash,
+                max_fee,
+                signature: signature.clone(),
+                nonce,
+                class_hash,
+                compiled_class_hash,
+                sender_address,
+            }));
+
+        // Deploy Transaction
+        let deploy_tx = StarknetTransaction::Deploy(DeployTransaction {
+            transaction_hash,
+            class_hash,
+            version,
+            contract_address_salt,
+            constructor_calldata: constructor_calldata.clone(),
+        });
+
+        // Deploy Account Transaction
+        let deploy_account_tx = StarknetTransaction::DeployAccount(DeployAccountTransaction {
+            transaction_hash,
+            max_fee,
+            version,
+            signature,
+            nonce,
+            contract_address_salt,
+            constructor_calldata,
+            class_hash,
+        });
+
+        let transactions = vec![
+            invoke_tx_v0,
+            invoke_tx_v1,
+            l1_handler_tx,
+            declare_v1_tx,
+            declare_v2_tx,
+            deploy_tx,
+            deploy_account_tx,
+        ];
+
+        let block_with_tx_hashes =
+            mock_block_with_txs(transactions, block_number, status, block_hash);
+
+        let mut btree_map: BTreeMap<u64, BlockWithTxs> = BTreeMap::new();
+        btree_map.insert(block_number, block_with_tx_hashes);
+
+        let node_data = NodeData {
+            block_number,
+            state_root: String::from("0x5678"),
+            payload: btree_map,
+        };
+
+        // Create a new Beerus light client.
+        let mut beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+        beerus.node = Arc::new(RwLock::new(node_data));
+
+        let block_id = BlockId::Number(block_number);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        // Assert that the result is correct.
+        assert!(res.is_ok());
+    }
+
+    /// Test that starknet gets block with transaction hashes when Starknet light client returns a value, `block_id` is a number and block number not found
+    #[tokio::test]
+    async fn given_normal_condition_and_block_id_is_number_and_number_not_found_then_get_block_with_tx_hashes_should_return_error(
+    ) {
+        // Mock config, ethereum light client and starknet light client.
+        let (config, ethereum_lightclient_mock, starknet_lightclient_mock) = mock_clients();
+
+        // Create a new Beerus light client.
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(ethereum_lightclient_mock),
+            Box::new(starknet_lightclient_mock),
+        );
+
+        let block_number = 1;
+        let block_id = BlockId::Number(block_number);
+        let res = beerus.get_block_with_tx_hashes(&block_id).await;
+
+        let expected_error = JsonRpcError {
+            code: 24,
+            message: "Error while retrieving block.".to_string(),
+        };
+        // Assert that the result is correct.
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err().to_string(), expected_error.to_string());
     }
 
     /// Test the `block_number` method when everything is fine.

@@ -10,6 +10,13 @@ use ethers::types::Address;
 use httpmock::{prelude::*, Mock};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use starknet::{
+    core::types::FieldElement,
+    providers::jsonrpc::models::{
+        BlockStatus, BlockWithTxs, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+        BroadcastedTransaction, InvokeTransactionV1, Transaction,
+    },
+};
 use std::fs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -21,6 +28,47 @@ pub fn mock_clients() -> (Config, MockEthereumLightClient, MockStarkNetLightClie
         MockEthereumLightClient::new(),
         MockStarkNetLightClient::new(),
     )
+}
+
+pub fn mock_invoke_tx_v1(tx_hash: String) -> InvokeTransactionV1 {
+    InvokeTransactionV1 {
+        transaction_hash: FieldElement::from_hex_be(&tx_hash).unwrap(),
+        max_fee: FieldElement::from_hex_be("0").unwrap(),
+        signature: Vec::<FieldElement>::new(),
+        nonce: FieldElement::from_hex_be("0").unwrap(),
+        sender_address: FieldElement::from_hex_be("0x").unwrap(),
+        calldata: Vec::<FieldElement>::new(),
+    }
+}
+
+pub fn mock_broadcasted_transaction() -> BroadcastedTransaction {
+    BroadcastedTransaction::Invoke(BroadcastedInvokeTransaction::V1(
+        BroadcastedInvokeTransactionV1 {
+            max_fee: FieldElement::from_hex_be("0").unwrap(),
+            signature: Vec::<FieldElement>::new(),
+            nonce: FieldElement::from_hex_be("0").unwrap(),
+            sender_address: FieldElement::from_hex_be("0").unwrap(),
+            calldata: Vec::<FieldElement>::new(),
+        },
+    ))
+}
+
+pub fn mock_block_with_txs(
+    transactions: Vec<Transaction>,
+    block_number: u64,
+    status: BlockStatus,
+    block_hash: FieldElement,
+) -> BlockWithTxs {
+    BlockWithTxs {
+        status,
+        block_hash,
+        parent_hash: FieldElement::from_hex_be("0").unwrap(),
+        block_number,
+        new_root: FieldElement::from_hex_be("0").unwrap(),
+        timestamp: 10,
+        sequencer_address: FieldElement::from_hex_be("0").unwrap(),
+        transactions,
+    }
 }
 
 pub fn mock_get_contract_storage_proof(server: &MockServer) -> (Mock, GetProofOutput) {
