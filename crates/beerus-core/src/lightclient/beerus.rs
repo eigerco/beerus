@@ -827,7 +827,7 @@ impl BeerusLightClient {
                     .collect();
                 let block_with_tx_hashes = BlockWithTxHashes {
                     transactions: tx_hashes,
-                    status: block.status.clone(),
+                    status: block.status,
                     block_hash: block.block_hash,
                     parent_hash: block.parent_hash,
                     block_number: block.block_number,

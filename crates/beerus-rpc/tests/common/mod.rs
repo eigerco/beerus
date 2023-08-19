@@ -177,6 +177,7 @@ fn mock_estimate_fee() -> Mock {
     let block_hash =
         "0x0147c4b0f702079384e26d9d34a15e7758881e32b219fc68c076b09d0be13f8c".to_string();
     let broadcasted_transaction = create_mock_broadcasted_transaction();
+    let block_id = block_id_string_to_block_id_type(&block_type, &block_hash).unwrap();
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::starknet_estimate_fee((
             vec![broadcasted_transaction.0],
