@@ -10,12 +10,9 @@ use ethers::types::Address;
 use httpmock::{prelude::*, Mock};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockStatus, BlockWithTxs, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, InvokeTransactionV1, Transaction,
-    },
+use starknet::core::types::{
+    BlockStatus, BlockWithTxs, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
+    BroadcastedTransaction, FieldElement, InvokeTransactionV1, Transaction,
 };
 use std::fs;
 use std::net::SocketAddr;

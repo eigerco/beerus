@@ -139,9 +139,6 @@ pub async fn setup_wiremock() -> String {
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mut config = Config::from_file(&PathBuf::from("tests/common/data/test.toml"));
     config.starknet_rpc = setup_wiremock().await;
-    // dbg!(&config.starknet_rpc);
-    // config.starknet_rpc = String::from("http://127.0.0.1:5000");
-
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
 
@@ -165,9 +162,6 @@ fn mock_block_number() -> Mock {
 
 fn mock_get_block_transaction_count() -> Mock {
     let latest_block = BlockId::Tag(BlockTag::Latest);
-    dbg!(serde_json::to_string(
-        &StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block])
-    ));
     Mock::given(method("POST"))
         .and(body_json(
             StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block]),
@@ -183,11 +177,9 @@ fn mock_estimate_fee() -> Mock {
     let block_hash =
         "0x0147c4b0f702079384e26d9d34a15e7758881e32b219fc68c076b09d0be13f8c".to_string();
     let broadcasted_transaction = create_mock_broadcasted_transaction();
-    let block_id = block_id_string_to_block_id_type(&block_type, &block_hash).unwrap();
-
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::starknet_estimate_fee((
-            broadcasted_transaction.0,
+            vec![broadcasted_transaction.0],
             &block_id,
         ))))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(

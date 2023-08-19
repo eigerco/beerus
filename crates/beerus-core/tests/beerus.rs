@@ -20,21 +20,21 @@ mod tests {
 
     use eyre::eyre;
     use helios::types::{BlockTag, CallOpts, ExecutionBlock, Transactions};
-    use starknet::core::types::contract::legacy::LegacyContractClass;
     use starknet::providers::jsonrpc::JsonRpcError;
     use starknet::{
         core::types::{
             BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag,
             BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
             BroadcastedDeclareTransactionV1, BroadcastedInvokeTransaction,
-            BroadcastedInvokeTransactionV0, BroadcastedInvokeTransactionV1, BroadcastedTransaction,
-            CompressedLegacyContractClass, ContractClass, DeclareTransactionResult,
-            DeployTransactionResult, EventFilter, FeeEstimate, FieldElement, InvokeTransaction,
-            InvokeTransactionReceipt, InvokeTransactionResult, InvokeTransactionV0,
-            InvokeTransactionV1, LegacyContractEntryPoint, LegacyEntryPointsByType,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-            MaybePendingTransactionReceipt, StateDiff, StateUpdate, SyncStatusType,
-            Transaction as StarknetTransaction, TransactionReceipt, TransactionStatus,
+            BroadcastedInvokeTransactionV0, CompressedLegacyContractClass, DeclareTransaction,
+            DeclareTransactionResult, DeclareTransactionV1, DeclareTransactionV2,
+            DeployAccountTransaction, DeployTransaction, EventFilter, FeeEstimate, FieldElement,
+            InvokeTransaction, InvokeTransactionReceipt, InvokeTransactionResult,
+            InvokeTransactionV0, L1HandlerTransaction, LegacyContractEntryPoint,
+            LegacyEntryPointsByType, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+            MaybePendingStateUpdate, MaybePendingTransactionReceipt, PendingBlockWithTxs,
+            StateDiff, StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+            TransactionReceipt, TransactionStatus,
         },
         macros::selector,
     };
@@ -1685,15 +1685,15 @@ mod tests {
         // Mock config, ethereum light client and starknet light client.
         let (config, ethereum_lightclient_mock, mut starknet_lightclient_mock) = mock_clients();
 
-        let expected_result = vec![FeeEstimate {
+        let expected_result = FeeEstimate {
             gas_consumed: 0,
             gas_price: 0,
             overall_fee: 0,
-        }];
+        };
 
         // Set the expected return value for the Ethereum light client mock.
         starknet_lightclient_mock
-            .expect_estimate_fee()
+            .expect_estimate_fee_single()
             .times(1)
             .return_once(|_request, _block_id| Ok(expected_result));
 
@@ -1728,7 +1728,7 @@ mod tests {
         };
 
         starknet_lightclient_mock
-            .expect_estimate_fee()
+            .expect_estimate_fee_single()
             .return_once(move |_block_nb, _address| Err(expected_error));
 
         // Create a new Beerus light client.
@@ -3099,7 +3099,6 @@ mod tests {
         let deploy_account_tx = StarknetTransaction::DeployAccount(DeployAccountTransaction {
             transaction_hash,
             max_fee,
-            version,
             signature,
             nonce,
             contract_address_salt,
@@ -4127,8 +4126,8 @@ mod tests {
         let expected_result_string = serde_json::to_string(&expected_result).unwrap();
 
         starknet_lightclient_mock
-            .expect_estimate_fee()
-            .return_once(move |_, _| Ok(vec![expected_result]));
+            .expect_estimate_fee_single()
+            .return_once(move |_, _| Ok(expected_result));
 
         // When
         let beerus = BeerusLightClient::new_from_clients(
@@ -4140,17 +4139,17 @@ mod tests {
         let block_id = block_id_string_to_block_id_type("tag", "latest").unwrap();
         let (tx, _) = create_mock_broadcasted_transaction();
 
-        let result = &beerus
+        let result = beerus
             .starknet_lightclient
             .estimate_fee_single(tx, &block_id)
             .await
-            .unwrap()[0];
+            .unwrap();
 
         // Then
         // Assert that the estimated fee returned by the `estimate_fee` method of the Beerus light client
         // is the expected estimated gas fee
         assert_eq!(
-            serde_json::to_string(result).unwrap(),
+            serde_json::to_string(&result).unwrap(),
             expected_result_string,
         )
     }
@@ -4168,7 +4167,7 @@ mod tests {
 
         // Mock the `estimate_fee` method of the StarkNet light client.
         starknet_lightclient_mock
-            .expect_estimate_fee()
+            .expect_estimate_fee_single()
             .times(1)
             .return_once(move |_, _| {
                 Err(JsonRpcError {

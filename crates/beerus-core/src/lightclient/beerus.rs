@@ -406,7 +406,7 @@ impl BeerusLightClient {
     ///
     /// # Returns
     ///
-    /// Returns a `Result` containing the fee estimate as a `Vec<FeeEstimate` if the operation was successful,
+    /// Returns a `Result` containing the fee estimate as a `Vec<FeeEstimate>` if the operation was successful,
     /// or an `Err` containing a `JsonRpcError` if the operation failed.
     ///
     /// # Errors

@@ -252,6 +252,7 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
             )
             .unwrap(),
             calldata: vec![
+                FieldElement::from_hex_be("1").unwrap(),
                 FieldElement::from_hex_be(
                     "7394cbe418daa16e42b87ba67372d4ab4a5df0b05c6e554d158458ce245bc10",
                 )

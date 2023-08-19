@@ -1,9 +1,10 @@
 use ethers::providers::ProviderError as EthersProviderError;
 use reqwest::Error as ReqwestError;
-use starknet::providers::jsonrpc::{JsonRpcClientError, JsonRpcError, RpcError};
-// use starknet::providers::sequencer::ErrorCode;
 use starknet::core::types::StarknetError;
-use starknet::providers::ProviderError as StarknetProviderError;
+use starknet::providers::{
+    jsonrpc::{JsonRpcClientError, JsonRpcError, RpcError},
+    ProviderError as StarknetProviderError,
+};
 
 pub struct JsonRpcClientErrorWrapper(StarknetProviderError<JsonRpcClientError<ReqwestError>>);
 #[derive(Debug, thiserror::Error)]
@@ -19,11 +20,6 @@ pub struct StarknetErrorCodeWrapper {
 impl TryFrom<JsonRpcClientErrorWrapper> for JsonRpcError {
     type Error = JsonRpcClientConversionError;
     fn try_from(err: JsonRpcClientErrorWrapper) -> Result<Self, Self::Error> {
-        // Err(JsonRpcClientConversionError {
-        //     message: "Unable to map JsonRpcClientError, raw error: ".to_owned()
-        //         + &err.0.to_string(),
-        // })
-        //JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::BlockNotFound)
         match err.0 {
             StarknetProviderError::StarknetError(starknet_err_code) => Ok(Self {
                 code: StarknetErrorCodeWrapper::from(starknet_err_code).code,
