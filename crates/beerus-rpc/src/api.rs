@@ -11,11 +11,10 @@ use ethers::types::{
 use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-    ContractClass, DeclareTransactionResult, DeployAccountTransactionResult,
-    DeployTransactionResult, EventsPage, FeeEstimate, FieldElement, FunctionCall,
-    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType,
-    Transaction as StarknetTransaction,
+    ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
+    FeeEstimate, FieldElement, FunctionCall, InvokeTransactionResult,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MaybePendingTransactionReceipt, SyncStatusType, Transaction as StarknetTransaction,
 };
 
 #[rpc(server)]

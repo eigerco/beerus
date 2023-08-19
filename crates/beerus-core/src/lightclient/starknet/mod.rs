@@ -21,10 +21,9 @@ use starknet::core::types::*;
 use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-    ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter, EventsPage,
-    FeeEstimate, FieldElement, FunctionCall, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    MaybePendingTransactionReceipt, SyncStatusType, Transaction,
+    ContractClass, DeclareTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
+    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType, Transaction,
 };
 use starknet::providers::jsonrpc::{
     HttpTransport, JsonRpcClient, JsonRpcClientError, JsonRpcError,
@@ -195,11 +194,7 @@ impl StarkNetLightClientImpl {
         method_name: &str,
         client_error: ProviderError<JsonRpcClientError<ReqwestError>>,
     ) -> JsonRpcError {
-        dbg!(
-            "StarkNetLightClientImpl error on method {}: {:#?}",
-            method_name,
-            &client_error
-        );
+        error!("[{}] {}", &method_name, &client_error);
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));
         match error {
             Ok(rpc_error) => rpc_error,
