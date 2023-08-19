@@ -113,10 +113,7 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         invoke_transaction: &BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, JsonRpcError>;
-    // async fn add_deploy_transaction(
-    //     &self,
-    //     deploy_transaction: &BroadcastedDeployTransaction,
-    // ) -> Result<DeployTransactionResult, JsonRpcError>;
+
     async fn add_deploy_account_transaction(
         &self,
         deploy_account_transaction: &BroadcastedDeployAccountTransaction,
@@ -567,30 +564,6 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .await
             .map_err(|e| Self::map_to_rpc_error("add_invoke_transaction", e))
     }
-
-    /// Add an deploy transaction.
-    ///
-    /// # Arguments
-    ///
-    /// * `deploy_transaction`: Transaction data.
-    ///
-    /// # Returns
-    ///
-    /// Returns a `Result` containing the `DeployTransactionResult` if the operation was successful,
-    /// or an `Err` containing a `JsonRpcError` if the operation failed.
-    ///
-    /// ## Errors
-    ///
-    /// This method can return a `JsonRpcError` in case of failure.
-    // async fn add_deploy_transaction(
-    //     &self,
-    //     deploy_transaction: &BroadcastedDeployTransaction,
-    // ) -> Result<DeployTransactionResult, JsonRpcError> {
-    //     self.client
-    //         .add_deploy_transaction(deploy_transaction)
-    //         .await
-    //         .map_err(|e| Self::map_to_rpc_error("add_deploy_transaction", e))
-    // }
 
     /// Get the transaction that matches the given hash.
     ///
