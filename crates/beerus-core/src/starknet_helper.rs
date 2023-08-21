@@ -1,12 +1,11 @@
-use eyre::{eyre, Result};
 use serde_json::{json, Value};
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockId, BlockTag, BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1,
-        BroadcastedTransaction, ContractAbiEntry, ContractClass, EmittedEvent, EventsPage,
-        LegacyContractClass, LegacyContractEntryPoint, LegacyEntryPointsByType, StructAbiEntry,
-        StructAbiType, StructMember, SyncStatus, SyncStatusType,
+        BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedTransaction,
+        ContractAbiEntry, ContractClass, EmittedEvent, EventsPage, LegacyContractClass,
+        LegacyContractEntryPoint, LegacyEntryPointsByType, StructAbiEntry, StructAbiType,
+        StructMember, SyncStatus, SyncStatusType,
     },
 };
 
@@ -27,28 +26,6 @@ use std::string::ToString;
 
 #[cfg(not(feature = "std"))]
 use alloc::string::ToString;
-
-/// Helper converting block identifier string with corresponding type to a BlockId Type
-/// # Arguments
-/// * `block_id_type` - The type of block identifier.
-/// * `block_id` - The block identifier.
-/// # Returns
-/// The block identifier as BlockId type.
-/// # Errors
-/// * If the block_id_type is not in ('hash', 'number', tag)
-/// * If the block_id cannot be parsed or invalid
-pub fn block_id_string_to_block_id_type(block_id_type: &str, block_id: &str) -> Result<BlockId> {
-    match block_id_type.to_lowercase().as_str() {
-        "hash" => Ok(BlockId::Hash(FieldElement::from_str(block_id)?)),
-        "number" => Ok(BlockId::Number(block_id.parse::<u64>()?)),
-        "tag" => match block_id.to_lowercase().as_str() {
-            "pending" => Ok(BlockId::Tag(BlockTag::Pending)),
-            "latest" => Ok(BlockId::Tag(BlockTag::Latest)),
-            _ => Err(eyre!("Invalid Tag")),
-        },
-        _ => Err(eyre!("Invalid BlockId Type")),
-    }
-}
 
 /// Helper to create a ContractClass object for testing
 /// # Returns
@@ -299,121 +276,4 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
         ]
     });
     (mock_broadcasted_tx, mock_broadcasted_tx_json)
-}
-
-#[cfg(test)]
-mod tests {
-    use std::str::FromStr;
-
-    use starknet::{
-        core::types::FieldElement,
-        providers::jsonrpc::models::{BlockId, BlockTag},
-    };
-
-    #[tokio::test]
-    async fn test_block_id_string_to_block_id_type() {
-        // Testing for hash type
-        // Given
-        let block_id_type = "hash".to_string();
-        let block_id = "0x123".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-
-        // Then
-        let expected_result = BlockId::Hash(FieldElement::from_str("0x123").unwrap());
-        assert_eq!(
-            serde_json::to_string(&result).unwrap(),
-            serde_json::to_string(&expected_result).unwrap()
-        );
-
-        // Testing for number type
-        // Given
-        let block_id_type = "number".to_string();
-        let block_id = "123".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-
-        // Then
-        let expected_result = BlockId::Number(123);
-        assert_eq!(
-            serde_json::to_string(&result).unwrap(),
-            serde_json::to_string(&expected_result).unwrap()
-        );
-
-        // Testing for tag type
-        // Given
-        let block_id_type = "tag".to_string();
-        let block_id = "latest".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id).unwrap();
-
-        // Then
-        let expected_result = BlockId::Tag(BlockTag::Latest);
-        assert_eq!(
-            serde_json::to_string(&result).unwrap(),
-            serde_json::to_string(&expected_result).unwrap()
-        );
-    }
-
-    #[tokio::test]
-    async fn test_invalid_block_id_or_type_should_return_error() {
-        // Testing for invalid type
-        // Given
-        let block_id_type = "other".to_string();
-        let block_id = "0x123".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id);
-
-        // Then
-        match result {
-            Err(e) => assert_eq!("Invalid BlockId Type", e.to_string()),
-            Ok(_) => panic!("Expected error, got ok"),
-        }
-
-        // Testing for invalid tag
-        // Given
-        let block_id_type = "tag".to_string();
-        let block_id = "other".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id);
-
-        // Then
-        match result {
-            Err(e) => assert_eq!("Invalid Tag", e.to_string()),
-            Ok(_) => panic!("Expected error, got ok"),
-        }
-
-        // Testing for invalid block number
-        // Given
-        let block_id_type = "number".to_string();
-        let block_id = "other".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id);
-
-        // Then
-        match result {
-            Err(e) => assert_eq!("invalid digit found in string", e.to_string()),
-            Ok(_) => panic!("Expected error, got ok"),
-        }
-
-        // Testing for invalid block hash
-        // Given
-        let block_id_type = "hash".to_string();
-        let block_id = "other".to_string();
-
-        // When
-        let result = super::block_id_string_to_block_id_type(&block_id_type, &block_id);
-
-        // Then
-        match result {
-            Err(e) => assert_eq!("invalid character", e.to_string()),
-            Ok(_) => panic!("Expected error, got ok"),
-        }
-    }
 }
