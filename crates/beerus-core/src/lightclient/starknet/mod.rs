@@ -565,29 +565,6 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| Self::map_to_rpc_error("add_invoke_transaction", e))
     }
 
-    /// Get the transaction that matches the given hash.
-    ///
-    /// # Arguments
-    ///
-    /// * `hash`: Transaction hash.
-    ///
-    /// # Returns
-    ///
-    /// Returns a `Result` containing the `Transaction` if the operation was successful,
-    /// or an `Err` containing a `JsonRpcError` if the operation failed.
-    ///
-    /// ## Errors
-    ///
-    /// This method can return a `JsonRpcError` in case of failure.
-    async fn get_transaction_by_hash(
-        &self,
-        hash: FieldElement,
-    ) -> Result<Transaction, JsonRpcError> {
-        self.client
-            .get_transaction_by_hash(hash)
-            .await
-            .map_err(|e| Self::map_to_rpc_error("get_transaction_by_hash", e))
-    }
     /// Add an deploy account transaction.
     ///
     /// # Arguments
@@ -611,6 +588,30 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .add_deploy_account_transaction(deploy_account_transaction)
             .await
             .map_err(|e| Self::map_to_rpc_error("add_deploy_account_transaction", e))
+    }
+
+    /// Get the transaction that matches the given hash.
+    ///
+    /// # Arguments
+    ///
+    /// * `hash`: Transaction hash.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the `Transaction` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// ## Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    async fn get_transaction_by_hash(
+        &self,
+        hash: FieldElement,
+    ) -> Result<Transaction, JsonRpcError> {
+        self.client
+            .get_transaction_by_hash(hash)
+            .await
+            .map_err(|e| Self::map_to_rpc_error("get_transaction_by_hash", e))
     }
 
     /// Get the block with transaction hashes of a given block.
