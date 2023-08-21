@@ -22,9 +22,10 @@ use starknet::{
     providers::jsonrpc::{
         models::{
             BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-            BroadcastedDeployTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-            ContractClass, DeclareTransactionResult, DeployTransactionResult, EventFilter,
-            EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
+            BroadcastedDeployAccountTransaction, BroadcastedDeployTransaction,
+            BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
+            DeclareTransactionResult, DeployAccountTransactionResult, DeployTransactionResult,
+            EventFilter, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
             MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
             MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
         },
@@ -106,10 +107,16 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         invoke_transaction: &BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, JsonRpcError>;
+
     async fn add_deploy_transaction(
         &self,
         deploy_transaction: &BroadcastedDeployTransaction,
     ) -> Result<DeployTransactionResult, JsonRpcError>;
+
+    async fn add_deploy_account_transaction(
+        &self,
+        deploy_account_transaction: &BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, JsonRpcError>;
 
     async fn get_transaction_by_hash(
         &self,
@@ -525,6 +532,31 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .add_invoke_transaction(invoke_transaction)
             .await
             .map_err(|e| Self::map_to_rpc_error("add_invoke_transaction", e))
+    }
+
+    /// Add an deploy account transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `deploy_account_transaction`: Account transaction data.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the `DeployAccountTransactionResult` if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// ## Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+
+    async fn add_deploy_account_transaction(
+        &self,
+        deploy_account_transaction: &BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, JsonRpcError> {
+        self.client
+            .add_deploy_account_transaction(deploy_account_transaction)
+            .await
+            .map_err(|e| Self::map_to_rpc_error("add_deploy_account_transaction", e))
     }
 
     /// Add an deploy transaction.

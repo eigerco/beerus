@@ -11,11 +11,12 @@ use ethers::types::{
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
-        BroadcastedTransaction, ContractClass, DeclareTransactionResult, DeployTransactionResult,
-        EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        StateUpdate, SyncStatusType, Transaction as StarknetTransaction,
+        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+        BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
+        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+        Transaction as StarknetTransaction,
     },
 };
 
@@ -222,11 +223,8 @@ pub trait BeerusRpc {
     #[method(name = "starknet_addDeployAccountTransaction")]
     async fn starknet_add_deploy_account_transaction(
         &self,
-        contract_class: String,
-        version: String,
-        contract_address_salt: String,
-        constructor_calldata: Vec<String>,
-    ) -> Result<DeployTransactionResult, Error>;
+        deploy_account_transaction: BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, Error>;
 
     #[method(name = "starknet_getEvents")]
     async fn starknet_get_events(
