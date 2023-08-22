@@ -810,6 +810,7 @@ impl BeerusLightClient {
                             InvokeTransaction::V1(v1_tx) => v1_tx.transaction_hash,
                         },
                         Transaction::Declare(tx) => match tx {
+                            DeclareTransaction::V0(v0_tx) => v0_tx.transaction_hash,
                             DeclareTransaction::V1(v1_tx) => v1_tx.transaction_hash,
                             DeclareTransaction::V2(v2_tx) => v2_tx.transaction_hash,
                         },

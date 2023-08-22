@@ -4345,6 +4345,7 @@ mod tests {
             contract_address,
             entry_point_selector,
             calldata,
+            is_query: true,
         };
 
         let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data);
@@ -4412,6 +4413,7 @@ mod tests {
             contract_address,
             entry_point_selector,
             calldata,
+            is_query: true,
         };
 
         let invoke_transaction = BroadcastedInvokeTransaction::V0(transaction_data);
@@ -5036,6 +5038,7 @@ mod tests {
                 nonce: FieldElement::from_str("0").unwrap(),
                 contract_class,
                 sender_address: FieldElement::from_str("101010").unwrap(),
+                is_query: true,
             });
         // Query the transaction data given a hash on Ethereum.
         let result = beerus
@@ -5122,6 +5125,7 @@ mod tests {
                 nonce: FieldElement::from_str("0").unwrap(),
                 contract_class,
                 sender_address: FieldElement::from_str("101010").unwrap(),
+                is_query: true,
             });
 
         // Query the transaction data given a hash on Ethereum.

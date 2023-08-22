@@ -15,7 +15,6 @@ use mockall::automock;
 use async_trait::async_trait;
 use ethers::providers::{Http, Provider};
 use eyre::Result as EyreResult;
-use reqwest::Error as ReqwestError;
 use serde::Serialize;
 use starknet::core::types::*;
 use starknet::core::types::{
@@ -26,7 +25,7 @@ use starknet::core::types::{
     MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType, Transaction,
 };
 use starknet::providers::jsonrpc::{
-    HttpTransport, JsonRpcClient, JsonRpcClientError, JsonRpcError,
+    HttpTransport, HttpTransportError, JsonRpcClient, JsonRpcClientError, JsonRpcError,
 };
 use starknet::providers::{Provider as StarknetProvider, ProviderError};
 use url::Url;
@@ -189,7 +188,7 @@ impl StarkNetLightClientImpl {
     /// The mapped `JsonRpcError`.
     fn map_to_rpc_error(
         method_name: &str,
-        client_error: ProviderError<JsonRpcClientError<ReqwestError>>,
+        client_error: ProviderError<JsonRpcClientError<HttpTransportError>>,
     ) -> JsonRpcError {
         error!("[{}] {}", &method_name, &client_error);
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));

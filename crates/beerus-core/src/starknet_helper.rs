@@ -271,6 +271,7 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
                 FieldElement::from_hex_be("3635c9adc5dea00000").unwrap(),
                 FieldElement::from_hex_be("0").unwrap(),
             ],
+            is_query: true,
         },
     ));
     let mock_broadcasted_tx_json = json!({
@@ -293,7 +294,8 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
             "0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
             "0x3635c9adc5dea00000",
             "0x0"
-        ]
+        ],
+        "is_query": "true",
     });
     (mock_broadcasted_tx, mock_broadcasted_tx_json)
 }

@@ -46,6 +46,7 @@ pub fn mock_broadcasted_transaction() -> BroadcastedTransaction {
             nonce: FieldElement::from_hex_be("0").unwrap(),
             sender_address: FieldElement::from_hex_be("0").unwrap(),
             calldata: Vec::<FieldElement>::new(),
+            is_query: true,
         },
     ))
 }
