@@ -4,7 +4,7 @@ use beerus_core::{
         beerus::BeerusLightClient, ethereum::MockEthereumLightClient,
         starknet::StarkNetLightClientImpl,
     },
-    starknet_helper::{block_id_string_to_block_id_type, create_mock_broadcasted_transaction},
+    starknet_helper::create_mock_broadcasted_transaction,
 };
 use beerus_rpc::BeerusRpc;
 use reqwest::{Method, StatusCode};
@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use starknet::core::types::{BlockId, BlockTag, EventFilter, FieldElement, FunctionCall};
 use std::path::PathBuf;
+use std::str::FromStr;
 use wiremock::{
     matchers::{body_json, method},
     Mock, MockServer, ResponseTemplate,
@@ -173,11 +174,14 @@ fn mock_get_block_transaction_count() -> Mock {
 }
 
 fn mock_estimate_fee() -> Mock {
-    let block_type = "hash".to_string();
-    let block_hash =
-        "0x0147c4b0f702079384e26d9d34a15e7758881e32b219fc68c076b09d0be13f8c".to_string();
     let broadcasted_transaction = create_mock_broadcasted_transaction();
-    let block_id = block_id_string_to_block_id_type(&block_type, &block_hash).unwrap();
+    let block_id = BlockId::Hash(
+        FieldElement::from_str(
+            "0x0147c4b0f702079384e26d9d34a15e7758881e32b219fc68c076b09d0be13f8c",
+        )
+        .unwrap(),
+    );
+
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::starknet_estimate_fee((
             vec![broadcasted_transaction.0],
