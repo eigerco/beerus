@@ -125,7 +125,6 @@ pub fn mock_get_storage_at(server: &MockServer) -> Mock {
     })
 }
 
-///////////////////////////my-addition/////////////////////////////////////////
 pub fn mock_get_nonce(server: &MockServer) -> Mock {
     server.mock(|when, then| {
         when.method(POST).path("/").json_body(json!({
@@ -148,7 +147,6 @@ pub fn mock_get_nonce(server: &MockServer) -> Mock {
             }));
     })
 }
-//////////////////////////////end//////////////////////////////////////////////
 
 pub fn mock_call(server: &MockServer) -> Mock {
     server.mock(|when, then| {

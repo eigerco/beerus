@@ -95,8 +95,6 @@ mod test {
         );
     }
 
-    ////////////////////////////myaddition//////////////////////////////////////////////////
-
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_get_nonce_should_work() {
         // Start a lightweight mock server.
@@ -125,8 +123,6 @@ mod test {
         mock_request.assert();
         assert_eq!(storage_var, FieldElement::from_str("0x01").unwrap());
     }
-
-    ////////////////////////////////////////end//////////////////////////////////////////////
 
     #[tokio::test]
     async fn given_normal_conditions_when_starknet_call_should_work() {
