@@ -30,17 +30,14 @@ use eyre::Result as EyreResult;
 use helios::types::{BlockTag, CallOpts};
 #[cfg(feature = "std")]
 use log::{debug, error, info, warn};
-use starknet::providers::jsonrpc::JsonRpcError;
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
-        BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
-        DeployTransaction, FeeEstimate, FunctionCall, InvokeTransaction, L1HandlerTransaction,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-        Transaction,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BlockStatus, BlockTag as StarknetBlockTag, BlockWithTxHashes,
+    BlockWithTxs, BroadcastedTransaction, DeclareTransaction, DeployAccountTransaction,
+    DeployTransaction, FeeEstimate, FieldElement, FunctionCall, InvokeTransaction,
+    L1HandlerTransaction, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingTransactionReceipt, Transaction,
 };
+use starknet::providers::jsonrpc::JsonRpcError;
 
 /// Enum representing the different synchronization status of the light client.
 #[derive(Debug, Clone, PartialEq)]
@@ -409,7 +406,7 @@ impl BeerusLightClient {
     ///
     /// # Returns
     ///
-    /// Returns a `Result` containing the fee estimate as a `FeeEstimate` if the operation was successful,
+    /// Returns a `Result` containing the fee estimate as a `Vec<FeeEstimate>` if the operation was successful,
     /// or an `Err` containing a `JsonRpcError` if the operation failed.
     ///
     /// # Errors
@@ -421,7 +418,7 @@ impl BeerusLightClient {
         block_id: &BlockId,
     ) -> Result<FeeEstimate, JsonRpcError> {
         self.starknet_lightclient
-            .estimate_fee(request, block_id)
+            .estimate_fee_single(request, block_id)
             .await
     }
 
@@ -813,6 +810,7 @@ impl BeerusLightClient {
                             InvokeTransaction::V1(v1_tx) => v1_tx.transaction_hash,
                         },
                         Transaction::Declare(tx) => match tx {
+                            DeclareTransaction::V0(v0_tx) => v0_tx.transaction_hash,
                             DeclareTransaction::V1(v1_tx) => v1_tx.transaction_hash,
                             DeclareTransaction::V2(v2_tx) => v2_tx.transaction_hash,
                         },
@@ -830,7 +828,7 @@ impl BeerusLightClient {
                     .collect();
                 let block_with_tx_hashes = BlockWithTxHashes {
                     transactions: tx_hashes,
-                    status: block.status.clone(),
+                    status: block.status,
                     block_hash: block.block_hash,
                     parent_hash: block.parent_hash,
                     block_number: block.block_number,

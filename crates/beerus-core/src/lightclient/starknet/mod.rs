@@ -7,6 +7,7 @@ use crate::stdlib::string::String;
 use crate::stdlib::vec::Vec;
 
 use core::convert::TryFrom;
+use log::error;
 
 #[cfg(feature = "std")]
 use mockall::automock;
@@ -14,24 +15,19 @@ use mockall::automock;
 use async_trait::async_trait;
 use ethers::providers::{Http, Provider};
 use eyre::Result as EyreResult;
-use reqwest::Error as ReqwestError;
 use serde::Serialize;
-use starknet::providers::jsonrpc::{JsonRpcClientError, JsonRpcError};
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::{
-        models::{
-            BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-            BroadcastedDeployAccountTransaction, BroadcastedDeployTransaction,
-            BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-            DeclareTransactionResult, DeployAccountTransactionResult, DeployTransactionResult,
-            EventFilter, EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult,
-            MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-            MaybePendingTransactionReceipt, StateUpdate, SyncStatusType, Transaction,
-        },
-        HttpTransport, JsonRpcClient,
-    },
+use starknet::core::types::*;
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+    ContractClass, DeclareTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
+    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MaybePendingTransactionReceipt, SyncStatusType, Transaction,
 };
+use starknet::providers::jsonrpc::{
+    HttpTransport, HttpTransportError, JsonRpcClient, JsonRpcClientError, JsonRpcError,
+};
+use starknet::providers::{Provider as StarknetProvider, ProviderError};
 use url::Url;
 mod errors;
 pub mod storage_proof;
@@ -50,6 +46,12 @@ pub trait StarkNetLightClient: Send + Sync {
     ) -> Result<Vec<FieldElement>, JsonRpcError>;
 
     async fn estimate_fee(
+        &self,
+        txs: Vec<BroadcastedTransaction>,
+        block_id: &BlockId,
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError>;
+
+    async fn estimate_fee_single(
         &self,
         tx: BroadcastedTransaction,
         block_id: &BlockId,
@@ -92,7 +94,10 @@ pub trait StarkNetLightClient: Send + Sync {
         contract_address: FieldElement,
     ) -> Result<ContractClass, JsonRpcError>;
 
-    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate, JsonRpcError>;
+    async fn get_state_update(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingStateUpdate, JsonRpcError>;
 
     async fn get_events(
         &self,
@@ -107,11 +112,6 @@ pub trait StarkNetLightClient: Send + Sync {
         &self,
         invoke_transaction: &BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, JsonRpcError>;
-
-    async fn add_deploy_transaction(
-        &self,
-        deploy_transaction: &BroadcastedDeployTransaction,
-    ) -> Result<DeployTransactionResult, JsonRpcError>;
 
     async fn add_deploy_account_transaction(
         &self,
@@ -188,14 +188,15 @@ impl StarkNetLightClientImpl {
     /// The mapped `JsonRpcError`.
     fn map_to_rpc_error(
         method_name: &str,
-        client_error: JsonRpcClientError<ReqwestError>,
+        client_error: ProviderError<JsonRpcClientError<HttpTransportError>>,
     ) -> JsonRpcError {
+        error!("[{}] {}", &method_name, &client_error);
         let error = JsonRpcError::try_from(JsonRpcClientErrorWrapper::from(client_error));
         match error {
             Ok(rpc_error) => rpc_error,
             Err(unknown_error) => JsonRpcError {
                 code: 520,
-                message: format!("[{}] {}", method_name, unknown_error),
+                message: format!("[{}] {}", method_name, unknown_error.message),
             },
         }
     }
@@ -234,6 +235,32 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .map_err(|e| Self::map_to_rpc_error("call", e))
     }
 
+    /// Estimate the fee for a multiple StarkNet transactions.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - The vector of broadcasted transactions.
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the vector of fee estimates if the operation was successful,
+    /// or an `Err` containing a `JsonRpcError` if the operation failed.
+    ///
+    /// ## Errors
+    ///
+    /// This method can return a `JsonRpcError` in case of failure.
+    async fn estimate_fee(
+        &self,
+        txs: Vec<BroadcastedTransaction>,
+        block_id: &BlockId,
+    ) -> Result<Vec<FeeEstimate>, JsonRpcError> {
+        self.client
+            .estimate_fee(txs, block_id)
+            .await
+            .map_err(|e| Self::map_to_rpc_error("estimate_fee", e))
+    }
+
     /// Estimate the fee for a given StarkNet transaction.
     ///
     /// # Arguments
@@ -249,13 +276,13 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     /// ## Errors
     ///
     /// This method can return a `JsonRpcError` in case of failure.
-    async fn estimate_fee(
+    async fn estimate_fee_single(
         &self,
         tx: BroadcastedTransaction,
         block_id: &BlockId,
     ) -> Result<FeeEstimate, JsonRpcError> {
         self.client
-            .estimate_fee(tx, block_id)
+            .estimate_fee_single(tx, block_id)
             .await
             .map_err(|e| Self::map_to_rpc_error("estimate_fee", e))
     }
@@ -451,13 +478,16 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// # Returns
     ///
-    /// Returns a `Result` containing the `StateUpdate` if the operation was successful,
+    /// Returns a `Result` containing the `MaybePendingStateUpdate` if the operation was successful,
     /// or an `Err` containing a `JsonRpcError` if the operation failed.
     ///
     /// ## Errors
     ///
     /// This method can return a `JsonRpcError` in case of failure.
-    async fn get_state_update(&self, block_id: &BlockId) -> Result<StateUpdate, JsonRpcError> {
+    async fn get_state_update(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingStateUpdate, JsonRpcError> {
         self.client
             .get_state_update(block_id)
             .await
@@ -557,30 +587,6 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
             .add_deploy_account_transaction(deploy_account_transaction)
             .await
             .map_err(|e| Self::map_to_rpc_error("add_deploy_account_transaction", e))
-    }
-
-    /// Add an deploy transaction.
-    ///
-    /// # Arguments
-    ///
-    /// * `deploy_transaction`: Transaction data.
-    ///
-    /// # Returns
-    ///
-    /// Returns a `Result` containing the `DeployTransactionResult` if the operation was successful,
-    /// or an `Err` containing a `JsonRpcError` if the operation failed.
-    ///
-    /// ## Errors
-    ///
-    /// This method can return a `JsonRpcError` in case of failure.
-    async fn add_deploy_transaction(
-        &self,
-        deploy_transaction: &BroadcastedDeployTransaction,
-    ) -> Result<DeployTransactionResult, JsonRpcError> {
-        self.client
-            .add_deploy_transaction(deploy_transaction)
-            .await
-            .map_err(|e| Self::map_to_rpc_error("add_deploy_transaction", e))
     }
 
     /// Get the transaction that matches the given hash.

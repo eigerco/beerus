@@ -10,9 +10,9 @@ use beerus_rpc::BeerusRpc;
 use reqwest::{Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use starknet::core::types::FieldElement;
-use starknet::providers::jsonrpc::models::{BlockId, BlockTag, EventFilter, FunctionCall};
-use std::{path::PathBuf, str::FromStr};
+use starknet::core::types::{BlockId, BlockTag, EventFilter, FieldElement, FunctionCall};
+use std::path::PathBuf;
+use std::str::FromStr;
 use wiremock::{
     matchers::{body_json, method},
     Mock, MockServer, ResponseTemplate,
@@ -140,7 +140,6 @@ pub async fn setup_wiremock() -> String {
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mut config = Config::from_file(&PathBuf::from("tests/common/data/test.toml"));
     config.starknet_rpc = setup_wiremock().await;
-
     let ethereum_lightclient = MockEthereumLightClient::new();
     let starknet_lightclient = StarkNetLightClientImpl::new(&config).unwrap();
 
@@ -153,8 +152,9 @@ pub async fn setup_beerus_rpc() -> BeerusRpc {
 }
 
 fn mock_block_number() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::block_number(())))
+        .and(body_json(StarknetRpcBaseData::block_number(stub)))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockNumber.json"),
             "application/json",
@@ -184,7 +184,7 @@ fn mock_estimate_fee() -> Mock {
 
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::starknet_estimate_fee((
-            broadcasted_transaction.0,
+            vec![broadcasted_transaction.0],
             &block_id,
         ))))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
@@ -220,8 +220,9 @@ fn mock_get_events() -> Mock {
 }
 
 fn mock_starknet_syncing() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::starknet_syncing(())))
+        .and(body_json(StarknetRpcBaseData::starknet_syncing(stub)))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_syncing.json"),
             "application/json",
@@ -229,9 +230,10 @@ fn mock_starknet_syncing() -> Mock {
 }
 
 fn mock_starknet_block_hash_and_number() -> Mock {
+    let stub: Vec<u8> = vec![];
     Mock::given(method("POST"))
         .and(body_json(
-            StarknetRpcBaseData::starknet_block_hash_and_number(()),
+            StarknetRpcBaseData::starknet_block_hash_and_number(stub),
         ))
         .respond_with(response_template_with_status(StatusCode::OK).set_body_raw(
             include_str!("data/starknet_blockHashAndNumber.json"),

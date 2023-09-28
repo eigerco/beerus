@@ -23,16 +23,13 @@ use ethers::types::{
     Address, Filter, Log, SyncingStatus, Transaction as EthTransaction, TransactionReceipt, H256,
     U256,
 };
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
-        BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-        ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
-        FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
-        Transaction as StarknetTransaction,
-    },
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+    ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventsPage,
+    FeeEstimate, FieldElement, FunctionCall, InvokeTransactionResult,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MaybePendingTransactionReceipt, SyncStatusType, Transaction as StarknetTransaction,
 };
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -517,7 +514,10 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(|e| Error::from(BeerusApiError::from(e)))
     }
 
-    async fn starknet_get_state_update(&self, block_id: BlockId) -> Result<StateUpdate, Error> {
+    async fn starknet_get_state_update(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingStateUpdate, Error> {
         self.beerus
             .starknet_lightclient
             .get_state_update(&block_id)
@@ -650,7 +650,7 @@ impl BeerusRpcServer for BeerusRpc {
     ) -> Result<FeeEstimate, Error> {
         self.beerus
             .starknet_lightclient
-            .estimate_fee(broadcasted_transaction, &block_id)
+            .estimate_fee_single(broadcasted_transaction, &block_id)
             .await
             .map_err(|e| Error::from(BeerusApiError::from(e)))
     }

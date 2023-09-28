@@ -9,11 +9,10 @@ mod tests {
     };
     use beerus_rpc::api::BeerusRpcServer;
     use beerus_rpc::models::{EventFilterWithPage, ResultPageRequest};
-    use starknet::core::types::FieldElement;
-    use starknet::providers::jsonrpc::models::{
-        BlockId, BlockStatus, BlockTag, BlockWithTxHashes, EventFilter, FeeEstimate, FunctionCall,
-        InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes, SyncStatusType,
-        Transaction,
+    use starknet::core::types::{
+        BlockId, BlockStatus, BlockTag, BlockWithTxHashes, EventFilter, FeeEstimate, FieldElement,
+        FunctionCall, InvokeTransaction, InvokeTransactionV1, MaybePendingBlockWithTxHashes,
+        SyncStatusType, Transaction,
     };
 
     #[tokio::test]

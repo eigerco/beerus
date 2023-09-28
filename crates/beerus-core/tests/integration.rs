@@ -13,8 +13,8 @@ mod test {
     use ethers::types::U256;
     #[cfg(not(target_arch = "wasm32"))]
     use httpmock::prelude::*;
+    use starknet::core::types::{BlockId, FieldElement};
     use starknet::providers::jsonrpc::JsonRpcError;
-    use starknet::{core::types::FieldElement, providers::jsonrpc::models::BlockId};
     use std::str::FromStr;
 
     const UNKNOWN_ERROR_CODE: i64 = 520;

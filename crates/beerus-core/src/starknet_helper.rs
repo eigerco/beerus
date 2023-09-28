@@ -1,12 +1,9 @@
 use serde_json::{json, Value};
-use starknet::{
-    core::types::FieldElement,
-    providers::jsonrpc::models::{
-        BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedTransaction,
-        ContractAbiEntry, ContractClass, EmittedEvent, EventsPage, LegacyContractClass,
-        LegacyContractEntryPoint, LegacyEntryPointsByType, StructAbiEntry, StructAbiType,
-        StructMember, SyncStatus, SyncStatusType,
-    },
+use starknet::core::types::{
+    BroadcastedInvokeTransaction, BroadcastedInvokeTransactionV1, BroadcastedTransaction,
+    CompressedLegacyContractClass, ContractClass, EmittedEvent, EventsPage, FieldElement,
+    LegacyContractAbiEntry, LegacyContractEntryPoint, LegacyEntryPointsByType,
+    LegacyStructAbiEntry, LegacyStructAbiType, LegacyStructMember, SyncStatus, SyncStatusType,
 };
 
 #[cfg(feature = "std")]
@@ -31,7 +28,7 @@ use alloc::string::ToString;
 /// # Returns
 /// Tuple of a mock ContractClass object and its equivalent JSON Value
 pub fn create_mock_contract_class() -> (ContractClass, Value) {
-    let mock_contract_class = ContractClass::Legacy(LegacyContractClass {
+    let mock_contract_class = ContractClass::Legacy(CompressedLegacyContractClass {
         program: vec![1, 2, 3],
         entry_points_by_type: LegacyEntryPointsByType {
             constructor: vec![LegacyContractEntryPoint {
@@ -47,17 +44,17 @@ pub fn create_mock_contract_class() -> (ContractClass, Value) {
                 selector: FieldElement::from_str("789").unwrap(),
             }],
         },
-        abi: Some(vec![ContractAbiEntry::Struct(StructAbiEntry {
-            r#type: StructAbiType::Struct,
+        abi: Some(vec![LegacyContractAbiEntry::Struct(LegacyStructAbiEntry {
+            r#type: LegacyStructAbiType::Struct,
             name: "Uint256".to_string(),
             size: 2,
             members: vec![
-                StructMember {
+                LegacyStructMember {
                     name: "low".to_string(),
                     r#type: "felt".to_string(),
                     offset: 0,
                 },
-                StructMember {
+                LegacyStructMember {
                     name: "high".to_string(),
                     r#type: "felt".to_string(),
                     offset: 1,
@@ -251,6 +248,7 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
                 FieldElement::from_hex_be("3635c9adc5dea00000").unwrap(),
                 FieldElement::from_hex_be("0").unwrap(),
             ],
+            is_query: true,
         },
     ));
     let mock_broadcasted_tx_json = json!({
@@ -273,7 +271,8 @@ pub fn create_mock_broadcasted_transaction() -> (BroadcastedTransaction, Value) 
             "0x5b5e9f6f6fb7d2647d81a8b2c2b99cbc9cc9d03d705576d7061812324dca5c0",
             "0x3635c9adc5dea00000",
             "0x0"
-        ]
+        ],
+        "is_query": "true",
     });
     (mock_broadcasted_tx, mock_broadcasted_tx_json)
 }

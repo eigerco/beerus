@@ -1,13 +1,15 @@
-use ethers::providers::ProviderError;
-use reqwest::Error as ReqwestError;
-use starknet::providers::jsonrpc::models::ErrorCode;
-use starknet::providers::jsonrpc::{JsonRpcClientError, JsonRpcError, RpcError};
+use ethers::providers::ProviderError as EthersProviderError;
+use starknet::core::types::StarknetError;
+use starknet::providers::{
+    jsonrpc::{HttpTransportError, JsonRpcClientError, JsonRpcError, RpcError},
+    MaybeUnknownErrorCode, ProviderError as StarknetProviderError, StarknetErrorWithMessage,
+};
 
-pub struct JsonRpcClientErrorWrapper(JsonRpcClientError<ReqwestError>);
+pub struct JsonRpcClientErrorWrapper(StarknetProviderError<JsonRpcClientError<HttpTransportError>>);
 #[derive(Debug, thiserror::Error)]
 #[error("unable to map JsonRpcErrorClient type to JsonRpcError type")]
 pub struct JsonRpcClientConversionError {
-    message: String,
+    pub message: String,
 }
 
 pub struct StarknetErrorCodeWrapper {
@@ -18,75 +20,11 @@ impl TryFrom<JsonRpcClientErrorWrapper> for JsonRpcError {
     type Error = JsonRpcClientConversionError;
     fn try_from(err: JsonRpcClientErrorWrapper) -> Result<Self, Self::Error> {
         match err.0 {
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::BlockNotFound)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::BlockNotFound).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::ContractError)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::ContractError).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::NoBlocks)) => Ok(JsonRpcError {
-                code: StarknetErrorCodeWrapper::from(ErrorCode::NoBlocks).code,
-                message: err.0.to_string(),
-            }),
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::ContractNotFound)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::ContractNotFound).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::ClassHashNotFound)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::ClassHashNotFound).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::InvalidContinuationToken)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::InvalidContinuationToken).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::InvalidCallData)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::InvalidCallData).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::FailedToReceiveTransaction)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::FailedToReceiveTransaction)
-                        .code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::InvalidMessageSelector)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::InvalidMessageSelector).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::TransactionHashNotFound)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::TransactionHashNotFound).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::PageSizeTooBig)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::PageSizeTooBig).code,
-                    message: err.0.to_string(),
-                })
-            }
-            JsonRpcClientError::RpcError(RpcError::Code(ErrorCode::InvalidTransactionIndex)) => {
-                Ok(JsonRpcError {
-                    code: StarknetErrorCodeWrapper::from(ErrorCode::InvalidTransactionIndex).code,
-                    message: err.0.to_string(),
+            StarknetProviderError::StarknetError(err) => {
+                let msg = err.message.clone();
+                Ok(Self {
+                    code: StarknetErrorCodeWrapper::from(err).code,
+                    message: msg,
                 })
             }
             _ => Err(JsonRpcClientConversionError {
@@ -97,45 +35,53 @@ impl TryFrom<JsonRpcClientErrorWrapper> for JsonRpcError {
     }
 }
 
-impl From<ProviderError> for JsonRpcClientErrorWrapper {
-    fn from(err: ProviderError) -> Self {
-        JsonRpcClientErrorWrapper(JsonRpcClientError::RpcError(RpcError::Unknown(
-            JsonRpcError {
+impl From<EthersProviderError> for JsonRpcClientErrorWrapper {
+    fn from(err: EthersProviderError) -> Self {
+        JsonRpcClientErrorWrapper(StarknetProviderError::Other(JsonRpcClientError::RpcError(
+            RpcError::Unknown(JsonRpcError {
                 code: 520, // Unknown error, at least we keep the message
                 message: err.to_string(),
-            },
+            }),
         )))
     }
 }
 
-impl From<JsonRpcClientErrorWrapper> for JsonRpcClientError<ReqwestError> {
+impl From<JsonRpcClientErrorWrapper>
+    for StarknetProviderError<JsonRpcClientError<HttpTransportError>>
+{
     fn from(err: JsonRpcClientErrorWrapper) -> Self {
         err.0
     }
 }
 
-impl From<JsonRpcClientError<ReqwestError>> for JsonRpcClientErrorWrapper {
-    fn from(err: JsonRpcClientError<ReqwestError>) -> Self {
+impl From<StarknetProviderError<JsonRpcClientError<HttpTransportError>>>
+    for JsonRpcClientErrorWrapper
+{
+    fn from(err: StarknetProviderError<JsonRpcClientError<HttpTransportError>>) -> Self {
         JsonRpcClientErrorWrapper(err)
     }
 }
 
-// Since we dont have conversion ErrorCode -> i64 (dont implemented in starknet-rs) this is necessary.
-impl From<ErrorCode> for StarknetErrorCodeWrapper {
-    fn from(code: ErrorCode) -> Self {
-        match code {
-            ErrorCode::FailedToReceiveTransaction => StarknetErrorCodeWrapper { code: 1 },
-            ErrorCode::ContractNotFound => StarknetErrorCodeWrapper { code: 20 },
-            ErrorCode::InvalidMessageSelector => StarknetErrorCodeWrapper { code: 21 },
-            ErrorCode::InvalidCallData => StarknetErrorCodeWrapper { code: 22 },
-            ErrorCode::BlockNotFound => StarknetErrorCodeWrapper { code: 24 },
-            ErrorCode::TransactionHashNotFound => StarknetErrorCodeWrapper { code: 25 },
-            ErrorCode::InvalidTransactionIndex => StarknetErrorCodeWrapper { code: 27 },
-            ErrorCode::ClassHashNotFound => StarknetErrorCodeWrapper { code: 28 },
-            ErrorCode::PageSizeTooBig => StarknetErrorCodeWrapper { code: 31 },
-            ErrorCode::NoBlocks => StarknetErrorCodeWrapper { code: 32 },
-            ErrorCode::InvalidContinuationToken => StarknetErrorCodeWrapper { code: 33 },
-            ErrorCode::ContractError => StarknetErrorCodeWrapper { code: 40 },
+// Since we dont have conversion StarknetError -> i64 (dont implemented in starknet-rs) this is necessary.
+impl From<StarknetErrorWithMessage> for StarknetErrorCodeWrapper {
+    fn from(err: StarknetErrorWithMessage) -> Self {
+        match err.code {
+            MaybeUnknownErrorCode::Unknown(code) => StarknetErrorCodeWrapper { code },
+            MaybeUnknownErrorCode::Known(starknet_error) => match starknet_error {
+                StarknetError::FailedToReceiveTransaction => StarknetErrorCodeWrapper { code: 1 },
+                StarknetError::ContractNotFound => StarknetErrorCodeWrapper { code: 20 },
+                StarknetError::BlockNotFound => StarknetErrorCodeWrapper { code: 24 },
+                StarknetError::TransactionHashNotFound => StarknetErrorCodeWrapper { code: 25 },
+                StarknetError::InvalidTransactionIndex => StarknetErrorCodeWrapper { code: 27 },
+                StarknetError::ClassHashNotFound => StarknetErrorCodeWrapper { code: 28 },
+                StarknetError::PageSizeTooBig => StarknetErrorCodeWrapper { code: 31 },
+                StarknetError::NoBlocks => StarknetErrorCodeWrapper { code: 32 },
+                StarknetError::InvalidContinuationToken => StarknetErrorCodeWrapper { code: 33 },
+                StarknetError::TooManyKeysInFilter => StarknetErrorCodeWrapper { code: 34 },
+                StarknetError::ContractError => StarknetErrorCodeWrapper { code: 40 },
+                StarknetError::InvalidContractClass => StarknetErrorCodeWrapper { code: 50 },
+                StarknetError::ClassAlreadyDeclared => StarknetErrorCodeWrapper { code: 51 },
+            },
         }
     }
 }

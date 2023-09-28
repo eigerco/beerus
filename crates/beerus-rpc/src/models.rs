@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
-use starknet::providers::jsonrpc::models::EventFilter;
+use starknet::core::types::EventFilter;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde_as]

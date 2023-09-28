@@ -3,7 +3,7 @@ use env_logger::Env;
 use eyre::Result;
 use starknet::{
     core::types::FieldElement,
-    providers::jsonrpc::models::{BlockId, FunctionCall},
+    core::types::{BlockId, FunctionCall},
 };
 use std::str::FromStr;
 
