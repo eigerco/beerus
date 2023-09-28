@@ -1,7 +1,10 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 pub mod common;
-use common::{mock_call, mock_get_contract_storage_proof, mock_get_storage_at, mock_server_config};
+use common::{
+    mock_call, mock_get_contract_storage_proof, mock_get_nonce, mock_get_storage_at,
+    mock_server_config,
+};
 
 #[cfg(test)]
 mod test {
@@ -90,6 +93,35 @@ mod test {
             res.unwrap_err().message,
             "JSON-RPC error: code=520, message=\"Ethereum lightclient error\"".to_string()
         );
+    }
+
+    #[tokio::test]
+    async fn given_normal_conditions_when_starknet_get_nonce_should_work() {
+        // Start a lightweight mock server.
+        let server = MockServer::start();
+        let mock_request = mock_get_nonce(&server);
+        let config = mock_server_config(&server);
+
+        let starknet_lightclient = Box::new(StarkNetLightClientImpl::new(&config).unwrap());
+        let mut helios_lightclient = MockEthereumLightClient::new();
+
+        helios_lightclient
+            .expect_starknet_last_proven_block()
+            .return_once(move || Ok(U256::from(1)));
+        let beerus = BeerusLightClient::new_from_clients(
+            config,
+            Box::new(helios_lightclient),
+            starknet_lightclient,
+        );
+
+        let block_id = BlockId::Number(1);
+        let storage_var = beerus
+            .starknet_get_nonce(FieldElement::from_str("0x00").unwrap(), &block_id)
+            .await
+            .unwrap();
+
+        mock_request.assert();
+        assert_eq!(storage_var, FieldElement::from_str("0x01").unwrap());
     }
 
     #[tokio::test]

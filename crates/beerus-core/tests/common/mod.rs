@@ -123,6 +123,29 @@ pub fn mock_get_storage_at(server: &MockServer) -> Mock {
     })
 }
 
+pub fn mock_get_nonce(server: &MockServer) -> Mock {
+    server.mock(|when, then| {
+        when.method(POST).path("/").json_body(json!({
+            "id":1,
+            "jsonrpc":"2.0",
+            "method":"starknet_getNonce",
+            "params":[
+                {
+                    "block_number": 1
+                },
+                "0x0"
+            ]
+        }));
+        then.status(200)
+            .header("content-type", "application/json")
+            .json_body(json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+            }));
+    })
+}
+
 pub fn mock_call(server: &MockServer) -> Mock {
     server.mock(|when, then| {
         when.method(POST).path("/").json_body(json!({
