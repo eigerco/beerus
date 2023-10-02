@@ -403,6 +403,11 @@ Thanks goes to these wonderful people
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/dpinones"><img src="https://avatars.githubusercontent.com/u/30808181?v=4?s=100" width="100px;" alt="Damián Piñones"/><br /><sub><b>Damián Piñones</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=dpinones" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/betacodd"><img src="https://avatars.githubusercontent.com/u/97968794?v=4?s=100" width="100px;" alt="Betacodd"/><br /><sub><b>Betacodd</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=betacodd" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Godspower-Eze"><img src="https://avatars.githubusercontent.com/u/61994334?v=4?s=100" width="100px;" alt="Godspower-Eze"/><br /><sub><b>Godspower-eze</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=Godspower-Eze" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/somthn0somthn"><img src="https://avatars.githubusercontent.com/u/41335589?v=4?s=100" width="100px;" alt="somthn0somthn"/><br /><sub><b>somthn0somthn</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=somthn0somthn" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tonypony220"><img src="https://avatars.githubusercontent.com/u/61715244?v=4?s=100" width="100px;" alt="tonypony220"/><br /><sub><b>tonypony220</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/beerus/commits?author=tonypony220" title="Code">💻</a></td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
