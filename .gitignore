@@ -2,6 +2,8 @@
 # will have compiled files and executables
 debug/
 target/
+.beerus
+tmp/
 
 # Remove Cargo.lock from gitignore if creating an executable, leave it for libraries
 # More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
@@ -27,12 +29,12 @@ target/
 node_modules
 
 # Beerus Wasm Example Files
-crates/beerus-js/node_modules
-crates/beerus-js/pkg/
-crates/beerus-js/dist/*
-!crates/beerus-js/dist/index.html
-crates/beerus-js/package-lock.json
-crates/beerus-js/Cargo.lock
+examples/wasm/node_modules
+examples/wasm/pkg/
+examples/wasm/dist/*
+!examples/wasm/dist/index.html
+examples/wasm/package-lock.json
+examples/wasm/Cargo.lock
 
 # Beerus Documentation
 book/book

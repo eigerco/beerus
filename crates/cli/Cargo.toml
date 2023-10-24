@@ -1,0 +1,17 @@
+[package]
+name = "beerus-cli"
+description = "CLI for the Beerus Light Client"
+version = "0.2.0"
+edition = "2021"
+
+[[bin]]
+name = "beerus"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true, features = ["attributes"] }
+log.workspace = true
+env_logger.workspace = true
+beerus-rpc = { path = "../rpc" }
+beerus-core = { path = "../core" }
+clap = { version = "4.4.7", features = ["derive"] }

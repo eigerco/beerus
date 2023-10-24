@@ -1,28 +1,13 @@
 [workspace]
-members = ["crates/beerus-core", "crates/beerus-rpc"]
-default-members = ["crates/beerus-rpc"]
-exclude = ["crates/beerus-js"]
-
-[package]
-name = "beerus"
-version = "0.2.0"
-edition = "2021"
-repository = "https://github.com/keep-starknet-strange/beerus"
-
-[workspace.package]
-version = "0.2.0"
-edition = "2021"
+members = ["crates/core", "crates/rpc", "crates/cli"]
 
 [workspace.dependencies]
-beerus-core = { path = "./crates/beerus-core" }
-
-# Helios revision is supposed to be changed by the corresponding tag once the revision is released. Next expected tag: 0.5.0.
-helios = { git = "https://github.com/a16z/helios", rev = "f63e4142c8c8094cdf94cf8d1ef1cb637a7eac98" }
-
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", tag = "starknet/v0.5.0" }
-
+async-std = "1.12.0"
+env_logger = "0.10.0"
 ethers = "2.0.2"
 eyre = "0.6.8"
+helios = { git = "https://github.com/a16z/helios", branch = "master" }
 log = "0.4.17"
 serde = "1.0.156"
+starknet = "0.6.0"
 primitive-types = "0.12.1"

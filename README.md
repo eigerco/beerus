@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Beerus</h1>
-    <img src="docs/images/beerus.png" height="250">
+    <img src="book/images/beerus.png" height="250">
   <br />
   <br />
   <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
@@ -55,7 +55,7 @@
 ## Roadmap
 We have big plans for Beerus. Check out the Roadmap!
 
-[![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
+[![Beerus Roadmap](book/images/roadmap.png)](book/images/roadmap.png)
 ## About
 
 Beerus is a Starknet Light Client inspired by and using
@@ -72,14 +72,14 @@ easy to use client to query Starknet state and interact with contracts.
 
 Here is a high level overview of the architecture of Beerus.
 
-[![Beerus architecture](docs/images/beerus-architecture-v1.0.png)](docs/images/beerus-architecture-v1.0.png)
+[![Beerus architecture](book/images/beerus-architecture-v1.0.png)](book/images/beerus-architecture-v1.0.png)
 
 ### Simple usage overview
 
 Here is a simple overview of how Beerus work. The example is for querying a
 storage value of a Starknet contract.
 
-[![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
+[![Beerus Query Contract Storage](book/images/query-contract-storage.png)](book/images/query-contract-storage.png)
 
 ## Endpoint support
 
@@ -157,7 +157,7 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 To install with `beerusup`:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
+curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/scripts/beerusup | sh
 ```
 
 #### Build

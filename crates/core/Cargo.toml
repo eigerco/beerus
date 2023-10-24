@@ -1,0 +1,46 @@
+[package]
+name = "beerus-core"
+description = "Core utilities for the Beerus Light Client"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+helios.workspace = true
+starknet.workspace = true
+ethers.workspace = true
+eyre.workspace = true
+log.workspace = true
+pathfinder-common = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
+pathfinder-merkle-tree = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
+stark_hash = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
+stark_poseidon = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
+serde = { workspace = true, features = ["derive"] }
+primitive-types.workspace = true
+async-trait = "0.1.58"
+serde_json = "1.0"
+hex = "0.4.3"
+mockall = "0.11.3"
+url = "2.3.1"
+futures = { version = "0.3", default-features = false }
+ethabi = "18.0.0"
+toml = "0.7.3"
+reqwest = "0.11.13"
+thiserror = "1.0.26"
+bitvec = "1.0.1"
+serde_with = "3.4.0"
+async-std = "1.12.0"
+
+[dev-dependencies]
+env_logger.workspace = true
+httpmock = "0.6.7"
+serial_test = "1.0.0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+tokio = { version = "1", features = ["sync"] }
+gloo-timers = "0.2.6"
+wasm-bindgen-test = "0.3.13"
+wasm-bindgen-futures = "0.4.37"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.21.2", features = ["macros"] }
+
