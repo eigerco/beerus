@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   test:
-    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,45 +22,31 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --all
 
-  lint:
-    name: lint
+  clippy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: |
-          cargo fmt --all -- --check
-          cargo clippy --all -- -D warnings -A too-many-arguments
+      - run: cargo clippy --all -- -D warnings
 
-  # TODO: Add back in once Helios supports
-  #   - ref(https://github.com/keep-starknet-strange/beerus/issues/383)
-  # check:
-  #   name: check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: dtolnay/rust-toolchain@stable
-  #       with:
-  #         target: wasm32-unknown-unknown
-  #     - uses: Swatinem/rust-cache@v2
-  #     - run: cargo check -p beerus-core --target wasm32-unknown-unknown --no-default-features
-
-  coverage:
-    name: coverage
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install Rust
-        run: rustup update stable
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
-      - name: Generate code coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info --no-clean
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - run: cargo +nightly fmt --all -- --check
+      - run: cargo install taplo-cli --locked
+      - run: taplo fmt --no-auto-config --option reorder_keys=true Cargo.toml --check   
+
+  udeps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: lcov.info
-          fail_ci_if_error: true
+          cache-on-failure: true
+      - run: cargo install cargo-udeps --locked
+      - run: cargo +nightly udeps --all-targets

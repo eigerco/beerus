@@ -35,9 +35,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Rust cache
-        uses: ./.github/workflows/setup-rust-cache
-
       - name: Install mdbook
         uses: ./.github/workflows/install-mdbook
 

@@ -10,6 +10,8 @@ use log::{error, info};
 struct Args {
     #[clap(short = 'c', long)]
     conf: String,
+    #[clap(short = 'p', long)]
+    port: Option<u16>,
 }
 
 #[async_std::main]
@@ -18,7 +20,6 @@ async fn main() {
 
     let args = Args::parse();
     let config = Config::from_file(&args.conf);
-    println!("CONFIG: {:#?}", config);
 
     info!("creating Beerus lightclient");
     let mut beerus = BeerusClient::new(config.clone()).await;
@@ -30,7 +31,12 @@ async fn main() {
     };
 
     info!("starting beerus rpc server...");
-    match BeerusRpc::new(beerus).run().await {
+    let rpc_client = match args.port {
+        Some(p) => BeerusRpc::with_port(beerus, p),
+        None => BeerusRpc::new(beerus),
+    };
+
+    match rpc_client.run().await {
         Ok((addr, server_handle)) => {
             info!("===================================================");
             info!("Beerus JSON-RPC server started 🚀: http://{addr}");
