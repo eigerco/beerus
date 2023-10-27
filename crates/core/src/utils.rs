@@ -14,6 +14,10 @@ pub fn felt_rs2path(felt: FieldElement) -> Felt {
     Felt::from_be_bytes(felt.to_bytes_be()).expect("felt conversion failed")
 }
 
+pub fn felt_path2rs(felt: Felt) -> FieldElement {
+    FieldElement::from_bytes_be(&felt.to_be_bytes()).expect("felt conversion failed")
+}
+
 pub fn felt_from_bits(bits: &BitSlice<u8, Msb0>, mask: Option<usize>) -> Result<Felt> {
     if bits.len() != 251 {
         return Err(eyre!("expecting 251 bits"));
@@ -28,5 +32,5 @@ pub fn felt_from_bits(bits: &BitSlice<u8, Msb0>, mask: Option<usize>) -> Result<
 }
 
 pub fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
-    CallOpts { from: None, to: Some(addr), gas: None, gas_price: None, value: None, data: Some(data.into()) }
+    CallOpts { from: None, to: Some(addr), gas: None, gas_price: None, value: None, data: Some(data) }
 }

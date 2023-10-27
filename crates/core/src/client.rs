@@ -4,14 +4,12 @@ use std::{thread, time};
 use async_std::sync::RwLock;
 use async_std::task;
 use ethabi::Uint as U256;
-use ethers::abi::AbiEncode;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
 use eyre::{eyre, Result};
 use helios::client::Client;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
-// use log::{debug, info, warn};
 use serde_json::json;
 use stark_hash::Felt;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
@@ -39,6 +37,24 @@ abigen!(
     event_derives(serde::Deserialize, serde::Serialize)
 );
 
+#[derive(Clone, Debug)]
+pub struct NodeData {
+    pub l1_state_root: Felt,
+    pub l1_block_num: u64,
+}
+
+impl NodeData {
+    pub fn new() -> Self {
+        NodeData { l1_state_root: Felt::ZERO, l1_block_num: 0 }
+    }
+}
+
+impl Default for NodeData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct BeerusClient {
     /// Ethereum light client
     pub helios_client: Arc<Client<FileDB>>,
@@ -54,18 +70,6 @@ pub struct BeerusClient {
     pub node: Arc<RwLock<NodeData>>,
     /// Beerus client config
     pub config: Config,
-}
-
-#[derive(Clone, Debug)]
-pub struct NodeData {
-    pub l1_state_root: Felt,
-    pub l1_block_num: u64,
-}
-
-impl NodeData {
-    pub fn new() -> Self {
-        NodeData { l1_state_root: Felt::ZERO, l1_block_num: 0 }
-    }
 }
 
 impl BeerusClient {
@@ -104,6 +108,7 @@ impl BeerusClient {
                 let local_block_num = node.read().await.l1_block_num;
 
                 if local_block_num < sn_block_num {
+                    // TODO: Fetch and hash the headers for the amout of blocks l1 is behind l2
                     match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await.unwrap() {
                         MaybePendingBlockWithTxHashes::Block(block) => {
                             info!(
@@ -154,20 +159,33 @@ impl BeerusClient {
         self.node.read().await.l1_block_num
     }
 
-    pub async fn get_local_block_id(&self) -> BlockId {
-        BlockId::Number(self.get_local_block_num().await)
+    pub async fn get_local_block_id(&self, provided_block_id: BlockId) -> BlockId {
+        let local_block_num = self.get_local_block_num().await;
+
+        // allow for historical block ids
+        match provided_block_id {
+            BlockId::Number(num) => {
+                if local_block_num > num {
+                    provided_block_id
+                } else {
+                    BlockId::Number(local_block_num)
+                }
+            }
+            _ => BlockId::Number(local_block_num),
+        }
     }
 
     pub async fn get_contract_storage_proof(
         &self,
+        block_id: BlockId,
         contract_address: &FieldElement,
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, CoreError> {
         let client =
             reqwest::Client::builder().build().map_err(|e| CoreError::StorageProof(eyre!("build request: {e:?}")))?;
-        let keys = keys.iter().map(|i| format!("{i:x}")).collect::<Vec<String>>();
-        let addr = format!("{contract_address:x}");
-        let block_id = self.get_local_block_num().await;
+        let keys = keys.iter().map(|i| format!("0x{i:x}")).collect::<Vec<String>>();
+        let addr = format!("0x{contract_address:x}");
+        let block_id = self.get_local_block_id(block_id).await;
 
         let params = json!({
             "jsonrpc": "2.0",
@@ -175,6 +193,7 @@ impl BeerusClient {
             "params": {"block_id": block_id, "contract_address": addr, "keys": keys},
             "id": 0
         });
+
         let request = client.request(reqwest::Method::POST, &self.proof_addr).json(&params);
 
         let response = request.send().await.map_err(|e| CoreError::StorageProof(eyre!("proof request: {e:?}")))?;
@@ -185,48 +204,6 @@ impl BeerusClient {
             Some(e) => Err(CoreError::StorageProof(eyre!("error in proof request: {e:?}"))),
             None => Ok(body.result.unwrap()),
         }
-    }
-
-    pub async fn starknet_l1_to_l2_message_cancellations(&self, msg_hash: U256) -> Result<U256, CoreError> {
-        let data = L1ToL2MessageCancellationsCall { msg_hash: msg_hash.into() }.encode();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        // Call the StarkNet core contract.
-        let call_response =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        Ok(U256::from_big_endian(&call_response))
-    }
-
-    pub async fn starknet_l1_to_l2_messages(&self, msg_hash: U256) -> Result<U256, CoreError> {
-        let data = L1ToL2MessagesCall { msg_hash: msg_hash.into() }.encode();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        let call_response =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        Ok(U256::from_big_endian(&call_response))
-    }
-
-    pub async fn starknet_l2_to_l1_messages(&self, msg_hash: U256) -> Result<U256, CoreError> {
-        let data = L2ToL1MessagesCall { msg_hash: msg_hash.into() }.encode();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        // Call the StarkNet core contract.
-        let call_response =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        Ok(U256::from_big_endian(&call_response))
-    }
-
-    pub async fn starknet_l1_to_l2_message_nonce(&self) -> Result<U256, CoreError> {
-        let data = L1ToL2MessageNonceCall::selector();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        let call_response =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        Ok(U256::from_big_endian(&call_response))
     }
 }
 

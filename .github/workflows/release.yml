@@ -40,7 +40,7 @@ jobs:
       - name: Create Tarball
         run: >
           tar -C target/release -czvf ${{ matrix.artifact_name }}
-          beerus beerus-rpc
+          beerus
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2

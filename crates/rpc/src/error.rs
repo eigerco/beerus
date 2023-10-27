@@ -1,10 +1,10 @@
+use beerus_core::CoreError;
+use eyre::Report;
 use jsonrpsee::types::ErrorObjectOwned;
-
 use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
 use starknet::providers::MaybeUnknownErrorCode::{self, Known, Unknown};
 use starknet::providers::ProviderError::StarknetError;
 use starknet::providers::{AnyProviderError, ProviderError, StarknetErrorWithMessage};
-
 pub struct BeerusRpcError(ProviderError<AnyProviderError>);
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
@@ -32,5 +32,23 @@ impl From<ProviderError<JsonRpcClientError<HttpTransportError>>> for BeerusRpcEr
                 message: "Method not found".to_string(),
             })),
         }
+    }
+}
+
+impl From<CoreError> for BeerusRpcError {
+    fn from(err: CoreError) -> Self {
+        BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
+            code: MaybeUnknownErrorCode::Unknown(-32601),
+            message: format!("{err}"),
+        }))
+    }
+}
+
+impl From<Report> for BeerusRpcError {
+    fn from(err: Report) -> Self {
+        BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
+            code: MaybeUnknownErrorCode::Unknown(-32601),
+            message: format!("{err}"),
+        }))
     }
 }

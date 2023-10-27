@@ -47,6 +47,7 @@ NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls.
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
+| fee_token_addr | 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
 
 Direct the beerus cli to your config file as follows:
 
@@ -57,6 +58,9 @@ cargo build
 # or
 
 cargo run -p beerus-cli -- -c examples/conf/beerus.toml
+
+# wait for server to start
+hurl examples/rpc/starknet_provenStateRoot.hurl
 ```
 
 ### Examples
@@ -165,16 +169,12 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
+| `starknet_provenStateRoot`                 | :white_check_mark: |
+| `starknet_provenBlockNumber`               | :white_check_mark: |
+| `starknet_getBalance`                      | :white_check_mark: |
+| `starknet_syncing`                         | :white_check_mark: |
 | `starknet_getEvents`                       | :x:                |
 | `starknet_getNonce`                        | :white_check_mark: |
-
-*Additional endpoints* (8):
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `starknet_l1_to_l2_messages`               | :white_check_mark: |
-| `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
-| `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
-| `starknet_l2_to_l1_messages`               | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :x:                |
 | `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_getContractStorageProof`         | :x:                |

@@ -5,7 +5,7 @@ use eyre::{eyre, Result};
 use pathfinder_common::{felt_bytes, ClassHash, ContractNonce, ContractRoot};
 use pathfinder_merkle_tree::contract_state::calculate_contract_state_hash;
 use pathfinder_merkle_tree::merkle_node::Direction;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use stark_hash::{stark_hash, Felt};
 use types::{ContractData, TrieNode};
 
@@ -13,7 +13,7 @@ use crate::utils::{felt_from_bits, felt_to_bits};
 
 const GLOBAL_STATE_VERSION: Felt = felt_bytes!(b"STARKNET_STATE_V0");
 
-#[derive(Debug, PartialEq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
 pub struct StorageProof {
     /// The global state commitment for Starknet 0.11.0 blocks onwards, if absent the hash
     /// of the first node in the [contract_proof](GetProofOutput#contract_proof) is the global state

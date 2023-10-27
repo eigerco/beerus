@@ -8,12 +8,10 @@ version = "0.2.0"
 async-std = "1.12.0"
 async-trait = "0.1.58"
 bitvec = "1.0.1"
-env_logger.workspace = true
 ethabi = "18.0.0"
 ethers = "2.0.2"
 eyre.workspace = true
 helios = { git = "https://github.com/a16z/helios", tag = "0.5.1" }
-log.workspace = true
 pathfinder-common = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
 pathfinder-merkle-tree = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
 reqwest = "0.11.13"
@@ -24,6 +22,5 @@ stark_poseidon = { git = "https://github.com/eqlabs/pathfinder.git", branch = "m
 starknet.workspace = true
 thiserror = "1.0.26"
 toml = "0.7.3"
-tracing-subscriber.workspace = true
 tracing.workspace = true
 url = "2.3.1"

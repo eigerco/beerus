@@ -4,7 +4,7 @@ use stark_hash::Felt;
 use super::StorageProof;
 
 /// Holds the data and proofs for a specific contract.
-#[derive(Debug, PartialEq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
 pub struct ContractData {
     /// Required to verify the contract state hash to contract root calculation.
     pub class_hash: Felt,
@@ -42,7 +42,7 @@ pub struct Path {
     pub len: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TrieNode {
     Binary { left: Felt, right: Felt },

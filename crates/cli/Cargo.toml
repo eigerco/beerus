@@ -13,7 +13,5 @@ async-std = { workspace = true, features = ["attributes", "tokio1"] }
 beerus-core = { path = "../core" }
 beerus-rpc = { path = "../rpc" }
 clap = { version = "4.4.7", features = ["derive"] }
-env_logger.workspace = true
-log.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true

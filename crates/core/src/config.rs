@@ -10,6 +10,7 @@ use helios::config::checkpoints;
 use helios::config::networks::Network;
 use helios::prelude::FileDB;
 use serde::Deserialize;
+use starknet::core::types::FieldElement;
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use url::Url;
 
@@ -18,6 +19,7 @@ pub const DEFAULT_DATA_DIR: &str = "tmp";
 pub const DEFAULT_POLL_SECS: u64 = 5;
 const DEFAULT_IP_V4_ADDR: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3030;
+const DEFAULT_FEE_TOKEN_ADDR: &str = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 
 // mainnet constants
 pub const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
@@ -41,6 +43,8 @@ pub struct Config {
     pub poll_secs: u64,
     #[serde(default = "rpc_addr")]
     pub rpc_addr: SocketAddr,
+    #[serde(default = "fee_token_addr")]
+    pub fee_token_addr: FieldElement,
 }
 
 fn data_dir() -> PathBuf {
@@ -55,6 +59,10 @@ fn rpc_addr() -> SocketAddr {
     SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap()
 }
 
+fn fee_token_addr() -> FieldElement {
+    FieldElement::from_hex_be(DEFAULT_FEE_TOKEN_ADDR).unwrap()
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -64,6 +72,7 @@ impl Default for Config {
             data_dir: data_dir(),
             poll_secs: poll_secs(),
             rpc_addr: rpc_addr(),
+            fee_token_addr: fee_token_addr(),
         }
     }
 }
@@ -77,11 +86,12 @@ impl Config {
             data_dir: PathBuf::from(std::env::var("DATA_DIR").unwrap_or_default()),
             poll_secs: u64::from_str(&std::env::var("POLL_SECS").unwrap_or_default()).unwrap_or(DEFAULT_POLL_SECS),
             rpc_addr: SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap(),
+            fee_token_addr: fee_token_addr(),
         }
     }
 
     pub fn from_file(path: &str) -> Self {
-        let raw_conf = fs::read_to_string(path).expect(&format!("unable to read file: {path}"));
+        let raw_conf = fs::read_to_string(path).unwrap_or_else(|_| panic!("unable to read file: {path}"));
 
         if path.contains(".toml") {
             toml::from_str(&raw_conf).unwrap()

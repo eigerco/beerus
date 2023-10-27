@@ -1,6 +1,5 @@
-use crate::error::BeerusRpcError;
-use crate::BeerusRpc;
-use beerus_core::utils::felt_rs2path;
+use beerus_core::storage_proofs::StorageProof;
+use beerus_core::utils::{felt_path2rs, felt_rs2path};
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
 use starknet::core::types::{
@@ -10,10 +9,16 @@ use starknet::core::types::{
     InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
 };
+use starknet::macros::selector;
 use starknet::providers::Provider;
+
+use crate::error::BeerusRpcError;
+use crate::BeerusRpc;
 
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
+    // ------------------- Starknet Provider Endpoints -------------------
+    //
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
@@ -137,38 +142,66 @@ pub trait BeerusRpc {
         request: BroadcastedTransaction,
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError>;
+
+    // ------------------- Extended Starknet Provider Endpoints -------------------
+    //
+    #[method(name = "getContractStorageProof")]
+    async fn get_contract_storage_proof(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+        keys: Vec<FieldElement>,
+    ) -> Result<StorageProof, BeerusRpcError>;
+
+    #[method(name = "provenStateRoot")]
+    async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError>;
+
+    #[method(name = "provenBlockNumber")]
+    async fn proven_block_number(&self) -> Result<u64, BeerusRpcError>;
+
+    #[method(name = "getBalance")]
+    async fn get_balance(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement, BeerusRpcError>;
 }
 
 #[async_trait]
 impl BeerusRpcServer for BeerusRpc {
+    // ------------------- Starknet Provider Endpoints -------------------
+    //
     async fn get_block_with_tx_hashes(
         &self,
-        _block_id: BlockId,
+        block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxHashes, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_block_with_tx_hashes(&l1_block_num).await.map_err(BeerusRpcError::from)
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_block_with_tx_hashes(l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
-    async fn get_block_with_txs(&self, _block_id: BlockId) -> Result<MaybePendingBlockWithTxs, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_block_with_txs(&l1_block_num).await.map_err(BeerusRpcError::from)
+    async fn get_block_with_txs(&self, block_id: BlockId) -> Result<MaybePendingBlockWithTxs, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_block_with_txs(l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
-    async fn get_state_update(&self, _block_id: BlockId) -> Result<MaybePendingStateUpdate, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_state_update(&l1_block_num).await.map_err(BeerusRpcError::from)
+    async fn get_state_update(&self, block_id: BlockId) -> Result<MaybePendingStateUpdate, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_state_update(l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
     async fn get_storage_at(
         &self,
         contract_address: FieldElement,
         key: FieldElement,
-        _block_id: BlockId,
+        block_id: BlockId,
     ) -> Result<FieldElement, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        let fetched_val = self.beerus.starknet_client.get_storage_at(contract_address, key, &l1_block_num).await?;
-        let mut proof =
-            self.beerus.get_contract_storage_proof(contract_address.as_ref(), vec![*key.as_ref()]).await.unwrap();
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        let fetched_val = self.beerus.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
+        let mut proof = self
+            .beerus
+            .get_contract_storage_proof(block_id, contract_address.as_ref(), vec![*key.as_ref()])
+            .await
+            .unwrap();
 
         let l1_root = self.beerus.get_local_root().await;
         proof
@@ -189,13 +222,13 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn get_transaction_by_block_id_and_index(
         &self,
-        _block_id: BlockId,
+        block_id: BlockId,
         index: u64,
     ) -> Result<Transaction, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         self.beerus
             .starknet_client
-            .get_transaction_by_block_id_and_index(&l1_block_num, index)
+            .get_transaction_by_block_id_and_index(l1_block_num, index)
             .await
             .map_err(BeerusRpcError::from)
     }
@@ -207,59 +240,55 @@ impl BeerusRpcServer for BeerusRpc {
         self.beerus.starknet_client.get_transaction_receipt(transaction_hash).await.map_err(BeerusRpcError::from)
     }
 
-    async fn get_class(&self, _block_id: BlockId, class_hash: FieldElement) -> Result<ContractClass, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_class(&l1_block_num, class_hash).await.map_err(BeerusRpcError::from)
+    async fn get_class(&self, block_id: BlockId, class_hash: FieldElement) -> Result<ContractClass, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_class(l1_block_num, class_hash).await.map_err(BeerusRpcError::from)
     }
 
     async fn get_class_hash_at(
         &self,
-        _block_id: BlockId,
+        block_id: BlockId,
         contract_address: FieldElement,
     ) -> Result<FieldElement, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         self.beerus
             .starknet_client
-            .get_class_hash_at(&l1_block_num, contract_address)
+            .get_class_hash_at(l1_block_num, contract_address)
             .await
             .map_err(BeerusRpcError::from)
     }
 
     async fn get_class_at(
         &self,
-        _block_id: BlockId,
+        block_id: BlockId,
         contract_address: FieldElement,
     ) -> Result<ContractClass, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_class_at(&l1_block_num, contract_address).await.map_err(BeerusRpcError::from)
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_class_at(l1_block_num, contract_address).await.map_err(BeerusRpcError::from)
     }
 
-    async fn get_block_transaction_count(&self, _block_id: BlockId) -> Result<u64, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_block_transaction_count(&l1_block_num).await.map_err(BeerusRpcError::from)
+    async fn get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_block_transaction_count(l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
-    async fn call(&self, request: FunctionCall, _block_id: BlockId) -> Result<Vec<FieldElement>, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.call(request, &l1_block_num).await.map_err(BeerusRpcError::from)
+    async fn call(&self, request: FunctionCall, block_id: BlockId) -> Result<Vec<FieldElement>, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.call(request, l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
     async fn estimate_fee(
         &self,
         request: BroadcastedTransaction,
-        _block_id: BlockId,
+        block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.estimate_fee(vec![request], &l1_block_num).await.map_err(BeerusRpcError::from)
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.estimate_fee(vec![request], l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
-    async fn estimate_message_fee(
-        &self,
-        message: MsgFromL1,
-        _block_id: BlockId,
-    ) -> Result<FeeEstimate, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.estimate_message_fee(message, &l1_block_num).await.map_err(BeerusRpcError::from)
+    async fn estimate_message_fee(&self, message: MsgFromL1, block_id: BlockId) -> Result<FeeEstimate, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.estimate_message_fee(message, l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
     async fn block_number(&self) -> Result<u64, BeerusRpcError> {
@@ -297,11 +326,11 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn get_nonce(
         &self,
-        _block_id: BlockId,
+        block_id: BlockId,
         contract_address: FieldElement,
     ) -> Result<FieldElement, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.get_nonce(&l1_block_num, contract_address).await.map_err(BeerusRpcError::from)
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.get_nonce(l1_block_num, contract_address).await.map_err(BeerusRpcError::from)
     }
 
     async fn add_invoke_transaction(
@@ -332,9 +361,65 @@ impl BeerusRpcServer for BeerusRpc {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTransaction,
-        _block_id: BlockId,
+        block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError> {
-        let l1_block_num = self.beerus.get_local_block_id().await;
-        self.beerus.starknet_client.estimate_fee_single(request, &l1_block_num).await.map_err(BeerusRpcError::from)
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        self.beerus.starknet_client.estimate_fee_single(request, l1_block_num).await.map_err(BeerusRpcError::from)
+    }
+
+    // ------------------- Extended Starknet Provider Endpoints -------------------
+    //
+    async fn get_contract_storage_proof(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+        keys: Vec<FieldElement>,
+    ) -> Result<StorageProof, BeerusRpcError> {
+        self.beerus.get_contract_storage_proof(block_id, &contract_address, keys).await.map_err(BeerusRpcError::from)
+    }
+
+    async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
+        Ok(felt_path2rs(self.beerus.sn_state_root().await.map_err(BeerusRpcError::from)?))
+    }
+
+    async fn proven_block_number(&self) -> Result<u64, BeerusRpcError> {
+        self.beerus.sn_state_block_number().await.map_err(BeerusRpcError::from)
+    }
+
+    async fn get_balance(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement, BeerusRpcError> {
+        let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+
+        let mut proof = self
+            .beerus
+            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, vec![contract_address])
+            .await
+            .map_err(BeerusRpcError::from)?;
+
+        let balance = self
+            .call(
+                FunctionCall {
+                    contract_address: self.beerus.config.fee_token_addr,
+                    entry_point_selector: selector!("balanceOf"),
+                    calldata: vec![contract_address],
+                },
+                l1_block_num,
+            )
+            .await?;
+
+        let root = self.beerus.get_local_root().await;
+        proof
+            .verify(
+                root,
+                felt_rs2path(self.beerus.config.fee_token_addr),
+                felt_rs2path(contract_address),
+                felt_rs2path(balance[0]),
+            )
+            .map_err(BeerusRpcError::from)?;
+
+        Ok(balance[0])
     }
 }

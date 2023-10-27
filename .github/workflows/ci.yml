@@ -75,7 +75,7 @@ jobs:
       - name: Run beerus
         run: |
           docker compose up -d
-          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
+          hurl --retry --retry-max-count 60 ./examples/rpc/starknet_blockNumber.hurl > /dev/null;
       # Run end-to-end tests
       - name: Run end-to-end tests
         id: e2e_test

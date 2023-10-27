@@ -6,6 +6,7 @@ version = "0.2.0"
 
 [dependencies]
 beerus-core = { path = "../core" }
+eyre.workspace = true
 jsonrpsee = { version = "0.20.3", features = [
   "macros",
   "server",

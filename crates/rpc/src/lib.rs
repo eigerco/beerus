@@ -1,11 +1,12 @@
 pub mod api;
 pub mod error;
 
+use std::net::SocketAddr;
+
 use api::BeerusRpcServer;
 use beerus_core::client::BeerusClient;
 use jsonrpsee::core::Error;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
-use std::net::SocketAddr;
 
 pub struct BeerusRpc {
     beerus: BeerusClient,
