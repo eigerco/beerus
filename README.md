@@ -29,22 +29,21 @@ See the [Beerus Book](book/README.md) for more info.
 
 ## Getting Started
 
-#### Config
+### Config
 
 Beerus relies on TWO untrusted RPC endpoints, as these are untrusted they will
 typically not be nodes run on your local host or your local network. These 
 untrusted RPC providers musts adhere to both the l1 `eth_getProof` endpoint
 as well as the l2 `pathfinder_getProof` endpoint. For this we recommend using
-[Alchemy](https://www.alchemy.com) as your untrusted node provider. NOTE: we 
-rely on helios for both valid checkpoint values and consensus rpc urls.
+[Alchemy](https://www.alchemy.com) as your untrusted node provider. 
 
-Your config file must have at a minimum:
+NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls.
 
 | Field   | Values | Description |
 | ----------- | ----------- | ----------- |
 | network | MAINNET or GOERLI | network to query |
-| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/<YOUR API KEY> | untrusted l1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/v2/<YOUR API KEY> | untrusted l2 node provider url |
+| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
@@ -60,7 +59,8 @@ cargo build
 cargo run -p beerus-cli -- -c examples/conf/beerus.toml
 ```
 
-#### Examples
+### Examples
+
 ```bash
 cargo run -p beerus-core --example basic
 ```
