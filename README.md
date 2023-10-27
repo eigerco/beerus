@@ -47,7 +47,7 @@ NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls.
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
-| fee_token_addr | 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
+| fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
 
 Direct the beerus cli to your config file as follows:
 
