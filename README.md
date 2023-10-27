@@ -31,41 +31,32 @@ See the [Beerus Book](book/README.md) for more info.
 
 #### Config
 
-The project requires an Ethereum node and a Starknet node. For Ethereum nodes
-you can use Alchemy (not Infura since it does not support getProof endpoint).
+Beerus relies on TWO untrusted RPC endpoints, as these are untrusted they will
+typically not be nodes run on your local host or your local network. These 
+untrusted RPC providers musts adhere to both the l1 `eth_getProof` endpoint
+as well as the l2 `pathfinder_getProof` endpoint. For this we recommend using
+[Alchemy](https://www.alchemy.com) as your untrusted node provider. NOTE: we 
+rely on helios for both valid checkpoint values and consensus rpc urls.
 
-Ethereum execution layer RPC URL (must be an Ethereum provider that supports
-the eth_getProof endpoint).
+Your config file must have at a minimum:
 
-Ethereum consensus layer RPC URL (must be a consensus node that supports the
-light client beacon chain api)
+| field   | description | values |
+| network | network to query | MAINNET or GOERLI |
+| eth_execution_rpc | untrusted l1 node provider url | https://eth-mainnet.g.alchemy.com/v2/<YOUR API KEY> |
+| starknet_rpc | untrusted l2 node provider url | https://starknet-mainnet.g.alchemy.com/v2/<YOUR API KEY> |
+| data_dir | OPTIONAL: location to store both l1 and l2 data | tmp |
+| poll_secs | OPTIONAL: seconds to wait for querying sn state | 5 |
+| rpc_addr | OPTIONAL: local address to listen for rpc reqs | "127.0.0.1:3030" |
 
-For Starknet node for the moment you can use Infura but soon
-[verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
-will be implemented in Pathfinder nodes, and so will these nodes be working as
-well.
-
-To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
-
-
-##### Config File
-
-Beerus is configurable via a config toml. If you have set the env var
-`BEERUS_CONFIG` = `path/to/config` this will override all other environment
-variables and take configuration from values defined herein.
-Also the the cli can be directed via `beerus --config <path/to/config>`
-
-[goerli.toml](./crates/beerus-core/tests/common/data/goerli.toml)
-
-[mainnet.toml](./crates/beerus-core/tests/common/data/mainnet.toml)
-
-##### Environment Variables
-
-Beerus is configurable through environment variables.
+Direct the beerus cli to your config file as follows:
 
 ```bash
-cp examples/.env.example .env
-source .env
+cargo build
+./target/debug/beerus -c examples/conf/beerus.json
+
+# or
+
+cargo run -p beerus-cli -- -c examples/conf/beerus.toml
 ```
 
 #### Examples
