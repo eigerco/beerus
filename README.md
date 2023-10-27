@@ -40,13 +40,14 @@ rely on helios for both valid checkpoint values and consensus rpc urls.
 
 Your config file must have at a minimum:
 
-| field   | description | values |
+| Field   | Description | Values |
+| ----------- | ----------- | ----------- |
 | network | network to query | MAINNET or GOERLI |
 | eth_execution_rpc | untrusted l1 node provider url | https://eth-mainnet.g.alchemy.com/v2/<YOUR API KEY> |
 | starknet_rpc | untrusted l2 node provider url | https://starknet-mainnet.g.alchemy.com/v2/<YOUR API KEY> |
 | data_dir | OPTIONAL: location to store both l1 and l2 data | tmp |
 | poll_secs | OPTIONAL: seconds to wait for querying sn state | 5 |
-| rpc_addr | OPTIONAL: local address to listen for rpc reqs | "127.0.0.1:3030" |
+| rpc_addr | OPTIONAL: local address to listen for rpc reqs | 127.0.0.1:3030 |
 
 Direct the beerus cli to your config file as follows:
 
