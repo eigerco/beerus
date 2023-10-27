@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::{thread, time};
 
 use async_std::sync::RwLock;
+use async_std::task;
 use ethabi::Uint as U256;
 use ethers::abi::AbiEncode;
 use ethers::prelude::{abigen, EthCall};
@@ -10,12 +11,13 @@ use eyre::{eyre, Result};
 use helios::client::Client;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
-use log::{debug, info, warn};
+// use log::{debug, info, warn};
 use serde_json::json;
 use stark_hash::Felt;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use starknet::providers::Provider;
+use tracing::{debug, info, warn};
 
 use crate::config::Config;
 use crate::storage_proofs::types::StorageProofResponse;
@@ -38,18 +40,20 @@ abigen!(
 );
 
 pub struct BeerusClient {
-    /// Ethereum light client.
-    pub helios_client: Client<FileDB>,
-    /// StarkNet light client.
+    /// Ethereum light client
+    pub helios_client: Arc<Client<FileDB>>,
+    /// StarkNet light client
     pub starknet_client: JsonRpcClient<HttpTransport>,
-    /// Proof client.
+    /// Proof client
     pub proof_addr: String,
     /// Poll interval
     pub poll_secs: u64,
-    /// StarkNet core contract address.
+    /// StarkNet core contract address
     pub core_contract_addr: Address,
     /// Payload data
     pub node: Arc<RwLock<NodeData>>,
+    /// Beerus client config
+    pub config: Config,
 }
 
 #[derive(Clone, Debug)]
@@ -67,70 +71,68 @@ impl NodeData {
 impl BeerusClient {
     /// Create a new Beerus Light Client service.
     pub async fn new(config: Config) -> Self {
-        Self {
-            helios_client: config.to_helios_client().await,
-            starknet_client: config.to_starknet_client(),
-            proof_addr: config.starknet_rpc.clone(),
-            poll_secs: config.poll_secs,
-            core_contract_addr: config.get_core_contract_address(),
-            node: Arc::new(RwLock::new(NodeData::new())),
-        }
-    }
+        let mut helios_client = config.to_helios_client().await;
+        helios_client.start().await.expect("could not init helios client");
 
-    pub async fn start(&mut self) -> Result<()> {
-        self.helios_client.start().await?;
-
-        while self.helios_client.syncing().await? != SyncingStatus::IsFalse {
+        while helios_client.syncing().await.expect("could not init helios client") != SyncingStatus::IsFalse {
             debug!("not in sync yet");
 
             thread::sleep(time::Duration::from_secs(1));
         }
 
-        loop {
-            let sn_root = self.sn_state_root().await?;
-            let sn_block_num = self.sn_state_block_number().await?;
-            let local_block_num = self.get_local_block_num().await;
-
-            if local_block_num < sn_block_num {
-                match self.starknet_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await? {
-                    MaybePendingBlockWithTxHashes::Block(block) => {
-                        info!(
-                            "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
-                            block.block_number - sn_block_num,
-                            block.block_number
-                        );
-
-                        let mut node_lock = self.node.write().await;
-                        node_lock.l1_state_root = sn_root;
-                        node_lock.l1_block_num = sn_block_num;
-                    }
-                    MaybePendingBlockWithTxHashes::PendingBlock(_) => warn!("expecting latest got pending"),
-                };
-            }
-
-            thread::sleep(time::Duration::from_secs(self.poll_secs));
+        Self {
+            helios_client: Arc::new(helios_client),
+            starknet_client: config.to_starknet_client(),
+            proof_addr: config.starknet_rpc.clone(),
+            poll_secs: config.poll_secs,
+            core_contract_addr: config.get_core_contract_address(),
+            node: Arc::new(RwLock::new(NodeData::new())),
+            config: config.clone(),
         }
     }
 
+    pub async fn start(&mut self) -> Result<()> {
+        let (config, l1_client, node) = (self.config.clone(), self.helios_client.clone(), self.node.clone());
+
+        task::spawn(async move {
+            let l2_client = config.to_starknet_client();
+            let core_contract_addr = config.get_core_contract_address();
+
+            loop {
+                let sn_root = sn_state_root_inner(&l1_client, core_contract_addr).await.unwrap();
+                let sn_block_num = sn_state_block_number_inner(&l1_client, core_contract_addr).await.unwrap();
+                let local_block_num = node.read().await.l1_block_num;
+
+                if local_block_num < sn_block_num {
+                    match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await.unwrap() {
+                        MaybePendingBlockWithTxHashes::Block(block) => {
+                            info!(
+                                "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
+                                block.block_number - sn_block_num,
+                                block.block_number
+                            );
+
+                            let mut node_lock = node.write().await;
+                            node_lock.l1_state_root = sn_root;
+                            node_lock.l1_block_num = sn_block_num;
+                        }
+                        MaybePendingBlockWithTxHashes::PendingBlock(_) => warn!("expecting latest got pending"),
+                    };
+                }
+
+                thread::sleep(time::Duration::from_secs(config.poll_secs));
+            }
+        });
+
+        Ok(())
+    }
+
     pub async fn sn_state_root(&self) -> Result<Felt> {
-        let data = StateRootCall::selector();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        let starknet_root =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        Felt::from_be_slice(&starknet_root).map_err(|e| eyre!(e))
+        sn_state_root_inner(&self.helios_client, self.core_contract_addr).await
     }
 
     pub async fn sn_state_block_number(&self) -> Result<u64, CoreError> {
-        let data = StateBlockNumberCall::selector();
-        let call_opts = simple_call_opts(self.core_contract_addr, data.into());
-
-        let sn_block_num =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
-
-        // Convert the response bytes to a U256.
-        Ok(U256::from_big_endian(&sn_block_num).as_u64())
+        sn_state_block_number_inner(&self.helios_client, self.core_contract_addr).await
     }
 
     pub async fn sn_state_block_hash(&self) -> Result<U256, CoreError> {
@@ -226,4 +228,26 @@ impl BeerusClient {
 
         Ok(U256::from_big_endian(&call_response))
     }
+}
+
+async fn sn_state_root_inner(l1_client: &Client<FileDB>, contract_addr: Address) -> Result<Felt> {
+    let data = StateRootCall::selector();
+    let call_opts = simple_call_opts(contract_addr, data.into());
+
+    let starknet_root = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
+
+    Felt::from_be_slice(&starknet_root).map_err(|e| eyre!(e))
+}
+
+async fn sn_state_block_number_inner(
+    l1_client: &Client<FileDB>,
+    core_contract_addr: Address,
+) -> Result<u64, CoreError> {
+    let data = StateBlockNumberCall::selector();
+    let call_opts = simple_call_opts(core_contract_addr, data.into());
+
+    let sn_block_num = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
+
+    // Convert the response bytes to a U256.
+    Ok(U256::from_big_endian(&sn_block_num).as_u64())
 }

@@ -24,4 +24,6 @@ stark_poseidon = { git = "https://github.com/eqlabs/pathfinder.git", branch = "m
 starknet.workspace = true
 thiserror = "1.0.26"
 toml = "0.7.3"
+tracing-subscriber.workspace = true
+tracing.workspace = true
 url = "2.3.1"

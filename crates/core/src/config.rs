@@ -1,4 +1,5 @@
 use std::fs;
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -15,6 +16,8 @@ use url::Url;
 // defaults
 pub const DEFAULT_DATA_DIR: &str = "tmp";
 pub const DEFAULT_POLL_SECS: u64 = 5;
+const DEFAULT_IP_V4_ADDR: &str = "127.0.0.1";
+const DEFAULT_PORT: u16 = 3030;
 
 // mainnet constants
 pub const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
@@ -32,8 +35,24 @@ pub struct Config {
     pub network: Network,
     pub eth_execution_rpc: String,
     pub starknet_rpc: String,
+    #[serde(default = "data_dir")]
     pub data_dir: PathBuf,
+    #[serde(default = "poll_secs")]
     pub poll_secs: u64,
+    #[serde(default = "rpc_addr")]
+    pub rpc_addr: SocketAddr,
+}
+
+fn data_dir() -> PathBuf {
+    PathBuf::from(DEFAULT_DATA_DIR)
+}
+
+fn poll_secs() -> u64 {
+    DEFAULT_POLL_SECS
+}
+
+fn rpc_addr() -> SocketAddr {
+    SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap()
 }
 
 impl Default for Config {
@@ -42,8 +61,9 @@ impl Default for Config {
             network: Network::MAINNET,
             eth_execution_rpc: "http://localhost:5054".to_string(),
             starknet_rpc: "http://localhost:9545".to_string(),
-            data_dir: PathBuf::from(DEFAULT_DATA_DIR),
-            poll_secs: DEFAULT_POLL_SECS,
+            data_dir: data_dir(),
+            poll_secs: poll_secs(),
+            rpc_addr: rpc_addr(),
         }
     }
 }
@@ -56,6 +76,7 @@ impl Config {
             starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
             data_dir: PathBuf::from(std::env::var("DATA_DIR").unwrap_or_default()),
             poll_secs: u64::from_str(&std::env::var("POLL_SECS").unwrap_or_default()).unwrap_or(DEFAULT_POLL_SECS),
+            rpc_addr: SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap(),
         }
     }
 

@@ -19,164 +19,15 @@
 
 </div>
 
-<details>
-<summary>Table of Contents</summary>
-
-- [Report a Bug](#report-a-bug)
-- [Request a Feature](#request-a-feature)
-- [Roadmap](#roadmap)
-- [About](#about)
-  - [Built With](#built-with)
-- [Architecture](#architecture)
-  - [Simple usage overview](#simple-usage-overview)
-- [Endpoint support](#endpoint-support)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-    - [Beerusup](#beerusup)
-    - [Build](#build)
-    - [Test](#test)
-    - [Config](#config)
-      - [Config File](#config-file)
-      - [Environment Variables](#environment-variables)
-    - [Beerus RPC](#beerus-rpc)
-      - [Beerus RPC](#beerus-rpc-1)
-      - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Work in progress](#work-in-progress)
-- [Support](#support)
-- [Project assistance](#project-assistance)
-- [Contributing](#contributing)
-- [Security](#security)
-- [Acknowledgements](#acknowledgements)
-- [Contributors ✨](#contributors-)
-
-</details>
-
----
-## Roadmap
-We have big plans for Beerus. Check out the Roadmap!
-
-[![Beerus Roadmap](book/images/roadmap.png)](book/images/roadmap.png)
 ## About
 
 Beerus is a Starknet Light Client inspired by and using
 [helios](https://github.com/a16z/helios/). The goal is to provide a simple and
 easy to use client to query Starknet state and interact with contracts.
 
-### Built With
-
-- [Rust](https://www.rust-lang.org/)
-- [helios](https://github.com/a16z/helios)
-- [ethers-rs](https://github.com/gakonst/ethers-rs)
-
-## Architecture
-
-Here is a high level overview of the architecture of Beerus.
-
-[![Beerus architecture](book/images/beerus-architecture-v1.0.png)](book/images/beerus-architecture-v1.0.png)
-
-### Simple usage overview
-
-Here is a simple overview of how Beerus work. The example is for querying a
-storage value of a Starknet contract.
-
-[![Beerus Query Contract Storage](book/images/query-contract-storage.png)](book/images/query-contract-storage.png)
-
-## Endpoint support
-
-Here are all the endpoints supported by Beerus in tag v0.2.0
-
-*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
-
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `starknet_getBlockWithTxHashes`            | :white_check_mark: |
-| `starknet_getBlockWithTxs`                 | :white_check_mark: |
-| `starknet_getStateUpdate`                  | :white_check_mark: |
-| `starknet_getStorageAt`                    | :white_check_mark: |
-| `starknet_getTransactionByHash`            | :white_check_mark: |
-| `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
-| `starknet_getTransactionReceipt`           | :white_check_mark: |
-| `starknet_getClass`                        | :white_check_mark: |
-| `starknet_getClassHashAt`                  | :white_check_mark: |
-| `starknet_getClassAt`                      | :white_check_mark: |
-| `starknet_getBlockTransactionCount`        | :white_check_mark: |
-| `starknet_call`                            | :white_check_mark: |
-| `starknet_estimateFee`                     | :white_check_mark: |
-| `starknet_blockNumber`                     | :white_check_mark: |
-| `starknet_blockHashAndNumber`              | :white_check_mark: |
-| `starknet_chainId`                         | :white_check_mark: |
-| `starknet_pendingTransactions`             | :white_check_mark: |
-| `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getEvents`                       | :x:                |
-| `starknet_getNonce`                        | :white_check_mark: |
-
-
-*Ethereum endpoints* (21) (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `eth_getBalance`                           | :white_check_mark: |
-| `eth_getTransactionCount`                  | :white_check_mark: |
-| `eth_getCode`                              | :white_check_mark: |
-| `eth_call`                                 | :x:                |
-| `eth_estimateGas`                          | :white_check_mark: |
-| `eth_getChainId`                           | :white_check_mark: |
-| `eth_gasPrice`                             | :white_check_mark: |
-| `eth_maxPriorityFeePerGas`                 | :white_check_mark: |
-| `eth_blockNumber`                          | :white_check_mark: |
-| `eth_getBlockByNumber`                     | :white_check_mark: |
-| `eth_getBlockByHash`                       | :white_check_mark: |
-| `eth_sendRawTransaction`                   | :x:                |
-| `eth_getTransactionReceipt`                | :white_check_mark: |
-| `eth_getLogs`                              | :white_check_mark: |
-| `eth_getStorageAt`                         | :x:                |
-| `eth_getBlockTransactionCountByHash`       | :x:                |
-| `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
-| `eth_coinbase`                             | :white_check_mark: |
-| `eth_syncing`                              | :white_check_mark: |
-| `eth_getTransactionByHash`                 | :white_check_mark: |
-| `eth_getTransactionByBlockHashAndIndex`    | :white_check_mark: |
-
-*Additional endpoints* (8):
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `starknet_l1_to_l2_messages`               | :white_check_mark: |
-| `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
-| `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
-| `starknet_l2_to_l1_messages`               | :white_check_mark: |
-| `starknet_addDeclareTransaction`           | :x:                |
-| `starknet_addDeployAccountTransaction`     | :x:                |
-| `starknet_getContractStorageProof`         | :x:                |
-| `starknet_addInvokeTransaction`            | :x:                |
+See the [Beerus Book](book/README.md) for more info.
 
 ## Getting Started
-
-### Installation
-
-#### Beerusup
-
-To install with `beerusup`:
-
-```bash
-curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/scripts/beerusup | sh
-```
-
-#### Build
-
-```bash
-cargo build --all --release
-```
-
-Build `beerus-core` for WASM:
-
-```bash
-cargo build -p beerus-core --no-default-features --target wasm32-unknown-unknown --release
-```
-
-#### Test
-
-```bash
-cargo test --all
-```
 
 #### Config
 
@@ -194,18 +45,8 @@ For Starknet node for the moment you can use Infura but soon
 will be implemented in Pathfinder nodes, and so will these nodes be working as
 well.
 
-| Env Var | TOML | Mainnet | Goerli |
-| -------------  | -------------  | ------------- | ------------- |
-| ETHEREUM_NETWORK | ethereum_network | `mainnet` | `goerli(default)` |
-| ETHEREUM_EXECUTION_RPC_URL | ethereum_consensus_rpc | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
-| ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
-| STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
-
 To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
 
-| Env Var | TOML | Mainnet |
-|---|---|----------------------------------------------------------|
-| ETHEREUM_CHECKPOINT | ethereum_checkpoint | 0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f |
 
 ##### Config File
 
@@ -267,13 +108,18 @@ async fn main() -> Result<()> {
 }
 ```
 
+## Development
 
-#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
-
-##### Beerus RPC
+#### Build
 
 ```bash
-cargo run --bin beerus-rpc
+cargo build --all --release
+```
+
+#### Test
+
+```bash
+cargo test --all
 ```
 
 ##### Beerus JS(wasm demo)
@@ -300,6 +146,47 @@ npm run build
 # navigate browser to http://localhost:8080
 # open developer console
 ```
+
+## Endpoint support
+
+Here are all the endpoints supported by Beerus in tag v0.2.0
+
+*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+
+| Endpoint                                   | Supported          |
+| :----------------------------------------- | :----------------- |
+| `starknet_getBlockWithTxHashes`            | :white_check_mark: |
+| `starknet_getBlockWithTxs`                 | :white_check_mark: |
+| `starknet_getStateUpdate`                  | :white_check_mark: |
+| `starknet_getStorageAt`                    | :white_check_mark: |
+| `starknet_getTransactionByHash`            | :white_check_mark: |
+| `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
+| `starknet_getTransactionReceipt`           | :white_check_mark: |
+| `starknet_getClass`                        | :white_check_mark: |
+| `starknet_getClassHashAt`                  | :white_check_mark: |
+| `starknet_getClassAt`                      | :white_check_mark: |
+| `starknet_getBlockTransactionCount`        | :white_check_mark: |
+| `starknet_call`                            | :white_check_mark: |
+| `starknet_estimateFee`                     | :white_check_mark: |
+| `starknet_blockNumber`                     | :white_check_mark: |
+| `starknet_blockHashAndNumber`              | :white_check_mark: |
+| `starknet_chainId`                         | :white_check_mark: |
+| `starknet_pendingTransactions`             | :white_check_mark: |
+| `starknet_syncing`                         | :white_check_mark: |
+| `starknet_getEvents`                       | :x:                |
+| `starknet_getNonce`                        | :white_check_mark: |
+
+*Additional endpoints* (8):
+| Endpoint                                   | Supported          |
+| :----------------------------------------- | :----------------- |
+| `starknet_l1_to_l2_messages`               | :white_check_mark: |
+| `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
+| `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
+| `starknet_l2_to_l1_messages`               | :white_check_mark: |
+| `starknet_addDeclareTransaction`           | :x:                |
+| `starknet_addDeployAccountTransaction`     | :x:                |
+| `starknet_getContractStorageProof`         | :x:                |
+| `starknet_addInvokeTransaction`            | :x:                |
 
 ## Work in progress
 
