@@ -5,7 +5,6 @@ use std::str::FromStr;
 
 use ethers::types::Address;
 use eyre::{eyre, Result};
-#[cfg(not(target_arch = "wasm32"))]
 use helios::client::{Client, ClientBuilder};
 use helios::config::checkpoints;
 use helios::config::networks::Network;
@@ -166,11 +165,14 @@ impl Config {
 
     #[cfg(target_arch = "wasm32")]
     pub async fn to_helios_client(&self) -> Client<ConfigDB> {
-        Client::new(
-            self.eth_execution_rpc,
-            self.get_consensus_rpc(),
-            self.network,
-            Some(self.get_checkpoint().await.expect("unable to retrieve checkpoint")),
-        )
+        ClientBuilder::new()
+            .network(self.network)
+            .consensus_rpc(&self.get_consensus_rpc())
+            .execution_rpc(&self.eth_execution_rpc)
+            .checkpoint(&self.get_checkpoint().await.expect("unable to retrieve checkpoint"))
+            .load_external_fallback()
+            .fallback(&self.get_consensus_rpc())
+            .build()
+            .expect("incorrect helios client config")
     }
 }

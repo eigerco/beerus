@@ -39,6 +39,7 @@ jobs:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
       - run: cargo +nightly fmt --all -- --check
+      - run: cargo check -p beerus-core --target wasm32-unknown-unknown
 
   udeps:
     runs-on: ubuntu-latest

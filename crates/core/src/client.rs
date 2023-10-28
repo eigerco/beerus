@@ -8,8 +8,7 @@ use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
 use eyre::{eyre, Result};
-#[cfg(not(target_arch = "wasm32"))]
-use helios::prelude::Client;
+use helios::client::Client;
 #[cfg(target_arch = "wasm32")]
 use helios::prelude::ConfigDB;
 use helios::prelude::Database;
@@ -46,11 +45,18 @@ abigen!(
 pub struct NodeData {
     pub l1_state_root: FieldElement,
     pub l1_block_num: u64,
+    pub sync_root: FieldElement,
+    pub sync_block_num: u64,
 }
 
 impl NodeData {
     pub fn new() -> Self {
-        NodeData { l1_state_root: FieldElement::ZERO, l1_block_num: 0 }
+        NodeData {
+            l1_state_root: FieldElement::ZERO,
+            l1_block_num: 0,
+            sync_root: FieldElement::ZERO,
+            sync_block_num: 0,
+        }
     }
 }
 
@@ -65,7 +71,7 @@ pub struct BeerusClient {
     #[cfg(not(target_arch = "wasm32"))]
     pub helios_client: Arc<Client<FileDB>>,
     #[cfg(target_arch = "wasm32")]
-    pub helios_client: Client<ConfigDB>,
+    pub helios_client: Arc<Client<ConfigDB>>,
     /// StarkNet light client
     pub starknet_client: JsonRpcClient<HttpTransport>,
     /// Proof client
@@ -83,7 +89,11 @@ pub struct BeerusClient {
 impl BeerusClient {
     /// Create a new Beerus Light Client service.
     pub async fn new(config: Config) -> Self {
-        let mut helios_client = config.to_helios_client().await;
+        #[cfg(not(target_arch = "wasm32"))]
+        let mut helios_client: Client<FileDB> = config.to_helios_client().await;
+        #[cfg(target_arch = "wasm32")]
+        let mut helios_client: Client<ConfigDB> = config.to_helios_client().await;
+
         helios_client.start().await.expect("could not init helios client");
 
         while helios_client.syncing().await.expect("could not init helios client") != SyncingStatus::IsFalse {
