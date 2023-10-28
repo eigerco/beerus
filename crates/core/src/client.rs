@@ -179,10 +179,11 @@ impl BeerusClient {
         &self,
         block_id: BlockId,
         contract_address: &FieldElement,
-        keys: Vec<FieldElement>,
+        keys: &[FieldElement],
     ) -> Result<StorageProof, CoreError> {
         let client =
             reqwest::Client::builder().build().map_err(|e| CoreError::StorageProof(eyre!("build request: {e:?}")))?;
+
         let keys = keys.iter().map(|i| format!("0x{i:x}")).collect::<Vec<String>>();
         let addr = format!("0x{contract_address:x}");
         let block_id = self.get_local_block_id(block_id).await;
@@ -193,6 +194,7 @@ impl BeerusClient {
             "params": {"block_id": block_id, "contract_address": addr, "keys": keys},
             "id": 0
         });
+        println!("PARAMS: {}", params);
 
         let request = client.request(reqwest::Method::POST, &self.proof_addr).json(&params);
 

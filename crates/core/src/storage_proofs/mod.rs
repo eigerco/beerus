@@ -69,11 +69,16 @@ impl StorageProof {
 }
 
 pub fn verify_proof(root: Felt, key: &BitSlice<u8, Msb0>, value: Felt, proof: &mut [TrieNode]) -> Result<Felt> {
-    if let Some(parsed_root) = parse_proof(key, value, proof) {
-        return Ok(parsed_root);
+    match parse_proof(key, value, proof) {
+        Some(computed_root) => {
+            if computed_root == root {
+                Ok(computed_root)
+            } else {
+                Err(eyre!("proof invalid:\nprovided-root -> {root}\ncomputed-root -> {computed_root}\n"))
+            }
+        }
+        None => Err(eyre!("proof invalid for root {root}")),
     }
-
-    Err(eyre!("proof invalid for root: {root}"))
 }
 
 pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: Felt, proof: &mut [TrieNode]) -> Option<Felt> {
@@ -82,7 +87,7 @@ pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: Felt, proof: &mut [TrieNode]
     }
 
     // placeholders for the hash chain
-    let (mut hold, mut path_len) = (Felt::from(0_u64), 0);
+    let (mut hold, mut path_len) = (value, 0);
     // reverse the proof in order to hash from the key towards the root
     for (i, node) in proof.iter().rev().enumerate() {
         match node {

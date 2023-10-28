@@ -1,5 +1,5 @@
 use beerus_core::storage_proofs::StorageProof;
-use beerus_core::utils::{felt_path2rs, felt_rs2path};
+use beerus_core::utils::{felt_path2rs, felt_rs2path, get_balance_key};
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
 use starknet::core::types::{
@@ -199,7 +199,7 @@ impl BeerusRpcServer for BeerusRpc {
         let fetched_val = self.beerus.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
         let mut proof = self
             .beerus
-            .get_contract_storage_proof(block_id, contract_address.as_ref(), vec![*key.as_ref()])
+            .get_contract_storage_proof(block_id, contract_address.as_ref(), &[*key.as_ref()])
             .await
             .unwrap();
 
@@ -375,7 +375,7 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, BeerusRpcError> {
-        self.beerus.get_contract_storage_proof(block_id, &contract_address, keys).await.map_err(BeerusRpcError::from)
+        self.beerus.get_contract_storage_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
     }
 
     async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
@@ -391,14 +391,21 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         contract_address: FieldElement,
     ) -> Result<FieldElement, BeerusRpcError> {
+        // get local block number and root to verify proof with
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        let root = self.beerus.get_local_root().await;
 
+        // get the storage key for the queried contract address
+        let balance_key = get_balance_key(contract_address);
+
+        // get the proof for the contracts erc20 balance in the fee token contract
         let mut proof = self
             .beerus
-            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, vec![contract_address])
+            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, &[felt_path2rs(balance_key)])
             .await
             .map_err(BeerusRpcError::from)?;
 
+        // call the untrusted RPC for the value to check via the storage proof
         let balance = self
             .call(
                 FunctionCall {
@@ -410,14 +417,9 @@ impl BeerusRpcServer for BeerusRpc {
             )
             .await?;
 
-        let root = self.beerus.get_local_root().await;
+        // verify the storage proof w/ the untrusted value
         proof
-            .verify(
-                root,
-                felt_rs2path(self.beerus.config.fee_token_addr),
-                felt_rs2path(contract_address),
-                felt_rs2path(balance[0]),
-            )
+            .verify(root, felt_rs2path(self.beerus.config.fee_token_addr), balance_key, felt_rs2path(balance[0]))
             .map_err(BeerusRpcError::from)?;
 
         Ok(balance[0])

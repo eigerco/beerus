@@ -5,6 +5,9 @@ use eyre::{eyre, Result};
 use helios::types::CallOpts;
 use stark_hash::Felt;
 use starknet::core::types::FieldElement;
+use starknet::core::utils::get_storage_var_address;
+
+const ERC20_BALANCES_BASE: &str = "ERC20_balances";
 
 pub fn felt_to_bits(felt: Felt) -> BitVec<u8, Msb0> {
     felt.to_be_bytes().view_bits::<Msb0>()[5..].to_bitvec()
@@ -33,4 +36,8 @@ pub fn felt_from_bits(bits: &BitSlice<u8, Msb0>, mask: Option<usize>) -> Result<
 
 pub fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
     CallOpts { from: None, to: Some(addr), gas: None, gas_price: None, value: None, data: Some(data) }
+}
+
+pub fn get_balance_key(addr: FieldElement) -> Felt {
+    felt_rs2path(get_storage_var_address(ERC20_BALANCES_BASE, &[addr]).unwrap())
 }
