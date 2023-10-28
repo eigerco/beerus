@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "gas_consumed": "0x1de6",
+      "gas_price": "0x5df32828e",
+      "overall_fee": "0xaf8f402b6194"
+    }
+  ]
+}
