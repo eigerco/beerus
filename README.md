@@ -128,7 +128,7 @@ Dependencies:
 - execution env var - `ETHEREUM_EXECUTION_RPC_URL`
 
 ```bash
-cd crates/beerus-js
+cd examples/wasm
 
 # install node deps
 npm i

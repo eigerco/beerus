@@ -1,14 +1,9 @@
 extern crate wasm_bindgen;
 extern crate web_sys;
 
+use beerus_core::config::Config;
+use beerus_core::lightclient::beerus::{BeerusLightClient, SyncStatus};
 use wasm_bindgen::prelude::*;
-
-use beerus_core::{
-    config::Config,
-    lightclient::{
-        beerus::BeerusLightClient, beerus::SyncStatus,
-    },
-};
 
 #[allow(unused_macros)]
 macro_rules! log {
@@ -25,12 +20,7 @@ pub struct BeerusClient {
 #[wasm_bindgen]
 impl BeerusClient {
     #[wasm_bindgen]
-    pub async fn new(
-        network: String,
-        consensus_rpc: String,
-        execution_rpc: String,
-        starknet_rpc: String,
-    ) -> Self {
+    pub async fn new(network: String, consensus_rpc: String, execution_rpc: String, starknet_rpc: String) -> Self {
         console_error_panic_hook::set_once();
 
         let cfg = Config::from_args(network, consensus_rpc, execution_rpc, starknet_rpc);
@@ -53,23 +43,12 @@ impl BeerusClient {
 
     #[wasm_bindgen]
     pub async fn get_block_number(&self) -> u32 {
-        self.beerus
-            .starknet_lightclient
-            .block_number()
-            .await
-            .unwrap() as u32
+        self.beerus.starknet_lightclient.block_number().await.unwrap() as u32
     }
 
     #[wasm_bindgen]
     pub async fn get_starknet_state_root(&self) -> JsValue {
-        let root = self
-            .beerus
-            .ethereum_lightclient
-            .read()
-            .await
-            .starknet_state_root()
-            .await
-            .unwrap();
+        let root = self.beerus.ethereum_lightclient.read().await.starknet_state_root().await.unwrap();
 
         serde_wasm_bindgen::to_value(&root).unwrap()
     }

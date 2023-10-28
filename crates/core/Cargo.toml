@@ -2,7 +2,7 @@
 description = "Core utilities for the Beerus Light Client"
 edition = "2021"
 name = "beerus-core"
-version = "0.2.0"
+version = "0.3.0"
 
 [dependencies]
 async-std = "1.12.0"

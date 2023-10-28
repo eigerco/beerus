@@ -2,7 +2,7 @@
 description = "CLI for the Beerus Light Client"
 edition = "2021"
 name = "beerus-cli"
-version = "0.2.0"
+version = "0.3.0"
 
 [[bin]]
 name = "beerus"

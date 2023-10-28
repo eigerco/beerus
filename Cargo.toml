@@ -1,6 +1,6 @@
 [workspace]
 members = ["crates/core", "crates/rpc", "crates/cli"]
-
+exclude = ["examples/wasm"]
 resolver = "2"
 
 [workspace.dependencies]
