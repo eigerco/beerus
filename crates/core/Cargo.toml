@@ -17,7 +17,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = "1.0"
 starknet-crypto = "0.6.0"
 starknet.workspace = true
-starknet_api = "0.5.0-rc1"
+# starknet_api = "0.5.0-rc1"
 thiserror = "1.0.26"
 toml = "0.7.3"
 tracing.workspace = true
