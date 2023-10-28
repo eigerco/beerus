@@ -14,3 +14,7 @@ jsonrpsee = { version = "0.20.3", features = [
 ] }
 starknet.workspace = true
 thiserror = "1.0.50"
+
+[dev-dependencies]
+wiremock = "0.5.19"
+rstest = "0.18.2"

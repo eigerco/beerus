@@ -1,7 +1,5 @@
-    ethereum_network = "mainnet"
-    ethereum_consensus_rpc = "https://www.lightclientdata.org"
-    ethereum_execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/XXXXX"
-    starknet_rpc = "https://starknet-mainnet.infura.io/v3/XXXXX"
-    data_dir = "~/.beerus/tmp"
-    poll_interval_secs = 10
-    
+network = "MAINNET"
+eth_execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/XXXXX"
+starknet_rpc = "https://starknet-mainnet.infura.io/v3/XXXXX"
+data_dir = "tmp"
+poll_secs = 10

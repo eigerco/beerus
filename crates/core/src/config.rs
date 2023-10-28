@@ -20,9 +20,9 @@ use url::Url;
 // defaults
 pub const DEFAULT_DATA_DIR: &str = "tmp";
 pub const DEFAULT_POLL_SECS: u64 = 5;
+pub const DEFAULT_FEE_TOKEN_ADDR: &str = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 const DEFAULT_IP_V4_ADDR: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3030;
-const DEFAULT_FEE_TOKEN_ADDR: &str = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 
 // mainnet constants
 pub const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
@@ -116,7 +116,7 @@ impl Config {
     pub fn get_consensus_rpc(&self) -> String {
         match self.network {
             Network::MAINNET => MAINNET_CONSENSUS_RPC.to_string(),
-            Network::GOERLI => TESTNET_CC_ADDRESS.to_string(),
+            Network::GOERLI => TESTNET_CONSENSUS_RPC.to_string(),
             Network::SEPOLIA => todo!(),
         }
     }
