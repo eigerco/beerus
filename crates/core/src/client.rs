@@ -7,7 +7,12 @@ use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
 use eyre::{eyre, Result};
-use helios::client::Client;
+#[cfg(not(target_arch = "wasm32"))]
+use helios::prelude::Client;
+#[cfg(target_arch = "wasm32")]
+use helios::prelude::ConfigDB;
+use helios::prelude::Database;
+#[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
 use serde_json::json;
@@ -56,7 +61,10 @@ impl Default for NodeData {
 
 pub struct BeerusClient {
     /// Ethereum light client
+    #[cfg(not(target_arch = "wasm32"))]
     pub helios_client: Arc<Client<FileDB>>,
+    #[cfg(target_arch = "wasm32")]
+    pub helios_client: Client<ConfigDB>,
     /// StarkNet light client
     pub starknet_client: JsonRpcClient<HttpTransport>,
     /// Proof client
@@ -207,7 +215,7 @@ impl BeerusClient {
     }
 }
 
-async fn sn_state_root_inner(l1_client: &Client<FileDB>, contract_addr: Address) -> Result<FieldElement> {
+async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: Address) -> Result<FieldElement> {
     let data = StateRootCall::selector();
     let call_opts = simple_call_opts(contract_addr, data.into());
 
@@ -217,7 +225,7 @@ async fn sn_state_root_inner(l1_client: &Client<FileDB>, contract_addr: Address)
 }
 
 async fn sn_state_block_number_inner(
-    l1_client: &Client<FileDB>,
+    l1_client: &Client<impl Database>,
     core_contract_addr: Address,
 ) -> Result<u64, CoreError> {
     let data = StateBlockNumberCall::selector();

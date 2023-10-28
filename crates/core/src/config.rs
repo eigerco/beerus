@@ -5,9 +5,13 @@ use std::str::FromStr;
 
 use ethers::types::Address;
 use eyre::{eyre, Result};
+#[cfg(not(target_arch = "wasm32"))]
 use helios::client::{Client, ClientBuilder};
 use helios::config::checkpoints;
 use helios::config::networks::Network;
+#[cfg(target_arch = "wasm32")]
+use helios::prelude::ConfigDB;
+#[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
 use serde::Deserialize;
 use starknet::core::types::FieldElement;
@@ -146,6 +150,7 @@ impl Config {
         JsonRpcClient::new(HttpTransport::new(Url::parse(&self.starknet_rpc.clone()).unwrap()))
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub async fn to_helios_client(&self) -> Client<FileDB> {
         ClientBuilder::new()
             .network(self.network)
@@ -157,5 +162,15 @@ impl Config {
             .fallback(&self.get_consensus_rpc())
             .build()
             .expect("incorrect helios client config")
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub async fn to_helios_client(&self) -> Client<ConfigDB> {
+        Client::new(
+            self.eth_execution_rpc,
+            self.get_consensus_rpc(),
+            self.network,
+            Some(self.get_checkpoint().await.expect("unable to retrieve checkpoint")),
+        )
     }
 }
