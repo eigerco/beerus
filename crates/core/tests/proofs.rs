@@ -1,11 +1,12 @@
 use beerus_core::storage_proofs::StorageProof;
 use rstest::{fixture, rstest};
+use starknet::macros::felt;
 use starknet_crypto::FieldElement;
 
-const TESTING_STATE_ROOT: &str = "11d7289401f12bdbbfcf890cf531dd13e215d68fa700b82b08220dc75c24f54";
-const TESTING_CONTRACT_ADDR: &str = "49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
-const TESTING_STORAGE_KEY: &str = "d4daccb5bc077d40279ee559dc950ff0e5a7d1e139b3e3ab7e1b8dd8b997a7";
-const TESTING_BALANCE: &str = "17e3b52ef2aa6a";
+const TESTING_STATE_ROOT: FieldElement = felt!("0x11d7289401f12bdbbfcf890cf531dd13e215d68fa700b82b08220dc75c24f54");
+const TESTING_CONTRACT_ADDR: FieldElement = felt!("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
+const TESTING_STORAGE_KEY: FieldElement = felt!("0xd4daccb5bc077d40279ee559dc950ff0e5a7d1e139b3e3ab7e1b8dd8b997a7");
+const TESTING_BALANCE: FieldElement = felt!("0x17e3b52ef2aa6a");
 
 struct ProofData {
     root: FieldElement,
@@ -17,10 +18,10 @@ struct ProofData {
 #[fixture]
 fn proof_data() -> ProofData {
     ProofData {
-        root: FieldElement::from_hex_be(TESTING_STATE_ROOT).unwrap(),
-        addr: FieldElement::from_hex_be(TESTING_CONTRACT_ADDR).unwrap(),
-        key: FieldElement::from_hex_be(TESTING_STORAGE_KEY).unwrap(),
-        value: FieldElement::from_hex_be(TESTING_BALANCE).unwrap(),
+        root: TESTING_STATE_ROOT,
+        addr: TESTING_CONTRACT_ADDR,
+        key: TESTING_STORAGE_KEY,
+        value: TESTING_BALANCE,
     }
 }
 

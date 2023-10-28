@@ -16,5 +16,6 @@ starknet.workspace = true
 thiserror = "1.0.50"
 
 [dev-dependencies]
-wiremock = "0.5.19"
+async-std = { workspace = true, features = ["attributes", "tokio1"] }
 rstest = "0.18.2"
+url = "2.3.1"
