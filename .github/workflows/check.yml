@@ -35,8 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
       - uses: Swatinem/rust-cache@v2
-      - run: cargo install fmt
       - run: cargo +nightly fmt --all -- --check
       - run: cargo install taplo-cli --locked
       - run: taplo fmt --no-auto-config --option reorder_keys=true Cargo.toml --check   
