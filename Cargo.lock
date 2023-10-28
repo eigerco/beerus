@@ -567,6 +567,7 @@ dependencies = [
  "ethabi",
  "ethers",
  "eyre",
+ "gloo-timers",
  "helios",
  "reqwest",
  "serde",
@@ -577,6 +578,7 @@ dependencies = [
  "toml 0.7.8",
  "tracing",
  "url",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]

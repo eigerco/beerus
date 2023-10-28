@@ -21,3 +21,7 @@ thiserror = "1.0.26"
 toml = "0.7.3"
 tracing.workspace = true
 url = "2.3.1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = "0.2.6"
+wasm-bindgen-futures = "0.4.33"

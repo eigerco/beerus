@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::{thread, time};
 
 use async_std::sync::RwLock;
+#[cfg(not(target_arch = "wasm32"))]
 use async_std::task;
 use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
@@ -105,7 +106,7 @@ impl BeerusClient {
     pub async fn start(&mut self) -> Result<()> {
         let (config, l1_client, node) = (self.config.clone(), self.helios_client.clone(), self.node.clone());
 
-        task::spawn(async move {
+        let state_loop = async move {
             let l2_client = config.to_starknet_client();
             let core_contract_addr = config.get_core_contract_address();
 
@@ -134,7 +135,11 @@ impl BeerusClient {
 
                 thread::sleep(time::Duration::from_secs(config.poll_secs));
             }
-        });
+        };
+        #[cfg(not(target_arch = "wasm32"))]
+        task::spawn(state_loop);
+        #[cfg(target_arch = "wasm32")]
+        wasm_bindgen_futures::spawn_local(state_loop);
 
         Ok(())
     }
