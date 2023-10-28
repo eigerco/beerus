@@ -12,14 +12,11 @@ ethabi = "18.0.0"
 ethers = "2.0.2"
 eyre.workspace = true
 helios = { git = "https://github.com/a16z/helios", tag = "0.5.1" }
-pathfinder-common = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
-pathfinder-merkle-tree = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
 reqwest = "0.11.13"
 serde = { workspace = true, features = ["derive"] }
 serde_json = "1.0"
-stark_hash = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
-stark_poseidon = { git = "https://github.com/eqlabs/pathfinder.git", branch = "main" }
 starknet.workspace = true
+starknet-crypto = "0.6.0"
 thiserror = "1.0.26"
 toml = "0.7.3"
 tracing.workspace = true

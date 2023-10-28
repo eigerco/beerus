@@ -1,5 +1,5 @@
 use beerus_core::storage_proofs::StorageProof;
-use beerus_core::utils::{felt_path2rs, felt_rs2path, get_balance_key};
+use beerus_core::utils::get_balance_key;
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
 use starknet::core::types::{
@@ -204,14 +204,7 @@ impl BeerusRpcServer for BeerusRpc {
             .unwrap();
 
         let l1_root = self.beerus.get_local_root().await;
-        proof
-            .verify(
-                l1_root,
-                felt_rs2path(*contract_address.as_ref()),
-                felt_rs2path(*key.as_ref()),
-                felt_rs2path(fetched_val),
-            )
-            .unwrap();
+        proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val).unwrap();
 
         Ok(fetched_val)
     }
@@ -379,7 +372,7 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
-        Ok(felt_path2rs(self.beerus.sn_state_root().await.map_err(BeerusRpcError::from)?))
+        self.beerus.sn_state_root().await.map_err(BeerusRpcError::from)
     }
 
     async fn proven_block_number(&self) -> Result<u64, BeerusRpcError> {
@@ -401,7 +394,7 @@ impl BeerusRpcServer for BeerusRpc {
         // get the proof for the contracts erc20 balance in the fee token contract
         let mut proof = self
             .beerus
-            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, &[felt_path2rs(balance_key)])
+            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, &[balance_key])
             .await
             .map_err(BeerusRpcError::from)?;
 
@@ -418,9 +411,7 @@ impl BeerusRpcServer for BeerusRpc {
             .await?;
 
         // verify the storage proof w/ the untrusted value
-        proof
-            .verify(root, felt_rs2path(self.beerus.config.fee_token_addr), balance_key, felt_rs2path(balance[0]))
-            .map_err(BeerusRpcError::from)?;
+        proof.verify(root, self.beerus.config.fee_token_addr, balance_key, balance[0]).map_err(BeerusRpcError::from)?;
 
         Ok(balance[0])
     }

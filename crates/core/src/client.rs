@@ -11,7 +11,6 @@ use helios::client::Client;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
 use serde_json::json;
-use stark_hash::Felt;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use starknet::providers::Provider;
@@ -39,13 +38,13 @@ abigen!(
 
 #[derive(Clone, Debug)]
 pub struct NodeData {
-    pub l1_state_root: Felt,
+    pub l1_state_root: FieldElement,
     pub l1_block_num: u64,
 }
 
 impl NodeData {
     pub fn new() -> Self {
-        NodeData { l1_state_root: Felt::ZERO, l1_block_num: 0 }
+        NodeData { l1_state_root: FieldElement::ZERO, l1_block_num: 0 }
     }
 }
 
@@ -132,7 +131,7 @@ impl BeerusClient {
         Ok(())
     }
 
-    pub async fn sn_state_root(&self) -> Result<Felt> {
+    pub async fn sn_state_root(&self) -> Result<FieldElement> {
         sn_state_root_inner(&self.helios_client, self.core_contract_addr).await
     }
 
@@ -151,7 +150,7 @@ impl BeerusClient {
         Ok(U256::from_big_endian(&sn_block_hash))
     }
 
-    pub async fn get_local_root(&self) -> Felt {
+    pub async fn get_local_root(&self) -> FieldElement {
         self.node.read().await.l1_state_root
     }
 
@@ -194,7 +193,6 @@ impl BeerusClient {
             "params": {"block_id": block_id, "contract_address": addr, "keys": keys},
             "id": 0
         });
-        println!("PARAMS: {}", params);
 
         let request = client.request(reqwest::Method::POST, &self.proof_addr).json(&params);
 
@@ -209,13 +207,13 @@ impl BeerusClient {
     }
 }
 
-async fn sn_state_root_inner(l1_client: &Client<FileDB>, contract_addr: Address) -> Result<Felt> {
+async fn sn_state_root_inner(l1_client: &Client<FileDB>, contract_addr: Address) -> Result<FieldElement> {
     let data = StateRootCall::selector();
     let call_opts = simple_call_opts(contract_addr, data.into());
 
     let starknet_root = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
 
-    Felt::from_be_slice(&starknet_root).map_err(|e| eyre!(e))
+    FieldElement::from_byte_slice_be(&starknet_root).map_err(|e| eyre!(e))
 }
 
 async fn sn_state_block_number_inner(
