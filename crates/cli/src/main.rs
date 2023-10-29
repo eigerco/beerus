@@ -9,7 +9,7 @@ use tracing_subscriber::FmtSubscriber;
 #[command(version)]
 struct Args {
     #[clap(short = 'c', long)]
-    conf: String,
+    conf: Option<String>,
 }
 
 #[async_std::main]
@@ -20,7 +20,10 @@ async fn main() {
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     let args = Args::parse();
-    let config = Config::from_file(&args.conf);
+    let config = match args.conf {
+        Some(conf) => Config::from_file(&conf),
+        None => Config::from_env(),
+    };
 
     info!("init beerus client: {:?}", config.network);
     let mut beerus = BeerusClient::new(config.clone()).await;
