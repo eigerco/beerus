@@ -289,9 +289,9 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, BeerusRpcError> {
-        let num = self.beerus.sn_state_block_hash().await.map_err(BeerusRpcError::from)?;
-        let hash = self.beerus.sn_state_block_hash().await.map_err(BeerusRpcError::from)?;
-        Ok(BlockHashAndNumber { block_hash: FieldElement::ZERO, block_number: self.beerus.get_local_block_num().await })
+        let block_hash = self.beerus.sn_state_block_hash().await.map_err(BeerusRpcError::from)?;
+        let block_number = self.beerus.sn_state_block_number().await.map_err(BeerusRpcError::from)?;
+        Ok(BlockHashAndNumber { block_hash, block_number })
     }
 
     async fn chain_id(&self) -> Result<FieldElement, BeerusRpcError> {

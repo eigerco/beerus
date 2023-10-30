@@ -9,7 +9,6 @@ use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
 use eyre::{eyre, Result};
 use helios::client::Client;
-use helios::prelude::networks::Network;
 #[cfg(target_arch = "wasm32")]
 use helios::prelude::ConfigDB;
 use helios::prelude::Database;
@@ -163,15 +162,14 @@ impl BeerusClient {
         sn_state_block_number_inner(&self.helios_client, self.core_contract_addr).await
     }
 
-    pub async fn sn_state_block_hash(&self) -> Result<U256, CoreError> {
+    pub async fn sn_state_block_hash(&self) -> Result<FieldElement, CoreError> {
         let data = StateBlockHashCall::selector();
         let call_opts = simple_call_opts(self.core_contract_addr, data.into());
 
         let sn_block_hash =
             self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
 
-        // Convert the response bytes to a U256.
-        Ok(U256::from_big_endian(&sn_block_hash))
+        FieldElement::from_byte_slice_be(&sn_block_hash).map_err(|e| CoreError::FetchL1Val(eyre!("{e}")))
     }
 
     pub async fn get_local_root(&self) -> FieldElement {
