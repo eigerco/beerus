@@ -601,7 +601,6 @@ dependencies = [
  "serde_json",
  "starknet",
  "thiserror",
- "url",
  "wiremock",
 ]
 

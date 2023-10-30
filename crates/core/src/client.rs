@@ -9,6 +9,7 @@ use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
 use eyre::{eyre, Result};
 use helios::client::Client;
+use helios::prelude::networks::Network;
 #[cfg(target_arch = "wasm32")]
 use helios::prelude::ConfigDB;
 use helios::prelude::Database;
@@ -97,7 +98,7 @@ impl BeerusClient {
         helios_client.start().await.expect("could not init helios client");
 
         while helios_client.syncing().await.expect("could not init helios client") != SyncingStatus::IsFalse {
-            debug!("not in sync yet");
+            debug!("{} not in sync yet", config.network);
 
             thread::sleep(time::Duration::from_secs(1));
         }

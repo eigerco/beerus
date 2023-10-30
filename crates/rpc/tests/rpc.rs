@@ -7,6 +7,6 @@ use rstest::rstest;
 #[rstest]
 #[ignore]
 async fn read_endpoints() {
-    let _beerus_rpc = setup_beerus_rpc().await;
+    let beerus_rpc = setup_beerus_rpc().await;
     todo!();
 }

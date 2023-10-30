@@ -97,12 +97,12 @@ impl Config {
         let raw_conf = fs::read_to_string(path).unwrap_or_else(|_| panic!("unable to read file: {path}"));
 
         if path.contains(".toml") {
-            toml::from_str(&raw_conf).unwrap()
+            return toml::from_str(&raw_conf).unwrap();
         } else if path.contains(".json") {
-            serde_json::from_str(&raw_conf).unwrap()
-        } else {
-            Self::default()
+            return serde_json::from_str(&raw_conf).unwrap();
         }
+
+        panic!("no config file at {path}");
     }
 
     pub fn get_core_contract_address(&self) -> Address {

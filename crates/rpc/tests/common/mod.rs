@@ -8,7 +8,8 @@ use reqwest::{Method, StatusCode};
 use rstest::fixture;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use starknet::core::types::{BlockId, BlockTag, EventFilter, FieldElement, FunctionCall};
+use starknet::core::types::{BlockId, BlockTag, FunctionCall};
+use starknet::macros::felt;
 use wiremock::matchers::{body_json, method};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -28,16 +29,16 @@ pub struct EthJsonRpcResponse<StarknetParams> {
 }
 
 impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
+    pub const fn chain_id(params: StarknetParams) -> Self {
+        Self { id: 1, jsonrpc: "2.0", method: "starknet_chainId", params }
+    }
+
     pub const fn block_number(params: StarknetParams) -> Self {
         Self { id: 1, jsonrpc: "2.0", method: "starknet_blockNumber", params }
     }
 
     pub const fn starknet_get_block_transaction_count(params: StarknetParams) -> Self {
         Self { id: 1, jsonrpc: "2.0", method: "starknet_getBlockTransactionCount", params }
-    }
-
-    pub const fn get_events(params: StarknetParams) -> Self {
-        Self { id: 1, jsonrpc: "2.0", method: "starknet_getEvents", params }
     }
 
     pub const fn starknet_syncing(params: StarknetParams) -> Self {
@@ -63,7 +64,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
 
 #[fixture]
 pub async fn setup_beerus_rpc() -> BeerusRpc {
-    let mut config = Config::from_file("tests/common/data/beerus.toml");
+    let mut config = Config::from_file("../../examples/conf/beerus.toml");
     config.rpc_addr = SocketAddr::from_str(&setup_wiremock().await).unwrap();
     let mut beerus = BeerusClient::new(config.clone()).await;
 
@@ -75,9 +76,9 @@ pub async fn setup_beerus_rpc() -> BeerusRpc {
 #[fixture]
 pub async fn setup_wiremock() -> String {
     let mock_server = MockServer::start().await;
+    mock_chain_id().mount(&mock_server).await;
     mock_block_number().mount(&mock_server).await;
     mock_get_block_transaction_count().mount(&mock_server).await;
-    mock_get_events().mount(&mock_server).await;
     mock_starknet_syncing().mount(&mock_server).await;
     mock_starknet_block_hash_and_number().mount(&mock_server).await;
     mock_starknet_get_transaction_by_block_id_and_index().mount(&mock_server).await;
@@ -87,107 +88,117 @@ pub async fn setup_wiremock() -> String {
     mock_server.uri()
 }
 
-fn mock_block_number() -> Mock {
-    let stub: Vec<u8> = vec![];
-    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::block_number(stub))).respond_with(
+fn rpc_json_body(result: serde_json::Value) -> String {
+    json!({"jsonrpc": "2.0", "id": 1, "result": result }).to_string()
+}
+
+fn mock_chain_id() -> Mock {
+    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::chain_id(Vec::<u8>::new()))).respond_with(
         response_template_with_status(StatusCode::OK)
-            .set_body_raw(include_str!("data/starknet_blockNumber.json"), "application/json"),
+            .set_body_raw(rpc_json_body(json!("0x534e5f4d41494e")), "application/json"),
+    )
+}
+
+fn mock_block_number() -> Mock {
+    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::block_number(Vec::<u8>::new()))).respond_with(
+        response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(json!(19640)), "application/json"),
     )
 }
 
 fn mock_get_block_transaction_count() -> Mock {
-    let latest_block = BlockId::Tag(BlockTag::Latest);
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::starknet_get_block_transaction_count([&latest_block])))
+        .and(body_json(StarknetRpcBaseData::starknet_get_block_transaction_count([&BlockId::Tag(BlockTag::Latest)])))
         .respond_with(
-            response_template_with_status(StatusCode::OK)
-                .set_body_raw(include_str!("data/starknet_getBlockTransactionCount.json"), "application/json"),
+            response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(json!(90)), "application/json"),
         )
 }
 
-fn mock_get_events() -> Mock {
-    // TODO: avoid duplicating the input values in rpc.rs
-    let filter = EventFilter {
-        from_block: Some(BlockId::Number(800)),
-        to_block: Some(BlockId::Number(1701)),
-        address: None,
-        keys: None,
-    };
-    let continuation_token = Some("1000".to_string());
-    let chunk_size = 1000;
-
-    let param = json!({
-        "from_block": filter.from_block,
-        "to_block": filter.to_block,
-        "continuation_token": continuation_token,
-        "chunk_size": chunk_size
+fn mock_starknet_syncing() -> Mock {
+    let result = json!({
+      "current_block_hash": "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
+      "current_block_num": "0x6b4c",
+      "highest_block_hash": "0x7f65231188b64236c1142ae6a894e826583725bef6b9172f46b6ad5f9d87469",
+      "highest_block_num": "0x6b4c",
+      "starting_block_hash": "0x54cfb11a0c61c26b2e84c6d085a8317e5a1a437fa092d59a97564936afe2438",
+      "starting_block_num": "0x5efd"
     });
 
-    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::get_events([&param]))).respond_with(
-        response_template_with_status(StatusCode::OK)
-            .set_body_raw(include_str!("data/starknet_getEvents.json"), "application/json"),
-    )
-}
-
-fn mock_starknet_syncing() -> Mock {
-    let stub: Vec<u8> = vec![];
-    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::starknet_syncing(stub))).respond_with(
-        response_template_with_status(StatusCode::OK)
-            .set_body_raw(include_str!("data/starknet_syncing.json"), "application/json"),
+    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::starknet_syncing(Vec::<u8>::new()))).respond_with(
+        response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(result), "application/json"),
     )
 }
 
 fn mock_starknet_block_hash_and_number() -> Mock {
-    let stub: Vec<u8> = vec![];
-    Mock::given(method("POST")).and(body_json(StarknetRpcBaseData::starknet_block_hash_and_number(stub))).respond_with(
-        response_template_with_status(StatusCode::OK)
-            .set_body_raw(include_str!("data/starknet_blockHashAndNumber.json"), "application/json"),
-    )
+    let result = json!({
+        "block_hash": "0x63813d0cd71bf351dfe3217f9d2dcd8871cf4d56c0ffe3563980b3d02b6898d",
+        "block_number": 27461
+    });
+
+    Mock::given(method("POST"))
+        .and(body_json(StarknetRpcBaseData::starknet_block_hash_and_number(Vec::<u8>::new())))
+        .respond_with(
+            response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(result), "application/json"),
+        )
 }
 
 fn mock_starknet_get_transaction_by_block_id_and_index() -> Mock {
-    let latest_block = BlockId::Tag(BlockTag::Latest);
-    let index: u64 = 5;
+    let result = json!({
+      "calldata": [
+        "0x1"
+      ],
+      "max_fee": "0x1",
+      "nonce": "0x1",
+      "sender_address": "0x1",
+      "signature": [
+        "0x1"
+      ],
+      "transaction_hash": "0x1",
+      "type": "INVOKE",
+      "version": "0x1"
+    });
     Mock::given(method("POST"))
         .and(body_json(StarknetRpcBaseData::starknet_get_transaction_by_block_id_and_index([
-            serde_json::to_value(&latest_block).unwrap(),
-            serde_json::to_value(index).unwrap(),
+            serde_json::to_value(&BlockId::Tag(BlockTag::Latest)).unwrap(),
+            serde_json::to_value(5_u64).unwrap(),
         ])))
         .respond_with(
-            response_template_with_status(StatusCode::OK)
-                .set_body_raw(include_str!("data/starknet_getTransactionByBlockIdAndIndex.json"), "application/json"),
+            response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(result), "application/json"),
         )
 }
 
 fn mock_starknet_get_block_with_tx_hashes() -> Mock {
-    let latest_block = BlockId::Tag(BlockTag::Latest);
+    let result = json!({
+      "block_hash": "0x1",
+      "block_number": 1,
+      "new_root": "0x1",
+      "parent_hash": "0x1",
+      "sequencer_address": "0x1",
+      "status": "ACCEPTED_ON_L2",
+      "timestamp": 10,
+      "transactions": [
+        "0x1"
+      ]
+    });
     Mock::given(method("POST"))
-        .and(body_json(StarknetRpcBaseData::starknet_get_block_with_tx_hashes([&latest_block])))
+        .and(body_json(StarknetRpcBaseData::starknet_get_block_with_tx_hashes([&BlockId::Tag(BlockTag::Latest)])))
         .respond_with(
-            response_template_with_status(StatusCode::OK)
-                .set_body_raw(include_str!("data/starknet_getBlockWithTxHashes.json"), "application/json"),
+            response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(result), "application/json"),
         )
 }
 
 fn mock_starknet_call() -> Mock {
     let request = FunctionCall {
-        contract_address: FieldElement::from_hex_be(
-            "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-        )
-        .unwrap(),
-        entry_point_selector: FieldElement::from_hex_be(
-            "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
-        )
-        .unwrap(),
+        contract_address: felt!("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
+        entry_point_selector: felt!("0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"),
         calldata: Vec::new(),
     };
-    let latest_block = BlockId::Tag(BlockTag::Latest);
+
+    let result = json!(["298305742194"]);
 
     Mock::given(method(Method::POST))
-        .and(body_json(StarknetRpcBaseData::starknet_call((&request, &latest_block))))
+        .and(body_json(StarknetRpcBaseData::starknet_call((&request, &BlockId::Tag(BlockTag::Latest)))))
         .respond_with(
-            response_template_with_status(StatusCode::OK)
-                .set_body_raw(include_str!("data/starknet_call.json"), "application/json"),
+            response_template_with_status(StatusCode::OK).set_body_raw(rpc_json_body(result), "application/json"),
         )
 }
 
