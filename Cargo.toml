@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/core", "crates/rpc", "crates/cli"]
+members = ["crates/core", "crates/rpc", "crates/cli", "examples/core"]
 exclude = ["examples/wasm"]
 resolver = "2"
 

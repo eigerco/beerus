@@ -1,0 +1,28 @@
+[package]
+description = "Examples for the Beerus Light Client"
+edition = "2021"
+name = "example"
+version = "0.3.0"
+
+[dependencies]
+beerus-core = { path = "../../crates/core"}
+#beerus-rpc = { path = "../rpc" }
+#clap = { version = "4.4.7", features = ["derive"] }
+tracing-subscriber.workspace = true
+tracing.workspace = true
+starknet.workspace = true
+eyre.workspace = true
+async-std = { workspace = true, features = ["attributes", "tokio1"] }
+
+
+[[example]]
+name = "basic"
+path = "basic.rs"
+
+[[example]]
+name = "call"
+path = "call.rs"
+
+[[example]]
+name = "client"
+path = "client.rs"

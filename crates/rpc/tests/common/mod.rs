@@ -65,7 +65,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
 #[fixture]
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mut config = Config::from_file("../../examples/conf/beerus.toml");
-    config.rpc_addr = SocketAddr::from_str(&setup_wiremock().await).unwrap();
+    config.starknet_rpc = setup_wiremock().await;
     let mut beerus = BeerusClient::new(config.clone()).await;
 
     beerus.start().await.unwrap();
