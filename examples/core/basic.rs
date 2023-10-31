@@ -25,13 +25,9 @@ async fn main() -> Result<()> {
     let mut beerus = BeerusClient::new(config).await;
     beerus.start().await?;
 
-    task::sleep(Duration::from_millis(6000)).await;
-    // getting eth block number
-    let current_ethereum_block = beerus.get_local_block_num().await;
     // getting starknet block number
     let current_starknet_block = beerus.starknet_client.block_number().await;
 
-    println!("ethereum block {:?}", current_ethereum_block);
     println!("starknet block {:?}", current_starknet_block);
     Ok(())
 }

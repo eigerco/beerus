@@ -6,8 +6,6 @@ version = "0.3.0"
 
 [dependencies]
 beerus-core = { path = "../../crates/core"}
-#beerus-rpc = { path = "../rpc" }
-#clap = { version = "4.4.7", features = ["derive"] }
 tracing-subscriber.workspace = true
 tracing.workspace = true
 starknet.workspace = true
@@ -22,7 +20,3 @@ path = "basic.rs"
 [[example]]
 name = "call"
 path = "call.rs"
-
-[[example]]
-name = "client"
-path = "client.rs"

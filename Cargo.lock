@@ -2009,6 +2009,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 
 [[package]]
+name = "example"
+version = "0.3.0"
+dependencies = [
+ "async-std",
+ "beerus-core",
+ "eyre",
+ "starknet",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "execution"
 version = "0.5.1"
 source = "git+https://github.com/a16z/helios?rev=d4722045914d93c6fd8978f1fb2183494bc78a15#d4722045914d93c6fd8978f1fb2183494bc78a15"
