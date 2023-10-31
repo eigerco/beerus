@@ -1,7 +1,7 @@
 use std::env;
 use std::str::FromStr;
 
-use beerus_core::client::BeerusClient;
+use beerus_core::public::Beerus;
 use beerus_core::config::Config;
 use eyre::Result;
 use starknet::core::types::{BlockId, FieldElement, FunctionCall};
@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let res = beerus.starknet_call(calldata, block_id).await?;
+    let res = beerus.call(calldata, block_id).await?;
 
     println!("{:?}", res);
     Ok(())

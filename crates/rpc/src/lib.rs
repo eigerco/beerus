@@ -4,16 +4,16 @@ pub mod error;
 use std::net::SocketAddr;
 
 use api::BeerusRpcServer;
-use beerus_core::client::BeerusClient;
+use beerus_core::public::Beerus;
 use jsonrpsee::core::Error;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 
 pub struct BeerusRpc {
-    beerus: BeerusClient,
+    beerus: Beerus,
 }
 
 impl BeerusRpc {
-    pub fn new(beerus: BeerusClient) -> Self {
+    pub fn new(beerus: Beerus) -> Self {
         Self { beerus }
     }
 

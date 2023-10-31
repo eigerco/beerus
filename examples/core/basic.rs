@@ -1,6 +1,6 @@
 use std::env;
 
-use beerus_core::client::BeerusClient;
+use beerus_core::public::Beerus;
 use beerus_core::config::Config;
 use eyre::Result;
 use starknet::providers::Provider;
@@ -23,11 +23,11 @@ async fn main() -> Result<()> {
 
     // Initialize beerus
     let config = Config::from_env();
-    let mut beerus = BeerusClient::new(config).await;
+    let mut beerus = Beerus::new(config).await;
     beerus.start().await?;
 
     // getting starknet block number
-    let current_starknet_block = beerus.starknet_block_number().await;
+    let current_starknet_block = beerus.block_number().await;
 
     println!("starknet block {:?}", current_starknet_block);
     Ok(())
