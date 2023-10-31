@@ -16,9 +16,17 @@ use helios::prelude::Database;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
 use serde_json::json;
-use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
-use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
-use starknet::providers::Provider;
+use starknet::core::types::{
+    BlockHashAndNumber, BlockId, BlockTag as SnBlockTag, BroadcastedDeclareTransaction,
+    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
+    DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
+    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
+};
+use starknet::macros::selector;
+use starknet::providers::jsonrpc::{HttpTransport, HttpTransportError, JsonRpcClient, JsonRpcClientError};
+use starknet::providers::ProviderError::StarknetError;
+use starknet::providers::{AnyProviderError, Provider, ProviderError, StarknetErrorWithMessage};
 use tracing::{debug, info, warn};
 
 use crate::config::Config;
@@ -69,11 +77,11 @@ impl Default for NodeData {
 pub struct BeerusClient {
     /// Ethereum light client
     #[cfg(not(target_arch = "wasm32"))]
-    pub helios_client: Arc<Client<FileDB>>,
+    helios_client: Arc<Client<FileDB>>,
     #[cfg(target_arch = "wasm32")]
-    pub helios_client: Arc<Client<ConfigDB>>,
+    helios_client: Arc<Client<ConfigDB>>,
     /// StarkNet light client
-    pub starknet_client: JsonRpcClient<HttpTransport>,
+    starknet_client: JsonRpcClient<HttpTransport>,
     /// Proof client
     pub proof_addr: String,
     /// Poll interval
@@ -249,4 +257,255 @@ async fn sn_state_block_number_inner(
 
     // Convert the response bytes to a U256.
     Ok(U256::from_big_endian(&sn_block_num).as_u64())
+}
+
+type StarknetErr = ProviderError<JsonRpcClientError<HttpTransportError>>;
+impl BeerusClient {
+    // ------------------- Starknet Provider Endpoints -------------------
+    //
+    pub async fn starknet_get_block_with_tx_hashes(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_block_with_tx_hashes(l1_block_num).await
+    }
+
+    pub async fn starknet_get_block_with_txs(
+        &self,
+        block_id: BlockId,
+    ) -> Result<MaybePendingBlockWithTxs, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_block_with_txs(l1_block_num).await
+    }
+
+    pub async fn starknet_get_state_update(&self, block_id: BlockId) -> Result<MaybePendingStateUpdate, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_state_update(l1_block_num).await
+    }
+
+    pub async fn starknet_get_storage_at(
+        &self,
+        contract_address: FieldElement,
+        key: FieldElement,
+        block_id: BlockId,
+    ) -> Result<FieldElement, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        let fetched_val = self.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
+        let mut proof =
+            self.get_contract_storage_proof(block_id, contract_address.as_ref(), &[*key.as_ref()]).await.unwrap();
+
+        let l1_root = self.get_local_root().await;
+        proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val).unwrap();
+
+        Ok(fetched_val)
+    }
+
+    pub async fn starknet_get_transaction_by_hash(
+        &self,
+        transaction_hash: FieldElement,
+    ) -> Result<Transaction, StarknetErr> {
+        self.starknet_client.get_transaction_by_hash(transaction_hash).await
+    }
+
+    pub async fn starknet_get_transaction_by_block_id_and_index(
+        &self,
+        block_id: BlockId,
+        index: u64,
+    ) -> Result<Transaction, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_transaction_by_block_id_and_index(l1_block_num, index).await
+    }
+
+    pub async fn starknet_get_transaction_receipt(
+        &self,
+        transaction_hash: FieldElement,
+    ) -> Result<MaybePendingTransactionReceipt, StarknetErr> {
+        self.starknet_client.get_transaction_receipt(transaction_hash).await
+    }
+
+    pub async fn starknet_get_class(
+        &self,
+        block_id: BlockId,
+        class_hash: FieldElement,
+    ) -> Result<ContractClass, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_class(l1_block_num, class_hash).await
+    }
+
+    pub async fn starknet_get_class_hash_at(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_class_hash_at(l1_block_num, contract_address).await
+    }
+
+    pub async fn starknet_get_class_at(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+    ) -> Result<ContractClass, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_class_at(l1_block_num, contract_address).await
+    }
+
+    pub async fn starknet_get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_block_transaction_count(l1_block_num).await
+    }
+
+    pub async fn starknet_call(
+        &self,
+        request: FunctionCall,
+        block_id: BlockId,
+    ) -> Result<Vec<FieldElement>, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.call(request, l1_block_num).await
+    }
+
+    pub async fn starknet_estimate_fee(
+        &self,
+        request: BroadcastedTransaction,
+        block_id: BlockId,
+    ) -> Result<Vec<FeeEstimate>, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.estimate_fee(vec![request], l1_block_num).await
+    }
+
+    pub async fn starknet_estimate_message_fee(
+        &self,
+        message: MsgFromL1,
+        block_id: BlockId,
+    ) -> Result<FeeEstimate, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.estimate_message_fee(message, l1_block_num).await
+    }
+
+    pub async fn starknet_block_number(&self) -> Result<u64, StarknetErr> {
+        Ok(self.get_local_block_num().await)
+    }
+
+    pub async fn starknet_block_hash_and_number(&self) -> Result<BlockHashAndNumber, CoreError> {
+        let block_hash = self.sn_state_block_hash().await?;
+        let block_number = self.sn_state_block_number().await?;
+        Ok(BlockHashAndNumber { block_hash, block_number })
+    }
+
+    pub async fn starknet_chain_id(&self) -> Result<FieldElement, StarknetErr> {
+        self.starknet_client.chain_id().await
+    }
+
+    pub async fn starknet_pending_transactions(&self) -> Result<Vec<Transaction>, StarknetErr> {
+        self.starknet_client.pending_transactions().await
+    }
+
+    pub async fn starknet_syncing(&self) -> Result<SyncStatusType, StarknetErr> {
+        self.starknet_client.syncing().await
+    }
+
+    pub async fn starknet_get_events(
+        &self,
+        filter: EventFilter,
+        continuation_token: Option<String>,
+        chunk_size: u64,
+    ) -> Result<EventsPage, StarknetErr> {
+        self.starknet_client.get_events(filter, continuation_token, chunk_size).await
+    }
+
+    pub async fn starknet_get_nonce(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.get_nonce(l1_block_num, contract_address).await
+    }
+
+    pub async fn starknet_add_invoke_transaction(
+        &self,
+        invoke_transaction: BroadcastedInvokeTransaction,
+    ) -> Result<InvokeTransactionResult, StarknetErr> {
+        self.starknet_client.add_invoke_transaction(invoke_transaction).await
+    }
+
+    pub async fn starknet_add_declare_transaction(
+        &self,
+        declare_transaction: BroadcastedDeclareTransaction,
+    ) -> Result<DeclareTransactionResult, StarknetErr> {
+        self.starknet_client.add_declare_transaction(declare_transaction).await
+    }
+
+    pub async fn starknet_add_deploy_account_transaction(
+        &self,
+        deploy_account_transaction: BroadcastedDeployAccountTransaction,
+    ) -> Result<DeployAccountTransactionResult, StarknetErr> {
+        self.starknet_client.add_deploy_account_transaction(deploy_account_transaction).await
+    }
+
+    pub async fn starknet_estimate_fee_single(
+        &self,
+        request: BroadcastedTransaction,
+        block_id: BlockId,
+    ) -> Result<FeeEstimate, StarknetErr> {
+        let l1_block_num = self.get_local_block_id(block_id).await;
+        self.starknet_client.estimate_fee_single(request, l1_block_num).await
+    }
+
+    // ------------------- Extended Starknet Provider Endpoints -------------------
+    //
+    pub async fn starknet_get_contract_storage_proof(
+        &self,
+        block_id: BlockId,
+        contract_address: FieldElement,
+        keys: Vec<FieldElement>,
+    ) -> Result<StorageProof, CoreError> {
+        self.get_contract_storage_proof(block_id, &contract_address, &keys).await
+    }
+
+    pub async fn starknet_proven_state_root(&self) -> Result<FieldElement> {
+        self.sn_state_root().await
+    }
+
+    pub async fn starknet_proven_block_number(&self) -> Result<u64, CoreError> {
+        self.sn_state_block_number().await
+    }
+    //     pub async fn starknet_get_balance(
+    //         &self,
+    //         block_id: BlockId,
+    //         contract_address: FieldElement,
+    //     ) -> Result<FieldElement, CoreError> { // get local block number and root to verify proof
+    //       with let l1_block_num = self.get_local_block_id(block_id).await; let root =
+    //       self.get_local_root().await;
+    //
+    //         // get the storage key for the queried contract address
+    //         let balance_key = get_balance_key(contract_address);
+    //
+    //         // get the proof for the contracts erc20 balance in the fee token contract
+    //         let mut proof = self
+    //             .get_contract_storage_proof(block_id, &self.config.fee_token_addr, &[balance_key])
+    //             .await
+    //             ?;
+    //
+    //         // call the untrusted RPC for the value to check via the storage proof
+    //         let balance = self
+    //             .starknet_client
+    //             .call(
+    //                 FunctionCall {
+    //                     contract_address: self.config.fee_token_addr,
+    //                     entry_point_selector: selector!("balanceOf"),
+    //                     calldata: vec![contract_address],
+    //                 },
+    //                 l1_block_num,
+    //             )
+    //             .await
+    //             .map_err(CoreError::FetchL1Val); // todo
+    //
+    //         // verify the storage proof w/ the untrusted value
+    //         proof.verify(root, self.config.fee_token_addr, balance_key,
+    // balance[0]).map_err(CoreError::FetchL1Val);
+    //
+    //         Ok(balance[0])
+    //     }
 }

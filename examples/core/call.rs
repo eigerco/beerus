@@ -1,15 +1,13 @@
+use std::env;
+use std::str::FromStr;
+
 use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
-use starknet::providers::Provider;
 use eyre::Result;
-use starknet::{
-    core::types::FieldElement,
-    core::types::{BlockId, FunctionCall},
-};
+use starknet::core::types::{BlockId, FieldElement, FunctionCall};
+use starknet::providers::Provider;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-use std::str::FromStr;
-use std::env;
 
 #[async_std::main]
 async fn main() -> Result<()> {
@@ -40,10 +38,7 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let res = beerus
-        .starknet_client
-        .call(calldata, &block_id)
-        .await?;
+    let res = beerus.starknet_call(calldata, block_id).await?;
 
     println!("{:?}", res);
     Ok(())
