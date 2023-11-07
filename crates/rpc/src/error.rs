@@ -5,6 +5,8 @@ use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
 use starknet::providers::MaybeUnknownErrorCode::{self, Known, Unknown};
 use starknet::providers::ProviderError::StarknetError;
 use starknet::providers::{AnyProviderError, ProviderError, StarknetErrorWithMessage};
+
+#[derive(Debug)]
 pub struct BeerusRpcError(ProviderError<AnyProviderError>);
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
@@ -27,9 +29,9 @@ impl From<ProviderError<JsonRpcClientError<HttpTransportError>>> for BeerusRpcEr
     fn from(err: ProviderError<JsonRpcClientError<HttpTransportError>>) -> Self {
         match err {
             StarknetError(sn_err) => BeerusRpcError(ProviderError::StarknetError(sn_err)),
-            _ => BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
+            e => BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
                 code: MaybeUnknownErrorCode::Unknown(-32601),
-                message: "Method not found".to_string(),
+                message: format!("{:?}", e),
             })),
         }
     }
