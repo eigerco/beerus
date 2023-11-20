@@ -16,17 +16,9 @@ use helios::prelude::Database;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
 use serde_json::json;
-use starknet::core::types::{
-    BlockHashAndNumber, BlockId, BlockTag as SnBlockTag, BroadcastedDeclareTransaction,
-    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-    DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
-    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
-};
-use starknet::macros::selector;
-use starknet::providers::jsonrpc::{HttpTransport, HttpTransportError, JsonRpcClient, JsonRpcClientError};
-use starknet::providers::ProviderError::StarknetError;
-use starknet::providers::{AnyProviderError, Provider, ProviderError, StarknetErrorWithMessage};
+use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
+use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
+use starknet::providers::Provider;
 use tracing::{debug, info, warn};
 
 use crate::config::Config;
@@ -122,6 +114,12 @@ impl BeerusClient {
     }
 
     pub async fn start(&mut self) -> Result<()> {
+        {
+            // init node data and check client works
+            let mut node_lock = self.node.write().await;
+            node_lock.l1_state_root = sn_state_root_inner(&self.helios_client, self.core_contract_addr).await?;
+            node_lock.l1_block_num = sn_state_block_number_inner(&self.helios_client, self.core_contract_addr).await?;
+        }
         let (config, l1_client, node) = (self.config.clone(), self.helios_client.clone(), self.node.clone());
 
         let state_loop = async move {

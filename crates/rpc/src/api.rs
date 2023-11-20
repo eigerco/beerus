@@ -1,5 +1,4 @@
 use beerus_core::storage_proofs::StorageProof;
-use beerus_core::utils::get_balance_key;
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
 use starknet::core::types::{
@@ -9,8 +8,6 @@ use starknet::core::types::{
     InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
 };
-use starknet::macros::selector;
-use starknet::providers::Provider;
 
 use crate::error::BeerusRpcError;
 use crate::BeerusRpc;
@@ -247,7 +244,7 @@ impl BeerusRpcServer for BeerusRpc {
         request: BroadcastedTransaction,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
-        self.beerus.estimate_fee(vec![request], block_id).await.map_err(BeerusRpcError::from)
+        self.beerus.estimate_fee(request, block_id).await.map_err(BeerusRpcError::from)
     }
 
     async fn estimate_message_fee(&self, message: MsgFromL1, block_id: BlockId) -> Result<FeeEstimate, BeerusRpcError> {
@@ -255,7 +252,7 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn block_number(&self) -> Result<u64, BeerusRpcError> {
-        Ok(self.beerus.get_local_block_num().await)
+        self.beerus.block_number().await.map_err(BeerusRpcError::from)
     }
 
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, BeerusRpcError> {
@@ -309,10 +306,7 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         deploy_account_transaction: BroadcastedDeployAccountTransaction,
     ) -> Result<DeployAccountTransactionResult, BeerusRpcError> {
-        self.beerus
-            .starknet_add_deploy_account_transaction(deploy_account_transaction)
-            .await
-            .map_err(BeerusRpcError::from)
+        self.beerus.add_deploy_account_transaction(deploy_account_transaction).await.map_err(BeerusRpcError::from)
     }
 
     async fn estimate_fee_single(
@@ -331,7 +325,7 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, BeerusRpcError> {
-        self.beerus.get_contract_storage_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
+        self.beerus.get_contract_storage_proof(block_id, contract_address, keys).await.map_err(BeerusRpcError::from)
     }
 
     async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
@@ -347,7 +341,6 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
         contract_address: FieldElement,
     ) -> Result<FieldElement, BeerusRpcError> {
-        // self.beerus.get_balance(block_id,
-        // contract_address).await.map_err(BeerusRpcError::from)
+        self.beerus.get_balance(block_id, contract_address).await.map_err(BeerusRpcError::from)
     }
 }

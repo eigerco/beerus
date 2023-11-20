@@ -1,6 +1,6 @@
 pub mod client;
-pub mod public;
 pub mod config;
+pub mod public;
 pub mod storage_proofs;
 pub mod utils;
 

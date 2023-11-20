@@ -1,8 +1,8 @@
 use std::env;
 use std::str::FromStr;
 
-use beerus_core::public::Beerus;
 use beerus_core::config::Config;
+use beerus_core::public::Beerus;
 use eyre::Result;
 use starknet::core::types::{BlockId, FieldElement, FunctionCall};
 use starknet::providers::Provider;

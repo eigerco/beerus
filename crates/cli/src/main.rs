@@ -1,5 +1,5 @@
-use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
+use beerus_core::public::Beerus;
 use beerus_rpc::BeerusRpc;
 use clap::Parser;
 use tracing::{error, info, Level};
@@ -26,13 +26,13 @@ async fn main() {
     };
 
     info!("init beerus client: {:?}", config.network);
-    let mut beerus = BeerusClient::new(config.clone()).await;
+    let mut beerus = Beerus::new(config.clone()).await;
     if let Err(err) = beerus.start().await {
         error! {"{}", err};
         std::process::exit(1);
     };
 
-    match BeerusRpc::new(beerus).run().await {
+    match BeerusRpc::new(beerus).run(config.rpc_addr).await {
         Ok((addr, server_handle)) => {
             info!("========================================================");
             info!("Beerus JSON-RPC server started 🚀: http://{addr}");

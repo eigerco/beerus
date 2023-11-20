@@ -1,20 +1,18 @@
-use crate::config::Config;
-use crate::client::BeerusClient;
 use starknet::core::types::{
-    BlockHashAndNumber, BlockId, BlockTag as SnBlockTag, BroadcastedDeclareTransaction,
-    BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-    DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
-    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
+    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
+    BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
+    DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement, FunctionCall,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
 };
-use crate::utils::get_balance_key;
-use jsonrpsee::core::async_trait;
 use starknet::macros::selector;
-use starknet::providers::jsonrpc::{HttpTransport, HttpTransportError, JsonRpcClient, JsonRpcClientError};
-use starknet::providers::ProviderError::StarknetError;
-use starknet::providers::{AnyProviderError, Provider, ProviderError, StarknetErrorWithMessage};
-use crate::storage_proofs::types::StorageProofResponse;
+use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
+use starknet::providers::{Provider, ProviderError};
+
+use crate::client::BeerusClient;
+use crate::config::Config;
 use crate::storage_proofs::StorageProof;
+use crate::utils::get_balance_key;
 use crate::CoreError;
 
 pub struct Beerus {
@@ -25,7 +23,11 @@ impl Beerus {
     pub async fn new(config: Config) -> Self {
         Self { core: BeerusClient::new(config).await }
     }
+    pub async fn start(&mut self) -> eyre::Result<()> {
+        self.core.start().await
+    }
 }
+
 type StarknetErr = ProviderError<JsonRpcClientError<HttpTransportError>>;
 
 impl Beerus {
@@ -55,11 +57,8 @@ impl Beerus {
     ) -> Result<FieldElement, StarknetErr> {
         let l1_block_num = self.core.get_local_block_id(block_id).await;
         let fetched_val = self.core.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
-        let mut proof = self
-            .core
-            .get_contract_storage_proof(block_id, contract_address.as_ref(), &[*key.as_ref()])
-            .await
-            .unwrap();
+        let mut proof =
+            self.core.get_contract_storage_proof(block_id, contract_address.as_ref(), &[*key.as_ref()]).await.unwrap();
 
         let l1_root = self.core.get_local_root().await;
         proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val).unwrap();
@@ -77,11 +76,7 @@ impl Beerus {
         index: u64,
     ) -> Result<Transaction, StarknetErr> {
         let l1_block_num = self.core.get_local_block_id(block_id).await;
-        self.core
-            .starknet_client
-            .get_transaction_by_block_id_and_index(l1_block_num, index)
-            .await
-            
+        self.core.starknet_client.get_transaction_by_block_id_and_index(l1_block_num, index).await
     }
 
     pub async fn get_transaction_receipt(
@@ -102,11 +97,7 @@ impl Beerus {
         contract_address: FieldElement,
     ) -> Result<FieldElement, StarknetErr> {
         let l1_block_num = self.core.get_local_block_id(block_id).await;
-        self.core
-            .starknet_client
-            .get_class_hash_at(l1_block_num, contract_address)
-            .await
-            
+        self.core.starknet_client.get_class_hash_at(l1_block_num, contract_address).await
     }
 
     pub async fn get_class_at(
@@ -137,7 +128,11 @@ impl Beerus {
         self.core.starknet_client.estimate_fee(vec![request], l1_block_num).await
     }
 
-    pub async fn estimate_message_fee(&self, message: MsgFromL1, block_id: BlockId) -> Result<FeeEstimate, StarknetErr> {
+    pub async fn estimate_message_fee(
+        &self,
+        message: MsgFromL1,
+        block_id: BlockId,
+    ) -> Result<FeeEstimate, StarknetErr> {
         let l1_block_num = self.core.get_local_block_id(block_id).await;
         self.core.starknet_client.estimate_message_fee(message, l1_block_num).await
     }
@@ -146,7 +141,7 @@ impl Beerus {
         Ok(self.core.get_local_block_num().await)
     }
 
-    pub async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, StarknetErr> {
+    pub async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, CoreError> {
         let block_hash = self.core.sn_state_block_hash().await?;
         let block_number = self.core.sn_state_block_number().await?;
         Ok(BlockHashAndNumber { block_hash, block_number })
@@ -170,11 +165,7 @@ impl Beerus {
         continuation_token: Option<String>,
         chunk_size: u64,
     ) -> Result<EventsPage, StarknetErr> {
-        self.core
-            .starknet_client
-            .get_events(filter, continuation_token, chunk_size)
-            .await
-            
+        self.core.starknet_client.get_events(filter, continuation_token, chunk_size).await
     }
 
     pub async fn get_nonce(
@@ -204,11 +195,7 @@ impl Beerus {
         &self,
         deploy_account_transaction: BroadcastedDeployAccountTransaction,
     ) -> Result<DeployAccountTransactionResult, StarknetErr> {
-        self.core
-            .starknet_client
-            .add_deploy_account_transaction(deploy_account_transaction)
-            .await
-            
+        self.core.starknet_client.add_deploy_account_transaction(deploy_account_transaction).await
     }
 
     pub async fn estimate_fee_single(
@@ -231,7 +218,7 @@ impl Beerus {
         self.core.get_contract_storage_proof(block_id, &contract_address, &keys).await
     }
 
-    pub async fn proven_state_root(&self) -> Result<FieldElement, CoreError> {
+    pub async fn proven_state_root(&self) -> eyre::Result<FieldElement> {
         self.core.sn_state_root().await
     }
 
@@ -239,11 +226,8 @@ impl Beerus {
         self.core.sn_state_block_number().await
     }
 
-    pub async fn get_balance(
-        &self,
-        block_id: BlockId,
-        contract_address: FieldElement,
-    ) -> Result<FieldElement, StarknetErr> {
+    pub async fn get_balance(&self, block_id: BlockId, contract_address: FieldElement) -> eyre::Result<FieldElement> {
+        // FIXME: returned error
         // get local block number and root to verify proof with
         let l1_block_num = self.core.get_local_block_id(block_id).await;
         let root = self.core.get_local_root().await;
@@ -252,11 +236,8 @@ impl Beerus {
         let balance_key = get_balance_key(contract_address);
 
         // get the proof for the contracts erc20 balance in the fee token contract
-        let mut proof = self
-            .core
-            .get_contract_storage_proof(block_id, &self.core.config.fee_token_addr, &[balance_key])
-            .await
-            ?;
+        let mut proof =
+            self.core.get_contract_storage_proof(block_id, &self.core.config.fee_token_addr, &[balance_key]).await?;
 
         // call the untrusted RPC for the value to check via the storage proof
         let balance = self

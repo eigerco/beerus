@@ -17,9 +17,9 @@ impl BeerusRpc {
         Self { beerus }
     }
 
-    pub async fn run(self) -> Result<(SocketAddr, ServerHandle), Error> {
+    pub async fn run(self, listen_address: SocketAddr) -> Result<(SocketAddr, ServerHandle), Error> {
         // build the RPC server
-        let server = ServerBuilder::default().build(self.beerus.config.rpc_addr).await.unwrap();
+        let server = ServerBuilder::default().build(listen_address).await.unwrap();
 
         // start the RPC Server
         let addr = server.local_addr()?;
