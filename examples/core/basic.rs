@@ -1,9 +1,8 @@
 use std::env;
 
 use beerus_core::config::Config;
-use beerus_core::public::Beerus;
+use beerus_core::Beerus;
 use eyre::Result;
-use starknet::providers::Provider;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
