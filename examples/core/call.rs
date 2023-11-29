@@ -2,10 +2,9 @@ use std::env;
 use std::str::FromStr;
 
 use beerus_core::config::Config;
-use beerus_core::public::Beerus;
+use beerus_core::Beerus;
 use eyre::Result;
 use starknet::core::types::{BlockId, FieldElement, FunctionCall};
-use starknet::providers::Provider;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -25,7 +24,7 @@ async fn main() -> Result<()> {
 
     // Initialize beerus
     let config = Config::from_env();
-    let mut beerus = BeerusClient::new(config).await;
+    let mut beerus = Beerus::new(config).await;
     beerus.start().await?;
 
     // Prepare contract's function call

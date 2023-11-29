@@ -1,5 +1,5 @@
 use beerus_core::config::Config;
-use beerus_core::public::Beerus;
+use beerus_core::Beerus;
 use beerus_rpc::BeerusRpc;
 use clap::Parser;
 use tracing::{error, info, Level};

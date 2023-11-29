@@ -4,7 +4,7 @@ pub mod error;
 use std::net::SocketAddr;
 
 use api::BeerusRpcServer;
-use beerus_core::public::Beerus;
+use beerus_core::Beerus;
 use jsonrpsee::core::Error;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 

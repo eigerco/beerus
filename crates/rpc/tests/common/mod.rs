@@ -1,8 +1,5 @@
-use std::net::SocketAddr;
-use std::str::FromStr;
-
-use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
+use beerus_core::Beerus;
 use beerus_rpc::BeerusRpc;
 use reqwest::{Method, StatusCode};
 use rstest::fixture;
@@ -66,7 +63,7 @@ impl<'a, StarknetParams> StarknetRpcBaseData<'a, StarknetParams> {
 pub async fn setup_beerus_rpc() -> BeerusRpc {
     let mut config = Config::from_file("../../examples/conf/beerus.toml");
     config.starknet_rpc = setup_wiremock().await;
-    let mut beerus = BeerusClient::new(config.clone()).await;
+    let mut beerus = Beerus::new(config.clone()).await;
 
     beerus.start().await.unwrap();
 
