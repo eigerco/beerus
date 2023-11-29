@@ -153,11 +153,8 @@ pub trait BeerusRpc {
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, BeerusRpcError>;
 
-    #[method(name = "provenStateRoot")]
-    async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError>;
-
-    #[method(name = "provenBlockNumber")]
-    async fn proven_block_number(&self) -> Result<u64, BeerusRpcError>;
+    #[method(name = "getStateRoot")]
+    async fn get_state_root(&self) -> Result<FieldElement, BeerusRpcError>;
 
     #[method(name = "getBalance")]
     async fn get_balance(
@@ -374,12 +371,8 @@ impl BeerusRpcServer for BeerusRpc {
         self.beerus.get_contract_storage_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
     }
 
-    async fn proven_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
+    async fn get_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
         self.beerus.sn_state_root().await.map_err(BeerusRpcError::from)
-    }
-
-    async fn proven_block_number(&self) -> Result<u64, BeerusRpcError> {
-        self.beerus.sn_state_block_number().await.map_err(BeerusRpcError::from)
     }
 
     async fn get_balance(

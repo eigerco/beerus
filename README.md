@@ -60,7 +60,7 @@ cargo build
 cargo run -p beerus-cli -- -c examples/conf/beerus.toml
 
 # wait for server to start
-hurl examples/rpc/starknet_provenStateRoot.hurl
+hurl examples/rpc/starknet_getStateRoot.hurl
 ```
 
 ### Examples
@@ -169,8 +169,7 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_provenStateRoot`                 | :white_check_mark: |
-| `starknet_provenBlockNumber`               | :white_check_mark: |
+| `starknet_getStateRoot`                    | :white_check_mark: |
 | `starknet_getBalance`                      | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
 | `starknet_getEvents`                       | :x:                |
