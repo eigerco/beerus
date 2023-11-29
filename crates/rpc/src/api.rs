@@ -196,14 +196,15 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<FieldElement, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
+        let l1_root = self.beerus.get_local_root().await;
+
         let fetched_val = self.beerus.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
         let mut proof = self
             .beerus
-            .get_contract_storage_proof(block_id, contract_address.as_ref(), &[*key.as_ref()])
+            .get_contract_storage_proof(l1_block_num, contract_address.as_ref(), &[*key.as_ref()])
             .await
             .unwrap();
 
-        let l1_root = self.beerus.get_local_root().await;
         proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val).unwrap();
 
         Ok(fetched_val)

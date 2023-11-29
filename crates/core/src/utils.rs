@@ -32,16 +32,3 @@ pub fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
 pub fn get_balance_key(addr: FieldElement) -> FieldElement {
     get_storage_var_address(ERC20_BALANCES_BASE, &[addr]).unwrap()
 }
-
-// pub fn block_rs2api(block: BlockWithTxs) -> Block {
-//     let header = BlockHeader {
-//         block_hash: block.block_hash,
-//         parent_hash: block.parent_hash,
-//         block_number: block.block_number,
-//         state_root: block.new_root,
-//         sequencer: block.sequencer_address,
-//         timestamp: block.timestamp,
-//         n_tr
-//         // gas_price: block.
-//     }
-// }

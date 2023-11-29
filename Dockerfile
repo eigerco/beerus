@@ -2,7 +2,7 @@
 #
 # It also installs [cargo-chef](https://github.com/LukeMathWalker/cargo-chef), which helps caching the dependencies of a
 # rust project and speed up the docker builds.
-FROM rust:1.68.0 AS chef
+FROM rust:latest AS chef
 USER root
 RUN apt-get update && apt-get install -y musl-tools
 RUN rustup target add x86_64-unknown-linux-musl
