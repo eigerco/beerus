@@ -11,4 +11,6 @@ Content-Type: application/json
 }
 
 HTTP 200
-
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.result" exists

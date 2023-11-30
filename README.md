@@ -2,9 +2,9 @@
   <img src="book/images/beerus.png" height="250" />
   <div align="center">
 
-  [![GitHub Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
-  [![Project license](https://img.shields.io/github/license/keep-starknet-strange/beerus.svg?style=flat-square)](LICENSE)
-  [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+  [![CI Action Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml)
+  [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Check Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
 
   </div>
   <h1>Beerus</h1>
@@ -124,20 +124,21 @@ npm run build
 | `starknet_getBlockTransactionCount`        | :white_check_mark: |
 | `starknet_call`                            | :white_check_mark: |
 | `starknet_estimateFee`                     | :white_check_mark: |
+| `starknet_estimateFeeSingle`               | :white_check_mark: |
 | `starknet_blockNumber`                     | :white_check_mark: |
 | `starknet_blockHashAndNumber`              | :white_check_mark: |
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getStateRoot`                    | :white_check_mark: |
-| `starknet_getBalance`                      | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
 | `starknet_getEvents`(not validated)        | :white_check_mark: |
 | `starknet_getNonce`                        | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :x:                |
 | `starknet_addDeployAccountTransaction`     | :x:                |
-| `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
+| `starknet_getProof`                        | :white_check_mark: |
+| `starknet_getBalance`                      | :white_check_mark: |
+| `starknet_getStateRoot`                    | :white_check_mark: |
 
 ## Support
 

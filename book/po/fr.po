@@ -228,7 +228,7 @@ msgid "starknet_addInvokeTransaction"
 msgstr ""
 
 #: src/SUMMARY.md:67
-msgid "starknet_getContractStorageProof"
+msgid "starknet_getProof"
 msgstr ""
 
 #: src/SUMMARY.md:68

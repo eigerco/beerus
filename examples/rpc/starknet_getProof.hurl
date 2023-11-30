@@ -2,7 +2,7 @@ POST http://0.0.0.0:3030
 Content-Type: application/json
 {
     "jsonrpc":"2.0",
-    "method":"starknet_getContractStorageProof",
+    "method":"starknet_getProof",
     "params":[
         {
             "block_number": 354824
@@ -15,3 +15,9 @@ Content-Type: application/json
     "id":1
 }
 
+HTTP 200
+[Asserts]
+jsonpath "$.error" not exists
+jsonpath "$.result.state_commitment" exists
+jsonpath "$.result.class_commitment" exists
+jsonpath "$.result.contract_proof" exists
