@@ -1,6 +1,5 @@
 <div align="center">
   <img src="book/images/beerus.png" height="250" />
-  <h1 style="border-bottom: 0;">Beerus</h1>
   <div align="center">
 
   [![GitHub Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
@@ -8,7 +7,7 @@
   [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
   </div>
-  <hr>
+  <h1>Beerus</h1>
 </div>
 
 Beerus is a Starknet Light Client inspired by and using
