@@ -23,23 +23,33 @@
 
 Beerus is a Starknet Light Client inspired by and using
 [helios](https://github.com/a16z/helios/). The goal is to provide a simple and
-easy to use client to query Starknet state and interact with contracts.
+easy-to-use client to query Starknet state and interact with contracts.
 
 See the [Beerus Book](book/README.md) for more info.
 
 ## Getting Started
 
+```bash
+cargo build --release
+
+# insert valid api keys
+./target/release/beerus -c examples/conf/beerus.json
+
+# wait for server to start
+hurl examples/rpc/starknet_getStateRoot.hurl
+```
+
 ### Config
 
-Beerus relies on TWO untrusted RPC endpoints, as these are untrusted they will
+Beerus relies on TWO untrusted RPC endpoints. As these are untrusted they will
 typically not be nodes run on your local host or your local network. These 
-untrusted RPC providers musts adhere to both the l1 `eth_getProof` endpoint
+untrusted RPC providers must adhere to both the l1 `eth_getProof` endpoint
 as well as the l2 `pathfinder_getProof` endpoint. For this we recommend using
-[Alchemy](https://www.alchemy.com) as your untrusted node provider. 
+[Alchemy](https://www.alchemy.com) as your untrusted L2 node provider. 
 
-NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls.
+*NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls*
 
-| Field   | Values | Description |
+| field   | example | description |
 | ----------- | ----------- | ----------- |
 | network | MAINNET or GOERLI | network to query |
 | eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
@@ -48,20 +58,6 @@ NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls.
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 | fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
-
-Direct the beerus cli to your config file as follows:
-
-```bash
-cargo build
-./target/debug/beerus -c examples/conf/beerus.json
-
-# or
-
-cargo run -p beerus-cli -- -c examples/conf/beerus.toml
-
-# wait for server to start
-hurl examples/rpc/starknet_getStateRoot.hurl
-```
 
 ## Development
 
