@@ -1,8 +1,6 @@
-<!--- Please provide a general summary of your changes in the title above -->
-
-# Pull Request type
-
 Issue Number: N/A
+
+## Type
 
 - [ ] Bugfix
 - [ ] Feature
@@ -13,9 +11,10 @@ Issue Number: N/A
 - [ ] Testing
 - [ ] Other (please describe):
 
-# What is the changes were made?
+## Description
 
-# Does this introduce a breaking change?
+
+# Breaking changes?
 
 - [ ] Yes
 - [ ] No
