@@ -35,6 +35,7 @@ examples/wasm/dist/*
 !examples/wasm/dist/index.html
 examples/wasm/package-lock.json
 examples/wasm/Cargo.lock
+examples/core/Cargo.lock
 
 # Beerus Documentation
 book/book

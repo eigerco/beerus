@@ -79,7 +79,7 @@ jobs:
       # Run end-to-end tests
       - name: Run end-to-end tests
         id: e2e_test
-        run: ./e2e-tests.sh
+        run: ./scripts/e2e-tests.sh
       # Generate job summary
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY

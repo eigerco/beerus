@@ -6,12 +6,11 @@ version = "0.3.0"
 
 [dependencies]
 beerus-core = { path = "../../crates/core"}
-tracing-subscriber.workspace = true
-tracing.workspace = true
-starknet.workspace = true
-eyre.workspace = true
-async-std = { workspace = true, features = ["attributes", "tokio1"] }
-
+starknet = "0.6.0"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.17"
+eyre = "0.6.8"
+async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 
 [[example]]
 name = "basic"

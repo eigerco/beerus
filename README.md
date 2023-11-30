@@ -63,12 +63,6 @@ cargo run -p beerus-cli -- -c examples/conf/beerus.toml
 hurl examples/rpc/starknet_getStateRoot.hurl
 ```
 
-### Examples
-
-```bash
-cargo run -p beerus-core --example basic
-```
-
 ## Development
 
 #### Build
@@ -91,6 +85,14 @@ docker build . -t beerus
 
 ```bash
 docker run -e NETWORK=<arg> -e ETH_EXECUTION_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
+```
+
+#### Examples (currently broken on Helios deps)
+
+```bash
+cd examples/core
+cargo run --example basic
+cargo run --example call
 ```
 
 ##### Beerus JS(wasm demo)
@@ -120,7 +122,7 @@ npm run build
 
 ## Endpoint support
 
-*Starknet endpoints* (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+*Starknet endpoints* (in compliance with [Starknet specs](https://github.com/starkware-libs/starknet-specs)):
 
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
