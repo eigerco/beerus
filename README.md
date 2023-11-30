@@ -8,17 +8,19 @@
 
   </div>
   <h1>Beerus</h1>
+
+  Beerus is a Starknet Light Client inspired by and using
+  [helios](https://github.com/a16z/helios/).
+
+
+  The goal is to provide a simple and
+  easy-to-use client to query Starknet state and interact with contracts. We leverage 
+  the Ethereum light client protocol to obtain a verified starknet state root
+  and storage proofs in order to verify the inclusion for a storage value.
+
+
+  See the [Beerus Book](book/README.md) for more info.
 </div>
-
-Beerus is a Starknet Light Client inspired by and using
-[helios](https://github.com/a16z/helios/).
-
-The goal is to provide a simple and
-easy-to-use client to query Starknet state and interact with contracts. We leverage 
-the Ethereum light client protocol to obtain a verified starknet state root
-and storage proofs in order to verify the inclusion for a storage value.
-
-See the [Beerus Book](book/README.md) for more info.
 
 ## Getting Started
 
