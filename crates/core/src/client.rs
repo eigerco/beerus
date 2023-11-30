@@ -67,27 +67,49 @@ impl Default for NodeData {
 }
 
 pub struct BeerusClient {
-    /// Ethereum light client
+    /// Helios Light Client
+    ///
+    /// Initialized w/ valid L1 execution rpc. This wraps the
+    /// helios client as well as the db which stores
+    /// valid L1 weak subjectivity checkpoints used to sync.
     #[cfg(not(target_arch = "wasm32"))]
     pub helios_client: Arc<Client<FileDB>>,
     #[cfg(target_arch = "wasm32")]
     pub helios_client: Arc<Client<ConfigDB>>,
-    /// StarkNet light client
+    /// Starknet Client
+    ///
+    /// Untrusted Starknet L2 rpc.
     pub starknet_client: JsonRpcClient<HttpTransport>,
-    /// Proof client
+    /// Proof Address
+    ///
+    /// Clone of the starknet client dedicated for fetching proofs.
     pub proof_addr: String,
-    /// Poll interval
+    /// Poll Interval Seconds
+    ///
+    /// Interval at which beerus will check if the L1 State Root
+    /// has been updated.
     pub poll_secs: u64,
-    /// StarkNet core contract address
+    /// Core Contract Address
+    ///
+    /// Address of the L1 core contracts for starknet.
+    /// Depends on the network beerus is initialized w/.
     pub core_contract_addr: Address,
-    /// Payload data
+    /// Node Data
+    ///
+    /// Mutex guarded node information including:
+    /// - latest l1 state root
+    /// - latest l1 block number
+    /// - current local root(updated via cache of unproven block data)
+    /// - current block number(updated via cache of unproven block data)
     pub node: Arc<RwLock<NodeData>>,
-    /// Beerus client config
+    /// Beerus Config
+    ///
+    /// Configuration for Beerus client including l1 + l2
+    /// untrusted rpc addresses, and network information
     pub config: Config,
 }
 
 impl BeerusClient {
-    /// Create a new Beerus Light Client service.
     pub async fn new(config: Config) -> Self {
         #[cfg(not(target_arch = "wasm32"))]
         let mut helios_client: Client<FileDB> = config.to_helios_client().await;
@@ -102,6 +124,10 @@ impl BeerusClient {
             thread::sleep(time::Duration::from_secs(1));
         }
 
+        if let Err(err) = sn_state_root_inner(&helios_client, config.get_core_contract_address()).await {
+            panic!("execution client err: \n\n{err:#?}");
+        }
+
         Self {
             helios_client: Arc::new(helios_client),
             starknet_client: config.to_starknet_client(),
@@ -113,6 +139,11 @@ impl BeerusClient {
         }
     }
 
+    /// Start a async thread to query the last updated state of Starknet
+    /// via the Core Contracts on L1(updated via the `updateState` call).
+    ///
+    /// The loop run in this thread will query these values at
+    /// `config.poll_secs` seconds
     pub async fn start(&mut self) -> Result<()> {
         let (config, l1_client, node) = (self.config.clone(), self.helios_client.clone(), self.node.clone());
 
@@ -126,7 +157,7 @@ impl BeerusClient {
                 let local_block_num = node.read().await.l1_block_num;
 
                 if local_block_num < sn_block_num {
-                    // TODO: Fetch and hash the headers for the amout of blocks l1 is behind l2
+                    // TODO: Issue #550 - feat: sync from proven root
                     match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await.unwrap() {
                         MaybePendingBlockWithTxHashes::Block(block) => {
                             info!(
@@ -180,10 +211,14 @@ impl BeerusClient {
         self.node.read().await.l1_block_num
     }
 
+    /// If user queries historical block i.e. provided block num < local block num
+    /// Allow request to continue with that value.
+    ///
+    /// Until Issue #550 is implemented blocks in the range block num > local block num
+    /// will default to local block num
     pub async fn get_local_block_id(&self, provided_block_id: BlockId) -> BlockId {
         let local_block_num = self.get_local_block_num().await;
 
-        // allow for historical block ids
         match provided_block_id {
             BlockId::Number(num) => {
                 if local_block_num > num {
@@ -196,6 +231,11 @@ impl BeerusClient {
         }
     }
 
+    /// Fetch the storage proof at block `block_id`
+    /// that proves a known value exists at a known key.
+    ///
+    /// Request is exposed by untrusted rpc's `pathfinder_getProof`
+    /// endpoint.
     pub async fn get_contract_storage_proof(
         &self,
         block_id: BlockId,
@@ -247,6 +287,5 @@ async fn sn_state_block_number_inner(
 
     let sn_block_num = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
 
-    // Convert the response bytes to a U256.
     Ok(U256::from_big_endian(&sn_block_num).as_u64())
 }

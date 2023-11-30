@@ -18,7 +18,6 @@ use crate::BeerusRpc;
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
-    //
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
@@ -144,7 +143,6 @@ pub trait BeerusRpc {
     ) -> Result<FeeEstimate, BeerusRpcError>;
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
-    //
     #[method(name = "getContractStorageProof")]
     async fn get_contract_storage_proof(
         &self,
@@ -167,7 +165,6 @@ pub trait BeerusRpc {
 #[async_trait]
 impl BeerusRpcServer for BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
-    //
     async fn get_block_with_tx_hashes(
         &self,
         block_id: BlockId,
@@ -361,7 +358,6 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
-    //
     async fn get_contract_storage_proof(
         &self,
         block_id: BlockId,
