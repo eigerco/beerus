@@ -1,16 +1,10 @@
-# Sample workflow for building and deploying a mdBook site to GitHub Pages
-#
-# To get started with mdBook see: https://rust-lang.github.io/mdBook/index.html
-#
-name: Deploy mdBook site to Pages
-
+name: mdbook
 on:
   push:
     branches:
       - main
     paths:
       - book/**
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -32,14 +26,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Rust cache
-        uses: ./.github/workflows/setup-rust-cache
+      - uses: actions/checkout@v3
 
       - name: Install mdbook
-        uses: ./.github/workflows/install-mdbook
+        run: cargo install mdbook --locked --version 0.4.28
+        shell: bash
+  
+      - name: Install mdbook-i18n-helpers
+        run: cargo install mdbook-i18n-helpers --locked --version 0.1.0
+        shell: bash
+  
 
       - name: Build in English
         run: |

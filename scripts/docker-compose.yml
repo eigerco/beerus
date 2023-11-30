@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  beerus-rpc:
+    image: "beerus:${BEERUS_VERSION:-latest}"
+    ports:
+      - '3030:3030'
+    environment:
+      # Inject required env variables into the container
+      NETWORK: "${NETWORK}"
+      ETH_EXECUTION_RPC: "${ETH_EXECUTION_RPC}"
+      STARKNET_RPC: "${STARKNET_RPC}"
+    deploy:
+      resources:
+        # Define small resource limitations to mimic a low-spec hardware
+        limits:
+          cpus: "2"
+          memory: "200m"

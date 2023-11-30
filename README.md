@@ -1,91 +1,113 @@
 <div align="center">
+  <img src="book/images/beerus.png" height="250" />
+  <div align="center">
+
+  [![GitHub Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
+  [![Project license](https://img.shields.io/github/license/keep-starknet-strange/beerus.svg?style=flat-square)](LICENSE)
+  [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+
+  </div>
   <h1>Beerus</h1>
-    <img src="docs/images/beerus.png" height="250">
-  <br />
-  <br />
-  <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
-  -
-  <a href="https://github.com/keep-starknet-strange/beerus/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
-  -
-  <a href="https://github.com/keep-starknet-strange/beerus/discussions">Ask a Question</a>
+
+  Beerus is a Starknet Light Client inspired by and using
+  [helios](https://github.com/a16z/helios/).
+  
+
+  See the [Beerus Book](book/README.md) for more info.
 </div>
 
-<div align="center">
-<br />
+## Getting Started
 
-[![GitHub Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
-[![Project license](https://img.shields.io/github/license/keep-starknet-strange/beerus.svg?style=flat-square)](LICENSE)
-[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+```bash
+cargo build --release
 
-</div>
+# insert valid api keys
+./target/release/beerus -c examples/conf/beerus.json
 
-<details>
-<summary>Table of Contents</summary>
+# wait for server to start
+hurl examples/rpc/starknet_getStateRoot.hurl
+```
 
-- [Report a Bug](#report-a-bug)
-- [Request a Feature](#request-a-feature)
-- [Roadmap](#roadmap)
-- [About](#about)
-  - [Built With](#built-with)
-- [Architecture](#architecture)
-  - [Simple usage overview](#simple-usage-overview)
-- [Endpoint support](#endpoint-support)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-    - [Beerusup](#beerusup)
-    - [Build](#build)
-    - [Test](#test)
-    - [Config](#config)
-      - [Config File](#config-file)
-      - [Environment Variables](#environment-variables)
-    - [Beerus RPC](#beerus-rpc)
-      - [Beerus RPC](#beerus-rpc-1)
-      - [Beerus JS(wasm demo)](#beerus-jswasm-demo)
-- [Work in progress](#work-in-progress)
-- [Support](#support)
-- [Project assistance](#project-assistance)
-- [Contributing](#contributing)
-- [Security](#security)
-- [Acknowledgements](#acknowledgements)
-- [Contributors ✨](#contributors-)
+### Config
 
-</details>
+Beerus relies on TWO untrusted RPC endpoints. As these are untrusted they will
+typically not be nodes run on your local host or your local network. These 
+untrusted RPC providers must adhere to both the l1 `eth_getProof` endpoint
+as well as the l2 `pathfinder_getProof` endpoint. For this we recommend using
+[Alchemy](https://www.alchemy.com) as your untrusted L2 node provider. 
 
----
-## Roadmap
-We have big plans for Beerus. Check out the Roadmap!
+*NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls*
 
-[![Beerus Roadmap](docs/images/roadmap.png)](docs/images/roadmap.png)
-## About
+| field   | example | description |
+| ----------- | ----------- | ----------- |
+| network | MAINNET or GOERLI | network to query |
+| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l2 node provider url |
+| data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
+| poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
+| rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
+| fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
 
-Beerus is a Starknet Light Client inspired by and using
-[helios](https://github.com/a16z/helios/). The goal is to provide a simple and
-easy to use client to query Starknet state and interact with contracts.
+## Development
 
-### Built With
+#### Build
 
-- [Rust](https://www.rust-lang.org/)
-- [helios](https://github.com/a16z/helios)
-- [ethers-rs](https://github.com/gakonst/ethers-rs)
+```bash
+cargo build --all --release
+```
 
-## Architecture
+#### Test
 
-Here is a high level overview of the architecture of Beerus.
+```bash
+cargo test --all
+```
 
-[![Beerus architecture](docs/images/beerus-architecture-v1.0.png)](docs/images/beerus-architecture-v1.0.png)
+#### Docker
 
-### Simple usage overview
+```bash
+docker build . -t beerus
+```
 
-Here is a simple overview of how Beerus work. The example is for querying a
-storage value of a Starknet contract.
+```bash
+docker run -e NETWORK=<arg> -e ETH_EXECUTION_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
+```
 
-[![Beerus Query Contract Storage](docs/images/query-contract-storage.png)](docs/images/query-contract-storage.png)
+#### Examples (currently broken on Helios deps)
+
+```bash
+cd examples/core
+cargo run --example basic
+cargo run --example call
+```
+
+##### Beerus JS(wasm demo)
+
+Dependencies:
+
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [CORS bypass](https://github.com/garmeeh/local-cors-proxy/blob/master/README.md)
+- local pathfinder node at `http://localhost:9545`
+- execution env var - `ETH_EXECUTION_RPC`
+
+```bash
+cd examples/wasm
+
+# install node deps
+npm i
+
+# build webpack & wasm modules
+npm run build
+
+# run example
+./run.sh
+
+# navigate browser to http://localhost:8080
+# open developer console
+```
 
 ## Endpoint support
 
-Here are all the endpoints supported by Beerus in tag v0.2.0
-
-*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+*Starknet endpoints* (in compliance with [Starknet specs](https://github.com/starkware-libs/starknet-specs)):
 
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
@@ -107,210 +129,15 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getEvents`                       | :x:                |
+| `starknet_getStateRoot`                    | :white_check_mark: |
+| `starknet_getBalance`                      | :white_check_mark: |
+| `starknet_syncing`                         | :white_check_mark: |
+| `starknet_getEvents`(not validated)        | :white_check_mark: |
 | `starknet_getNonce`                        | :white_check_mark: |
-
-
-*Ethereum endpoints* (21) (in compliance with [Helios specs](https://github.com/a16z/helios/blob/master/rpc.md)):
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `eth_getBalance`                           | :white_check_mark: |
-| `eth_getTransactionCount`                  | :white_check_mark: |
-| `eth_getCode`                              | :white_check_mark: |
-| `eth_call`                                 | :x:                |
-| `eth_estimateGas`                          | :white_check_mark: |
-| `eth_getChainId`                           | :white_check_mark: |
-| `eth_gasPrice`                             | :white_check_mark: |
-| `eth_maxPriorityFeePerGas`                 | :white_check_mark: |
-| `eth_blockNumber`                          | :white_check_mark: |
-| `eth_getBlockByNumber`                     | :white_check_mark: |
-| `eth_getBlockByHash`                       | :white_check_mark: |
-| `eth_sendRawTransaction`                   | :x:                |
-| `eth_getTransactionReceipt`                | :white_check_mark: |
-| `eth_getLogs`                              | :white_check_mark: |
-| `eth_getStorageAt`                         | :x:                |
-| `eth_getBlockTransactionCountByHash`       | :x:                |
-| `eth_getBlockTransactionCountByNumber`     | :white_check_mark: |
-| `eth_coinbase`                             | :white_check_mark: |
-| `eth_syncing`                              | :white_check_mark: |
-| `eth_getTransactionByHash`                 | :white_check_mark: |
-| `eth_getTransactionByBlockHashAndIndex`    | :white_check_mark: |
-
-*Additional endpoints* (8):
-| Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
-| `starknet_l1_to_l2_messages`               | :white_check_mark: |
-| `starknet_l1_to_l2_message_nonce`          | :white_check_mark: |
-| `starknet_l1_to_l2_message_cancellations`  | :white_check_mark: |
-| `starknet_l2_to_l1_messages`               | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :x:                |
 | `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
-
-## Getting Started
-
-### Installation
-
-#### Beerusup
-
-To install with `beerusup`:
-
-```bash
-curl -sL https://raw.githubusercontent.com/keep-starknet-strange/beerus/main/beerusup | sh
-```
-
-#### Build
-
-```bash
-cargo build --all --release
-```
-
-Build `beerus-core` for WASM:
-
-```bash
-cargo build -p beerus-core --no-default-features --target wasm32-unknown-unknown --release
-```
-
-#### Test
-
-```bash
-cargo test --all
-```
-
-#### Config
-
-The project requires an Ethereum node and a Starknet node. For Ethereum nodes
-you can use Alchemy (not Infura since it does not support getProof endpoint).
-
-Ethereum execution layer RPC URL (must be an Ethereum provider that supports
-the eth_getProof endpoint).
-
-Ethereum consensus layer RPC URL (must be a consensus node that supports the
-light client beacon chain api)
-
-For Starknet node for the moment you can use Infura but soon
-[verify proof](<[#62](https://github.com/keep-starknet-strange/beerus/issues/62)>)
-will be implemented in Pathfinder nodes, and so will these nodes be working as
-well.
-
-| Env Var | TOML | Mainnet | Goerli |
-| -------------  | -------------  | ------------- | ------------- |
-| ETHEREUM_NETWORK | ethereum_network | `mainnet` | `goerli(default)` |
-| ETHEREUM_EXECUTION_RPC_URL | ethereum_consensus_rpc | <https://eth-mainnet.g.alchemy.com/v2/XXXXX> | <https://eth-goerli.g.alchemy.com/v2/XXXXX> |
-| ETHEREUM_CONSENSUS_RPC_URL | ethereum_execution_rpc | <https://www.lightclientdata.org> | <http://testing.prater.beacon-api.nimbus.team> |
-| STARKNET_RPC_URL  | starknet_rpc | <https://starknet-mainnet.infura.io/v3/XXXXX> | <https://starknet-goerli.infura.io/v3/XXXXX> |
-
-To speed up the launch of the Ethereum client, it is recommended to set a more recent checkpoint. You can find one, for example, at this link: https://sync.invis.tools/.
-
-| Env Var | TOML | Mainnet |
-|---|---|----------------------------------------------------------|
-| ETHEREUM_CHECKPOINT | ethereum_checkpoint | 0x419347336a423e0ad7ef3a1e8c0ca95f8b4f525122eea0178a11f1527ba38c0f |
-
-##### Config File
-
-Beerus is configurable via a config toml. If you have set the env var
-`BEERUS_CONFIG` = `path/to/config` this will override all other environment
-variables and take configuration from values defined herein.
-Also the the cli can be directed via `beerus --config <path/to/config>`
-
-[goerli.toml](./crates/beerus-core/tests/common/data/goerli.toml)
-
-[mainnet.toml](./crates/beerus-core/tests/common/data/mainnet.toml)
-
-##### Environment Variables
-
-Beerus is configurable through environment variables.
-
-```bash
-cp examples/.env.example .env
-source .env
-```
-
-#### Examples
-```bash
-cargo run -p beerus-core --example basic
-```
-Using config from `.toml` file
-```bash
-BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
-```
-
-### Using Beerus as a Library
-
-Beerus can be imported into any Rust project.
-
-```rust
-use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
-use env_logger::Env;
-use eyre::Result;
-
-#[tokio::main]
-async fn main() -> Result<()> {
-  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-  let config = Config::from_env();
-
-  let mut beerus = BeerusLightClient::new(config.clone()).await?;
-  beerus.start().await?;
-
-  let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
-  println!("{:?}", current_starknet_block);
-
-  let current_ethereum_block = beerus
-          .ethereum_lightclient
-          .lock()
-          .await
-          .get_block_number()
-          .await?;
-  println!("{:?}", current_ethereum_block);
-  Ok(())
-}
-```
-
-
-#### [Beerus RPC](https://github.com/keep-starknet-strange/beerus/blob/main/crates/beerus-rpc/rpc.md)
-
-##### Beerus RPC
-
-```bash
-cargo run --bin beerus-rpc
-```
-
-##### Beerus JS(wasm demo)
-
-Dependencies:
-
-- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-- [CORS bypass](https://github.com/garmeeh/local-cors-proxy/blob/master/README.md)
-- local pathfinder node at `http://localhost:9545`
-- execution env var - `ETHEREUM_EXECUTION_RPC_URL`
-
-```bash
-cd crates/beerus-js
-
-# install node deps
-npm i
-
-# build webpack & wasm modules
-npm run build
-
-# run example
-./run.sh
-
-# navigate browser to http://localhost:8080
-# open developer console
-```
-
-## Work in progress
-
-See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
-a list of proposed features (and known issues).
-
-- [Top Feature Requests](https://github.com/keep-starknet-strange/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc)
-  (Add your votes using the 👍 reaction)
-- [Top Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc)
-  (Add your votes using the 👍 reaction)
-- [Newest Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
 
@@ -319,28 +146,6 @@ Reach out to the maintainer at one of the following places:
 - [GitHub Discussions](https://github.com/keep-starknet-strange/beerus/discussions)
 - Contact options listed on
   [this GitHub profile](https://github.com/keep-starknet-strange)
-
-## Project assistance
-
-If you want to say **thank you** or/and support active development of Beerus:
-
-- Add a [GitHub Star](https://github.com/keep-starknet-strange/beerus) to the
-  project.
-- Tweet about the Beerus.
-- Write interesting articles about the project on [Dev.to](https://dev.to/),
-  [Medium](https://medium.com/) or your personal blog.
-
-Together, we can make Beerus **better**!
-
-## Contributing
-
-First off, thanks for taking the time to contribute! Contributions are what make
-the open-source community such an amazing place to learn, inspire, and create.
-Any contributions you make will benefit everybody else and are **greatly
-appreciated**.
-
-Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you
-for being involved!
 
 ## Security
 

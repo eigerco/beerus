@@ -1,48 +1,27 @@
-name: continuous integration
-
+name: ci
 on:
   schedule:
     - cron: "0 8 * * *"
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'The branch to build'
-        required: true
-
-
-env:
-  BEERUS_VERSION: "ci"
-  ETHEREUM_NETWORK: "mainnet"
-  ETHEREUM_CONSENSUS_RPC_URL: "https://www.lightclientdata.org"
-  ETHEREUM_EXECUTION_RPC_URL: "https://eth-mainnet.g.alchemy.com/v2/spl1o-SnCzLfKdNt-_-BxQ0lsJmR3FLU"
-  STARKNET_RPC_URL: "https://starknet-mainnet.infura.io/v3/a77771c7226a447bada27e682ae743bd"
-  ETHEREUM_CHECKPOINT: "0x6994337840845b922cfd8d90a9f283e936f77a61eceb41b0e4b083ac5269e37a"
-#  ETHEREUM_NETWORK: ${{ secrets.ETHEREUM_NETWORK }}
-#  ETHEREUM_CONSENSUS_RPC_URL: ${{ secrets.ETHEREUM_CONSENSUS_RPC_URL }}
-#  ETHEREUM_EXECUTION_RPC_URL: ${{ secrets.ETHEREUM_EXECUTION_RPC_URL }}
-#  STARKNET_RPC_URL: ${{ secrets.STARKNET_RPC_URL }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the source code
-      - name: Checkout
-        uses: actions/checkout@v3
-      # Setup docker
+      - uses: actions/checkout@v3
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
-      # Build and export the beerus docker image
+
       - name: Build and export
         uses: docker/build-push-action@v4
         with:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: beerus:${{ env.BEERUS_VERSION }}
+          tags: beerus:ci
           outputs: type=docker,dest=/tmp/beerus.tar
-      # Upload the beerus docker image as an artifact
-      - name: Upload artifact
+
+      - name: Upload beerus docker image as artifact
         uses: actions/upload-artifact@v3
         with:
           name: beerus
@@ -52,44 +31,47 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      # Checkout the source code
-      - name: Checkout
-        uses: actions/checkout@v3
-      # Install hurl
-      - name: Install dependencies
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies + hurl
         run: |
           curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
           sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
-      # Download the beerus docker image
-      - name: Download artifact
+
+      - name: Download beerus docker image
         uses: actions/download-artifact@v3
         with:
           name: beerus
           path: /tmp
-      # Load the beerus docker image
-      - name: Load docker image
+
+      - name: Load beerus docker image
         run: |
           docker load --input /tmp/beerus.tar
           docker image ls -a
-      # Run beerus RPC in the background
-      - name: Run beerus
+
+      - name: Run RPC in the background
+        env:
+          BEERUS_VERSION: "ci"
+          NETWORK: "mainnet"
+          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC }}
+          STARKNET_RPC: ${{ secrets.STARKNET_RPC }}
         run: |
           docker compose up -d
-          hurl --retry --retry-max-count 60 ./examples/beerus-rpc/starknet/starknet_blockNumber.hurl > /dev/null;
-      # Run end-to-end tests
+          hurl --retry --retry-max-count 60 ./examples/rpc/starknet_blockNumber.hurl > /dev/null
+
       - name: Run end-to-end tests
         id: e2e_test
-        run: ./e2e-tests.sh
-      # Generate job summary
+        run: bash ./scripts/e2e-tests.sh
+
       - name: Generate job summary
         run: cat summary.md >> $GITHUB_STEP_SUMMARY
         if: always()
-      # Save docker logs
-      - name: Save logs
+
+      - name: Save docker logs
         run: docker-compose logs > service_logs.txt
         if: always()
-      # export docker logs as an artifact
-      - name: Upload logs
+
+      - name: Upload docker logs
         uses: actions/upload-artifact@v2
         with:
           name: service_logs

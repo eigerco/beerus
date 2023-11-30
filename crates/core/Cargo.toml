@@ -1,0 +1,31 @@
+[package]
+description = "Core utilities for the Beerus Light Client"
+edition = "2021"
+name = "beerus-core"
+version = "0.3.0"
+
+[dependencies]
+async-std = { workspace = true, features = ["attributes", "tokio1"] }
+async-trait = "0.1.58"
+bitvec = "1.0.1"
+ethabi = "18.0.0"
+ethers = "2.0.2"
+eyre.workspace = true
+helios = { git = "https://github.com/a16z/helios", rev = "d4722045914d93c6fd8978f1fb2183494bc78a15" }
+reqwest = "0.11.13"
+serde = { workspace = true, features = ["derive"] }
+serde_json = "1.0"
+starknet-crypto = "0.6.0"
+starknet.workspace = true
+# starknet_api = "0.5.0-rc1"
+thiserror = "1.0.26"
+toml = "0.7.3"
+tracing.workspace = true
+url = "2.3.1"
+
+[dev-dependencies]
+rstest = "0.18.2"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = "0.2.6"
+wasm-bindgen-futures = "0.4.33"

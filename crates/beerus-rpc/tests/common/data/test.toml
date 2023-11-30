@@ -1,5 +1,0 @@
-    ethereum_network = "goerli"
-    ethereum_consensus_rpc = ""
-    ethereum_execution_rpc = ""
-    starknet_rpc = ""
-    data_dir = ""
