@@ -11,10 +11,7 @@
 
   Beerus is a Starknet Light Client inspired by and using
   [helios](https://github.com/a16z/helios/).
-
-
-  The goal is to provide a simple and easy-to-use client to query Starknet state and interact with contracts.
-
+  
 
   See the [Beerus Book](book/README.md) for more info.
 </div>
