@@ -43,12 +43,12 @@ impl BeerusClient {
 
     #[wasm_bindgen]
     pub async fn get_block_number(&self) -> u32 {
-        self.beerus.starknet_lightclient.block_number().await.unwrap() as u32
+        self.beerus.starknet_client.block_number().await.unwrap() as u32
     }
 
     #[wasm_bindgen]
     pub async fn get_starknet_state_root(&self) -> JsValue {
-        let root = self.beerus.ethereum_lightclient.read().await.starknet_state_root().await.unwrap();
+        let root = self.beerus.helios_client.read().await.starknet_state_root().await.unwrap();
 
         serde_wasm_bindgen::to_value(&root).unwrap()
     }
