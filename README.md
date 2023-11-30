@@ -98,7 +98,7 @@ Dependencies:
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [CORS bypass](https://github.com/garmeeh/local-cors-proxy/blob/master/README.md)
 - local pathfinder node at `http://localhost:9545`
-- execution env var - `ETHEREUM_EXECUTION_RPC_URL`
+- execution env var - `ETH_EXECUTION_RPC`
 
 ```bash
 cd examples/wasm
