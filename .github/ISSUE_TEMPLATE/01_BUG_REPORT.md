@@ -6,8 +6,6 @@ labels: "bug"
 assignees: ""
 ---
 
-# Bug Report
-
 **Beerus version:**
 
 **Current behavior:**

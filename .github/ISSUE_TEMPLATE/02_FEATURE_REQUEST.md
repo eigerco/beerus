@@ -6,8 +6,6 @@ labels: "enhancement"
 assignees: ""
 ---
 
-# Feature Request
-
 **Describe the Feature Request**
 
 **Related Code**
