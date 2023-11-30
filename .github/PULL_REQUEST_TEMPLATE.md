@@ -2,18 +2,18 @@ Issue Number: N/A
 
 ## Type
 
-- [ ] Feature
-- [ ] Bugfix
-- [ ] Dev (no functional changes, no API changes)
-- [ ] Fmt (formatting, renaming)
-- [ ] Build
-- [ ] Docs
-- [ ] Testing
+- [ ] feature
+- [ ] bugfix
+- [ ] dev (no functional changes, no API changes)
+- [ ] fmt (formatting, renaming)
+- [ ] build
+- [ ] docs
+- [ ] testing
 
 ## Description
 
 
-# Breaking changes?
+## Breaking changes?
 
-- [ ] Yes
-- [ ] No
+- [ ] yes
+- [ ] no
