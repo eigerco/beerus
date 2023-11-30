@@ -124,20 +124,21 @@ npm run build
 | `starknet_getBlockTransactionCount`        | :white_check_mark: |
 | `starknet_call`                            | :white_check_mark: |
 | `starknet_estimateFee`                     | :white_check_mark: |
+| `starknet_estimateFeeSingle`               | :white_check_mark: |
 | `starknet_blockNumber`                     | :white_check_mark: |
 | `starknet_blockHashAndNumber`              | :white_check_mark: |
 | `starknet_chainId`                         | :white_check_mark: |
 | `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getStateRoot`                    | :white_check_mark: |
-| `starknet_getBalance`                      | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
 | `starknet_getEvents`(not validated)        | :white_check_mark: |
 | `starknet_getNonce`                        | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :x:                |
 | `starknet_addDeployAccountTransaction`     | :x:                |
-| `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
+| `starknet_getProof`                        | :white_check_mark: |
+| `starknet_getBalance`                      | :white_check_mark: |
+| `starknet_getStateRoot`                    | :white_check_mark: |
 
 ## Support
 

@@ -236,7 +236,7 @@ impl BeerusClient {
     ///
     /// Request is exposed by untrusted rpc's `pathfinder_getProof`
     /// endpoint.
-    pub async fn get_contract_storage_proof(
+    pub async fn get_proof(
         &self,
         block_id: BlockId,
         contract_address: &FieldElement,

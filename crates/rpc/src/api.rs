@@ -80,7 +80,7 @@ pub trait BeerusRpc {
     #[method(name = "estimateFee")]
     async fn estimate_fee(
         &self,
-        request: BroadcastedTransaction,
+        request: Vec<BroadcastedTransaction>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError>;
 
@@ -143,8 +143,8 @@ pub trait BeerusRpc {
     ) -> Result<FeeEstimate, BeerusRpcError>;
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
-    #[method(name = "getContractStorageProof")]
-    async fn get_contract_storage_proof(
+    #[method(name = "getProof")]
+    async fn get_proof(
         &self,
         block_id: BlockId,
         contract_address: FieldElement,
@@ -193,8 +193,7 @@ impl BeerusRpcServer for BeerusRpc {
         let l1_root = self.beerus.get_local_root().await;
 
         let fetched_val = self.beerus.starknet_client.get_storage_at(contract_address, key, l1_block_num).await?;
-        let mut proof =
-            self.beerus.get_contract_storage_proof(l1_block_num, contract_address.as_ref(), &[*key.as_ref()]).await?;
+        let mut proof = self.beerus.get_proof(l1_block_num, contract_address.as_ref(), &[*key.as_ref()]).await?;
 
         proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val)?;
 
@@ -264,11 +263,11 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn estimate_fee(
         &self,
-        request: BroadcastedTransaction,
+        request: Vec<BroadcastedTransaction>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        self.beerus.starknet_client.estimate_fee(vec![request], l1_block_num).await.map_err(BeerusRpcError::from)
+        self.beerus.starknet_client.estimate_fee(request, l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
     async fn estimate_message_fee(&self, message: MsgFromL1, block_id: BlockId) -> Result<FeeEstimate, BeerusRpcError> {
@@ -355,13 +354,13 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
-    async fn get_contract_storage_proof(
+    async fn get_proof(
         &self,
         block_id: BlockId,
         contract_address: FieldElement,
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, BeerusRpcError> {
-        self.beerus.get_contract_storage_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
+        self.beerus.get_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
     }
 
     async fn get_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
@@ -383,7 +382,7 @@ impl BeerusRpcServer for BeerusRpc {
         // get the proof for the contracts erc20 balance in the fee token contract
         let mut proof = self
             .beerus
-            .get_contract_storage_proof(block_id, &self.beerus.config.fee_token_addr, &[balance_key])
+            .get_proof(block_id, &self.beerus.config.fee_token_addr, &[balance_key])
             .await
             .map_err(BeerusRpcError::from)?;
 
