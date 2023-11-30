@@ -1,5 +1,4 @@
-name: continuous integration
-
+name: ci
 on:
   schedule:
     - cron: "0 8 * * *"

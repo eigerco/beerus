@@ -1,6 +1,4 @@
----
 name: release
-
 on:
   push:
     tags:
@@ -38,9 +36,7 @@ jobs:
         run: cargo build --release
 
       - name: Create Tarball
-        run: >
-          tar -C target/release -czvf ${{ matrix.artifact_name }}
-          beerus
+        run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
