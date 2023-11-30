@@ -1,0 +1,8 @@
+target
+book
+scripts
+examples
+tmp
+crates/**/tests
+.git
+.github

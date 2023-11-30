@@ -68,41 +68,6 @@ hurl examples/rpc/starknet_getStateRoot.hurl
 ```bash
 cargo run -p beerus-core --example basic
 ```
-Using config from `.toml` file
-```bash
-BEERUS_CONFIG=path/to/config.toml cargo run -p beerus-core --example basic
-```
-
-### Using Beerus as a Library
-
-Beerus can be imported into any Rust project.
-
-```rust
-use beerus_core::{config::Config, lightclient::beerus::BeerusLightClient};
-use env_logger::Env;
-use eyre::Result;
-
-#[tokio::main]
-async fn main() -> Result<()> {
-  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-  let config = Config::from_env();
-
-  let mut beerus = BeerusLightClient::new(config.clone()).await?;
-  beerus.start().await?;
-
-  let current_starknet_block = beerus.starknet_lightclient.block_number().await?;
-  println!("{:?}", current_starknet_block);
-
-  let current_ethereum_block = beerus
-          .ethereum_lightclient
-          .lock()
-          .await
-          .get_block_number()
-          .await?;
-  println!("{:?}", current_ethereum_block);
-  Ok(())
-}
-```
 
 ## Development
 
@@ -116,6 +81,16 @@ cargo build --all --release
 
 ```bash
 cargo test --all
+```
+
+#### Docker
+
+```bash
+docker build . -t beerus
+```
+
+```bash
+docker run -e NETWORK=<arg> -e ETH_EXECUTION_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
 ```
 
 ##### Beerus JS(wasm demo)
@@ -145,9 +120,7 @@ npm run build
 
 ## Endpoint support
 
-Here are all the endpoints supported by Beerus in tag v0.2.0
-
-*Starknet endpoints* (20) (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
+*Starknet endpoints* (in compliance with [Starknet specs](https://playground.open-rpc.org/?uiSchema%5BappBar%5D%5Bui:splitView%5D=false&schemaUrl=https://raw.githubusercontent.com/starkware-libs/starknet-specs/master/api/starknet_api_openrpc.json&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:darkMode%5D=true&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)):
 
 | Endpoint                                   | Supported          |
 | :----------------------------------------- | :----------------- |
@@ -172,23 +145,12 @@ Here are all the endpoints supported by Beerus in tag v0.2.0
 | `starknet_getStateRoot`                    | :white_check_mark: |
 | `starknet_getBalance`                      | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
-| `starknet_getEvents`                       | :x:                |
+| `starknet_getEvents`(not validated)        | :white_check_mark: |
 | `starknet_getNonce`                        | :white_check_mark: |
 | `starknet_addDeclareTransaction`           | :x:                |
 | `starknet_addDeployAccountTransaction`     | :x:                |
 | `starknet_getContractStorageProof`         | :x:                |
 | `starknet_addInvokeTransaction`            | :x:                |
-
-## Work in progress
-
-See the [open issues](https://github.com/keep-starknet-strange/beerus/issues) for
-a list of proposed features (and known issues).
-
-- [Top Feature Requests](https://github.com/keep-starknet-strange/beerus/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc)
-  (Add your votes using the 👍 reaction)
-- [Top Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc)
-  (Add your votes using the 👍 reaction)
-- [Newest Bugs](https://github.com/keep-starknet-strange/beerus/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
 
@@ -197,28 +159,6 @@ Reach out to the maintainer at one of the following places:
 - [GitHub Discussions](https://github.com/keep-starknet-strange/beerus/discussions)
 - Contact options listed on
   [this GitHub profile](https://github.com/keep-starknet-strange)
-
-## Project assistance
-
-If you want to say **thank you** or/and support active development of Beerus:
-
-- Add a [GitHub Star](https://github.com/keep-starknet-strange/beerus) to the
-  project.
-- Tweet about the Beerus.
-- Write interesting articles about the project on [Dev.to](https://dev.to/),
-  [Medium](https://medium.com/) or your personal blog.
-
-Together, we can make Beerus **better**!
-
-## Contributing
-
-First off, thanks for taking the time to contribute! Contributions are what make
-the open-source community such an amazing place to learn, inspire, and create.
-Any contributions you make will benefit everybody else and are **greatly
-appreciated**.
-
-Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you
-for being involved!
 
 ## Security
 

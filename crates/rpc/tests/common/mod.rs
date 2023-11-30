@@ -1,6 +1,3 @@
-use std::net::SocketAddr;
-use std::str::FromStr;
-
 use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
 use beerus_rpc::BeerusRpc;
