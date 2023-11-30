@@ -17,7 +17,7 @@ COPY --chown=beerus:beerus --from=builder /beerus/target/release/beerus /usr/loc
 
 EXPOSE 3030
 
-LABEL description="StarkNet Light Client"
+LABEL description="Starknet Light Client"
 LABEL authors="Beerus Team"
 LABEL source="https://github.com/keep-starknet-strange/beerus"
 
