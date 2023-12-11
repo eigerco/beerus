@@ -1,5 +1,6 @@
 name: release
 on:
+  workflow_dispatch:
   push:
     tags:
       - '*'
@@ -14,9 +15,11 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
+            build: x86_64-unknown-linux-musl
           - os: macos-latest
             artifact_name: beerus-darwin-x86_64.tar.gz
             asset_name: beerus-darwin-x86_64.tar.gz
+            build: x86_64-apple-darwin
 
     steps:
       - uses: actions/checkout@v3
@@ -24,7 +27,15 @@ jobs:
       - name: install toolchain
         run: |
           rustup set profile minimal
+          rustup target add ${{ matrix.build }}
           rustup update --no-self-update stable
+
+      - name: Setup build deps (linux)
+        if:
+          matrix.build == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt update
+          sudo apt install -y musl-tools
           
       - name: cache deps
         uses: Swatinem/rust-cache@v2
@@ -32,7 +43,7 @@ jobs:
           cache-on-failure: true
 
       - name: build
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.build }}
 
       - name: create tarball
         run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus
