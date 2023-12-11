@@ -46,7 +46,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.build }}
 
       - name: create tarball
-        run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus
+        run: tar -C target/${{ matrix.build }}/release -czvf ${{ matrix.artifact_name }} beerus
 
       - name: upload release binaries
         uses: svenstaro/upload-release-action@v2
@@ -57,7 +57,7 @@ jobs:
           tag: ${{ github.ref }}
 
   docker-publish:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
