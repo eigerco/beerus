@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
@@ -25,7 +25,7 @@ jobs:
       - run: cargo check -p beerus-core --target wasm32-unknown-unknown
 
   clippy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
@@ -33,7 +33,7 @@ jobs:
       - run: cargo clippy --all -- -D warnings
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
@@ -43,7 +43,7 @@ jobs:
       - run: cargo +nightly fmt --all -- --check
 
   udeps:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
