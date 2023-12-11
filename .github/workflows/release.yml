@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
           - os: macos-latest
