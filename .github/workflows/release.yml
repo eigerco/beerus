@@ -26,11 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install rust
-        if:
-          matrix.container != ''
-        run: |
-            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+      - uses: dtolnay/rust-toolchain@stable
+
+#      - name: Install rust
+#        if:
+#          matrix.container != ''
+#        run: |
+#            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
 
       - name: install toolchain
         run: |
