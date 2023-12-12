@@ -15,12 +15,12 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
-            build: x86_64-unknown-linux-gnu
+#            build: x86_64-unknown-linux-gnu
             container: quay.io/pypa/manylinux2014_x86_64
           - os: macos-latest
             artifact_name: beerus-darwin-x86_64.tar.gz
             asset_name: beerus-darwin-x86_64.tar.gz
-            build: x86_64-apple-darwin
+#            build: x86_64-apple-darwin
     container:
         image: ${{ matrix.container || '' }}
     steps:
@@ -64,7 +64,7 @@ jobs:
         run: cargo build --release
 
       - name: create tarball
-        run: tar -C target/${{ matrix.build }}/release -czvf ${{ matrix.artifact_name }} beerus
+        run: tar -C target/release -czvf ${{ matrix.artifact_name }} beerus
 
       - name: upload release binaries
         uses: svenstaro/upload-release-action@v2
