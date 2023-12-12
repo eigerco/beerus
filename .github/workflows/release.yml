@@ -28,18 +28,25 @@ jobs:
 
 #      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Install rust
-        if:
-          matrix.container != ''
-        run: |
-            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-            source "$HOME/.cargo/env"
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-      - name: install toolchain
-        run: |
-          rustup set profile minimal
-          rustup target add ${{ matrix.build }}
-          rustup update --no-self-update stable
+#      - name: Install rust
+#        if:
+#          matrix.container != ''
+#        run: |
+#            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+#            source "$HOME/.cargo/env"
+#
+#      - name: install toolchain
+#        run: |
+#          rustup set profile minimal
+#          rustup target add ${{ matrix.build }}
+#          rustup update --no-self-update stable
 
 #      - name: Setup build deps (linux)
 #        if:
