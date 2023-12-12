@@ -15,12 +15,14 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
-            build: x86_64-unknown-linux-musl
+            build: x86_64-unknown-linux-gnu
+            container: quay.io/pypa/manylinux2014_x86_64
           - os: macos-latest
             artifact_name: beerus-darwin-x86_64.tar.gz
             asset_name: beerus-darwin-x86_64.tar.gz
             build: x86_64-apple-darwin
-
+    container:
+        image: ${{ matrix.container || '' }}
     steps:
       - uses: actions/checkout@v3
 
@@ -30,12 +32,12 @@ jobs:
           rustup target add ${{ matrix.build }}
           rustup update --no-self-update stable
 
-      - name: Setup build deps (linux)
-        if:
-          matrix.build == 'x86_64-unknown-linux-musl'
-        run: |
-          sudo apt update
-          sudo apt install -y musl-tools
+#      - name: Setup build deps (linux)
+#        if:
+#          matrix.build == 'x86_64-unknown-linux-musl'
+#        run: |
+#          sudo apt update
+#          sudo apt install -y musl-tools
           
       - name: cache deps
         uses: Swatinem/rust-cache@v2
@@ -43,7 +45,7 @@ jobs:
           cache-on-failure: true
 
       - name: build
-        run: cargo build --release --target ${{ matrix.build }}
+        run: cargo build --release
 
       - name: create tarball
         run: tar -C target/${{ matrix.build }}/release -czvf ${{ matrix.artifact_name }} beerus
