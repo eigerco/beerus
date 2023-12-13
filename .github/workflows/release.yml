@@ -15,18 +15,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
-#            build: x86_64-unknown-linux-gnu
             container: quay.io/pypa/manylinux2014_x86_64
           - os: macos-latest
             artifact_name: beerus-darwin-x86_64.tar.gz
             asset_name: beerus-darwin-x86_64.tar.gz
-#            build: x86_64-apple-darwin
+
     container:
         image: ${{ matrix.container || '' }}
     steps:
       - uses: actions/checkout@v3
-
-#      - uses: dtolnay/rust-toolchain@stable
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -35,26 +32,6 @@ jobs:
           toolchain: stable
           override: true
 
-#      - name: Install rust
-#        if:
-#          matrix.container != ''
-#        run: |
-#            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-#            source "$HOME/.cargo/env"
-#
-#      - name: install toolchain
-#        run: |
-#          rustup set profile minimal
-#          rustup target add ${{ matrix.build }}
-#          rustup update --no-self-update stable
-
-#      - name: Setup build deps (linux)
-#        if:
-#          matrix.build == 'x86_64-unknown-linux-musl'
-#        run: |
-#          sudo apt update
-#          sudo apt install -y musl-tools
-          
       - name: cache deps
         uses: Swatinem/rust-cache@v2
         with:
