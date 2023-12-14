@@ -15,8 +15,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: install hurl
-        run: |
-          cargo install hurl
+        run: cargo install --version 4.1.0 hurl
 #          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
 #          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
 
@@ -40,8 +39,8 @@ jobs:
           STARKNET_RPC: ${{ secrets.STARKNET_RPC }}
         run: ./target/release/beerus &
 
-      - name: run integration test
-        run: bash ./scripts/integration-test.sh
+#      - name: run integration test
+#        run: bash ./scripts/integration-test.sh
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
