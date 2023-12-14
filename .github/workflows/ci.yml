@@ -22,7 +22,21 @@ jobs:
       - name: build beerus
         run: cargo build -p beerus-cli --release
 
-      - name: start beerus RPC
+      - name: start beerus RPC on MAINNET
+        env:
+          BEERUS_VERSION: "ci"
+          NETWORK: "mainnet"
+          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC }}
+          STARKNET_RPC: ${{ secrets.STARKNET_RPC }}
+        run: ./target/release/beerus &
+
+      - name: run integration test
+        run: bash ./scripts/integration-test.sh
+
+      - name: stop RPC
+        run: kill $(lsof -t -i:3030)
+
+      - name: start beerus RPC on TESTNET
         env:
           BEERUS_VERSION: "ci"
           NETWORK: "mainnet"

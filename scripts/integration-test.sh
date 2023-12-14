@@ -14,7 +14,7 @@ echo "beerus in sync..."
 
 FAILED=0
 for request in examples/rpc/*.hurl; do
-    hurl --test --max-time=50 $request
+    hurl --test --max-time=50 --error-format=long $request
     if [ $? -ne 0 ]; then
         echo "FAILED REQUEST - $request"
         FAILED=$((FAILED + 1))
