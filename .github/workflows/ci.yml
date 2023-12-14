@@ -9,15 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: install hurl
-        run: |
-          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
-          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
-
       # rust action deps
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+
+      - name: install hurl
+        run: |
+          cargo install hurl
+#          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
+#          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
+
 
       - name: build beerus
         run: cargo build -p beerus-cli --release
@@ -39,9 +41,9 @@ jobs:
       - name: start beerus RPC on TESTNET
         env:
           BEERUS_VERSION: "ci"
-          NETWORK: "mainnet"
-          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC }}
-          STARKNET_RPC: ${{ secrets.STARKNET_RPC }}
+          NETWORK: "goerli"
+          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_GOERLI }}
+          STARKNET_RPC: ${{ secrets.STARKNET_RPC_GOERLI }}
         run: ./target/release/beerus &
 
       - name: run integration test
