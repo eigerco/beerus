@@ -20,6 +20,14 @@ jobs:
 #          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
 #          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
 
+      - name: Cargo Target Cache
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.toml') }}
+            ${{ runner.os }}-cargo-target
 
       - name: build beerus
         run: cargo build -p beerus-cli --release
