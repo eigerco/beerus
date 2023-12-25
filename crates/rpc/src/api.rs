@@ -354,6 +354,7 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         declare_transaction: BroadcastedDeclareTransaction,
     ) -> Result<DeclareTransactionResult, BeerusRpcError> {
+        dbg!(&declare_transaction);
         self.beerus.starknet_client.add_declare_transaction(declare_transaction).await.map_err(BeerusRpcError::from)
     }
 
