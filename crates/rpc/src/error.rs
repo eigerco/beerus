@@ -1,54 +1,73 @@
 use beerus_core::CoreError;
 use eyre::Report;
 use jsonrpsee::types::ErrorObjectOwned;
-use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
-use starknet::providers::MaybeUnknownErrorCode::{self, Known, Unknown};
+use starknet::core::types::StarknetError as StarknetErr;
+use starknet::providers::ProviderError;
+// use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
 use starknet::providers::ProviderError::StarknetError;
-use starknet::providers::{AnyProviderError, ProviderError, StarknetErrorWithMessage};
-pub struct BeerusRpcError(ProviderError<AnyProviderError>);
+
+#[derive(Debug)]
+pub enum BeerusRpcError {
+    Provider(ProviderError),
+    Other((i32, String)),
+}
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
     fn from(err: BeerusRpcError) -> Self {
-        let sn_err = match err.0 {
-            StarknetError(x) => x,
-            _ => StarknetErrorWithMessage {
-                code: MaybeUnknownErrorCode::Unknown(-32601),
-                message: "Method not found".to_string(),
+        match err {
+            BeerusRpcError::Provider(provider_err) => match provider_err {
+                StarknetError(sn_err) => {
+                    let code = match sn_err {
+                        StarknetErr::FailedToReceiveTransaction => 1,
+                        StarknetErr::ContractNotFound => 20,
+                        StarknetErr::BlockNotFound => 24,
+                        StarknetErr::InvalidTransactionIndex => 27,
+                        StarknetErr::ClassHashNotFound => 28,
+                        StarknetErr::TransactionHashNotFound => 29,
+                        StarknetErr::PageSizeTooBig => 31,
+                        StarknetErr::NoBlocks => 32,
+                        StarknetErr::InvalidContinuationToken => 33,
+                        StarknetErr::TooManyKeysInFilter => 34,
+                        StarknetErr::ContractError(_) => 40,
+                        StarknetErr::TransactionExecutionError(_) => 41,
+                        StarknetErr::ClassAlreadyDeclared => 51,
+                        StarknetErr::InvalidTransactionNonce => 52,
+                        StarknetErr::InsufficientMaxFee => 53,
+                        StarknetErr::InsufficientAccountBalance => 54,
+                        StarknetErr::ValidationFailure(_) => 55,
+                        StarknetErr::CompilationFailed => 56,
+                        StarknetErr::ContractClassSizeIsTooLarge => 57,
+                        StarknetErr::NonAccount => 58,
+                        StarknetErr::DuplicateTx => 59,
+                        StarknetErr::CompiledClassHashMismatch => 60,
+                        StarknetErr::UnsupportedTxVersion => 61,
+                        StarknetErr::UnsupportedContractClassVersion => 62,
+                        StarknetErr::UnexpectedError(_) => 63,
+                        StarknetErr::NoTraceAvailable(_) => 10,
+                    };
+                    ErrorObjectOwned::owned(code, sn_err.message(), None::<()>)
+                }
+                _ => ErrorObjectOwned::owned(-32601, format!("{provider_err}"), None::<()>),
             },
-        };
-        match sn_err.code {
-            Known(_) => ErrorObjectOwned::owned(-32601, sn_err.message, None::<()>),
-            Unknown(unknown_sn_err) => ErrorObjectOwned::owned(unknown_sn_err as i32, sn_err.message, None::<()>),
+            BeerusRpcError::Other(other_err) => ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>),
         }
     }
 }
 
-impl From<ProviderError<JsonRpcClientError<HttpTransportError>>> for BeerusRpcError {
-    fn from(err: ProviderError<JsonRpcClientError<HttpTransportError>>) -> Self {
-        match err {
-            StarknetError(sn_err) => BeerusRpcError(ProviderError::StarknetError(sn_err)),
-            _ => BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
-                code: MaybeUnknownErrorCode::Unknown(-32601),
-                message: "Method not found".to_string(),
-            })),
-        }
+impl From<ProviderError> for BeerusRpcError {
+    fn from(err: ProviderError) -> Self {
+        BeerusRpcError::Provider(err)
     }
 }
 
 impl From<CoreError> for BeerusRpcError {
     fn from(err: CoreError) -> Self {
-        BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
-            code: MaybeUnknownErrorCode::Unknown(-32601),
-            message: format!("{err}"),
-        }))
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }
 
 impl From<Report> for BeerusRpcError {
     fn from(err: Report) -> Self {
-        BeerusRpcError(ProviderError::StarknetError(StarknetErrorWithMessage {
-            code: MaybeUnknownErrorCode::Unknown(-32601),
-            message: format!("{err}"),
-        }))
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }

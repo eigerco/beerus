@@ -1,7 +1,8 @@
 use beerus_core::storage_proofs::StorageProof;
 use rstest::{fixture, rstest};
+// use starknet_crypto::FieldElement;
+use starknet::core::types::FieldElement;
 use starknet::macros::felt;
-use starknet_crypto::FieldElement;
 
 const TESTING_STATE_ROOT: FieldElement = felt!("0x11d7289401f12bdbbfcf890cf531dd13e215d68fa700b82b08220dc75c24f54");
 const TESTING_CONTRACT_ADDR: FieldElement = felt!("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");

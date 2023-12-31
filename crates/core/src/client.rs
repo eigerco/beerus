@@ -159,6 +159,7 @@ impl BeerusClient {
                 if local_block_num < sn_block_num {
                     // TODO: Issue #550 - feat: sync from proven root
                     match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await.unwrap() {
+                        // TODO: handle unwrap()
                         MaybePendingBlockWithTxHashes::Block(block) => {
                             info!(
                                 "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",

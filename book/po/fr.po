@@ -203,9 +203,6 @@ msgstr ""
 msgid "starknet_getTransactionReceipt"
 msgstr ""
 
-#: src/SUMMARY.md:60
-msgid "starknet_pendingTransactions"
-msgstr ""
 
 #: src/SUMMARY.md:61
 msgid "starknet_syncing"
@@ -517,7 +514,6 @@ msgstr ""
 #: src/rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md:4
 #: src/rpc/starknet/starknet_getTransactionByHash.md:4
 #: src/rpc/starknet/starknet_getTransactionReceipt.md:4
-#: src/rpc/starknet/starknet_pendingTransactions.md:4
 #: src/rpc/starknet/starknet_syncing.md:4
 msgid "### Parameters"
 msgstr ""
@@ -545,7 +541,6 @@ msgstr ""
 #: src/rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md:9
 #: src/rpc/starknet/starknet_getTransactionByHash.md:7
 #: src/rpc/starknet/starknet_getTransactionReceipt.md:7
-#: src/rpc/starknet/starknet_pendingTransactions.md:6
 #: src/rpc/starknet/starknet_syncing.md:7
 msgid "### Returns"
 msgstr ""
@@ -571,7 +566,6 @@ msgstr ""
 #: src/rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md:12
 #: src/rpc/starknet/starknet_getTransactionByHash.md:10
 #: src/rpc/starknet/starknet_getTransactionReceipt.md:10
-#: src/rpc/starknet/starknet_pendingTransactions.md:8
 #: src/rpc/starknet/starknet_syncing.md:10
 msgid "### Headers"
 msgstr ""
@@ -592,7 +586,6 @@ msgstr ""
 #: src/rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md:13
 #: src/rpc/starknet/starknet_getTransactionByHash.md:11
 #: src/rpc/starknet/starknet_getTransactionReceipt.md:11
-#: src/rpc/starknet/starknet_pendingTransactions.md:9
 #: src/rpc/starknet/starknet_syncing.md:11
 msgid ""
 "```rust\n"
@@ -652,7 +645,6 @@ msgstr ""
 #: src/rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md:29
 #: src/rpc/starknet/starknet_getTransactionByHash.md:27
 #: src/rpc/starknet/starknet_getTransactionReceipt.md:27
-#: src/rpc/starknet/starknet_pendingTransactions.md:25
 #: src/rpc/starknet/starknet_syncing.md:27
 msgid "### Response"
 msgstr ""
@@ -1698,145 +1690,6 @@ msgid ""
 "      ]\n"
 "   },\n"
 "   \"id\":1\n"
-"}\n"
-"```"
-msgstr ""
-
-#: src/rpc/starknet/starknet_pendingTransactions.md:1
-msgid "## starknet_pendingTransactions"
-msgstr ""
-
-#: src/rpc/starknet/starknet_pendingTransactions.md:2
-msgid ""
-"Returns the transactions in the transaction pool, recognized by this "
-"sequencer."
-msgstr ""
-
-#: src/rpc/starknet/starknet_pendingTransactions.md:13
-msgid "### Example "
-msgstr ""
-
-#: src/rpc/starknet/starknet_pendingTransactions.md:14
-msgid ""
-"```bash \n"
-"curl -X POST http://localhost:3030 \\\n"
-"-H \"Content-Type: application/json\" \\\n"
-"-d '{\n"
-"  \"jsonrpc\":\"2.0\",\n"
-"  \"method\":\"starknet_pendingTransactions\",\n"
-"  \"params\":[],\n"
-"  \"id\":0\n"
-"}'\n"
-"```"
-msgstr ""
-
-#: src/rpc/starknet/starknet_pendingTransactions.md:26
-msgid ""
-"```json\n"
-"{\n"
-"  \"jsonrpc\": \"2.0\",\n"
-"  \"result\": [\n"
-"    {\n"
-"      \"transaction_hash\": "
-"\"0x77bc31ba5f3060794c4a87fb1ff91a9228730eb7e3f3d7631a63c96590904ac\",\n"
-"      \"type\": \"INVOKE\",\n"
-"      \"max_fee\": \"0x4e8e1d65fa860\",\n"
-"      \"version\": \"0x1\",\n"
-"      \"signature\": [\n"
-"        \"0x265a0100df301936361d3a23d962bc99aa10640eb33378d92ffd53026d751e2\",\n"
-"        \"0x3f8b8b2ba97233dc8b1ece9ef6078ed433a7496f5b60d958bd0499be8385e5b\"\n"
-"      ],\n"
-"      \"nonce\": \"0x1f\",\n"
-"      \"sender_address\": "
-"\"0x3000dcaa29950849dff602bff06751ebf41760debfba97d85e2cc86be6f23ed\",\n"
-"      \"calldata\": [\n"
-"        \"0x1\",\n"
-"        \"0x1435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672\",\n"
-"        \"0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3\",\n"
-"        \"0x0\",\n"
-"        \"0x10\",\n"
-"        \"0x10\",\n"
-"        \"0x3000dcaa29950849dff602bff06751ebf41760debfba97d85e2cc86be6f23ed\",\n"
-"        \"0xde3ddb848f7f40bab6fb1c8de68c7a68\",\n"
-"        \"0x1\",\n"
-"        \"0x76696e65636879\",\n"
-"        \"0x2\",\n"
-"        \"0x4120736574206d616465206f662062\",\n"
-"        \"0x726971732076696e65636879\",\n"
-"        \"0x1\",\n"
-"        \"0x1\",\n"
-"        \"0x1\",\n"
-"        \"0x0\",\n"
-"        \"0x1\",\n"
-"        \"0x233339343138330000000000000000000000000000000001\",\n"
-"        \"0x7ffffffffffffffe80000000000000008000000000000000\",\n"
-"        \"0x1\",\n"
-"        \"0x2\"\n"
-"      ]\n"
-"    },\n"
-"    {\n"
-"      \"transaction_hash\": "
-"\"0x71d357487b3f2e6b5521d5bca772a49a7a3a0e30c3d7034002e35a10f757fa9\",\n"
-"      \"type\": \"DEPLOY_ACCOUNT\",\n"
-"      \"max_fee\": \"0x191f13c554e56\",\n"
-"      \"version\": \"0x1\",\n"
-"      \"signature\": [\n"
-"        \"0x35f2b4ea197a5e5563caa63e1a6028ccf31dd62fdba6b0751b76f683d62c89d\",\n"
-"        \"0x308f58fd082ba8f032e9fc772b76405a7ee84a953fba539c570e3c459ba6ce6\"\n"
-"      ],\n"
-"      \"nonce\": \"0x0\",\n"
-"      \"contract_address_salt\": "
-"\"0x7b42265eb896ce998af4f4f6885f34e1970fc151a79092f9ef713236192b57c\",\n"
-"      \"constructor_calldata\": [\n"
-"        \"0x33434ad846cdd5f23eb73ff09fe6fddd568284a0fb7d1be20ee482f044dabe2\",\n"
-"        \"0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463\",\n"
-"        \"0x2\",\n"
-"        \"0x7b42265eb896ce998af4f4f6885f34e1970fc151a79092f9ef713236192b57c\",\n"
-"        \"0x0\"\n"
-"      ],\n"
-"      \"class_hash\": "
-"\"0x25ec026985a3bf9d0cc1fe17326b245dfdc3ff89b8fde106542a3ea56c5a918\"\n"
-"    },\n"
-"    {\n"
-"      \"transaction_hash\": "
-"\"0x2baaac81c63b9300818852931b7281be8665ec9263b6cdae997ad21234b3b5b\",\n"
-"      \"type\": \"INVOKE\",\n"
-"      \"max_fee\": \"0x70dec93d06970\",\n"
-"      \"version\": \"0x1\",\n"
-"      \"signature\": [\n"
-"        \"0x6bdf30bd89accd3cc19a5d1ff509d827d457e822a945046ad83ad2f487a80ab\",\n"
-"        \"0x2f88ba6d6a47fd3687a639926ff1fd194011baacb5183f12f8f448910d1019d\"\n"
-"      ],\n"
-"      \"nonce\": \"0x1\",\n"
-"      \"sender_address\": "
-"\"0x3618571270431f216e9c2171e1c663fcf7aef366fb86a78bb3ba1e043b29e62\",\n"
-"      \"calldata\": [\n"
-"        \"0x2\",\n"
-"        \"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7\",\n"
-"        \"0x219209e083275171774dab1df80982e9df2096516f06319c5c6d71ae0a8480c\",\n"
-"        \"0x0\",\n"
-"        \"0x3\",\n"
-"        \"0x7a6f98c03379b9513ca84cca1373ff452a7462a3b61598f0af5bb27ad7f76d1\",\n"
-"        \"0x2c0f7bf2d6cf5304c29171bf493feb222fef84bdaf17805a6574b0c2e8bcc87\",\n"
-"        \"0x3\",\n"
-"        \"0x9\",\n"
-"        \"0xc\",\n"
-"        \"0x7a6f98c03379b9513ca84cca1373ff452a7462a3b61598f0af5bb27ad7f76d1\",\n"
-"        \"0xf5232269808000\",\n"
-"        \"0x0\",\n"
-"        \"0xf5232269808000\",\n"
-"        \"0x0\",\n"
-"        \"0x7a7ac30\",\n"
-"        \"0x0\",\n"
-"        \"0x2\",\n"
-"        \"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7\",\n"
-"        \"0x68f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8\",\n"
-"        \"0x3618571270431f216e9c2171e1c663fcf7aef366fb86a78bb3ba1e043b29e62\",\n"
-"        \"0x6439a05f\"\n"
-"      ]\n"
-"    }\n"
-"  ],\n"
-"  \"id\": 1\n"
 "}\n"
 "```"
 msgstr ""

@@ -3,7 +3,8 @@ use bitvec::prelude::Msb0;
 use bitvec::slice::BitSlice;
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
-use starknet_crypto::{pedersen_hash, poseidon_hash_many, FieldElement};
+use starknet::core::types::FieldElement;
+use starknet_crypto::{pedersen_hash, poseidon_hash_many};
 use types::{ContractData, Direction, TrieNode};
 
 use crate::utils::{felt_from_bits, felt_to_bits};
