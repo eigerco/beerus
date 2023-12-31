@@ -19,6 +19,9 @@ use crate::BeerusRpc;
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
+    #[method(name = "specVersion")]
+    async fn spec_version(&self) -> Result<String, BeerusRpcError>;
+
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
@@ -169,6 +172,10 @@ pub trait BeerusRpc {
 #[async_trait]
 impl BeerusRpcServer for BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
+    async fn spec_version(&self) -> Result<String, BeerusRpcError> {
+        self.beerus.starknet_client.spec_version().await.map_err(BeerusRpcError::from)
+    }
+
     async fn get_block_with_tx_hashes(
         &self,
         block_id: BlockId,
