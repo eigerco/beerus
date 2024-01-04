@@ -3,20 +3,25 @@ use bitvec::prelude::Msb0;
 use bitvec::slice::BitSlice;
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
+use starknet::core::serde::unsigned_field_element::UfeHex;
 use starknet_crypto::{pedersen_hash, poseidon_hash_many, FieldElement};
-use types::{ContractData, Direction, TrieNode};
+use types::{BinaryNode, ContractData, Direction, EdgeNode, TrieNode};
 
 use crate::utils::{felt_from_bits, felt_to_bits};
 
+#[serde_as]
 #[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
 pub struct StorageProof {
     /// The global state commitment for Starknet 0.11.0 blocks onwards, if absent the hash
     /// of the first node in the [contract_proof](GetProofOutput#contract_proof) is the global state
     /// commitment.
+    #[serde_as(as = "UfeHex")]
     pub state_commitment: FieldElement,
     /// Required to verify that the hash of the class commitment and the root of the
     /// [contract_proof](GetProofOutput::contract_proof) matches the
     /// [state_commitment](Self#state_commitment). Present only for Starknet blocks 0.11.0 onwards.
+    #[serde_as(as = "UfeHex")]
     pub class_commitment: FieldElement,
 
     /// Membership / Non-membership proof for the queried contract
@@ -94,7 +99,7 @@ pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: FieldElement, proof: &mut [T
     // reverse the proof in order to hash from the leaf towards the root
     for (i, node) in proof.iter().rev().enumerate() {
         match node {
-            TrieNode::Edge { child, path } => {
+            TrieNode::Edge(EdgeNode { child, path }) => {
                 // calculate edge hash given by provider
                 let provided_hash = pedersen_hash(child, &path.value) + FieldElement::from(path.len as u64);
                 if i == 0 {
@@ -114,7 +119,7 @@ pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: FieldElement, proof: &mut [T
                 path_len += path.len;
                 hold = provided_hash;
             }
-            TrieNode::Binary { left, right } => {
+            TrieNode::Binary(BinaryNode { left, right }) => {
                 path_len += 1;
 
                 // identify path direction for this node
