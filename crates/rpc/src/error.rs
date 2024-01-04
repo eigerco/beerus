@@ -42,7 +42,7 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                         StarknetErr::InsufficientMaxFee => 53,
                         StarknetErr::InsufficientAccountBalance => 54,
                         StarknetErr::ValidationFailure(err) => {
-                            data = Some(format!("{err}"));
+                            data = Some(err.to_string());
                             55
                         }
                         StarknetErr::CompilationFailed => 56,
@@ -53,7 +53,7 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                         StarknetErr::UnsupportedTxVersion => 61,
                         StarknetErr::UnsupportedContractClassVersion => 62,
                         StarknetErr::UnexpectedError(err) => {
-                            data = Some(format!("{err}"));
+                            data = Some(err.to_string());
                             63
                         }
                         StarknetErr::NoTraceAvailable(err) => {
