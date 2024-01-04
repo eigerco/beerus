@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-// use starknet_crypto::FieldElement;
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
 
 use super::StorageProof;
 

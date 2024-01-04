@@ -11,15 +11,10 @@ bitvec = "1.0.1"
 ethabi = "18.0.0"
 ethers = "2.0.11"
 eyre.workspace = true
-#helios = { git = "https://github.com/a16z/helios", rev = "d4722045914d93c6fd8978f1fb2183494bc78a15" }
 helios = { git = "https://github.com/a16z/helios", rev = "9481aaa572a092d4e73ca520b67a3315faf7748e" }
-# todo fix this after helios release
-chrono = "0.4.31"
 reqwest = "0.11.13"
 serde = { workspace = true, features = ["derive"] }
 serde_json = "1.0"
-#starknet-crypto = "0.6.0"
-#starknet-crypto = "0.6.1"
 # todo fix this after starknet for json-rpc 0.6.0 release
 starknet-crypto = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "082f5564cf77a128139d8c2acc4f27ba670780ab" }
 

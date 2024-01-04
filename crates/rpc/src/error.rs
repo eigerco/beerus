@@ -17,7 +17,8 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
         match err {
             BeerusRpcError::Provider(provider_err) => match provider_err {
                 StarknetError(sn_err) => {
-                    let code = match sn_err {
+                    let mut data = None;
+                    let code = match &sn_err {
                         StarknetErr::FailedToReceiveTransaction => 1,
                         StarknetErr::ContractNotFound => 20,
                         StarknetErr::BlockNotFound => 24,
@@ -28,13 +29,22 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                         StarknetErr::NoBlocks => 32,
                         StarknetErr::InvalidContinuationToken => 33,
                         StarknetErr::TooManyKeysInFilter => 34,
-                        StarknetErr::ContractError(_) => 40,
-                        StarknetErr::TransactionExecutionError(_) => 41,
+                        StarknetErr::ContractError(err) => {
+                            data = Some(format!("{err:?}"));
+                            40
+                        }
+                        StarknetErr::TransactionExecutionError(err) => {
+                            data = Some(format!("{err:?}"));
+                            41
+                        }
                         StarknetErr::ClassAlreadyDeclared => 51,
                         StarknetErr::InvalidTransactionNonce => 52,
                         StarknetErr::InsufficientMaxFee => 53,
                         StarknetErr::InsufficientAccountBalance => 54,
-                        StarknetErr::ValidationFailure(_) => 55,
+                        StarknetErr::ValidationFailure(err) => {
+                            data = Some(format!("{err}"));
+                            55
+                        }
                         StarknetErr::CompilationFailed => 56,
                         StarknetErr::ContractClassSizeIsTooLarge => 57,
                         StarknetErr::NonAccount => 58,
@@ -42,10 +52,16 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                         StarknetErr::CompiledClassHashMismatch => 60,
                         StarknetErr::UnsupportedTxVersion => 61,
                         StarknetErr::UnsupportedContractClassVersion => 62,
-                        StarknetErr::UnexpectedError(_) => 63,
-                        StarknetErr::NoTraceAvailable(_) => 10,
+                        StarknetErr::UnexpectedError(err) => {
+                            data = Some(format!("{err}"));
+                            63
+                        }
+                        StarknetErr::NoTraceAvailable(err) => {
+                            data = Some(format!("{err:?}"));
+                            10
+                        }
                     };
-                    ErrorObjectOwned::owned(code, sn_err.message(), None::<()>)
+                    ErrorObjectOwned::owned(code, sn_err.message(), data)
                 }
                 _ => ErrorObjectOwned::owned(-32601, format!("{provider_err}"), None::<()>),
             },

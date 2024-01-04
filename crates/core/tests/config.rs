@@ -14,9 +14,7 @@ use helios::prelude::ConfigDB;
 #[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
 use rstest::rstest;
-// use starknet_crypto::FieldElement;
-use starknet::core::types::FieldElement;
-
+use starknet_crypto::FieldElement;
 #[rstest]
 #[should_panic]
 fn bad_toml() {

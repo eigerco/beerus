@@ -47,7 +47,7 @@ pub trait BeerusRpc {
 
     #[method(name = "getTransactionStatus")]
     async fn get_transaction_status(&self, transaction_hash: FieldElement)
-    -> Result<TransactionStatus, BeerusRpcError>;
+        -> Result<TransactionStatus, BeerusRpcError>;
 
     #[method(name = "getTransactionByBlockIdAndIndex")]
     async fn get_transaction_by_block_id_and_index(

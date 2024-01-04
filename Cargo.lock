@@ -564,7 +564,6 @@ dependencies = [
  "async-std",
  "async-trait",
  "bitvec 1.0.1",
- "chrono",
  "ethabi",
  "ethers",
  "eyre",

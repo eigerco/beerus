@@ -110,7 +110,7 @@ npm run build
 
 ## Endpoint support
 
-*Starknet endpoints* (in compliance with [Starknet specs](https://github.com/starkware-lib/starknet-specs)):
+*Starknet endpoints* (in compliance with [Starknet specs](https://github.com/starkware-libs/starknet-specs)):
 
 | Endpoint                                   | Supported          |
 |:-------------------------------------------| :----------------- |
