@@ -10,4 +10,4 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.error" not exists
-jsonpath "$.result" == "23448594291968334"
+jsonpath "$.result" == "0x534e5f4d41494e"
