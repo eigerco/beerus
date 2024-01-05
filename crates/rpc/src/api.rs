@@ -15,7 +15,6 @@ use starknet::core::types::{
 };
 use starknet::macros::selector;
 use starknet::providers::Provider;
-use {serde, serde_with};
 
 use crate::error::BeerusRpcError;
 use crate::BeerusRpc;
