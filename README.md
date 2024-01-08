@@ -114,7 +114,7 @@ npm run build
 
 | Endpoint                                   | Supported          |
 |:-------------------------------------------| :----------------- |
-| `starknet_specChain`                       | :white_check_mark: |
+| `starknet_specVersion`                     | :white_check_mark: |
 | `starknet_getBlockWithTxHashes`            | :white_check_mark: |
 | `starknet_getBlockWithTxs`                 | :white_check_mark: |
 | `starknet_getStateUpdate`                  | :white_check_mark: |
