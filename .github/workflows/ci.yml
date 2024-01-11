@@ -35,12 +35,11 @@ jobs:
         env:
           BEERUS_VERSION: "ci"
           NETWORK: "mainnet"
-          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC }}
-          STARKNET_RPC: ${{ secrets.STARKNET_RPC }}
+          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_MAINNET }}
+          STARKNET_RPC: ${{ secrets.STARKNET_RPC_MAINNET }}
         run: ./target/release/beerus &
-
-#      - name: run integration test
-#        run: bash ./scripts/integration-test.sh
+      - name: run integration test
+        run: bash ./scripts/integration-test.sh mainnet
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
@@ -54,4 +53,4 @@ jobs:
         run: ./target/release/beerus &
 
       - name: run integration test
-        run: bash ./scripts/integration-test.sh
+        run: bash ./scripts/integration-test.sh goerli
