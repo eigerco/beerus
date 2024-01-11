@@ -16,17 +16,6 @@ jobs:
 
       - name: install hurl
         run: cargo install --version 4.1.0 hurl
-#          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/2.0.1/hurl_2.0.1_amd64.deb
-#          sudo apt-get update && sudo apt-get install -y ./hurl_2.0.1_amd64.deb
-
-      - name: Cargo Target Cache
-        uses: actions/cache@v1
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.toml') }}
-            ${{ runner.os }}-cargo-target
 
       - name: build beerus
         run: cargo build -p beerus-cli --release
@@ -38,13 +27,13 @@ jobs:
           ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_MAINNET }}
           STARKNET_RPC: ${{ secrets.STARKNET_RPC_MAINNET }}
         run: ./target/release/beerus &
-      - name: run integration test
+      - name: run integration test on MAINNET
         run: bash ./scripts/integration-test.sh mainnet
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
 
-      - name: start beerus RPC on TESTNET
+      - name: start beerus RPC on TESTNET(goerli)
         env:
           BEERUS_VERSION: "ci"
           NETWORK: "goerli"
@@ -52,5 +41,5 @@ jobs:
           STARKNET_RPC: ${{ secrets.STARKNET_RPC_GOERLI }}
         run: ./target/release/beerus &
 
-      - name: run integration test
+      - name: run integration test TESTNET(goerli)
         run: bash ./scripts/integration-test.sh goerli
