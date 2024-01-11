@@ -5,7 +5,7 @@ Content-Type: application/json
     "method":"starknet_getProof",
     "params":[
         {
-            "block_number": 354824
+            "block_number": 930199
         },
         "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
         [

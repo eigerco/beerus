@@ -1,14 +1,16 @@
 POST http://0.0.0.0:3030
 Content-Type: application/json
 {
+    "id": 1,
     "jsonrpc": "2.0",
     "method": "starknet_getStorageAt",
     "params": [
-        "0x06a05844a03bb9e744479e3298f54705a35966ab04140d3d8dd797c1f6dc49d0",
-        "0x341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1",
-        "latest"
-    ],
-    "id":1
+        "0x6d8e1f3ed72fc87aa896639a0f50a4b9e59adb24de8a42b477957e1a7996e1b",
+        "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
+        {
+            "block_number": 929884
+        }
+    ]
 }
 
 HTTP 200
