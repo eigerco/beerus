@@ -4,7 +4,7 @@ Content-Type: application/json
     "jsonrpc": "2.0",
     "method": "starknet_getTransactionStatus",
     "params": [
-        "0x02e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a"
+        "0x71f6f2272d068e6d73f92fcddb53555ffb923fdef395b0d2716348145f70a45"
     ],
     "id":1
 }
