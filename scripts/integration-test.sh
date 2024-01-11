@@ -16,7 +16,7 @@ echo "beerus in sync..."
 echo "running test for $network..."
 
 FAILED=0
-for request in $(find examples/rpc/mainnet/ -name "*Nonce*"); do
+for request in $(find examples/rpc/$network/ -name "*Nonce*"); do
     hurl --test --max-time=50 --error-format=long $request
     if [ $? -ne 0 ]; then
         echo "FAILED REQUEST - $request"
