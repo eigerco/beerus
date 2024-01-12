@@ -553,8 +553,10 @@ dependencies = [
  "beerus-core",
  "beerus-rpc",
  "clap",
+ "starknet",
  "tracing",
  "tracing-subscriber",
+ "url",
 ]
 
 [[package]]
