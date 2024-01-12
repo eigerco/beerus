@@ -15,7 +15,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: install hurl
-        run: cargo install --version 4.1.0 hurl
+        run: |
+          version=4.1.0
+          curl --location --remote-name "https://github.com/Orange-OpenSource/hurl/releases/download/${version}/hurl_${version}_amd64.deb"
+          sudo apt-get update && sudo apt-get install -y ./hurl_${version}_amd64.deb
 
       - name: build beerus
         run: cargo build -p beerus-cli --release

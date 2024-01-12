@@ -5,7 +5,7 @@ Content-Type: application/json
   "method": "starknet_getClassHashAt",
   "params": [
     {
-      "block_number": 931366
+      "block_number": 930000
     },
     "0x040688250Ef0074B4c9e1057B19F9b62139ac28179c7d35e2daE5abAD909d558"
   ],
