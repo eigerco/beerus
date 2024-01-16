@@ -5,6 +5,7 @@
   [![CI Action Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml)
   [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Check Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
+  [![Created By](https://img.shields.io/badge/created--by-sw--exploration-purple)](https://github.com/keep-starknet-strange)
 
   </div>
   <h1>Beerus</h1>
