@@ -14,18 +14,23 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
+            container: quay.io/pypa/manylinux2014_x86_64
           - os: macos-latest
             artifact_name: beerus-darwin-x86_64.tar.gz
             asset_name: beerus-darwin-x86_64.tar.gz
 
+    container:
+        image: ${{ matrix.container || '' }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: install toolchain
-        run: |
-          rustup set profile minimal
-          rustup update --no-self-update stable
-          
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
       - name: cache deps
         uses: Swatinem/rust-cache@v2
         with:
