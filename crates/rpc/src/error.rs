@@ -3,7 +3,6 @@ use eyre::Report;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError as StarknetErr;
 use starknet::providers::ProviderError;
-// use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
 use starknet::providers::ProviderError::StarknetError;
 
 #[derive(Debug)]
