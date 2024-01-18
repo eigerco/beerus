@@ -16,6 +16,10 @@
   See the [Beerus Book](book/README.md) for more info.
 </div>
 
+## News
+
+* 17/01/24: [Eiger is taking over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
+
 ## Getting Started
 
 ```bash
