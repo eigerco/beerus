@@ -2,6 +2,9 @@ use beerus_core::storage_proofs::StorageProof;
 use beerus_core::utils::get_balance_key;
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
+use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
+use starknet::core::serde::unsigned_field_element::UfeHex;
 use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
     BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
@@ -15,6 +18,14 @@ use starknet::providers::Provider;
 
 use crate::error::BeerusRpcError;
 use crate::BeerusRpc;
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Felt(#[serde_as(as = "UfeHex")] pub FieldElement);
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Clone)]
+pub struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
 
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
@@ -40,7 +51,7 @@ pub trait BeerusRpc {
         contract_address: FieldElement,
         key: FieldElement,
         block_id: BlockId,
-    ) -> Result<FieldElement, BeerusRpcError>;
+    ) -> Result<Felt, BeerusRpcError>;
 
     #[method(name = "getTransactionByHash")]
     async fn get_transaction_by_hash(&self, transaction_hash: FieldElement) -> Result<Transaction, BeerusRpcError>;
@@ -70,7 +81,7 @@ pub trait BeerusRpc {
         &self,
         block_id: BlockId,
         contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError>;
+    ) -> Result<Felt, BeerusRpcError>;
 
     #[method(name = "getClassAt")]
     async fn get_class_at(
@@ -83,7 +94,7 @@ pub trait BeerusRpc {
     async fn get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, BeerusRpcError>;
 
     #[method(name = "call")]
-    async fn call(&self, request: FunctionCall, block_id: BlockId) -> Result<Vec<FieldElement>, BeerusRpcError>;
+    async fn call(&self, request: FunctionCall, block_id: BlockId) -> Result<FeltArray, BeerusRpcError>;
 
     #[method(name = "estimateFee")]
     async fn estimate_fee(
@@ -103,7 +114,7 @@ pub trait BeerusRpc {
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, BeerusRpcError>;
 
     #[method(name = "chainId")]
-    async fn chain_id(&self) -> Result<FieldElement, BeerusRpcError>;
+    async fn chain_id(&self) -> Result<Felt, BeerusRpcError>;
 
     #[method(name = "syncing")]
     async fn syncing(&self) -> Result<SyncStatusType, BeerusRpcError>;
@@ -117,11 +128,7 @@ pub trait BeerusRpc {
     ) -> Result<EventsPage, BeerusRpcError>;
 
     #[method(name = "getNonce")]
-    async fn get_nonce(
-        &self,
-        block_id: BlockId,
-        contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError>;
+    async fn get_nonce(&self, block_id: BlockId, contract_address: FieldElement) -> Result<Felt, BeerusRpcError>;
 
     #[method(name = "addInvokeTransaction")]
     async fn add_invoke_transaction(
@@ -159,14 +166,10 @@ pub trait BeerusRpc {
     ) -> Result<StorageProof, BeerusRpcError>;
 
     #[method(name = "getStateRoot")]
-    async fn get_state_root(&self) -> Result<FieldElement, BeerusRpcError>;
+    async fn get_state_root(&self) -> Result<Felt, BeerusRpcError>;
 
     #[method(name = "getBalance")]
-    async fn get_balance(
-        &self,
-        block_id: BlockId,
-        contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError>;
+    async fn get_balance(&self, block_id: BlockId, contract_address: FieldElement) -> Result<Felt, BeerusRpcError>;
 }
 
 #[async_trait]
@@ -199,7 +202,7 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
         key: FieldElement,
         block_id: BlockId,
-    ) -> Result<FieldElement, BeerusRpcError> {
+    ) -> Result<Felt, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         let l1_root = self.beerus.get_local_root().await;
 
@@ -208,7 +211,7 @@ impl BeerusRpcServer for BeerusRpc {
 
         proof.verify(l1_root, *contract_address.as_ref(), *key.as_ref(), fetched_val)?;
 
-        Ok(fetched_val)
+        Ok(Felt(fetched_val))
     }
 
     async fn get_transaction_by_hash(&self, transaction_hash: FieldElement) -> Result<Transaction, BeerusRpcError> {
@@ -251,12 +254,13 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         block_id: BlockId,
         contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError> {
+    ) -> Result<Felt, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         self.beerus
             .starknet_client
             .get_class_hash_at(l1_block_num, contract_address)
             .await
+            .map(Felt)
             .map_err(BeerusRpcError::from)
     }
 
@@ -274,9 +278,9 @@ impl BeerusRpcServer for BeerusRpc {
         self.beerus.starknet_client.get_block_transaction_count(l1_block_num).await.map_err(BeerusRpcError::from)
     }
 
-    async fn call(&self, request: FunctionCall, block_id: BlockId) -> Result<Vec<FieldElement>, BeerusRpcError> {
+    async fn call(&self, request: FunctionCall, block_id: BlockId) -> Result<FeltArray, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        self.beerus.starknet_client.call(request, l1_block_num).await.map_err(BeerusRpcError::from)
+        self.beerus.starknet_client.call(request, l1_block_num).await.map(FeltArray).map_err(BeerusRpcError::from)
     }
 
     async fn estimate_fee(
@@ -308,8 +312,8 @@ impl BeerusRpcServer for BeerusRpc {
         Ok(BlockHashAndNumber { block_hash, block_number })
     }
 
-    async fn chain_id(&self) -> Result<FieldElement, BeerusRpcError> {
-        self.beerus.starknet_client.chain_id().await.map_err(BeerusRpcError::from)
+    async fn chain_id(&self) -> Result<Felt, BeerusRpcError> {
+        self.beerus.starknet_client.chain_id().await.map(Felt).map_err(BeerusRpcError::from)
     }
 
     async fn syncing(&self) -> Result<SyncStatusType, BeerusRpcError> {
@@ -329,13 +333,14 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(BeerusRpcError::from)
     }
 
-    async fn get_nonce(
-        &self,
-        block_id: BlockId,
-        contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError> {
+    async fn get_nonce(&self, block_id: BlockId, contract_address: FieldElement) -> Result<Felt, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        self.beerus.starknet_client.get_nonce(l1_block_num, contract_address).await.map_err(BeerusRpcError::from)
+        self.beerus
+            .starknet_client
+            .get_nonce(l1_block_num, contract_address)
+            .await
+            .map(Felt)
+            .map_err(BeerusRpcError::from)
     }
 
     async fn add_invoke_transaction(
@@ -387,15 +392,11 @@ impl BeerusRpcServer for BeerusRpc {
         self.beerus.get_proof(block_id, &contract_address, &keys).await.map_err(BeerusRpcError::from)
     }
 
-    async fn get_state_root(&self) -> Result<FieldElement, BeerusRpcError> {
-        self.beerus.sn_state_root().await.map_err(BeerusRpcError::from)
+    async fn get_state_root(&self) -> Result<Felt, BeerusRpcError> {
+        self.beerus.sn_state_root().await.map(Felt).map_err(BeerusRpcError::from)
     }
 
-    async fn get_balance(
-        &self,
-        block_id: BlockId,
-        contract_address: FieldElement,
-    ) -> Result<FieldElement, BeerusRpcError> {
+    async fn get_balance(&self, block_id: BlockId, contract_address: FieldElement) -> Result<Felt, BeerusRpcError> {
         // get local block number and root to verify proof with
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         let root = self.beerus.get_local_root().await;
@@ -420,11 +421,12 @@ impl BeerusRpcServer for BeerusRpc {
                 },
                 l1_block_num,
             )
-            .await?;
+            .await?
+            .0;
 
         // verify the storage proof w/ the untrusted value
         proof.verify(root, self.beerus.config.fee_token_addr, balance_key, balance[0]).map_err(BeerusRpcError::from)?;
 
-        Ok(balance[0])
+        Ok(Felt(balance[0]))
     }
 }

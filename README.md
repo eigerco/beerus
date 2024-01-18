@@ -4,6 +4,9 @@
 
   [![CI Action Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml)
   [![Check Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
+  ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?logo=ethereum)
+  [![jsonrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
+
 
   ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?logo=ethereum)
   [![openrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)

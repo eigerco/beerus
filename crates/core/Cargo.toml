@@ -14,6 +14,7 @@ eyre.workspace = true
 helios = { git = "https://github.com/a16z/helios", rev = "9481aaa572a092d4e73ca520b67a3315faf7748e" }
 reqwest = "0.11.13"
 serde = { workspace = true, features = ["derive"] }
+serde_with.workspace = true
 serde_json = "1.0"
 starknet-crypto = "0.6.1"
 
