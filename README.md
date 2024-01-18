@@ -3,10 +3,14 @@
   <div align="center">
 
   [![CI Action Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml)
-  [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Check Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
   ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?logo=ethereum)
   [![jsonrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
+
+  ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?logo=ethereum)
+  [![openrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
+
+  [![Created By](https://img.shields.io/badge/created--by-sw--exploration-purple)](https://github.com/keep-starknet-strange)
 
 
   </div>
@@ -18,6 +22,10 @@
 
   See the [Beerus Book](book/README.md) for more info.
 </div>
+
+## News
+
+* 17/01/24: [Eiger is taking over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
 
 ## Getting Started
 
