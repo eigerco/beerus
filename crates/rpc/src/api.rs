@@ -7,7 +7,8 @@ use starknet::core::types::{
     BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
     DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement, FunctionCall,
     InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    MaybePendingTransactionReceipt, MsgFromL1, SyncStatusType, Transaction,
+    MaybePendingTransactionReceipt, MsgFromL1, SimulationFlagForEstimateFee, SyncStatusType, Transaction,
+    TransactionStatus,
 };
 use starknet::macros::selector;
 use starknet::providers::Provider;
@@ -18,6 +19,9 @@ use crate::BeerusRpc;
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
+    #[method(name = "specVersion")]
+    async fn spec_version(&self) -> Result<String, BeerusRpcError>;
+
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
@@ -40,6 +44,10 @@ pub trait BeerusRpc {
 
     #[method(name = "getTransactionByHash")]
     async fn get_transaction_by_hash(&self, transaction_hash: FieldElement) -> Result<Transaction, BeerusRpcError>;
+
+    #[method(name = "getTransactionStatus")]
+    async fn get_transaction_status(&self, transaction_hash: FieldElement)
+    -> Result<TransactionStatus, BeerusRpcError>;
 
     #[method(name = "getTransactionByBlockIdAndIndex")]
     async fn get_transaction_by_block_id_and_index(
@@ -81,6 +89,7 @@ pub trait BeerusRpc {
     async fn estimate_fee(
         &self,
         request: Vec<BroadcastedTransaction>,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError>;
 
@@ -95,9 +104,6 @@ pub trait BeerusRpc {
 
     #[method(name = "chainId")]
     async fn chain_id(&self) -> Result<FieldElement, BeerusRpcError>;
-
-    #[method(name = "pendingTransactions")]
-    async fn pending_transactions(&self) -> Result<Vec<Transaction>, BeerusRpcError>;
 
     #[method(name = "syncing")]
     async fn syncing(&self) -> Result<SyncStatusType, BeerusRpcError>;
@@ -139,6 +145,7 @@ pub trait BeerusRpc {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTransaction,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError>;
 
@@ -165,6 +172,10 @@ pub trait BeerusRpc {
 #[async_trait]
 impl BeerusRpcServer for BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
+    async fn spec_version(&self) -> Result<String, BeerusRpcError> {
+        self.beerus.starknet_client.spec_version().await.map_err(BeerusRpcError::from)
+    }
+
     async fn get_block_with_tx_hashes(
         &self,
         block_id: BlockId,
@@ -202,6 +213,13 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn get_transaction_by_hash(&self, transaction_hash: FieldElement) -> Result<Transaction, BeerusRpcError> {
         self.beerus.starknet_client.get_transaction_by_hash(transaction_hash).await.map_err(BeerusRpcError::from)
+    }
+
+    async fn get_transaction_status(
+        &self,
+        transaction_hash: FieldElement,
+    ) -> Result<TransactionStatus, BeerusRpcError> {
+        self.beerus.starknet_client.get_transaction_status(transaction_hash).await.map_err(BeerusRpcError::from)
     }
 
     async fn get_transaction_by_block_id_and_index(
@@ -264,10 +282,15 @@ impl BeerusRpcServer for BeerusRpc {
     async fn estimate_fee(
         &self,
         request: Vec<BroadcastedTransaction>,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        self.beerus.starknet_client.estimate_fee(request, l1_block_num).await.map_err(BeerusRpcError::from)
+        self.beerus
+            .starknet_client
+            .estimate_fee(request, simulation_flags, l1_block_num)
+            .await
+            .map_err(BeerusRpcError::from)
     }
 
     async fn estimate_message_fee(&self, message: MsgFromL1, block_id: BlockId) -> Result<FeeEstimate, BeerusRpcError> {
@@ -287,10 +310,6 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn chain_id(&self) -> Result<FieldElement, BeerusRpcError> {
         self.beerus.starknet_client.chain_id().await.map_err(BeerusRpcError::from)
-    }
-
-    async fn pending_transactions(&self) -> Result<Vec<Transaction>, BeerusRpcError> {
-        self.beerus.starknet_client.pending_transactions().await.map_err(BeerusRpcError::from)
     }
 
     async fn syncing(&self) -> Result<SyncStatusType, BeerusRpcError> {
@@ -347,10 +366,15 @@ impl BeerusRpcServer for BeerusRpc {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTransaction,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        self.beerus.starknet_client.estimate_fee_single(request, l1_block_num).await.map_err(BeerusRpcError::from)
+        self.beerus
+            .starknet_client
+            .estimate_fee_single(request, simulation_flags, l1_block_num)
+            .await
+            .map_err(BeerusRpcError::from)
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------

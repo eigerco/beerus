@@ -34,7 +34,6 @@
     - [starknet_getTransactionByBlockIdAndIndex](./rpc/starknet/starknet_getTransactionByBlockIdAndIndex.md)
     - [starknet_getTransactionByHash](./rpc/starknet/starknet_getTransactionByHash.md)
     - [starknet_getTransactionReceipt](./rpc/starknet/starknet_getTransactionReceipt.md)
-    - [starknet_pendingTransactions](./rpc/starknet/starknet_pendingTransactions.md)
     - [starknet_syncing](./rpc/starknet/starknet_syncing.md)
 
   - [Additional](./rpc/additional/summary.md)

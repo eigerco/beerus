@@ -15,7 +15,6 @@ use helios::prelude::ConfigDB;
 use helios::prelude::FileDB;
 use rstest::rstest;
 use starknet_crypto::FieldElement;
-
 #[rstest]
 #[should_panic]
 fn bad_toml() {

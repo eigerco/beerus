@@ -4,7 +4,12 @@
 
   [![CI Action Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/ci.yml)
   [![Check Workflow Status](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/keep-starknet-strange/beerus/actions/workflows/check.yml)
+
+  ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?logo=ethereum)
+  [![openrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
+
   [![Created By](https://img.shields.io/badge/created--by-sw--exploration-purple)](https://github.com/keep-starknet-strange)
+
 
   </div>
   <h1>Beerus</h1>
@@ -114,12 +119,14 @@ npm run build
 *Starknet endpoints* (in compliance with [Starknet specs](https://github.com/starkware-libs/starknet-specs)):
 
 | Endpoint                                   | Supported          |
-| :----------------------------------------- | :----------------- |
+|:-------------------------------------------| :----------------- |
+| `starknet_specVersion`                     | :white_check_mark: |
 | `starknet_getBlockWithTxHashes`            | :white_check_mark: |
 | `starknet_getBlockWithTxs`                 | :white_check_mark: |
 | `starknet_getStateUpdate`                  | :white_check_mark: |
 | `starknet_getStorageAt`                    | :white_check_mark: |
 | `starknet_getTransactionByHash`            | :white_check_mark: |
+| `starknet_getTransactionStatus`            | :white_check_mark: |
 | `starknet_getTransactionByBlockIdAndIndex` | :white_check_mark: |
 | `starknet_getTransactionReceipt`           | :white_check_mark: |
 | `starknet_getClass`                        | :white_check_mark: |
@@ -132,7 +139,6 @@ npm run build
 | `starknet_blockNumber`                     | :white_check_mark: |
 | `starknet_blockHashAndNumber`              | :white_check_mark: |
 | `starknet_chainId`                         | :white_check_mark: |
-| `starknet_pendingTransactions`             | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
 | `starknet_syncing`                         | :white_check_mark: |
 | `starknet_getEvents`(not validated)        | :white_check_mark: |
