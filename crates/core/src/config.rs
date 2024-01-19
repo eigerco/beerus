@@ -112,7 +112,8 @@ impl Config {
             starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
             data_dir: PathBuf::from(std::env::var("DATA_DIR").unwrap_or_default()),
             poll_secs: u64::from_str(&std::env::var("POLL_SECS").unwrap_or_default()).unwrap_or(DEFAULT_POLL_SECS),
-            timeout_secs: u64::from_str(&std::env::var("TIMEOUT_SECS").unwrap_or_default()).unwrap_or(DEFAULT_TIMEOUT_SECS),
+            timeout_secs: u64::from_str(&std::env::var("TIMEOUT_SECS").unwrap_or_default())
+                .unwrap_or(DEFAULT_TIMEOUT_SECS),
             retry_limit: u8::from_str(&std::env::var("RETRY_LIMIT").unwrap_or_default()).unwrap_or(DEFAULT_RETRY_LIMIT),
             retry_secs: u64::from_str(&std::env::var("RETRY_SECS").unwrap_or_default()).unwrap_or(DEFAULT_RETRY_SECS),
             rpc_addr: SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap(),
