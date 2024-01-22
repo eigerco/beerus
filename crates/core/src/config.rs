@@ -20,9 +20,6 @@ use url::Url;
 // defaults
 pub const DEFAULT_DATA_DIR: &str = "tmp";
 pub const DEFAULT_POLL_SECS: u64 = 5;
-pub const DEFAULT_TIMEOUT_SECS: u64 = 60;
-pub const DEFAULT_RETRY_LIMIT: u8 = 3;
-pub const DEFAULT_RETRY_SECS: u64 = 5;
 pub const DEFAULT_FEE_TOKEN_ADDR: &str = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 const DEFAULT_IP_V4_ADDR: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3030;
@@ -47,12 +44,6 @@ pub struct Config {
     pub data_dir: PathBuf,
     #[serde(default = "poll_secs")]
     pub poll_secs: u64,
-    #[serde(default = "timeout_secs")]
-    pub timeout_secs: u64,
-    #[serde(default = "retry_limit")]
-    pub retry_limit: u8,
-    #[serde(default = "retry_secs")]
-    pub retry_secs: u64,
     #[serde(default = "rpc_addr")]
     pub rpc_addr: SocketAddr,
     #[serde(default = "fee_token_addr")]
@@ -65,18 +56,6 @@ fn data_dir() -> PathBuf {
 
 fn poll_secs() -> u64 {
     DEFAULT_POLL_SECS
-}
-
-fn timeout_secs() -> u64 {
-    DEFAULT_TIMEOUT_SECS
-}
-
-fn retry_limit() -> u8 {
-    DEFAULT_RETRY_LIMIT
-}
-
-fn retry_secs() -> u64 {
-    DEFAULT_RETRY_SECS
 }
 
 fn rpc_addr() -> SocketAddr {
@@ -95,9 +74,6 @@ impl Default for Config {
             starknet_rpc: "http://localhost:9545".to_string(),
             data_dir: data_dir(),
             poll_secs: poll_secs(),
-            timeout_secs: timeout_secs(),
-            retry_limit: retry_limit(),
-            retry_secs: retry_secs(),
             rpc_addr: rpc_addr(),
             fee_token_addr: fee_token_addr(),
         }
@@ -112,10 +88,6 @@ impl Config {
             starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
             data_dir: PathBuf::from(std::env::var("DATA_DIR").unwrap_or_default()),
             poll_secs: u64::from_str(&std::env::var("POLL_SECS").unwrap_or_default()).unwrap_or(DEFAULT_POLL_SECS),
-            timeout_secs: u64::from_str(&std::env::var("TIMEOUT_SECS").unwrap_or_default())
-                .unwrap_or(DEFAULT_TIMEOUT_SECS),
-            retry_limit: u8::from_str(&std::env::var("RETRY_LIMIT").unwrap_or_default()).unwrap_or(DEFAULT_RETRY_LIMIT),
-            retry_secs: u64::from_str(&std::env::var("RETRY_SECS").unwrap_or_default()).unwrap_or(DEFAULT_RETRY_SECS),
             rpc_addr: SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap(),
             fee_token_addr: fee_token_addr(),
         }

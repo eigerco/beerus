@@ -1,3 +1,5 @@
+use std::fmt::Display;
+use std::future::Future;
 use std::sync::Arc;
 use std::{thread, time};
 
@@ -89,18 +91,6 @@ pub struct BeerusClient {
     /// Interval at which beerus will check if the L1 State Root
     /// has been updated.
     pub poll_secs: u64,
-    /// Timeout Seconds
-    ///
-    /// Timeout for fetching L1/L2 state root
-    pub timeout_secs: u64,
-    /// Retry Limit
-    ///
-    /// Number of times to retry fetching L1/L2 state root
-    pub retry_limit: u8,
-    /// Retry Interval Seconds
-    ///
-    /// Interval at which beerus will retry fetching L1/L2 state root
-    pub retry_secs: u64,
     /// Core Contract Address
     ///
     /// Address of the L1 core contracts for starknet.
@@ -145,9 +135,6 @@ impl BeerusClient {
             starknet_client: config.to_starknet_client(),
             proof_addr: config.starknet_rpc.clone(),
             poll_secs: config.poll_secs,
-            timeout_secs: config.timeout_secs,
-            retry_limit: config.retry_limit,
-            retry_secs: config.retry_secs,
             core_contract_addr: config.get_core_contract_address(),
             node: Arc::new(RwLock::new(NodeData::new())),
             config: config.clone(),
@@ -167,24 +154,8 @@ impl BeerusClient {
             let core_contract_addr = config.get_core_contract_address();
 
             loop {
-                let sn_root = wrapped_retry_sn_state_root_inner(
-                    &l1_client,
-                    core_contract_addr,
-                    config.timeout_secs,
-                    config.retry_limit,
-                    config.retry_secs,
-                )
-                .await
-                .unwrap();
-                let sn_block_num = wrapped_retry_sn_state_block_number_inner(
-                    &l1_client,
-                    core_contract_addr,
-                    config.timeout_secs,
-                    config.retry_limit,
-                    config.retry_secs,
-                )
-                .await
-                .unwrap();
+                let sn_root = wrapped_retry(sn_state_root_inner, &l1_client, core_contract_addr).await;
+                let sn_block_num = wrapped_retry(sn_state_block_number_inner, &l1_client, core_contract_addr).await;
                 let local_block_num = node.read().await.l1_block_num;
 
                 if local_block_num < sn_block_num {
@@ -311,34 +282,6 @@ async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: A
     FieldElement::from_byte_slice_be(&starknet_root).map_err(|e| eyre!(e))
 }
 
-async fn wrapped_retry_sn_state_root_inner(
-    l1_client: &Client<impl Database>,
-    contract_addr: Address,
-    timeout_secs: u64,
-    retry_limit: u8,
-    retry_secs: u64,
-) -> Result<FieldElement> {
-    let mut retries: u8 = 0;
-    loop {
-        if retries >= retry_limit {
-            panic!("too many retries");
-        }
-        retries += 1;
-        match future::timeout(time::Duration::from_secs(timeout_secs), sn_state_root_inner(&l1_client, contract_addr))
-            .await
-        {
-            Ok(Ok(root)) => break Ok(root),
-            Ok(Err(err)) => {
-                warn! {"CodeError for {} times: {}", retries, err}
-            }
-            Err(err) => {
-                warn! {"Timeout for {} times: {}", retries, err}
-            }
-        }
-        thread::sleep(time::Duration::from_secs(retry_secs));
-    }
-}
-
 async fn sn_state_block_number_inner(
     l1_client: &Client<impl Database>,
     core_contract_addr: Address,
@@ -351,28 +294,31 @@ async fn sn_state_block_number_inner(
     Ok(U256::from_big_endian(&sn_block_num).as_u64())
 }
 
-async fn wrapped_retry_sn_state_block_number_inner(
-    l1_client: &Client<impl Database>,
+async fn wrapped_retry<'a, Fut, T, E, D>(
+    func: impl Fn(&'a Client<D>, Address) -> Fut,
+    l1_client: &'a Client<D>,
     core_contract_addr: Address,
-    timeout_secs: u64,
-    retry_limit: u8,
-    retry_secs: u64,
-) -> Result<u64> {
+) -> T
+where
+    Fut: Future<Output = Result<T, E>>,
+    D: Database,
+    E: Display,
+{
+    // configure parameters
+    let timeout_secs: u64 = 60;
+    let retry_limit: u8 = 5;
+    let retry_secs: u64 = 5;
+
     let mut retries: u8 = 0;
     loop {
         if retries >= retry_limit {
             panic!("too many retries");
         }
         retries += 1;
-        match future::timeout(
-            time::Duration::from_secs(timeout_secs),
-            sn_state_block_number_inner(&l1_client, core_contract_addr),
-        )
-        .await
-        {
-            Ok(Ok(root)) => break Ok(root),
+        match future::timeout(time::Duration::from_secs(timeout_secs), func(l1_client, core_contract_addr)).await {
+            Ok(Ok(ret)) => break ret,
             Ok(Err(err)) => {
-                warn! {"CodeError for {} times: {}", retries, err}
+                warn! {"Error for {} times: {}", retries, err}
             }
             Err(err) => {
                 warn! {"Timeout for {} times: {}", retries, err}
