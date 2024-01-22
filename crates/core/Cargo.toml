@@ -11,7 +11,7 @@ bitvec = "1.0.1"
 ethabi = "18.0.0"
 ethers = "2.0.11"
 eyre.workspace = true
-helios = { git = "https://github.com/a16z/helios", rev = "9481aaa572a092d4e73ca520b67a3315faf7748e" }
+helios = { git = "https://github.com/a16z/helios", rev = "4ca6146eff964326240f2ef77215413b490d8301" }
 reqwest = "0.11.13"
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
