@@ -62,7 +62,7 @@ fn mainnet_toml() {
 }
 
 #[rstest]
-async fn mainnet_helios_json() {
+async fn mainnet_helios_toml() {
     let conf = Config::from_file("tests/common/data/mainnet.toml");
 
     #[cfg(not(target_arch = "wasm32"))]
