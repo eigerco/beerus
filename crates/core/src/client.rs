@@ -161,7 +161,6 @@ impl BeerusClient {
                 if local_block_num < sn_block_num {
                     // TODO: Issue #550 - feat: sync from proven root
                     match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await {
-                        // TODO: handle unwrap()
                         Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
                             info!(
                                 "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
@@ -324,6 +323,6 @@ where
                 warn! {"Timeout for {} times: {}", retries, err}
             }
         }
-        thread::sleep(time::Duration::from_secs(retry_secs));
+        async_std::task::sleep(time::Duration::from_secs(retry_secs)).await;
     }
 }
