@@ -28,6 +28,7 @@ Content-Type: application/json
             ],
             "nonce": "0x1"
         },
+        "simulation_flags": [],
         "block_id": {
             "block_number": 59999
         }
