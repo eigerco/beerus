@@ -293,21 +293,19 @@ async fn sn_state_block_number_inner(
     Ok(U256::from_big_endian(&sn_block_num).as_u64())
 }
 
-async fn wrapped_retry<'a, Fut, T, E, D>(
+pub async fn wrapped_retry_inner<'a, Fut, T, E, D>(
     func: impl Fn(&'a Client<D>, Address) -> Fut,
     l1_client: &'a Client<D>,
     core_contract_addr: Address,
+    timeout_secs: u64,
+    retry_limit: u8,
+    retry_secs: u64,
 ) -> T
 where
     Fut: Future<Output = Result<T, E>>,
     D: Database,
     E: Display,
 {
-    // configure parameters
-    let timeout_secs: u64 = 60;
-    let retry_limit: u8 = 5;
-    let retry_secs: u64 = 5;
-
     let mut retries: u8 = 0;
     loop {
         if retries >= retry_limit {
@@ -325,4 +323,22 @@ where
         }
         async_std::task::sleep(time::Duration::from_secs(retry_secs)).await;
     }
+}
+
+async fn wrapped_retry<'a, Fut, T, E, D>(
+    func: impl Fn(&'a Client<D>, Address) -> Fut,
+    l1_client: &'a Client<D>,
+    core_contract_addr: Address,
+) -> T
+where
+    Fut: Future<Output = Result<T, E>>,
+    D: Database,
+    E: Display,
+{
+    // configure parameters
+    let timeout_secs: u64 = 60;
+    let retry_limit: u8 = 5;
+    let retry_secs: u64 = 5;
+
+    wrapped_retry_inner(func, l1_client, core_contract_addr, timeout_secs, retry_limit, retry_secs).await
 }
