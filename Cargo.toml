@@ -3,7 +3,8 @@ members = ["crates/core", "crates/rpc", "crates/cli"]
 resolver = "2"
 
 [workspace.dependencies]
-tokio = { version = "1", features = ["full"] }
+## Tokio WASM support: https://docs.rs/tokio/latest/tokio/#wasm-support
+tokio = { version = "1", features = ["sync", "macros", "io-util", "rt", "time"] }
 eyre = "0.6.8"
 serde = "1.0.156"
 serde_with = "2.3.3"
