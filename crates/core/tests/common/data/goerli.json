@@ -1,5 +1,0 @@
-{
-    "network": "GOERLI",
-    "eth_execution_rpc": "https://eth-mainnet.g.alchemy.com/v2/TOKEN",
-    "starknet_rpc": "https://starknet-mainnet.g.alchemy.com/v2/FFFF"
-}
