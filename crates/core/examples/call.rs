@@ -3,16 +3,15 @@ use std::str::FromStr;
 
 use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
+use eyre::{Context, Result};
 use starknet::core::types::{BlockId, FieldElement, FunctionCall};
 use starknet::providers::Provider;
-use eyre::{Context, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
-    let api_key = env::var("ALCHEMY_API_KEY")
-        .context("ALCHEMY_API_KEY is missing")?;
+    let api_key = env::var("ALCHEMY_API_KEY").context("ALCHEMY_API_KEY is missing")?;
 
     let config = Config {
         network: helios::config::networks::Network::MAINNET,
