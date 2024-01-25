@@ -3,9 +3,12 @@ use rstest::{fixture, rstest};
 use starknet::macros::felt;
 use starknet_crypto::FieldElement;
 
-const TESTING_STATE_ROOT: FieldElement = felt!("0x11d7289401f12bdbbfcf890cf531dd13e215d68fa700b82b08220dc75c24f54");
-const TESTING_CONTRACT_ADDR: FieldElement = felt!("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
-const TESTING_STORAGE_KEY: FieldElement = felt!("0xd4daccb5bc077d40279ee559dc950ff0e5a7d1e139b3e3ab7e1b8dd8b997a7");
+const TESTING_STATE_ROOT: FieldElement =
+    felt!("0x11d7289401f12bdbbfcf890cf531dd13e215d68fa700b82b08220dc75c24f54");
+const TESTING_CONTRACT_ADDR: FieldElement =
+    felt!("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
+const TESTING_STORAGE_KEY: FieldElement =
+    felt!("0xd4daccb5bc077d40279ee559dc950ff0e5a7d1e139b3e3ab7e1b8dd8b997a7");
 const TESTING_BALANCE: FieldElement = felt!("0x17e3b52ef2aa6a");
 
 struct ProofData {
@@ -29,7 +32,12 @@ fn proof_data() -> ProofData {
 fn verify_valid_storage_proof(proof_data: ProofData) {
     let mut proof: StorageProof = serde_json::from_str(PROOF).unwrap();
 
-    let res = proof.verify(proof_data.root, proof_data.addr, proof_data.key, proof_data.value);
+    let res = proof.verify(
+        proof_data.root,
+        proof_data.addr,
+        proof_data.key,
+        proof_data.value,
+    );
     assert!(res.is_ok());
 }
 
@@ -38,7 +46,12 @@ fn invalid_value_storage_proof(proof_data: ProofData) {
     let mut proof: StorageProof = serde_json::from_str(PROOF).unwrap();
 
     let bad_value = proof_data.value + FieldElement::ONE;
-    let res = proof.verify(proof_data.root, proof_data.addr, proof_data.key, bad_value);
+    let res = proof.verify(
+        proof_data.root,
+        proof_data.addr,
+        proof_data.key,
+        bad_value,
+    );
     assert!(res.is_err());
 }
 
@@ -47,7 +60,12 @@ fn invalid_key_storage_proof(proof_data: ProofData) {
     let mut proof: StorageProof = serde_json::from_str(PROOF).unwrap();
 
     let bad_key = proof_data.key + FieldElement::ONE;
-    let res = proof.verify(proof_data.root, proof_data.addr, bad_key, proof_data.value);
+    let res = proof.verify(
+        proof_data.root,
+        proof_data.addr,
+        bad_key,
+        proof_data.value,
+    );
     assert!(res.is_err());
 }
 
@@ -56,7 +74,12 @@ fn invalid_addr_storage_proof(proof_data: ProofData) {
     let mut proof: StorageProof = serde_json::from_str(PROOF).unwrap();
 
     let bad_addr = proof_data.addr + FieldElement::ONE;
-    let res = proof.verify(proof_data.root, bad_addr, proof_data.key, proof_data.value);
+    let res = proof.verify(
+        proof_data.root,
+        bad_addr,
+        proof_data.key,
+        proof_data.value,
+    );
     assert!(res.is_err());
 }
 
@@ -65,7 +88,12 @@ fn invalid_root_storage_proof(proof_data: ProofData) {
     let mut proof: StorageProof = serde_json::from_str(PROOF).unwrap();
 
     let bad_root = proof_data.root + FieldElement::ONE;
-    let res = proof.verify(bad_root, proof_data.addr, proof_data.key, proof_data.value);
+    let res = proof.verify(
+        bad_root,
+        proof_data.addr,
+        proof_data.key,
+        proof_data.value,
+    );
     assert!(res.is_err());
 }
 

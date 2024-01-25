@@ -14,7 +14,10 @@ use helios::prelude::Database;
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
 use serde_json::json;
-use starknet::core::types::{BlockId, BlockTag as StarknetBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
+use starknet::core::types::{
+    BlockId, BlockTag as StarknetBlockTag, FieldElement,
+    MaybePendingBlockWithTxHashes,
+};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use starknet::providers::Provider;
 use tokio::sync::RwLock;
@@ -60,7 +63,11 @@ impl NodeData {
         }
     }
 
-    pub fn update(&mut self, l1_block_number: u64, l1_state_root: FieldElement) {
+    pub fn update(
+        &mut self,
+        l1_block_number: u64,
+        l1_state_root: FieldElement,
+    ) {
         self.l1_block_number = l1_block_number;
         self.l1_state_root = l1_state_root;
     }
@@ -120,20 +127,28 @@ impl BeerusClient {
         #[cfg(not(target_arch = "wasm32"))]
         let mut helios_client: Client<FileDB> = config.to_helios_client().await;
         #[cfg(target_arch = "wasm32")]
-        let mut helios_client: Client<ConfigDB> = config.to_helios_client().await;
+        let mut helios_client: Client<ConfigDB> =
+            config.to_helios_client().await;
 
-        helios_client.start().await
-            .context("failed to start helios client")?;
+        helios_client.start().await.context("failed to start helios client")?;
 
-        while let SyncingStatus::IsSyncing(sync) = helios_client.syncing().await.context("failed to fetch syncing status")? {
+        while let SyncingStatus::IsSyncing(sync) = helios_client
+            .syncing()
+            .await
+            .context("failed to fetch syncing status")?
+        {
             debug!("{} syncing: head={}", config.network, sync.highest_block);
             thread::sleep(time::Duration::from_secs(1));
         }
 
-        get_starknet_state_root(&helios_client, config.get_core_contract_address()).await
-            .context("failed to fetch starknet state root")?;
+        get_starknet_state_root(
+            &helios_client,
+            config.get_core_contract_address(),
+        )
+        .await
+        .context("failed to fetch starknet state root")?;
 
-       Ok(Self {
+        Ok(Self {
             helios_client: Arc::new(helios_client),
             starknet_client: config.to_starknet_client(),
             proof_addr: config.starknet_rpc.clone(),
@@ -158,10 +173,19 @@ impl BeerusClient {
 
         let state_loop = async move {
             loop {
-                match pull_block(&l1_client, &l2_client, core_contract_addr, node.clone()).await {
-                    Ok(Some(block_number)) => info!("synced block: {block_number}"),
+                match pull_block(
+                    &l1_client,
+                    &l2_client,
+                    core_contract_addr,
+                    node.clone(),
+                )
+                .await
+                {
+                    Ok(Some(block_number)) => {
+                        info!("synced block: {block_number}")
+                    }
                     Ok(None) => debug!("already at head block"),
-                    Err(e) => error!("failed to pull block: {e}")
+                    Err(e) => error!("failed to pull block: {e}"),
                 };
                 debug!("state loop: delay {poll_interval:?}");
                 thread::sleep(poll_interval);
@@ -177,21 +201,30 @@ impl BeerusClient {
     }
 
     pub async fn state_root(&self) -> Result<FieldElement> {
-        get_starknet_state_root(&self.helios_client, self.core_contract_addr).await
+        get_starknet_state_root(&self.helios_client, self.core_contract_addr)
+            .await
     }
 
     pub async fn state_block_number(&self) -> Result<u64, CoreError> {
-        get_starknet_state_block_number(&self.helios_client, self.core_contract_addr).await
+        get_starknet_state_block_number(
+            &self.helios_client,
+            self.core_contract_addr,
+        )
+        .await
     }
 
     pub async fn state_block_hash(&self) -> Result<FieldElement, CoreError> {
         let data = StateBlockHashCall::selector();
         let call_opts = simple_call_opts(self.core_contract_addr, data.into());
 
-        let sn_block_hash =
-            self.helios_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
+        let sn_block_hash = self
+            .helios_client
+            .call(&call_opts, BlockTag::Latest)
+            .await
+            .map_err(CoreError::FetchL1Val)?;
 
-        FieldElement::from_byte_slice_be(&sn_block_hash).map_err(|e| CoreError::FetchL1Val(eyre!("{e}")))
+        FieldElement::from_byte_slice_be(&sn_block_hash)
+            .map_err(|e| CoreError::FetchL1Val(eyre!("{e}")))
     }
 
     pub async fn get_local_root(&self) -> FieldElement {
@@ -207,7 +240,10 @@ impl BeerusClient {
     ///
     /// Until Issue #550 is implemented blocks in the range block num > local block num
     /// will default to local block num
-    pub async fn get_local_block_id(&self, provided_block_id: BlockId) -> BlockId {
+    pub async fn get_local_block_id(
+        &self,
+        provided_block_id: BlockId,
+    ) -> BlockId {
         let local_block_num = self.get_local_block_num().await;
 
         match provided_block_id {
@@ -233,10 +269,12 @@ impl BeerusClient {
         contract_address: &FieldElement,
         keys: &[FieldElement],
     ) -> Result<StorageProof, CoreError> {
-        let client =
-            reqwest::Client::builder().build().map_err(|e| CoreError::StorageProof(eyre!("build request: {e:?}")))?;
+        let client = reqwest::Client::builder().build().map_err(|e| {
+            CoreError::StorageProof(eyre!("build request: {e:?}"))
+        })?;
 
-        let keys = keys.iter().map(|i| format!("0x{i:x}")).collect::<Vec<String>>();
+        let keys =
+            keys.iter().map(|i| format!("0x{i:x}")).collect::<Vec<String>>();
         let addr = format!("0x{contract_address:x}");
         let block_id = self.get_local_block_id(block_id).await;
 
@@ -247,14 +285,23 @@ impl BeerusClient {
             "id": 0
         });
 
-        let request = client.request(reqwest::Method::POST, &self.proof_addr).json(&params);
+        let request = client
+            .request(reqwest::Method::POST, &self.proof_addr)
+            .json(&params);
 
-        let response = request.send().await.map_err(|e| CoreError::StorageProof(eyre!("proof request: {e:?}")))?;
+        let response = request.send().await.map_err(|e| {
+            CoreError::StorageProof(eyre!("proof request: {e:?}"))
+        })?;
         let body: StorageProofResponse =
-            response.json().await.map_err(|e| CoreError::StorageProof(eyre!("proof response: {e:?}")))?;
+            response.json().await.map_err(|e| {
+                CoreError::StorageProof(eyre!("proof response: {e:?}"))
+            })?;
 
         body.result.ok_or_else(|| {
-            let error = body.error.map(|e| eyre!("failed to get proof: {e:?}")).unwrap_or_else(|| eyre!("undefined"));
+            let error = body
+                .error
+                .map(|e| eyre!("failed to get proof: {e:?}"))
+                .unwrap_or_else(|| eyre!("undefined"));
             CoreError::StorageProof(error)
         })
     }
@@ -266,8 +313,10 @@ async fn pull_block(
     core_contract_addr: H160,
     node: Arc<RwLock<NodeData>>,
 ) -> Result<Option<u64>> {
-    let starknet_state_root = get_starknet_state_root(l1_client, core_contract_addr).await?;
-    let starknet_block_number = get_starknet_state_block_number(l1_client, core_contract_addr).await?;
+    let starknet_state_root =
+        get_starknet_state_root(l1_client, core_contract_addr).await?;
+    let starknet_block_number =
+        get_starknet_state_block_number(l1_client, core_contract_addr).await?;
     let local_block_number = node.read().await.l1_block_number;
 
     debug!("starknet block number: {starknet_block_number}, local block number: {local_block_number}");
@@ -276,30 +325,39 @@ async fn pull_block(
     }
 
     // TODO: Issue #550 - feat: sync from proven root
-    match l2_client.get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest)).await {
+    match l2_client
+        .get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest))
+        .await
+    {
         Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
             let blocks_behind = block.block_number - starknet_block_number;
             info!(
                 "L1 block: {}, L2 block: {} ({} blocks behind)",
-                starknet_block_number,
-                block.block_number,
-                blocks_behind
+                starknet_block_number, block.block_number, blocks_behind
             );
 
             let mut guard = node.write().await;
             guard.update(starknet_block_number, starknet_state_root);
             Ok(Some(block.block_number))
         }
-        Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => Err(eyre!("expecting latest got pending")),
+        Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => {
+            Err(eyre!("expecting latest got pending"))
+        }
         Err(e) => Err(eyre!("failed to fetch last block: {e}")),
     }
 }
 
-async fn get_starknet_state_root(l1_client: &Client<impl Database>, contract_addr: Address) -> Result<FieldElement> {
+async fn get_starknet_state_root(
+    l1_client: &Client<impl Database>,
+    contract_addr: Address,
+) -> Result<FieldElement> {
     let data = StateRootCall::selector();
     let call_opts = simple_call_opts(contract_addr, data.into());
 
-    let state_root = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
+    let state_root = l1_client
+        .call(&call_opts, BlockTag::Latest)
+        .await
+        .map_err(CoreError::FetchL1Val)?;
     FieldElement::from_byte_slice_be(&state_root).map_err(|e| eyre!(e))
 }
 
@@ -310,6 +368,9 @@ async fn get_starknet_state_block_number(
     let data = StateBlockNumberCall::selector();
     let call_opts = simple_call_opts(core_contract_addr, data.into());
 
-    let block_number = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
+    let block_number = l1_client
+        .call(&call_opts, BlockTag::Latest)
+        .await
+        .map_err(CoreError::FetchL1Val)?;
     Ok(U256::from_big_endian(&block_number).as_u64())
 }

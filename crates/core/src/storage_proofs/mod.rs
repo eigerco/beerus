@@ -39,15 +39,25 @@ impl StorageProof {
         key: FieldElement,
         value: FieldElement,
     ) -> Result<FieldElement> {
-        verify_proof(self.contract_data.root, &felt_to_bits(key), value, &mut self.contract_data.storage_proofs[0])?;
+        verify_proof(
+            self.contract_data.root,
+            &felt_to_bits(key),
+            value,
+            &mut self.contract_data.storage_proofs[0],
+        )?;
 
         let state_hash = self.calculate_contract_state_hash();
 
-        if let Some(storage_commitment) =
-            parse_proof(&felt_to_bits(contract_address), state_hash, &mut self.contract_proof)
-        {
-            let parsed_global_root = self.calculate_global_root(storage_commitment);
-            if self.state_commitment == parsed_global_root && global_root == parsed_global_root {
+        if let Some(storage_commitment) = parse_proof(
+            &felt_to_bits(contract_address),
+            state_hash,
+            &mut self.contract_proof,
+        ) {
+            let parsed_global_root =
+                self.calculate_global_root(storage_commitment);
+            if self.state_commitment == parsed_global_root
+                && global_root == parsed_global_root
+            {
                 return Ok(parsed_global_root);
             }
         }
@@ -59,14 +69,25 @@ impl StorageProof {
         // The contract state hash is defined as H(H(H(hash, root), nonce), CONTRACT_STATE_HASH_VERSION)
         const CONTRACT_STATE_HASH_VERSION: FieldElement = FieldElement::ZERO;
 
-        let hash = pedersen_hash(&self.contract_data.class_hash, &self.contract_data.root);
+        let hash = pedersen_hash(
+            &self.contract_data.class_hash,
+            &self.contract_data.root,
+        );
         let hash = pedersen_hash(&hash, &self.contract_data.nonce);
         pedersen_hash(&hash, &CONTRACT_STATE_HASH_VERSION)
     }
 
-    pub fn calculate_global_root(&self, storage_commitment: FieldElement) -> FieldElement {
-        let global_state_ver = FieldElement::from_byte_slice_be(b"STARKNET_STATE_V0").unwrap();
-        poseidon_hash_many(&[global_state_ver, storage_commitment, self.class_commitment])
+    pub fn calculate_global_root(
+        &self,
+        storage_commitment: FieldElement,
+    ) -> FieldElement {
+        let global_state_ver =
+            FieldElement::from_byte_slice_be(b"STARKNET_STATE_V0").unwrap();
+        poseidon_hash_many(&[
+            global_state_ver,
+            storage_commitment,
+            self.class_commitment,
+        ])
     }
 }
 
@@ -88,7 +109,11 @@ pub fn verify_proof(
     }
 }
 
-pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: FieldElement, proof: &mut [TrieNode]) -> Option<FieldElement> {
+pub fn parse_proof(
+    key: &BitSlice<u8, Msb0>,
+    value: FieldElement,
+    proof: &mut [TrieNode],
+) -> Option<FieldElement> {
     if key.len() != 251 {
         return None;
     }
@@ -101,13 +126,18 @@ pub fn parse_proof(key: &BitSlice<u8, Msb0>, value: FieldElement, proof: &mut [T
         match node {
             TrieNode::Edge(EdgeNode { child, path }) => {
                 // calculate edge hash given by provider
-                let provided_hash = pedersen_hash(child, &path.value) + FieldElement::from(path.len as u64);
+                let provided_hash = pedersen_hash(child, &path.value)
+                    + FieldElement::from(path.len as u64);
                 if i == 0 {
                     // mask storage key
-                    let computed_hash = match felt_from_bits(key, Some(251 - path.len)) {
-                        Ok(masked_key) => pedersen_hash(&value, &masked_key) + FieldElement::from(path.len as u64),
-                        Err(_) => return None,
-                    };
+                    let computed_hash =
+                        match felt_from_bits(key, Some(251 - path.len)) {
+                            Ok(masked_key) => {
+                                pedersen_hash(&value, &masked_key)
+                                    + FieldElement::from(path.len as u64)
+                            }
+                            Err(_) => return None,
+                        };
 
                     // verify computed hash against provided hash
                     if provided_hash != computed_hash {
