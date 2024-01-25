@@ -6,15 +6,16 @@ version = "0.3.0"
 
 [dependencies]
 beerus-core = { path = "../core" }
+starknet.workspace = true
 eyre.workspace = true
 jsonrpsee = { version = "0.20.3", features = ["macros", "server", "server-core"] }
-starknet.workspace = true
-thiserror = "1.0.50"
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
+thiserror = "1.0.50"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
-async-std = { workspace = true, features = ["attributes", "tokio1"] }
 rstest = "0.18.2"
 wiremock = "0.5.18"
 serde_json = "1.0"
