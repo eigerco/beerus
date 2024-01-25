@@ -16,6 +16,9 @@ struct Args {
 async fn main() -> Result<(), String> {
     tracing_subscriber::fmt::init();
 
+    println!("ETH_EXECUTION_RPC={}", std::env::var("ETH_EXECUTION_RPC").unwrap_or_default());
+    println!("STARKNET_RPC={}", std::env::var("STARKNET_RPC").unwrap_or_default());
+
     let args = Args::parse();
     let config = args
         .config
