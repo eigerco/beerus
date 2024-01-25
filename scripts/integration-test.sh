@@ -12,9 +12,12 @@ echo "wait for beerus to sync and listen..."
 while ! timeout 1 bash -c "echo > /dev/tcp/localhost/3030" 2> /dev/null; do sleep 2; done
 echo "beerus in sync..."
 
+[ -z "$1" ] && network="mainnet" || network=$1
+echo "running test for $network..."
+
 FAILED=0
-for request in examples/rpc/*.hurl; do
-    hurl --test --max-time=50 $request
+for request in $(find etc/rpc/$network/ -name "*hurl"); do
+    hurl --test --max-time=50 --error-format=long $request
     if [ $? -ne 0 ]; then
         echo "FAILED REQUEST - $request"
         FAILED=$((FAILED + 1))
