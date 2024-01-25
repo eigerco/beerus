@@ -16,10 +16,10 @@ async fn main() -> Result<()> {
         starknet_rpc: format!("https://starknet-mainnet.g.alchemy.com/v2/{api_key}"),
         ..Default::default()
     };
-    let mut beerus = BeerusClient::new(config).await;
+    let mut beerus = BeerusClient::new(config).await?;
     beerus.start().await?;
 
-    let current_starknet_block = beerus.sn_state_root().await?;
+    let current_starknet_block = beerus.state_root().await?;
     tracing::info!("current starknet block: {current_starknet_block:X}");
     Ok(())
 }
