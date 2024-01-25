@@ -19,7 +19,7 @@ use serde_json::json;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use starknet::providers::Provider;
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::config::Config;
 use crate::storage_proofs::types::StorageProofResponse;
@@ -158,9 +158,8 @@ impl BeerusClient {
 
                 if local_block_num < sn_block_num {
                     // TODO: Issue #550 - feat: sync from proven root
-                    match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await.unwrap() {
-                        // TODO: handle unwrap()
-                        MaybePendingBlockWithTxHashes::Block(block) => {
+                    match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await {
+                        Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
                             info!(
                                 "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
                                 block.block_number - sn_block_num,
@@ -171,7 +170,13 @@ impl BeerusClient {
                             node_lock.l1_state_root = sn_root;
                             node_lock.l1_block_num = sn_block_num;
                         }
-                        MaybePendingBlockWithTxHashes::PendingBlock(_) => warn!("expecting latest got pending"),
+                        Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => warn!("expecting latest got pending"),
+                        Err(e) => {
+                            error!("failed to fetch last block: {e}");
+                            // TODO: detect if the failure is transient (e.g. timeout)
+                            // or persistent (e.g. valid JSON response cannot be parsed),
+                            // break the loop for a persistent one.
+                        }
                     };
                 }
 
