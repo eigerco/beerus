@@ -1,88 +1,74 @@
 use beerus_core::CoreError;
 use eyre::Report;
 use jsonrpsee::types::ErrorObjectOwned;
-use starknet::core::types::StarknetError as StarknetErr;
-use starknet::providers::ProviderError;
-use starknet::providers::ProviderError::StarknetError;
+use starknet::core::types::StarknetError;
+use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
+use starknet::providers::{MaybeUnknownErrorCode, ProviderError};
 
 #[derive(Debug)]
 pub enum BeerusRpcError {
-    Provider(ProviderError),
+    Provider(ProviderError<JsonRpcClientError<HttpTransportError>>),
     Other((i32, String)),
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
     fn from(err: BeerusRpcError) -> Self {
         match err {
-            BeerusRpcError::Provider(provider_err) => match provider_err {
-                StarknetError(sn_err) => {
-                    let mut data = None;
-                    let code = match &sn_err {
-                        StarknetErr::FailedToReceiveTransaction => 1,
-                        StarknetErr::ContractNotFound => 20,
-                        StarknetErr::BlockNotFound => 24,
-                        StarknetErr::InvalidTransactionIndex => 27,
-                        StarknetErr::ClassHashNotFound => 28,
-                        StarknetErr::TransactionHashNotFound => 29,
-                        StarknetErr::PageSizeTooBig => 31,
-                        StarknetErr::NoBlocks => 32,
-                        StarknetErr::InvalidContinuationToken => 33,
-                        StarknetErr::TooManyKeysInFilter => 34,
-                        StarknetErr::ContractError(err) => {
-                            data = Some(format!("{err:?}"));
-                            40
-                        }
-                        StarknetErr::TransactionExecutionError(err) => {
-                            data = Some(format!("{err:?}"));
-                            41
-                        }
-                        StarknetErr::ClassAlreadyDeclared => 51,
-                        StarknetErr::InvalidTransactionNonce => 52,
-                        StarknetErr::InsufficientMaxFee => 53,
-                        StarknetErr::InsufficientAccountBalance => 54,
-                        StarknetErr::ValidationFailure(err) => {
-                            data = Some(err.to_string());
-                            55
-                        }
-                        StarknetErr::CompilationFailed => 56,
-                        StarknetErr::ContractClassSizeIsTooLarge => 57,
-                        StarknetErr::NonAccount => 58,
-                        StarknetErr::DuplicateTx => 59,
-                        StarknetErr::CompiledClassHashMismatch => 60,
-                        StarknetErr::UnsupportedTxVersion => 61,
-                        StarknetErr::UnsupportedContractClassVersion => 62,
-                        StarknetErr::UnexpectedError(err) => {
-                            data = Some(err.to_string());
-                            63
-                        }
-                        StarknetErr::NoTraceAvailable(err) => {
-                            data = Some(format!("{err:?}"));
-                            10
-                        }
+            BeerusRpcError::Provider(e) => match e {
+                ProviderError::StarknetError(e) => {
+                    let (code, message) = (e.code, e.message);
+                    let code = match code {
+                        MaybeUnknownErrorCode::Known(known) => match known {
+                            StarknetError::FailedToReceiveTransaction => 1,
+                            StarknetError::ContractNotFound => 20,
+                            StarknetError::BlockNotFound => 24,
+                            StarknetError::InvalidTransactionIndex => 27,
+                            StarknetError::ClassHashNotFound => 28,
+                            StarknetError::TransactionHashNotFound => 29,
+                            StarknetError::PageSizeTooBig => 31,
+                            StarknetError::NoBlocks => 32,
+                            StarknetError::InvalidContinuationToken => 33,
+                            StarknetError::TooManyKeysInFilter => 34,
+                            StarknetError::ContractError => 40,
+                            StarknetError::ClassAlreadyDeclared => 51,
+                            StarknetError::InvalidTransactionNonce => 52,
+                            StarknetError::InsufficientMaxFee => 53,
+                            StarknetError::InsufficientAccountBalance => 54,
+                            StarknetError::ValidationFailure => 55,
+                            StarknetError::CompilationFailed => 56,
+                            StarknetError::ContractClassSizeIsTooLarge => 57,
+                            StarknetError::NonAccount => 58,
+                            StarknetError::DuplicateTx => 59,
+                            StarknetError::CompiledClassHashMismatch => 60,
+                            StarknetError::UnsupportedTxVersion => 61,
+                            StarknetError::UnsupportedContractClassVersion => 62,
+                            StarknetError::UnexpectedError => 63,
+                        },
+                        MaybeUnknownErrorCode::Unknown(unknown) => unknown as i32,
                     };
-                    ErrorObjectOwned::owned(code, sn_err.message(), data)
+                    ErrorObjectOwned::owned(code, message, None::<()>)
                 }
-                _ => ErrorObjectOwned::owned(-32601, format!("{provider_err}"), None::<()>),
+                _ => ErrorObjectOwned::owned(-32601, format!("{e}"), None::<()>),
             },
-            BeerusRpcError::Other(other_err) => ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>),
+            BeerusRpcError::Other((code, message)) => ErrorObjectOwned::owned(code, message, None::<()>),
         }
     }
 }
 
-impl From<ProviderError> for BeerusRpcError {
-    fn from(err: ProviderError) -> Self {
-        BeerusRpcError::Provider(err)
+impl From<ProviderError<JsonRpcClientError<HttpTransportError>>> for BeerusRpcError {
+    fn from(e: ProviderError<JsonRpcClientError<HttpTransportError>>) -> Self {
+        BeerusRpcError::Provider(e)
     }
 }
 
 impl From<CoreError> for BeerusRpcError {
-    fn from(err: CoreError) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+    fn from(e: CoreError) -> Self {
+        BeerusRpcError::Other((-32601, format!("{e}")))
     }
 }
 
 impl From<Report> for BeerusRpcError {
-    fn from(err: Report) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+    fn from(e: Report) -> Self {
+        BeerusRpcError::Other((-32601, format!("{e}")))
     }
 }
