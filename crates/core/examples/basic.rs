@@ -8,8 +8,7 @@ use eyre::{Context, Result};
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
-    let api_key = env::var("ALCHEMY_API_KEY")
-        .context("ALCHEMY_API_KEY is missing")?;
+    let api_key = env::var("ALCHEMY_API_KEY").context("ALCHEMY_API_KEY is missing")?;
 
     let config = Config {
         network: helios::config::networks::Network::MAINNET,

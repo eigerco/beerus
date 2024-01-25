@@ -1,9 +1,6 @@
 use std::sync::Arc;
 use std::{thread, time};
 
-use tokio::sync::RwLock;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::task;
 use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
@@ -19,6 +16,9 @@ use serde_json::json;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use starknet::providers::Provider;
+use tokio::sync::RwLock;
+#[cfg(not(target_arch = "wasm32"))]
+use tokio::task;
 use tracing::{debug, error, info, warn};
 
 use crate::config::Config;
