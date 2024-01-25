@@ -294,8 +294,8 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, BeerusRpcError> {
-        let block_hash = self.beerus.sn_state_block_hash().await.map_err(BeerusRpcError::from)?;
-        let block_number = self.beerus.sn_state_block_number().await.map_err(BeerusRpcError::from)?;
+        let block_hash = self.beerus.state_block_hash().await.map_err(BeerusRpcError::from)?;
+        let block_number = self.beerus.state_block_number().await.map_err(BeerusRpcError::from)?;
         Ok(BlockHashAndNumber { block_hash, block_number })
     }
 
@@ -375,7 +375,7 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn get_state_root(&self) -> Result<Felt, BeerusRpcError> {
-        self.beerus.sn_state_root().await.map(Felt).map_err(BeerusRpcError::from)
+        self.beerus.state_root().await.map(Felt).map_err(BeerusRpcError::from)
     }
 
     async fn get_balance(&self, block_id: BlockId, contract_address: FieldElement) -> Result<Felt, BeerusRpcError> {
