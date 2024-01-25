@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use std::{thread, time};
 
-use async_std::sync::RwLock;
+use tokio::sync::RwLock;
 #[cfg(not(target_arch = "wasm32"))]
-use async_std::task;
+use tokio::task;
 use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};

@@ -11,7 +11,7 @@ struct Args {
     conf: Option<String>,
 }
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
 
