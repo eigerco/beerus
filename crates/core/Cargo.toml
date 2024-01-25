@@ -17,6 +17,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
 serde_json = "1.0"
 starknet-crypto = "0.6.1"
+retrying = { version = "0.1.0", features = ["async_std"] }
 
 starknet.workspace = true
 thiserror = "1.0.26"

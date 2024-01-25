@@ -1,11 +1,9 @@
-use std::fmt::Display;
-use std::future::Future;
 use std::sync::Arc;
 use std::{thread, time};
 
 use async_std::sync::RwLock;
 #[cfg(not(target_arch = "wasm32"))]
-use async_std::{future, task};
+use async_std::task;
 use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
 use ethers::types::{Address, SyncingStatus};
@@ -17,6 +15,7 @@ use helios::prelude::Database;
 #[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
+use retrying::retry;
 use serde_json::json;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
@@ -154,8 +153,8 @@ impl BeerusClient {
             let core_contract_addr = config.get_core_contract_address();
 
             loop {
-                let sn_root = wrapped_retry(sn_state_root_inner, &l1_client, core_contract_addr).await;
-                let sn_block_num = wrapped_retry(sn_state_block_number_inner, &l1_client, core_contract_addr).await;
+                let sn_root = sn_state_root_inner(&l1_client, core_contract_addr).await.unwrap(); // if this line gets panic, it means the function has tried multiple times but keeps failing, and the whole process should be stopped.
+                let sn_block_num = sn_state_block_number_inner(&l1_client, core_contract_addr).await.unwrap(); // if this line gets panic, it means the function has tried multiple times but keeps failing, and the whole process should be stopped.
                 let local_block_num = node.read().await.l1_block_num;
 
                 if local_block_num < sn_block_num {
@@ -272,6 +271,7 @@ impl BeerusClient {
     }
 }
 
+#[retry(stop=(attempts(5)|duration(60)),wait=fixed(5))]
 async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: Address) -> Result<FieldElement> {
     let data = StateRootCall::selector();
     let call_opts = simple_call_opts(contract_addr, data.into());
@@ -281,6 +281,7 @@ async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: A
     FieldElement::from_byte_slice_be(&starknet_root).map_err(|e| eyre!(e))
 }
 
+#[retry(stop=(attempts(5)|duration(60)),wait=fixed(5))]
 async fn sn_state_block_number_inner(
     l1_client: &Client<impl Database>,
     core_contract_addr: Address,
@@ -291,54 +292,4 @@ async fn sn_state_block_number_inner(
     let sn_block_num = l1_client.call(&call_opts, BlockTag::Latest).await.map_err(CoreError::FetchL1Val)?;
 
     Ok(U256::from_big_endian(&sn_block_num).as_u64())
-}
-
-pub async fn wrapped_retry_inner<'a, Fut, T, E, D>(
-    func: impl Fn(&'a Client<D>, Address) -> Fut,
-    l1_client: &'a Client<D>,
-    core_contract_addr: Address,
-    timeout_secs: u64,
-    retry_limit: u8,
-    retry_secs: u64,
-) -> T
-where
-    Fut: Future<Output = Result<T, E>>,
-    D: Database,
-    E: Display,
-{
-    let mut retries: u8 = 0;
-    loop {
-        if retries >= retry_limit {
-            panic!("too many retries");
-        }
-        retries += 1;
-        match future::timeout(time::Duration::from_secs(timeout_secs), func(l1_client, core_contract_addr)).await {
-            Ok(Ok(ret)) => break ret,
-            Ok(Err(err)) => {
-                warn! {"Error for {} times: {}", retries, err}
-            }
-            Err(err) => {
-                warn! {"Timeout for {} times: {}", retries, err}
-            }
-        }
-        async_std::task::sleep(time::Duration::from_secs(retry_secs)).await;
-    }
-}
-
-async fn wrapped_retry<'a, Fut, T, E, D>(
-    func: impl Fn(&'a Client<D>, Address) -> Fut,
-    l1_client: &'a Client<D>,
-    core_contract_addr: Address,
-) -> T
-where
-    Fut: Future<Output = Result<T, E>>,
-    D: Database,
-    E: Display,
-{
-    // configure parameters
-    let timeout_secs: u64 = 60;
-    let retry_limit: u8 = 5;
-    let retry_secs: u64 = 5;
-
-    wrapped_retry_inner(func, l1_client, core_contract_addr, timeout_secs, retry_limit, retry_secs).await
 }

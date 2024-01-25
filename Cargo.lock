@@ -592,6 +592,7 @@ dependencies = [
  "gloo-timers",
  "helios",
  "reqwest",
+ "retrying",
  "rstest",
  "serde",
  "serde_json",
@@ -4293,6 +4294,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6262146231c1ef2e31ad7b2a2492bc652fafd6b76568da7b63ac1d5f3674ee4"
 dependencies = [
  "zduny-wasm-timer",
+]
+
+[[package]]
+name = "retrying"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0cee0b9816df3237bef895a6340b23ebd2af62df6395da9cb183b705ee6da9f"
+dependencies = [
+ "async-std",
+ "rand 0.8.5",
+ "retrying-core",
+]
+
+[[package]]
+name = "retrying-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7495abafc67888b79322b85b5062bd3ef1f446cef75550429d2740833ea0981"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
