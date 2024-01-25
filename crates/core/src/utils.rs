@@ -12,7 +12,10 @@ pub fn felt_to_bits(felt: FieldElement) -> BitVec<u8, Msb0> {
     felt.to_bytes_be().view_bits::<Msb0>()[5..].to_bitvec()
 }
 
-pub fn felt_from_bits(bits: &BitSlice<u8, Msb0>, mask: Option<usize>) -> Result<FieldElement> {
+pub fn felt_from_bits(
+    bits: &BitSlice<u8, Msb0>,
+    mask: Option<usize>,
+) -> Result<FieldElement> {
     if bits.len() != 251 {
         return Err(eyre!("expecting 251 bits"));
     }
@@ -26,7 +29,14 @@ pub fn felt_from_bits(bits: &BitSlice<u8, Msb0>, mask: Option<usize>) -> Result<
 }
 
 pub fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
-    CallOpts { from: None, to: Some(addr), gas: None, gas_price: None, value: None, data: Some(data) }
+    CallOpts {
+        from: None,
+        to: Some(addr),
+        gas: None,
+        gas_price: None,
+        value: None,
+        data: Some(data),
+    }
 }
 
 pub fn get_balance_key(addr: FieldElement) -> FieldElement {
