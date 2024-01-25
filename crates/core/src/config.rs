@@ -88,7 +88,7 @@ impl Config {
             starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
             data_dir: PathBuf::from(std::env::var("DATA_DIR").unwrap_or_default()),
             poll_secs: u64::from_str(&std::env::var("POLL_SECS").unwrap_or_default()).unwrap_or(DEFAULT_POLL_SECS),
-            rpc_addr: SocketAddr::from_str(&format!("{DEFAULT_IP_V4_ADDR}:{DEFAULT_PORT}")).unwrap(),
+            rpc_addr: rpc_addr(),
             fee_token_addr: fee_token_addr(),
         }
     }
