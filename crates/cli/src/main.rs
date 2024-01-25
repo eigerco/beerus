@@ -2,8 +2,7 @@ use beerus_core::client::BeerusClient;
 use beerus_core::config::Config;
 use beerus_rpc::BeerusRpc;
 use clap::Parser;
-use tracing::{error, info, Level};
-use tracing_subscriber::FmtSubscriber;
+use tracing::{error, info};
 
 #[derive(Parser, Debug)]
 #[command(version)]
@@ -14,10 +13,7 @@ struct Args {
 
 #[async_std::main]
 async fn main() {
-    // env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    let subscriber = FmtSubscriber::builder().with_max_level(Level::INFO).finish();
-
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    tracing_subscriber::fmt::init();
 
     let args = Args::parse();
     let config = match args.conf {
@@ -27,21 +23,18 @@ async fn main() {
 
     info!("init beerus client: {:?}", config.network);
     let mut beerus = BeerusClient::new(config.clone()).await;
-    if let Err(err) = beerus.start().await {
-        error! {"{}", err};
+    if let Err(e) = beerus.start().await {
+        error!("{}", e);
         std::process::exit(1);
     };
 
     match BeerusRpc::new(beerus).run().await {
         Ok((addr, server_handle)) => {
-            info!("========================================================");
             info!("Beerus JSON-RPC server started 🚀: http://{addr}");
-            info!("========================================================");
-
             server_handle.stopped().await;
         }
-        Err(err) => {
-            error! {"{}", err};
+        Err(e) => {
+            error!("{}", e);
             std::process::exit(1);
         }
     };
