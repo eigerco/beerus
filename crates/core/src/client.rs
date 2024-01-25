@@ -15,7 +15,6 @@ use helios::prelude::Database;
 #[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
 use helios::types::BlockTag;
-use retrying::retry;
 use serde_json::json;
 use starknet::core::types::{BlockId, BlockTag as SnBlockTag, FieldElement, MaybePendingBlockWithTxHashes};
 use starknet::providers::jsonrpc::{HttpTransport, JsonRpcClient};
@@ -153,28 +152,31 @@ impl BeerusClient {
             let core_contract_addr = config.get_core_contract_address();
 
             loop {
-                let sn_root = sn_state_root_inner(&l1_client, core_contract_addr).await.unwrap(); // if this line gets panic, it means the function has tried multiple times but keeps failing, and the whole process should be stopped.
-                let sn_block_num = sn_state_block_number_inner(&l1_client, core_contract_addr).await.unwrap(); // if this line gets panic, it means the function has tried multiple times but keeps failing, and the whole process should be stopped.
-                let local_block_num = node.read().await.l1_block_num;
+                if let (Ok(sn_root), Ok(sn_block_num)) = (
+                    sn_state_root_inner(&l1_client, core_contract_addr).await,
+                    sn_state_block_number_inner(&l1_client, core_contract_addr).await,
+                ) {
+                    let local_block_num = node.read().await.l1_block_num;
 
-                if local_block_num < sn_block_num {
-                    // TODO: Issue #550 - feat: sync from proven root
-                    match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await {
-                        Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
-                            info!(
-                                "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
-                                block.block_number - sn_block_num,
-                                block.block_number
-                            );
+                    if local_block_num < sn_block_num {
+                        // TODO: Issue #550 - feat: sync from proven root
+                        match l2_client.get_block_with_tx_hashes(BlockId::Tag(SnBlockTag::Latest)).await {
+                            Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
+                                info!(
+                                    "{} blocks behind - L1 block #({sn_block_num}) L2 block #({:?})",
+                                    block.block_number - sn_block_num,
+                                    block.block_number
+                                );
 
-                            let mut node_lock = node.write().await;
-                            node_lock.l1_state_root = sn_root;
-                            node_lock.l1_block_num = sn_block_num;
-                        }
-                        Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => warn!("expecting latest got pending"),
-                        _ => warn!("failed to fetch latest block"),
+                                let mut node_lock = node.write().await;
+                                node_lock.l1_state_root = sn_root;
+                                node_lock.l1_block_num = sn_block_num;
+                            }
+                            Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => warn!("expecting latest got pending"),
+                            _ => warn!("failed to fetch latest block"),
+                        };
                     };
-                }
+                };
 
                 thread::sleep(time::Duration::from_secs(config.poll_secs));
             }
@@ -271,7 +273,6 @@ impl BeerusClient {
     }
 }
 
-#[retry(stop=(attempts(5)|duration(60)),wait=fixed(5))]
 async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: Address) -> Result<FieldElement> {
     let data = StateRootCall::selector();
     let call_opts = simple_call_opts(contract_addr, data.into());
@@ -281,7 +282,6 @@ async fn sn_state_root_inner(l1_client: &Client<impl Database>, contract_addr: A
     FieldElement::from_byte_slice_be(&starknet_root).map_err(|e| eyre!(e))
 }
 
-#[retry(stop=(attempts(5)|duration(60)),wait=fixed(5))]
 async fn sn_state_block_number_inner(
     l1_client: &Client<impl Database>,
     core_contract_addr: Address,

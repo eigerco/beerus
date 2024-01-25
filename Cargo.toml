@@ -3,21 +3,6 @@ members = ["crates/core", "crates/rpc", "crates/cli"]
 exclude = ["examples"]
 resolver = "2"
 
-# By default, when a panic occurs, the program starts unwinding, which will stop
-# at the boundary of the offending thread (i.e., only the thread that panics will
-# be stopped, the other threads will continue to execute). This behavior can cause
-# the client thread in Beerus to silently stop while the RPC thread continues to
-# run, hiding the fact that the app has actually crashed.
-# see https://github.com/eigerco/beerus/issues/561 for more details.
-#
-# To avoid this, we abort on panic, which will stop the entire program when a
-# panic occurs, leaving the OS to clean up the mess.
-[profile.release]
-panic = 'abort'
-
-[profile.dev]
-panic = 'abort'
-
 [workspace.dependencies]
 async-std = "1.12.0"
 eyre = "0.6.8"
