@@ -9,7 +9,7 @@ name = "beerus"
 path = "src/main.rs"
 
 [dependencies]
-async-std = { workspace = true, features = ["attributes", "tokio1"] }
+tokio = { workspace = true }
 beerus-core = { path = "../core" }
 beerus-rpc = { path = "../rpc" }
 clap = { version = "4.4.7", features = ["derive"] }

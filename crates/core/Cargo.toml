@@ -5,7 +5,7 @@ name = "beerus-core"
 version = "0.3.0"
 
 [dependencies]
-async-std = { workspace = true, features = ["attributes", "tokio1"] }
+tokio = { workspace = true }
 async-trait = "0.1.58"
 bitvec = "1.0.1"
 ethabi = "18.0.0"
@@ -22,6 +22,7 @@ starknet.workspace = true
 thiserror = "1.0.26"
 toml = "0.7.3"
 tracing.workspace = true
+tracing-subscriber.workspace = true
 url = "2.3.1"
 
 [dev-dependencies]
