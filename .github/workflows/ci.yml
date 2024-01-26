@@ -34,14 +34,3 @@ jobs:
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
-
-      - name: start beerus RPC on TESTNET(goerli)
-        env:
-          BEERUS_VERSION: "ci"
-          NETWORK: "goerli"
-          ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_GOERLI }}
-          STARKNET_RPC: ${{ secrets.STARKNET_RPC_GOERLI }}
-        run: ./target/release/beerus &
-
-      - name: run integration test TESTNET(goerli)
-        run: bash ./scripts/integration-test.sh goerli
