@@ -80,15 +80,14 @@ docker build . -t beerus
 docker run -e NETWORK=<arg> -e ETH_EXECUTION_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
 ```
 
-#### Examples (currently broken on Helios deps)
+#### Examples
 
 ```bash
-cd examples/core
-cargo run --example basic
-cargo run --example call
+ALCHEMY_API_KEY='YOURAPIKEY' cargo run --example basic
+ALCHEMY_API_KEY='YOURAPIKEY' cargo run --example call
 ```
 
-##### Beerus JS(wasm demo)
+##### Beerus JS (wasm demo)
 
 Dependencies:
 
