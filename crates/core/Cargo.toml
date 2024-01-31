@@ -4,8 +4,13 @@ edition = "2021"
 name = "beerus-core"
 version = "0.3.0"
 
+[package.metadata.cargo-udeps]
+# Aquamarine generates Mermaid diagrams and causes a udeps false positive.
+ignore = [["aquamarine"]]
+
 [dependencies]
 tokio = { workspace = true }
+aquamarine = "0.5"
 async-trait = "0.1.58"
 bitvec = "1.0.1"
 ethabi = "18.0.0"
