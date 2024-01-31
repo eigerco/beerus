@@ -159,11 +159,31 @@ impl BeerusClient {
         })
     }
 
+    #[cfg_attr(doc, aquamarine::aquamarine)]
     /// Start a async thread to query the last updated state of Starknet
     /// via the Core Contracts on L1(updated via the `updateState` call).
     ///
     /// The loop run in this thread will query these values at
     /// `config.poll_secs` seconds
+    ///
+    /// Synchronization process sequence (currently untrusted because
+    /// unproven, see #550):
+    /// ```mermaid
+    /// sequenceDiagram
+    /// Beerus->>+L1: get_starknet_state_root
+    /// L1-->>-Beerus: starknet state root
+    /// Note over Beerus,L1: State root: hash of the state Merkle tree
+    /// Beerus->>+L1: get_startknet_block_number
+    /// L1-->>-Beerus: starknet block number synched in L1
+    /// alt local L1 block number >= L1 block number
+    ///     Beerus->>Beerus: return None
+    ///     Note over Beerus,L1: Local state is at least as up-to-date as the remote node
+    /// else
+    ///     Beerus->>+L2: get_block_with_tx_hashes(latest)
+    ///     L2-->>-Beerus: latest L2 block
+    ///     Beerus->>Beerus: Update local state to the new, unproven state
+    /// end
+    /// ```
     pub async fn start(&mut self) -> Result<()> {
         let l1_client = self.helios_client.clone();
         let l2_client = self.config.to_starknet_client();
@@ -173,7 +193,7 @@ impl BeerusClient {
 
         let state_loop = async move {
             loop {
-                match pull_block(
+                match sync(
                     &l1_client,
                     &l2_client,
                     core_contract_addr,
@@ -307,7 +327,7 @@ impl BeerusClient {
     }
 }
 
-async fn pull_block(
+async fn sync(
     l1_client: &Client<impl Database>,
     l2_client: &JsonRpcClient<HttpTransport>,
     core_contract_addr: H160,
@@ -315,30 +335,35 @@ async fn pull_block(
 ) -> Result<Option<u64>> {
     let starknet_state_root =
         get_starknet_state_root(l1_client, core_contract_addr).await?;
-    let starknet_block_number =
+    let l1_starknet_block_number =
         get_starknet_state_block_number(l1_client, core_contract_addr).await?;
     let local_block_number = node.read().await.l1_block_number;
 
-    debug!("starknet block number: {starknet_block_number}, local block number: {local_block_number}");
-    if local_block_number >= starknet_block_number {
+    debug!("starknet block number: {l1_starknet_block_number}, local block number: {local_block_number}");
+    // The local state is up to date with the remote node. Nothing more to do.
+    if local_block_number >= l1_starknet_block_number {
         return Ok(None);
     }
 
+    // The local state is out of date, retrieve the latest block from L2.
     // TODO: Issue #550 - feat: sync from proven root
     match l2_client
         .get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest))
         .await
     {
-        Ok(MaybePendingBlockWithTxHashes::Block(block)) => {
-            let blocks_behind = block.block_number - starknet_block_number;
+        Ok(MaybePendingBlockWithTxHashes::Block(l2_latest_block)) => {
+            let blocks_behind =
+                l2_latest_block.block_number - l1_starknet_block_number;
             info!(
-                "L1 block: {}, L2 block: {} ({} blocks behind)",
-                starknet_block_number, block.block_number, blocks_behind
+                "L1 block: {}, L2 block: {} (L1 is {} blocks behind)",
+                l1_starknet_block_number,
+                l2_latest_block.block_number,
+                blocks_behind
             );
 
             let mut guard = node.write().await;
-            guard.update(starknet_block_number, starknet_state_root);
-            Ok(Some(block.block_number))
+            guard.update(l1_starknet_block_number, starknet_state_root);
+            Ok(Some(l2_latest_block.block_number))
         }
         Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => {
             Err(eyre!("expecting latest got pending"))
