@@ -409,6 +409,7 @@ dependencies = [
  "eyre",
  "gloo-timers",
  "helios",
+ "lazy_static",
  "reqwest",
  "rstest",
  "serde",
