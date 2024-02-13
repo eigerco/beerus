@@ -23,7 +23,7 @@ Also, all the information related to the extra files to be included can be found
 
 ## Translations
 
-This book is targetting international audience, and we inspired our work from [Google repos](https://github.com/google/comprehensive-rust).
+This book is targeting international audience, and we inspired our work from [Google repos](https://github.com/google/comprehensive-rust).
 Please refer to [this page](https://github.com/google/comprehensive-rust/blob/5bbb68be2cee0f2ee1b5be96c97e5a6aad385b1f/TRANSLATIONS.md) for the original documentation. In this documentation details can be found to build translations and add new ones.
 
 Basically, each translation can be found in a `.po` file where the translators only have to translate chunk of texts
