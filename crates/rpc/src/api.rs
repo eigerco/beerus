@@ -184,6 +184,9 @@ pub trait BeerusRpc {
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError>;
 
+    #[method(name = "specVersion")]
+    async fn spec_version(&self) -> Result<String, BeerusRpcError>;
+
     // ------------------- Extended Starknet Provider Endpoints -------------------
     #[method(name = "getProof")]
     async fn get_proof(
@@ -519,6 +522,10 @@ impl BeerusRpcServer for BeerusRpc {
             .estimate_fee_single(request, l1_block_num)
             .await
             .map_err(BeerusRpcError::from)
+    }
+
+    async fn spec_version(&self) -> Result<String, BeerusRpcError> {
+        Ok(String::from("0.5.1"))
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
