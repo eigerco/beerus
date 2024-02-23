@@ -125,6 +125,7 @@ impl Config {
             Network::GOERLI => Address::from_str(TESTNET_CC_ADDRESS)
                 .expect("should not fail testnet addr"),
             Network::SEPOLIA => todo!(),
+            Network::HOLESKY => todo!(),
         }
     }
 
@@ -133,6 +134,7 @@ impl Config {
             Network::MAINNET => MAINNET_CONSENSUS_RPC.to_string(),
             Network::GOERLI => TESTNET_CONSENSUS_RPC.to_string(),
             Network::SEPOLIA => todo!(),
+            Network::HOLESKY => todo!(),
         }
     }
 
@@ -141,6 +143,7 @@ impl Config {
             Network::MAINNET => MAINNET_FALLBACK_RPC.to_string(),
             Network::GOERLI => TESTNET_FALLBACK_RPC.to_string(),
             Network::SEPOLIA => todo!(),
+            Network::HOLESKY => todo!(),
         }
     }
 
