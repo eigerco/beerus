@@ -143,7 +143,7 @@ impl BeerusClient {
 
         get_starknet_state_root(
             &helios_client,
-            config.get_core_contract_address(),
+            config.get_core_contract_address()?,
         )
         .await
         .context("failed to fetch starknet state root")?;
@@ -153,7 +153,7 @@ impl BeerusClient {
             starknet_client: config.to_starknet_client(),
             proof_addr: config.starknet_rpc.clone(),
             poll_secs: config.poll_secs,
-            core_contract_addr: config.get_core_contract_address(),
+            core_contract_addr: config.get_core_contract_address()?,
             node: Arc::new(RwLock::new(NodeData::new())),
             config: config.clone(),
         })
@@ -187,7 +187,7 @@ impl BeerusClient {
     pub async fn start(&mut self) -> Result<()> {
         let l1_client = self.helios_client.clone();
         let l2_client = self.config.to_starknet_client();
-        let core_contract_addr = self.config.get_core_contract_address();
+        let core_contract_addr = self.config.get_core_contract_address()?;
         let node = self.node.clone();
         let poll_interval = time::Duration::from_secs(self.config.poll_secs);
 

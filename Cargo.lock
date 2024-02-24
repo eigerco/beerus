@@ -392,6 +392,7 @@ dependencies = [
  "beerus-core",
  "beerus-rpc",
  "clap",
+ "eyre",
  "tokio",
  "tracing",
  "tracing-subscriber",
