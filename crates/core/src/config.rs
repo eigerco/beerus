@@ -167,13 +167,11 @@ impl Config {
         JsonRpcClient::new(transport)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    pub async fn to_helios_client(&self) -> Client<FileDB> {
+    async fn to_helios_client_builder(&self) -> ClientBuilder {
         let consensus_rpc =
             self.get_consensus_rpc().expect("unable to retrieve consensus url");
         ClientBuilder::new()
             .network(self.network)
-            .data_dir(self.data_dir.clone())
             .consensus_rpc(&consensus_rpc)
             .execution_rpc(&self.eth_execution_rpc)
             .checkpoint(
@@ -184,24 +182,21 @@ impl Config {
             )
             .load_external_fallback()
             .fallback(&consensus_rpc)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub async fn to_helios_client(&self) -> Client<FileDB> {
+        self.to_helios_client_builder()
+            .await
+            .data_dir(self.data_dir.clone())
             .build()
             .expect("incorrect helios client config")
     }
 
     #[cfg(target_arch = "wasm32")]
     pub async fn to_helios_client(&self) -> Client<ConfigDB> {
-        ClientBuilder::new()
-            .network(self.network)
-            .consensus_rpc(&self.get_consensus_rpc())
-            .execution_rpc(&self.eth_execution_rpc)
-            .checkpoint(
-                &self
-                    .get_checkpoint()
-                    .await
-                    .expect("unable to retrieve checkpoint"),
-            )
-            .load_external_fallback()
-            .fallback(&self.get_consensus_rpc())
+        self.to_helios_client_builder()
+            .await
             .build()
             .expect("incorrect helios client config")
     }
