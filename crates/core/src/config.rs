@@ -105,41 +105,40 @@ impl Config {
         }
     }
 
-    pub fn from_file(path: &str) -> Self {
-        let raw_conf = fs::read_to_string(path)
-            .unwrap_or_else(|_| panic!("unable to read file: {path}"));
+    pub fn from_file(path: &str) -> Result<Self> {
+        let content = fs::read_to_string(path)?;
 
-        if path.contains(".toml") {
-            return toml::from_str(&raw_conf).unwrap();
-        } else if path.contains(".json") {
-            return serde_json::from_str(&raw_conf).unwrap();
+        if path.ends_with(".toml") {
+            let ret: Self = toml::from_str(&content)?;
+            Ok(ret)
+        } else if path.ends_with(".json") {
+            let ret: Self = serde_json::from_str(&content)?;
+            Ok(ret)
+        } else {
+            Err(eyre!("Unsupported config file format"))
         }
-
-        panic!("no config file at {path}");
     }
 
-    pub fn get_core_contract_address(&self) -> Address {
+    pub fn get_core_contract_address(&self) -> Result<Address> {
         match self.network {
-            Network::MAINNET => Address::from_str(MAINNET_CC_ADDRESS)
-                .expect("should not fail mainnet addr"),
-            Network::GOERLI => Address::from_str(TESTNET_CC_ADDRESS)
-                .expect("should not fail testnet addr"),
+            Network::MAINNET => Ok(Address::from_str(MAINNET_CC_ADDRESS)?),
+            Network::GOERLI => Ok(Address::from_str(TESTNET_CC_ADDRESS)?),
             network => eyre::bail!("unsupported network: {network:?}")
         }
     }
 
-    pub fn get_consensus_rpc(&self) -> String {
+    pub fn get_consensus_rpc(&self) -> Result<String> {
         match self.network {
-            Network::MAINNET => MAINNET_CONSENSUS_RPC.to_string(),
-            Network::GOERLI => TESTNET_CONSENSUS_RPC.to_string(),
+            Network::MAINNET => Ok(MAINNET_CONSENSUS_RPC.to_owned()),
+            Network::GOERLI => Ok(TESTNET_CONSENSUS_RPC.to_owned()),
             network => eyre::bail!("unsupported network: {network:?}")
         }
     }
 
-    pub fn get_fallback_address(&self) -> String {
+    pub fn get_fallback_address(&self) -> Result<String> {
         match self.network {
-            Network::MAINNET => MAINNET_FALLBACK_RPC.to_string(),
-            Network::GOERLI => TESTNET_FALLBACK_RPC.to_string(),
+            Network::MAINNET => Ok(MAINNET_FALLBACK_RPC.to_owned()),
+            Network::GOERLI => Ok(TESTNET_FALLBACK_RPC.to_owned()),
             network => eyre::bail!("unsupported network: {network:?}")
         }
     }
@@ -170,10 +169,11 @@ impl Config {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub async fn to_helios_client(&self) -> Client<FileDB> {
+        let consensus_rpc = self.get_consensus_rpc().expect("unable to retrieve consensus url");
         ClientBuilder::new()
             .network(self.network)
             .data_dir(self.data_dir.clone())
-            .consensus_rpc(&self.get_consensus_rpc())
+            .consensus_rpc(&consensus_rpc)
             .execution_rpc(&self.eth_execution_rpc)
             .checkpoint(
                 &self
@@ -182,7 +182,7 @@ impl Config {
                     .expect("unable to retrieve checkpoint"),
             )
             .load_external_fallback()
-            .fallback(&self.get_consensus_rpc())
+            .fallback(&consensus_rpc)
             .build()
             .expect("incorrect helios client config")
     }

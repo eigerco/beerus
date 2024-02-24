@@ -12,29 +12,28 @@ struct Args {
     config: Option<String>,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), String> {
-    tracing_subscriber::fmt::init();
+fn get_config(args: Args) -> eyre::Result<Config> {
+    Ok(if let Some(path) = args.config.as_ref() {
+        Config::from_file(path)?
+    } else {
+        Config::from_env()
+    })
+}
 
-    let args = Args::parse();
-    let config = args
-        .config
-        .map(|config| Config::from_file(&config))
-        .unwrap_or_else(Config::from_env);
+#[tokio::main]
+async fn main() -> eyre::Result<()> {
+    tracing_subscriber::fmt::init();
+    let config = get_config(Args::parse())?;
 
     info!("init beerus client: {:?}", config.network);
-    let mut beerus = BeerusClient::new(config)
-        .await
-        .map_err(|e| format!("failed to setup beerus client: {e}"))?;
+    let mut beerus = BeerusClient::new(config).await?;
     beerus
         .start()
-        .await
-        .map_err(|e| format!("failed to start beerus client: {e}"))?;
+        .await?;
 
     let (address, server) = BeerusRpc::new(beerus)
         .run()
-        .await
-        .map_err(|e| format!("failed to start JSON-RPC server: {e}"))?;
+        .await?;
     info!("Beerus JSON-RPC server started 🚀: http://{address}");
     server.stopped().await;
 
