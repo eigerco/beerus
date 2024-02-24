@@ -166,9 +166,9 @@ impl Config {
     }
 
     pub fn to_starknet_client(&self) -> JsonRpcClient<HttpTransport> {
-        JsonRpcClient::new(HttpTransport::new(
-            Url::parse(&self.starknet_rpc.clone()).unwrap(),
-        ))
+        let url: Url = self.starknet_rpc.as_str().try_into().unwrap();
+        let transport = HttpTransport::new(url);
+        JsonRpcClient::new(transport)
     }
 
     #[cfg(not(target_arch = "wasm32"))]
