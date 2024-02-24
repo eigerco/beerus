@@ -166,8 +166,7 @@ impl BeerusClient {
     /// The loop run in this thread will query these values at
     /// `config.poll_secs` seconds
     ///
-    /// Synchronization process sequence (currently untrusted because
-    /// unproven, see #550):
+    /// Synchronization process sequence:
     /// ```mermaid
     /// sequenceDiagram
     /// Beerus->>+L1: get_starknet_state_root
@@ -257,9 +256,6 @@ impl BeerusClient {
 
     /// If user queries historical block i.e. provided block num < local block num
     /// Allow request to continue with that value.
-    ///
-    /// Until Issue #550 is implemented blocks in the range block num > local block num
-    /// will default to local block num
     pub async fn get_local_block_id(
         &self,
         provided_block_id: BlockId,
@@ -346,7 +342,6 @@ async fn sync(
     }
 
     // The local state is out of date, retrieve the latest block from L2.
-    // TODO: Issue #550 - feat: sync from proven root
     match l2_client
         .get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest))
         .await
