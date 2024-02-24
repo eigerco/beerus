@@ -123,7 +123,7 @@ impl Config {
         match self.network {
             Network::MAINNET => Ok(Address::from_str(MAINNET_CC_ADDRESS)?),
             Network::GOERLI => Ok(Address::from_str(TESTNET_CC_ADDRESS)?),
-            network => eyre::bail!("unsupported network: {network:?}")
+            network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
 
@@ -131,7 +131,7 @@ impl Config {
         match self.network {
             Network::MAINNET => Ok(MAINNET_CONSENSUS_RPC.to_owned()),
             Network::GOERLI => Ok(TESTNET_CONSENSUS_RPC.to_owned()),
-            network => eyre::bail!("unsupported network: {network:?}")
+            network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
 
@@ -139,7 +139,7 @@ impl Config {
         match self.network {
             Network::MAINNET => Ok(MAINNET_FALLBACK_RPC.to_owned()),
             Network::GOERLI => Ok(TESTNET_FALLBACK_RPC.to_owned()),
-            network => eyre::bail!("unsupported network: {network:?}")
+            network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
 
@@ -169,7 +169,8 @@ impl Config {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub async fn to_helios_client(&self) -> Client<FileDB> {
-        let consensus_rpc = self.get_consensus_rpc().expect("unable to retrieve consensus url");
+        let consensus_rpc =
+            self.get_consensus_rpc().expect("unable to retrieve consensus url");
         ClientBuilder::new()
             .network(self.network)
             .data_dir(self.data_dir.clone())

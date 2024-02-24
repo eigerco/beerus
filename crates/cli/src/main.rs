@@ -27,13 +27,9 @@ async fn main() -> eyre::Result<()> {
 
     info!("init beerus client: {:?}", config.network);
     let mut beerus = BeerusClient::new(config).await?;
-    beerus
-        .start()
-        .await?;
+    beerus.start().await?;
 
-    let (address, server) = BeerusRpc::new(beerus)
-        .run()
-        .await?;
+    let (address, server) = BeerusRpc::new(beerus).run().await?;
     info!("Beerus JSON-RPC server started 🚀: http://{address}");
     server.stopped().await;
 
