@@ -4,11 +4,15 @@ edition = "2021"
 name = "beerus-rpc"
 version = "0.4.0"
 
+[features]
+integration-tests = ["pretty_assertions"]
+
 [dependencies]
 beerus-core = { path = "../core" }
 starknet.workspace = true
 eyre.workspace = true
 jsonrpsee = { version = "0.20.3", features = ["macros", "server", "server-core"] }
+pretty_assertions = { version = "1.4.0", optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
 thiserror.workspace = true
@@ -16,3 +20,5 @@ tracing.workspace = true
 
 [dev-dependencies]
 serde_json = "1.0"
+reqwest = "0.11.13"
+tokio.workspace = true
