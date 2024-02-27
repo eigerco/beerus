@@ -439,6 +439,7 @@ dependencies = [
  "serde_with",
  "starknet",
  "thiserror",
+ "tokio",
  "tracing",
 ]
 
