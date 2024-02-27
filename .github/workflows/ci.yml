@@ -29,6 +29,7 @@ jobs:
           ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_MAINNET }}
           STARKNET_RPC: ${{ secrets.STARKNET_RPC_MAINNET }}
         run: ./target/release/beerus &
+
       - name: run integration test on MAINNET
         run: bash ./scripts/integration-test.sh mainnet
 
