@@ -12,8 +12,6 @@
 
   Beerus is a Starknet Light Client inspired by and using
   [helios](https://github.com/a16z/helios/).
-
-  See the [Beerus Book](book/README.md) for more info.
 </div>
 
 ## News
