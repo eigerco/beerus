@@ -27,7 +27,7 @@ jobs:
           BEERUS_VERSION: "ci"
           NETWORK: "mainnet"
           ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_MAINNET }}
-          STARKNET_RPC: ${{ secrets.STARKNET_RPC_MAINNET }}
+          STARKNET_RPC: ${{ secrets.STARKNET_RPC_0_6_0_MAINNET }}
         run: ./target/release/beerus &
 
       - name: run integration test on MAINNET

@@ -2,83 +2,214 @@ use beerus_core::CoreError;
 use eyre::Report;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError;
-use starknet::providers::jsonrpc::{HttpTransportError, JsonRpcClientError};
-use starknet::providers::{MaybeUnknownErrorCode, ProviderError};
+use starknet::providers::ProviderError;
+use starknet::providers::ProviderError::StarknetError as StarknetProviderError;
 
 #[derive(Debug)]
 pub enum BeerusRpcError {
-    Provider(ProviderError<JsonRpcClientError<HttpTransportError>>),
+    Provider(ProviderError),
     Other((i32, String)),
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
     fn from(err: BeerusRpcError) -> Self {
         match err {
-            BeerusRpcError::Provider(e) => {
-                match e {
-                    ProviderError::StarknetError(e) => {
-                        let (code, message) = (e.code, e.message);
-                        let code = match code {
-                        MaybeUnknownErrorCode::Known(known) => match known {
-                            StarknetError::FailedToReceiveTransaction => 1,
-                            StarknetError::ContractNotFound => 20,
-                            StarknetError::BlockNotFound => 24,
-                            StarknetError::InvalidTransactionIndex => 27,
-                            StarknetError::ClassHashNotFound => 28,
-                            StarknetError::TransactionHashNotFound => 29,
-                            StarknetError::PageSizeTooBig => 31,
-                            StarknetError::NoBlocks => 32,
-                            StarknetError::InvalidContinuationToken => 33,
-                            StarknetError::TooManyKeysInFilter => 34,
-                            StarknetError::ContractError => 40,
-                            StarknetError::ClassAlreadyDeclared => 51,
-                            StarknetError::InvalidTransactionNonce => 52,
-                            StarknetError::InsufficientMaxFee => 53,
-                            StarknetError::InsufficientAccountBalance => 54,
-                            StarknetError::ValidationFailure => 55,
-                            StarknetError::CompilationFailed => 56,
-                            StarknetError::ContractClassSizeIsTooLarge => 57,
-                            StarknetError::NonAccount => 58,
-                            StarknetError::DuplicateTx => 59,
-                            StarknetError::CompiledClassHashMismatch => 60,
-                            StarknetError::UnsupportedTxVersion => 61,
-                            StarknetError::UnsupportedContractClassVersion => 62,
-                            StarknetError::UnexpectedError => 63,
-                        },
-                        MaybeUnknownErrorCode::Unknown(unknown) => unknown as i32,
-                    };
-                        ErrorObjectOwned::owned(code, message, None::<()>)
+            BeerusRpcError::Provider(provider_err) => match provider_err {
+                StarknetProviderError(sn_err) => match &sn_err {
+                    StarknetError::FailedToReceiveTransaction => {
+                        ErrorObjectOwned::owned(1, sn_err.message(), None::<()>)
                     }
-                    _ => ErrorObjectOwned::owned(
-                        -32601,
-                        format!("{e}"),
+                    StarknetError::ContractNotFound => ErrorObjectOwned::owned(
+                        20,
+                        sn_err.message(),
                         None::<()>,
                     ),
-                }
-            }
-            BeerusRpcError::Other((code, message)) => {
-                ErrorObjectOwned::owned(code, message, None::<()>)
+                    StarknetError::BlockNotFound => ErrorObjectOwned::owned(
+                        24,
+                        sn_err.message(),
+                        None::<()>,
+                    ),
+                    StarknetError::InvalidTransactionIndex => {
+                        ErrorObjectOwned::owned(
+                            27,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::ClassHashNotFound => {
+                        ErrorObjectOwned::owned(
+                            28,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::TransactionHashNotFound => {
+                        ErrorObjectOwned::owned(
+                            29,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::PageSizeTooBig => ErrorObjectOwned::owned(
+                        31,
+                        sn_err.message(),
+                        None::<()>,
+                    ),
+                    StarknetError::NoBlocks => ErrorObjectOwned::owned(
+                        32,
+                        sn_err.message(),
+                        None::<()>,
+                    ),
+                    StarknetError::InvalidContinuationToken => {
+                        ErrorObjectOwned::owned(
+                            33,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::TooManyKeysInFilter => {
+                        ErrorObjectOwned::owned(
+                            34,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::ContractError(data) => {
+                        ErrorObjectOwned::owned(
+                            40,
+                            sn_err.message(),
+                            Some(data),
+                        )
+                    }
+                    StarknetError::TransactionExecutionError(data) => {
+                        ErrorObjectOwned::owned(
+                            41,
+                            sn_err.message(),
+                            Some(data),
+                        )
+                    }
+                    StarknetError::ClassAlreadyDeclared => {
+                        ErrorObjectOwned::owned(
+                            51,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::InvalidTransactionNonce => {
+                        ErrorObjectOwned::owned(
+                            51,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::InsufficientMaxFee => {
+                        ErrorObjectOwned::owned(
+                            53,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::InsufficientAccountBalance => {
+                        ErrorObjectOwned::owned(
+                            54,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::ValidationFailure(data) => {
+                        ErrorObjectOwned::owned(
+                            55,
+                            sn_err.message(),
+                            Some(data),
+                        )
+                    }
+                    StarknetError::CompilationFailed => {
+                        ErrorObjectOwned::owned(
+                            56,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::ContractClassSizeIsTooLarge => {
+                        ErrorObjectOwned::owned(
+                            57,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::NonAccount => ErrorObjectOwned::owned(
+                        58,
+                        sn_err.message(),
+                        None::<()>,
+                    ),
+                    StarknetError::DuplicateTx => ErrorObjectOwned::owned(
+                        59,
+                        sn_err.message(),
+                        None::<()>,
+                    ),
+                    StarknetError::CompiledClassHashMismatch => {
+                        ErrorObjectOwned::owned(
+                            60,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::UnsupportedTxVersion => {
+                        ErrorObjectOwned::owned(
+                            61,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::UnsupportedContractClassVersion => {
+                        ErrorObjectOwned::owned(
+                            62,
+                            sn_err.message(),
+                            None::<()>,
+                        )
+                    }
+                    StarknetError::UnexpectedError(data) => {
+                        ErrorObjectOwned::owned(
+                            63,
+                            sn_err.message(),
+                            Some(data),
+                        )
+                    }
+                    StarknetError::NoTraceAvailable(data) => {
+                        ErrorObjectOwned::owned(
+                            10,
+                            sn_err.message(),
+                            Some(data),
+                        )
+                    }
+                },
+                _ => ErrorObjectOwned::owned(
+                    -32601,
+                    format!("{provider_err}"),
+                    None::<()>,
+                ),
+            },
+            BeerusRpcError::Other(other_err) => {
+                ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
             }
         }
     }
 }
 
-impl From<ProviderError<JsonRpcClientError<HttpTransportError>>>
-    for BeerusRpcError
-{
-    fn from(e: ProviderError<JsonRpcClientError<HttpTransportError>>) -> Self {
-        BeerusRpcError::Provider(e)
+impl From<ProviderError> for BeerusRpcError {
+    fn from(err: ProviderError) -> Self {
+        BeerusRpcError::Provider(err)
     }
 }
 
 impl From<CoreError> for BeerusRpcError {
-    fn from(e: CoreError) -> Self {
-        BeerusRpcError::Other((-32601, format!("{e}")))
+    fn from(err: CoreError) -> Self {
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }
 
 impl From<Report> for BeerusRpcError {
-    fn from(e: Report) -> Self {
-        BeerusRpcError::Other((-32601, format!("{e}")))
+    fn from(err: Report) -> Self {
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }

@@ -16,39 +16,47 @@
 
 ## News
 
+* 29/02/24: Migrate to the [Starknet v0.6.0 OpenRPC spec](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0), release Beerus v0.4.0
 * 17/01/24: [Eiger is taking over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
 
 ## Getting Started
 
-```bash
-cargo build --release
+### Configuration
 
-# insert valid api keys
-./target/release/beerus -c etc/conf/beerus.json
+Beerus relies on TWO untrusted RPC endpoints, one for L1 (Ethereum), and one for L2 (Starknet). 
+As these are untrusted they will typically not be nodes run on your local host or your local network.
 
-# wait for server to start
-hurl etc/rpc/starknet_getStateRoot.hurl
-```
+Beerus requires the [v0.6.0 of the Starknet OpenRPC specs](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0).
 
-### Config
+These untrusted RPC providers must adhere to both the L1 `eth_getProof` endpoint
+as well as the L2 `pathfinder_getProof` endpoint ([detailed instructions needed!](https://github.com/eigerco/beerus/issues/602)).For this we recommend using
+[Alchemy](https://docs.alchemy.com/reference/starknet-api-faq#what-versions-of-starknet-api-are-supported) as your untrusted L2 node provider. 
 
-Beerus relies on TWO untrusted RPC endpoints. As these are untrusted they will
-typically not be nodes run on your local host or your local network. These 
-untrusted RPC providers must adhere to both the L1 `eth_getProof` endpoint
-as well as the L2 `pathfinder_getProof` endpoint. For this we recommend using
-[Alchemy](https://www.alchemy.com) as your untrusted L2 node provider. 
+More API providers can be found [here](https://docs.starknet.io/documentation/tools/api-services/).
 
-*NOTE: we rely on helios for both valid checkpoint values and consensus rpc urls*
+*NOTE: we rely on [helios](https://github.com/a16z/helios) for both valid checkpoint values and consensus rpc urls*
 
 | field   | example | description |
 | ----------- | ----------- | ----------- |
 | network | MAINNET or GOERLI | network to query |
 | eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l2 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/YOURAPIKEY | untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 | fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
+
+### Running Beerus for the first time
+
+Copy the configuration file from `etc/conf/beerus.toml` and set up the API provider URLs in the copy.
+
+Then run:
+```bash
+cargo run --release -- -c ./path/to/config.toml
+
+# Once Beerus has started, 
+hurl etc/rpc/starknet_getStateRoot.hurl
+```
 
 ## Development
 
