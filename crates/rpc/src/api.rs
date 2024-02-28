@@ -13,7 +13,8 @@ use starknet::core::types::{
     FieldElement, FunctionCall, InvokeTransactionResult,
     MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1,
-    SyncStatusType, Transaction,
+    SimulationFlagForEstimateFee, SyncStatusType, Transaction,
+    TransactionStatus,
 };
 use starknet::macros::selector;
 use starknet::providers::Provider;
@@ -21,10 +22,14 @@ use starknet::providers::Provider;
 use crate::error::BeerusRpcError;
 use crate::BeerusRpc;
 
+/// [`starknet::core::types::FieldElement`] may be serialized in a way that is not compliant with
+/// the Starknet OpenRPC spec (missing the "0x" prefix).
+/// This wrapper fixes that.
 #[serde_as]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Felt(#[serde_as(as = "UfeHex")] pub FieldElement);
 
+/// See [`Felt`]
 #[serde_as]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
@@ -32,6 +37,9 @@ pub struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
 #[rpc(server, namespace = "starknet")]
 pub trait BeerusRpc {
     // ------------------- Starknet Provider Endpoints -------------------
+    #[method(name = "specVersion")]
+    async fn spec_version(&self) -> Result<String, BeerusRpcError>;
+
     #[method(name = "getBlockWithTxHashes")]
     async fn get_block_with_tx_hashes(
         &self,
@@ -64,10 +72,11 @@ pub trait BeerusRpc {
         transaction_hash: FieldElement,
     ) -> Result<Transaction, BeerusRpcError>;
 
-    // TODO: TransactionStatus is not `Clone`able, uncomment once it is
-    // #[method(name = "getTransactionStatus")]
-    // async fn get_transaction_status(&self, transaction_hash: FieldElement)
-    // -> Result<TransactionStatus, BeerusRpcError>;
+    #[method(name = "getTransactionStatus")]
+    async fn get_transaction_status(
+        &self,
+        transaction_hash: FieldElement,
+    ) -> Result<TransactionStatus, BeerusRpcError>;
 
     #[method(name = "getTransactionByBlockIdAndIndex")]
     async fn get_transaction_by_block_id_and_index(
@@ -120,6 +129,7 @@ pub trait BeerusRpc {
     async fn estimate_fee(
         &self,
         request: Vec<BroadcastedTransaction>,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError>;
 
@@ -181,11 +191,9 @@ pub trait BeerusRpc {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTransaction,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError>;
-
-    #[method(name = "specVersion")]
-    async fn spec_version(&self) -> Result<String, BeerusRpcError>;
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
     #[method(name = "getProof")]
@@ -290,13 +298,16 @@ impl BeerusRpcServer for BeerusRpc {
             .map_err(BeerusRpcError::from)
     }
 
-    // TODO: TransactionStatus is not `Clone`able, uncomment once it is
-    // async fn get_transaction_status(
-    //     &self,
-    //     transaction_hash: FieldElement,
-    // ) -> Result<TransactionStatus, BeerusRpcError> {
-    //     self.beerus.starknet_client.get_transaction_status(transaction_hash).await.map_err(BeerusRpcError::from)
-    // }
+    async fn get_transaction_status(
+        &self,
+        transaction_hash: FieldElement,
+    ) -> Result<TransactionStatus, BeerusRpcError> {
+        self.beerus
+            .starknet_client
+            .get_transaction_status(transaction_hash)
+            .await
+            .map_err(BeerusRpcError::from)
+    }
 
     async fn get_transaction_by_block_id_and_index(
         &self,
@@ -391,12 +402,13 @@ impl BeerusRpcServer for BeerusRpc {
     async fn estimate_fee(
         &self,
         request: Vec<BroadcastedTransaction>,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         self.beerus
             .starknet_client
-            .estimate_fee(request, l1_block_num)
+            .estimate_fee(request, simulation_flags, l1_block_num)
             .await
             .map_err(BeerusRpcError::from)
     }
@@ -514,18 +526,19 @@ impl BeerusRpcServer for BeerusRpc {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTransaction,
+        simulation_flags: Vec<SimulationFlagForEstimateFee>,
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
         self.beerus
             .starknet_client
-            .estimate_fee_single(request, l1_block_num)
+            .estimate_fee_single(request, simulation_flags, l1_block_num)
             .await
             .map_err(BeerusRpcError::from)
     }
 
     async fn spec_version(&self) -> Result<String, BeerusRpcError> {
-        Ok(String::from("0.5.1"))
+        Ok(String::from("0.6.0"))
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
