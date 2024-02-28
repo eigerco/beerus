@@ -1,10 +1,12 @@
 use reqwest::Url;
 use starknet::{
     core::types::{
-        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, EventFilter, FieldElement, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction
     },
-    providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
+    providers::{
+        jsonrpc::HttpTransport,
+        JsonRpcClient, Provider,
+    },
 };
 
 #[tokio::test]
@@ -23,6 +25,9 @@ async fn rpc_test() {
             panic!("The latest block shouldn't be a pending block")
         }
     };
+
+    // TODO constants
+    assert!(block.transactions.len() > 10, "This test requires blocks to have at least N transactions");
 
     // TODO In the case the block just changed, retry
     // starknet_blockNumber
@@ -96,15 +101,16 @@ async fn rpc_test() {
     // TODO starknet_getClass
     // TODO starknet_getClassAt
     // TODO starknet_getClassHashAt
+    // starknet_getEvents is tested with starknet_getTransactionReceipt
     // TODO starknet_getNonce
     // TODO starknet_getProof
     // TODO starknet_getStateRoot
     // TODO starknet_getStateUpdate
     // TODO starknet_getStorateAt
-    
+
     // starknet_getTransactionByBlockIdAndIndex
     {
-        async fn check_get_transaction(
+        async fn check_transaction(
             client: &JsonRpcClient<HttpTransport>,
             block_id: BlockId,
             transaction_index: usize,
@@ -124,16 +130,126 @@ async fn rpc_test() {
         }
 
         for transaction_index in 0..10 {
-            check_get_transaction(&client, block_id, transaction_index, &block)
+            check_transaction(&client, block_id, transaction_index, &block)
                 .await;
         }
 
-        check_get_transaction(&client, block_id, block.transactions.len() - 1, &block)
+        check_transaction(
+            &client,
+            block_id,
+            block.transactions.len() - 1,
+            &block,
+        )
         .await;
     }
 
-    // TODO starknet_getTransactionByHash
+    // starknet_getTransactionByHash
+    {
+        async fn check_transaction(
+            client: &JsonRpcClient<HttpTransport>,
+            expected: &Transaction,
+        ) {
+            let transaction = client.get_transaction_by_hash(expected.transaction_hash()).await.expect("Failed to retrieve a specific transaction by its block ID and index");
+
+            // `starknet-rs` doesn't implement `PartialEq` on its DTOs, and transactions have many *variants which makes pure Rust comparison painful.
+            // Just serialize these to compare them.
+            assert_eq!(
+                serde_json::to_string(&transaction).unwrap(),
+                serde_json::to_string(&expected).unwrap(),
+            )
+        }
+
+        for transaction_index in 0..10 {
+            check_transaction(&client, &block.transactions[transaction_index])
+                .await;
+        }
+
+        check_transaction(
+            &client,
+            block
+                .transactions
+                .last()
+                .as_ref()
+                .expect("We need a last transaction here"),
+        )
+        .await;
+    }
+
     // TODO starknet_getTransactionReceipt
+    {
+        async fn check_transaction(
+            client: &JsonRpcClient<HttpTransport>,
+            block: &BlockWithTxs,
+            expected: &Transaction,
+        ) {
+            let receipt = client.get_transaction_receipt(expected.transaction_hash()).await.expect("Failed to retrieve a specific transaction by its block ID and index");
+
+            let receipt = match receipt {
+                MaybePendingTransactionReceipt::Receipt(receipt) => receipt,
+                MaybePendingTransactionReceipt::PendingReceipt(_) => {
+                    panic!("Pending receipt")
+                }
+            };
+
+            let events = match receipt {
+                starknet::core::types::TransactionReceipt::Invoke(receipt) => {
+                    receipt.events
+                },
+                starknet::core::types::TransactionReceipt::L1Handler(receipt) => receipt.events,
+                starknet::core::types::TransactionReceipt::Declare(receipt) => receipt.events,
+                starknet::core::types::TransactionReceipt::Deploy(receipt) => receipt.events,
+                starknet::core::types::TransactionReceipt::DeployAccount(receipt) => receipt.events,
+            };
+
+            let keys: Vec<Vec<FieldElement>> = events.iter().map(|event| event.keys.clone()).collect();
+
+            // TODO Doesn't work, "invalid params"
+            /*
+            let block_id = BlockId::Number(block.block_number);
+            let chunk_size = 1000;
+            let expected_events = client.get_events(
+                EventFilter {
+                    from_block: Some(block_id),
+                    to_block: Some(block_id),
+                    address: None,
+                    keys: Some(keys),
+                },
+                None,
+                chunk_size,
+            ).await.expect("Failed to retrieve the events");
+
+            // TODO 
+            assert_ne!(expected_events.events.len() as u64, chunk_size, "Got as many events as requested, there may be more to pull");
+
+            for expected in expected_events.events {
+                // Find a matching event from the actual events vec.
+                if !events.iter().any(|actual| {
+                    actual.data == expected.data
+                    && actual.from_address == expected.from_address
+                    && actual.keys == expected.keys
+                }) {
+                    panic!("No matching event found");
+                }
+            }
+             */
+            
+
+            // TODO transaction status comparison
+            // TODO execution result comparison
+        }
+
+        for transaction_index in 0..10 {
+            check_transaction(&client, &block, &block.transactions[transaction_index])
+                .await;
+        }
+
+        check_transaction(&client, &block, 
+            block
+                .transactions
+                .last()
+                .as_ref()
+                .expect("We need a last transaction here")).await;
+    }
     // TODO starknet_getTransactionStatus
     // TODO starknet_syncing
 }
