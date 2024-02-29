@@ -2,7 +2,7 @@
 description = "Core utilities for the Beerus Light Client"
 edition = "2021"
 name = "beerus-core"
-version = "0.3.0"
+version = "0.4.0"
 
 [package.metadata.cargo-udeps]
 # Aquamarine generates Mermaid diagrams and causes a udeps false positive.

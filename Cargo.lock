@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "beerus-cli"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "beerus-core",
  "beerus-rpc",
@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "beerus-core"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "aquamarine",
  "async-trait",
@@ -428,7 +428,7 @@ dependencies = [
 
 [[package]]
 name = "beerus-rpc"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "beerus-core",
  "eyre",
