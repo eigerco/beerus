@@ -5,7 +5,6 @@ use std::net::SocketAddr;
 
 use api::BeerusRpcServer;
 use beerus_core::client::BeerusClient;
-use error::BeerusRpcError;
 use jsonrpsee::core::Error;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 use starknet::providers::Provider;
@@ -22,25 +21,29 @@ impl BeerusRpc {
 
     pub async fn run(self) -> Result<(SocketAddr, ServerHandle), Error> {
         let local_spec_version =
-            self.spec_version().await.map_err(BeerusRpcError::from).unwrap();
+            self.spec_version().await.expect("Should never happen");
 
         let remote_spec_version = self
             .beerus
             .starknet_client
             .spec_version()
-            .await
-            .map_err(BeerusRpcError::from)
-            .unwrap();
+            .await;
 
-        if local_spec_version != remote_spec_version {
-            error!(
-                "Spec version mismatch between Beerus {} and remote Starknet RPC {}", local_spec_version, remote_spec_version
-            );
-            return Err(Error::Custom(
-                format!("Spec version mismatch between Beerus {} and remote Starkent RPC {}", local_spec_version, remote_spec_version)
-                    .to_string(),
-            ));
-        }
+        // check remote spec version
+        match remote_spec_version {
+            Ok(remote_version) => {
+                if remote_version != local_spec_version {
+                    error!(
+                        "Spec version mismatch between Beerus {} and remote Starknet RPC {}", local_spec_version, remote_version
+                    );
+                    return Err(Error::Custom(
+                        format!("Spec version mismatch between Beerus {} and remote Starkent RPC {}", local_spec_version, remote_version)
+                            .to_string(),
+                    ));
+                }
+            },
+            Err(_) => return Err(Error::Custom("Failed to fetch remote spec version".to_string())),
+        };
 
         // build the RPC server
         let server =
