@@ -1,12 +1,11 @@
 use reqwest::Url;
 use starknet::{
     core::types::{
-        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, EventFilter, FieldElement, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction
+        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
+        EventFilter, FieldElement, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction,
     },
-    providers::{
-        jsonrpc::HttpTransport,
-        JsonRpcClient, Provider,
-    },
+    providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
 };
 
 #[tokio::test]
@@ -27,7 +26,11 @@ async fn rpc_test() {
     };
 
     // TODO constants
-    assert!(block.transactions.len() > 10, "This test requires blocks to have at least N transactions");
+    assert!(
+        block.transactions.len() >= 10,
+        "This test requires blocks to have at least N transactions, got {}",
+        block.transactions.len()
+    );
 
     // TODO In the case the block just changed, retry
     // starknet_blockNumber
@@ -77,6 +80,8 @@ async fn rpc_test() {
             timestamp,
             sequencer_address,
             transactions,
+            l1_gas_price,
+            starknet_version,
         } = match client.get_block_with_tx_hashes(block_id).await.expect("Failed to retrieve the block with transaction hashes") {
             MaybePendingBlockWithTxHashes::Block(with_tx_hashes) => with_tx_hashes,
             MaybePendingBlockWithTxHashes::PendingBlock(_) => panic!("This block was already verified as not pending, it shouldn't be a pending block now"),
@@ -89,6 +94,8 @@ async fn rpc_test() {
         assert_eq!(new_root, block.new_root);
         assert_eq!(timestamp, block.timestamp);
         assert_eq!(sequencer_address, block.sequencer_address);
+        assert_eq!(l1_gas_price, block.l1_gas_price);
+        assert_eq!(starknet_version, block.starknet_version);
 
         block
             .transactions
@@ -194,61 +201,82 @@ async fn rpc_test() {
             let events = match receipt {
                 starknet::core::types::TransactionReceipt::Invoke(receipt) => {
                     receipt.events
-                },
-                starknet::core::types::TransactionReceipt::L1Handler(receipt) => receipt.events,
-                starknet::core::types::TransactionReceipt::Declare(receipt) => receipt.events,
-                starknet::core::types::TransactionReceipt::Deploy(receipt) => receipt.events,
-                starknet::core::types::TransactionReceipt::DeployAccount(receipt) => receipt.events,
+                }
+                starknet::core::types::TransactionReceipt::L1Handler(
+                    receipt,
+                ) => receipt.events,
+                starknet::core::types::TransactionReceipt::Declare(receipt) => {
+                    receipt.events
+                }
+                starknet::core::types::TransactionReceipt::Deploy(receipt) => {
+                    receipt.events
+                }
+                starknet::core::types::TransactionReceipt::DeployAccount(
+                    receipt,
+                ) => receipt.events,
             };
 
-            let keys: Vec<Vec<FieldElement>> = events.iter().map(|event| event.keys.clone()).collect();
+            let keys: Vec<Vec<FieldElement>> =
+                events.iter().map(|event| event.keys.clone()).collect();
 
-            // TODO Doesn't work, "invalid params"
-            /*
             let block_id = BlockId::Number(block.block_number);
-            let chunk_size = 1000;
-            let expected_events = client.get_events(
-                EventFilter {
-                    from_block: Some(block_id),
-                    to_block: Some(block_id),
-                    address: None,
-                    keys: Some(keys),
-                },
-                None,
-                chunk_size,
-            ).await.expect("Failed to retrieve the events");
 
-            // TODO 
-            assert_ne!(expected_events.events.len() as u64, chunk_size, "Got as many events as requested, there may be more to pull");
+            let chunk_size = 1024;
+            let expected_events = client
+                .get_events(
+                    EventFilter {
+                        from_block: Some(block_id),
+                        to_block: Some(block_id),
+                        address: None,
+                        keys: Some(keys),
+                    },
+                    None,
+                    chunk_size,
+                )
+                .await
+                .expect("Failed to retrieve the events");
+
+            // TODO Loop
+            assert_ne!(
+                expected_events.events.len() as u64,
+                chunk_size,
+                "Got as many events as requested, there may be more to pull"
+            );
 
             for expected in expected_events.events {
                 // Find a matching event from the actual events vec.
                 if !events.iter().any(|actual| {
                     actual.data == expected.data
-                    && actual.from_address == expected.from_address
-                    && actual.keys == expected.keys
+                        && actual.from_address == expected.from_address
+                        && actual.keys == expected.keys
                 }) {
                     panic!("No matching event found");
                 }
             }
-             */
-            
 
             // TODO transaction status comparison
             // TODO execution result comparison
         }
 
         for transaction_index in 0..10 {
-            check_transaction(&client, &block, &block.transactions[transaction_index])
-                .await;
+            check_transaction(
+                &client,
+                &block,
+                &block.transactions[transaction_index],
+            )
+            .await;
         }
 
-        check_transaction(&client, &block, 
+        check_transaction(
+            &client,
+            &block,
             block
                 .transactions
                 .last()
                 .as_ref()
-                .expect("We need a last transaction here")).await;
+                .expect("We need a last transaction here"),
+        )
+        .await;
     }
     // TODO starknet_getTransactionStatus
     // TODO starknet_syncing
