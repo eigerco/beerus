@@ -21,9 +21,9 @@ Content-Type: application/json
                     "0x599573a0023b0ce23bb8537d2c5f3e9b72ebd4f008d033b4c0a1475a68338ac",
                     "0x47a4c36c2932f213e7b054c9573e49a6681d5b710d1b25a96ea6346f5689929"
                 ]
-            ]
-        },
-        "chunk_size": 1
+            ],
+            "chunk_size": 1
+        }
     },
     "id": 0
 }
