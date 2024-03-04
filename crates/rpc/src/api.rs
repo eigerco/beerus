@@ -9,8 +9,8 @@ use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
     BroadcastedTransaction, ContractClass, DeclareTransactionResult,
-    DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate,
-    FieldElement, FunctionCall, InvokeTransactionResult,
+    DeployAccountTransactionResult, EventFilterWithPage, EventsPage,
+    FeeEstimate, FieldElement, FunctionCall, InvokeTransactionResult,
     MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1,
     SimulationFlagForEstimateFee, SyncStatusType, Transaction,
@@ -157,9 +157,7 @@ pub trait BeerusRpc {
     #[method(name = "getEvents")]
     async fn get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        filter: EventFilterWithPage,
     ) -> Result<EventsPage, BeerusRpcError>;
 
     #[method(name = "getNonce")]
@@ -465,13 +463,15 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        filter: EventFilterWithPage,
     ) -> Result<EventsPage, BeerusRpcError> {
         self.beerus
             .starknet_client
-            .get_events(filter, continuation_token, chunk_size)
+            .get_events(
+                filter.event_filter,
+                filter.result_page_request.continuation_token,
+                filter.result_page_request.chunk_size,
+            )
             .await
             .map_err(BeerusRpcError::from)
     }
