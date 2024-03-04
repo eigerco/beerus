@@ -39,3 +39,15 @@ async fn test_blockHashAndNumber() -> Result<(), common::Error> {
     assert!(!ret.block_hash.0.as_ref().is_empty());
     Ok(())
 }
+
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_blockNumber() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let ret = ctx.client.blockNumber().await?;
+    assert!(*ret.as_ref() > 600612);
+    Ok(())
+}
