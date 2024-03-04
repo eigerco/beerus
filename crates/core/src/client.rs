@@ -123,7 +123,7 @@ pub struct BeerusClient {
 }
 
 impl BeerusClient {
-    pub async fn new(config: Config) -> Result<Self> {
+    pub async fn new(config: &Config) -> Result<Self> {
         #[cfg(not(target_arch = "wasm32"))]
         let mut helios_client: Client<FileDB> = config.to_helios_client().await;
         #[cfg(target_arch = "wasm32")]

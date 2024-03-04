@@ -26,7 +26,7 @@ async fn main() -> eyre::Result<()> {
     let config = get_config(Args::parse())?;
 
     info!("init beerus client: {:?}", config.network);
-    let mut beerus = BeerusClient::new(config).await?;
+    let mut beerus = BeerusClient::new(&config).await?;
     beerus.start().await?;
 
     let (address, server) = BeerusRpc::new(beerus).run().await?;
