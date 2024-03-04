@@ -51,3 +51,29 @@ async fn test_blockNumber() -> Result<(), common::Error> {
     assert!(*ret.as_ref() > 600612);
     Ok(())
 }
+
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_call() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let request = FunctionCall {
+        calldata: Vec::default(),
+        contract_address: Address(Felt::try_new(
+            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        )?),
+        entry_point_selector: Felt::try_new(
+            "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
+        )?,
+    };
+
+    let block_id =
+        BlockId::BlockNumber { block_number: BlockNumber::try_new(33482)? };
+
+    let ret = ctx.client.call(request, block_id).await?;
+    assert_eq!(ret.len(), 1);
+    assert_eq!(ret[0].as_ref(), "0x4574686572");
+    Ok(())
+}
