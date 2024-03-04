@@ -125,7 +125,13 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
     };
 
     let client = gen::client::blocking::Client::new(url);
-    let mut proxy = StateProxy { client };
+    let diff = CommitmentStateDiff {
+        storage_updates: Default::default(),
+        address_to_nonce: Default::default(),
+        address_to_class_hash: Default::default(),
+        class_hash_to_compiled_class_hash: Default::default(),
+    };
+    let mut proxy = StateProxy { client, diff };
 
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
@@ -136,6 +142,7 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
 
 struct StateProxy {
     client: gen::client::blocking::Client,
+    diff: CommitmentStateDiff,
 }
 
 impl StateReader for StateProxy {
@@ -239,6 +246,11 @@ impl BlockifierState for StateProxy {
         value: StarkFelt,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, ?key, ?value, "set_storage_at");
+        self.diff.storage_updates
+            .entry(contract_address)
+            .or_default()
+            .entry(key)
+            .or_insert(value);
         Ok(())
     }
 
@@ -247,6 +259,11 @@ impl BlockifierState for StateProxy {
         contract_address: ContractAddress,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, "increment_nonce");
+        let nonce: &mut Nonce = self.diff.address_to_nonce
+            .entry(contract_address)
+            .or_default();
+        let value = nonce.clone();
+        *nonce = value.try_increment()?;
         Ok(())
     }
 
@@ -256,6 +273,9 @@ impl BlockifierState for StateProxy {
         class_hash: ClassHash,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, ?class_hash, "set_class_hash_at");
+        *self.diff.address_to_class_hash
+            .entry(contract_address)
+            .or_default() = class_hash;
         Ok(())
     }
 
@@ -265,6 +285,8 @@ impl BlockifierState for StateProxy {
         contract_class: ContractClass,
     ) -> StateResult<()> {
         tracing::info!(?class_hash, ?contract_class, "set_contract_class");
+        // The `CommitmentStateDiff` does not have a relevant map for this.
+        // TODO: find out how & where to store this state update
         Ok(())
     }
 
@@ -278,20 +300,20 @@ impl BlockifierState for StateProxy {
             ?compiled_class_hash,
             "set_compiled_class_hash"
         );
+        *self.diff
+            .class_hash_to_compiled_class_hash
+            .entry(class_hash)
+            .or_default() = compiled_class_hash;
         Ok(())
     }
 
     fn to_state_diff(&mut self) -> CommitmentStateDiff {
         tracing::info!("to_state_diff");
-        CommitmentStateDiff {
-            storage_updates: Default::default(),
-            address_to_nonce: Default::default(),
-            address_to_class_hash: Default::default(),
-            class_hash_to_compiled_class_hash: Default::default(),
-        }
+        self.diff.clone()
     }
 
     fn add_visited_pcs(&mut self, class_hash: ClassHash, pcs: &HashSet<usize>) {
         tracing::info!(?class_hash, pcs.len = pcs.len(), "add_visited_pcs");
+        // TODO: learn the purpose of this method, and implement accordingly
     }
 }
