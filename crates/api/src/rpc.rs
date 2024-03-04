@@ -8,7 +8,7 @@ use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
 
 use super::gen::*;
 
-pub struct Server(oneshot::Sender<()>, JoinHandle<()>);
+pub struct Server(oneshot::Sender<()>, JoinHandle<()>, u16);
 
 impl Server {
     /// Send signal for terminating the server and await until it is terminated
@@ -21,16 +21,33 @@ impl Server {
     pub async fn done(self) {
         let _ = self.1.await;
     }
+
+    /// Return server's listening port (convenience method for testing)
+    pub fn port(&self) -> u16 {
+        self.2
+    }
 }
 
 pub async fn serve(url: &str, bind: &str) -> Server {
-    let ctx = Context { client: Arc::new(gen::client::Client::new(url)) };
+    let listener = TcpListener::bind(bind).await.unwrap();
+    serve_on(url, listener)
+}
+
+fn serve_on(url: &str, listener: TcpListener) -> Server {
+    let connect_timeout = std::time::Duration::from_secs(10);
+    let request_timeout = std::time::Duration::from_secs(10);
+    let client = reqwest::ClientBuilder::new()
+        .connect_timeout(connect_timeout)
+        .timeout(request_timeout)
+        .build()
+        .unwrap();
+
+    let ctx = Context { client: Arc::new(gen::client::Client::with_client(url, client)) };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
 
     let (tx, rx) = oneshot::channel::<()>();
-
-    let listener = TcpListener::bind(bind).await.unwrap();
+    let port = listener.local_addr().unwrap().port();
     let jh = tokio::spawn(async move {
         axum::serve(listener, app.into_make_service())
             .with_graceful_shutdown(async move { let _ = rx.await; })
@@ -38,7 +55,7 @@ pub async fn serve(url: &str, bind: &str) -> Server {
             .unwrap();
     });
 
-    Server(tx, jh)
+    Server(tx, jh, port)
 }
 
 #[derive(Deserialize, Serialize)]
