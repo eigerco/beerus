@@ -1,10 +1,11 @@
 use beerus_api::gen::Rpc;
 
+mod common;
+
 #[tokio::test]
-#[ignore = "requires a running server"]
-async fn test_rpc() -> Result<(), iamgroot::jsonrpc::Error> {
-    let client =
-        beerus_api::gen::client::Client::new("http://localhost:9000/rpc");
-    assert_eq!(client.specVersion().await?, "0.5.1");
+#[allow(non_snake_case)]
+async fn test_specVersion() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else { return Ok(()); };
+    assert_eq!(ctx.client.specVersion().await?, "0.6.0");
     Ok(())
 }
