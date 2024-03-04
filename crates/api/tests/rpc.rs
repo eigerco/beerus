@@ -11,6 +11,7 @@ async fn test_specVersion() -> Result<(), common::Error> {
     let Some(ctx) = common::ctx().await else {
         return Ok(());
     };
+
     let ret = ctx.client.specVersion().await?;
     assert_eq!(ret, "0.6.0");
     Ok(())
@@ -22,6 +23,7 @@ async fn test_chainId() -> Result<(), common::Error> {
     let Some(ctx) = common::ctx().await else {
         return Ok(());
     };
+
     let ret = ctx.client.chainId().await?;
     assert_eq!(ret.as_ref(), "0x534e5f4d41494e");
     Ok(())
@@ -141,3 +143,18 @@ async fn test_estimateFee() -> Result<(), common::Error> {
     assert!(matches!(ret[0].unit, PriceUnit::Wei));
     Ok(())
 }
+
+// TODO: getBlockTransactionCount
+// TODO: getBlockWithTxHashes
+// TODO: getBlockWithTxs
+// TODO: getClass
+// TODO: getClassAt
+// TODO: getClassHashAt
+// TODO: getNonce
+// TODO: getProof
+// TODO: getStorageAt
+// TODO: getTransactionByBlockIdAndIndex
+// TODO: getTransactionByHash
+// TODO: getTransactionReceipt
+// TODO: getTransactionStatus
+// TODO: syncing
