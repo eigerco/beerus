@@ -9,7 +9,8 @@ Content-Type: application/json
             "max_fee": "0x28ed6103d0000",
             "version": "0x1",
             "signature": [
-                "0x42527ffe9912b338983cbed67e139cfcc26a4d8cf1d1c2a85e4125fdf5f59ed", "0x636147d06fefd02ed37984b752556d4b9aefdac1a50b3df0528ec7c201ad84b"
+                "0x42527ffe9912b338983cbed67e139cfcc26a4d8cf1d1c2a85e4125fdf5f59ed",
+                "0x636147d06fefd02ed37984b752556d4b9aefdac1a50b3df0528ec7c201ad84b"
             ],
             "sender_address": "0x13e3ca9a377084c37dc7eacbd1d9f8c3e3733935bcbad887c32a0e213cd6fe0",
             "calldata": [
