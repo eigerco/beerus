@@ -9,7 +9,7 @@ use tokio::net::TcpListener;
 use super::gen::*;
 
 pub async fn serve(url: &str, bind: &str) {
-    let ctx = Context { client: Arc::new(gen::client::Client::new(&url)) };
+    let ctx = Context { client: Arc::new(gen::client::Client::new(url)) };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
 
