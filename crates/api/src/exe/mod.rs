@@ -9,7 +9,9 @@ use blockifier::{
         entry_point::{CallEntryPoint, CallType, EntryPointExecutionContext},
     },
     state::{
-        cached_state::CommitmentStateDiff, errors::StateError, state_api::{State as BlockifierState, StateReader, StateResult}
+        cached_state::CommitmentStateDiff,
+        errors::StateError,
+        state_api::{State as BlockifierState, StateReader, StateResult},
     },
     transaction::objects::{
         CommonAccountFields, DeprecatedTransactionInfo, TransactionInfo,
@@ -246,7 +248,8 @@ impl BlockifierState for StateProxy {
         value: StarkFelt,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, ?key, ?value, "set_storage_at");
-        self.diff.storage_updates
+        self.diff
+            .storage_updates
             .entry(contract_address)
             .or_default()
             .entry(key)
@@ -259,10 +262,9 @@ impl BlockifierState for StateProxy {
         contract_address: ContractAddress,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, "increment_nonce");
-        let nonce: &mut Nonce = self.diff.address_to_nonce
-            .entry(contract_address)
-            .or_default();
-        let value = nonce.clone();
+        let nonce: &mut Nonce =
+            self.diff.address_to_nonce.entry(contract_address).or_default();
+        let value = *nonce;
         *nonce = value.try_increment()?;
         Ok(())
     }
@@ -273,9 +275,8 @@ impl BlockifierState for StateProxy {
         class_hash: ClassHash,
     ) -> StateResult<()> {
         tracing::info!(?contract_address, ?class_hash, "set_class_hash_at");
-        *self.diff.address_to_class_hash
-            .entry(contract_address)
-            .or_default() = class_hash;
+        *self.diff.address_to_class_hash.entry(contract_address).or_default() =
+            class_hash;
         Ok(())
     }
 
@@ -300,7 +301,8 @@ impl BlockifierState for StateProxy {
             ?compiled_class_hash,
             "set_compiled_class_hash"
         );
-        *self.diff
+        *self
+            .diff
             .class_hash_to_compiled_class_hash
             .entry(class_hash)
             .or_default() = compiled_class_hash;
