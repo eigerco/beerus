@@ -1,4 +1,7 @@
-use beerus_api::{gen::client::Client, rpc::{serve, Server}};
+use beerus_api::{
+    gen::client::Client,
+    rpc::{serve, Server},
+};
 
 use async_once_cell::OnceCell;
 
@@ -8,7 +11,9 @@ pub enum Error {
 }
 
 impl From<iamgroot::jsonrpc::Error> for Error {
-    fn from(error: iamgroot::jsonrpc::Error) -> Self { Self::Rpc(error) }
+    fn from(error: iamgroot::jsonrpc::Error) -> Self {
+        Self::Rpc(error)
+    }
 }
 
 pub struct Context {
@@ -21,7 +26,7 @@ async fn setup() -> Option<Context> {
 
     let url = std::env::var("TEST_URL").ok()?;
     let server = serve(&url, "127.0.0.1:0").await;
-    tracing::info!(port=server.port(), "test server is up");
+    tracing::info!(port = server.port(), "test server is up");
 
     let url = format!("http://localhost:{}/rpc", server.port());
     let client = Client::new(&url);
