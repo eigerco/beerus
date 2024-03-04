@@ -22,7 +22,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo test --all
-      # - run: cargo check -p beerus-core --target wasm32-unknown-unknown
+      - run: cargo check -p beerus-core --target wasm32-unknown-unknown
 
   clippy:
     runs-on: ubuntu-latest
