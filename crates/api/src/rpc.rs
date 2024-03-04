@@ -243,7 +243,16 @@ impl gen::Rpc for Context {
         key: StorageKey,
         block_id: BlockId,
     ) -> std::result::Result<Felt, jsonrpc::Error> {
-        self.client.getStorageAt(contract_address, key, block_id).await
+        let result = self.client
+            .getStorageAt(contract_address.clone(), key.clone(), block_id.clone())
+            .await?;
+        tracing::info!(?contract_address, ?key, ?block_id, ?result, "getStorageAt");
+        let felt = Felt::try_new(key.as_ref())?;
+        let keys = vec![Address(felt)];
+        let proof = self.client.getProof(block_id, contract_address, keys).await?;
+        tracing::info!(?proof, "getStorageAt");
+        // TODO: validate proof
+        Ok(result)
     }
 
     async fn getTransactionByBlockIdAndIndex(
