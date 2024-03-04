@@ -9,8 +9,7 @@ use blockifier::{
         entry_point::{CallEntryPoint, CallType, EntryPointExecutionContext},
     },
     state::{
-        cached_state::CommitmentStateDiff,
-        state_api::{State as BlockifierState, StateReader, StateResult},
+        cached_state::CommitmentStateDiff, errors::StateError, state_api::{State as BlockifierState, StateReader, StateResult}
     },
     transaction::objects::{
         CommonAccountFields, DeprecatedTransactionInfo, TransactionInfo,
@@ -160,6 +159,7 @@ impl StateReader for StateProxy {
             .client
             .getStorageAt(contract_address, key, block_id)
             .map_err(Into::<Error>::into)?;
+
         Ok(ret.try_into()?)
     }
 
@@ -168,7 +168,18 @@ impl StateReader for StateProxy {
         contract_address: ContractAddress,
     ) -> StateResult<Nonce> {
         tracing::info!(?contract_address, "get_nonce_at");
-        todo!()
+
+        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+
+        let felt: gen::Felt = contract_address.0.key().try_into()?;
+        let contract_address = gen::Address(felt);
+
+        let ret = self
+            .client
+            .getNonce(block_id, contract_address)
+            .map_err(Into::<Error>::into)?;
+
+        Ok(Nonce(ret.try_into()?))
     }
 
     fn get_class_hash_at(
@@ -176,7 +187,18 @@ impl StateReader for StateProxy {
         contract_address: ContractAddress,
     ) -> StateResult<ClassHash> {
         tracing::info!(?contract_address, "get_class_hash_at");
-        todo!()
+
+        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+
+        let felt: gen::Felt = contract_address.0.key().try_into()?;
+        let contract_address = gen::Address(felt);
+
+        let ret = self
+            .client
+            .getClassHashAt(block_id, contract_address)
+            .map_err(Into::<Error>::into)?;
+
+        Ok(ClassHash(ret.try_into()?))
     }
 
     fn get_compiled_contract_class(
@@ -184,7 +206,17 @@ impl StateReader for StateProxy {
         class_hash: ClassHash,
     ) -> StateResult<ContractClass> {
         tracing::info!(?class_hash, "get_compiled_contract_class");
-        todo!()
+
+        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+
+        let class_hash: gen::Felt = class_hash.0.try_into()?;
+
+        let ret = self
+            .client
+            .getClass(block_id, class_hash)
+            .map_err(Into::<Error>::into)?;
+
+        Ok(ret.try_into()?)
     }
 
     fn get_compiled_class_hash(
@@ -192,7 +224,9 @@ impl StateReader for StateProxy {
         class_hash: ClassHash,
     ) -> StateResult<CompiledClassHash> {
         tracing::info!(?class_hash, "get_compiled_class_hash");
-        todo!()
+
+        // TODO: learn what a proper impl must be like
+        Err(StateError::UndeclaredClassHash(class_hash))
     }
 }
 

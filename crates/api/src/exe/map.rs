@@ -25,3 +25,11 @@ impl TryFrom<StarkFelt> for gen::Felt {
         felt.try_into()
     }
 }
+
+impl TryFrom<gen::GetClassResult> for ContractClass {
+    type Error = Error;
+
+    fn try_from(_value: gen::GetClassResult) -> Result<Self, Self::Error> {
+        unimplemented!() // TODO: implement necessary mapping
+    }
+}
