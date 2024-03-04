@@ -4,17 +4,41 @@ use axum::{
 use iamgroot::jsonrpc;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
 
 use super::gen::*;
 
-pub async fn serve(url: &str, bind: &str) {
+pub struct Server(oneshot::Sender<()>, JoinHandle<()>);
+
+impl Server {
+    /// Send signal for terminating the server and await until it is terminated
+    pub async fn stop(self) {
+        let _ = self.0.send(());
+        let _ = self.1.await;
+    }
+
+    /// Wait until the server is terminated (without initiating the termination)
+    pub async fn done(self) {
+        let _ = self.1.await;
+    }
+}
+
+pub async fn serve(url: &str, bind: &str) -> Server {
     let ctx = Context { client: Arc::new(gen::client::Client::new(url)) };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
 
+    let (tx, rx) = oneshot::channel::<()>();
+
     let listener = TcpListener::bind(bind).await.unwrap();
-    axum::serve(listener, app.into_make_service()).await.unwrap();
+    let jh = tokio::spawn(async move {
+        axum::serve(listener, app.into_make_service())
+            .with_graceful_shutdown(async move { let _ = rx.await; })
+            .await
+            .unwrap();
+    });
+
+    Server(tx, jh)
 }
 
 #[derive(Deserialize, Serialize)]
