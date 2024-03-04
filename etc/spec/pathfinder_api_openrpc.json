@@ -1,0 +1,259 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Pathfinder RPC API",
+        "version": "0.1",
+        "description": "Provides additional (pathfinder specific) methods over and above the Starknet RPC API"
+    },
+    "methods": [
+        {
+            "name": "pathfinder_version",
+            "summary": "The version of the pathfinder node hosting this API.",
+            "params": [],
+            "result": {
+                "name": "semver version",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "description": "A semver compatible version string"
+                }
+            }
+        },
+        {
+            "name": "pathfinder_getProof",
+            "summary": "Returns merkle proofs of a contract's storage state",
+            "description": "This method returns merkle proofs for a contract's storage. This allows you to verify a contract's state for a specific Starknet block.",
+            "params": [
+                {
+                    "name": "block_id",
+                    "description": "The hash of the requested block, or number (height) of the requested block, or a block tag",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/components/schemas/BLOCK_ID"
+                    }
+                }, 
+                {
+                    "name": "contract_address",
+                    "description": "The address of the contract",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/components/schemas/ADDRESS"
+                    }
+                }, 
+                {
+                    "name": "keys",
+                    "description": "The storage element addresses to gather proofs for",
+                    "required": true,
+                    "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ADDRESS"
+                        }
+                    }
+                }
+            ],
+            "result": {
+                "name": "storage proofs",
+                "required": true,
+                "schema": {
+                    "type": "object",
+                    "description": "Contains the requested contract's state proofs",
+                    "properties": {
+                        "state_commitment": {
+                            "title": "Starknet state commitment",
+                            "description": "The commitment for the state of a Starknet block. Before Starknet v0.11.0 this was equivalent to storage commitment, which is the hash of the first node in the contract proof",
+                            "$ref": "#/components/schemas/FELT"
+                        },
+                        "class_commitment": {
+                            "title": "The root of the class commitment tree",
+                            "$ref": "#/components/schemas/FELT"
+                        },
+                        "contract_proof": {
+                            "title": "Proof of the contract state hash",
+                            "$ref": "#/components/schemas/PROOF"
+                        },
+                        "contract_data": {
+                            "type": "object",
+                            "description": "Only present if the contract exists",
+                            "properties": {
+                                "class_hash": {
+                                    "description": "The hash of the contract's class",
+                                    "$ref": "#/components/schemas/FELT"
+                                },
+                                "nonce": {
+                                    "description": "The contract's nonce",
+                                    "$ref": "#/components/schemas/FELT"
+                                },
+                                "root": {
+                                    "description": "The contract's storage state root hash",
+                                    "$ref": "#/components/schemas/FELT"
+                                },
+                                "contract_state_hash_version": {
+                                    "description": "The state hash version used to calculate the state hash",
+                                    "$ref": "#/components/schemas/FELT"
+                                },
+                                "storage_proofs": {
+                                    "description": "Contains the requested storage proofs (in order of request)",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PROOF"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "class_hash", 
+                                "nonce", 
+                                "root", 
+                                "contract_state_hash_version"
+                            ]
+                        }
+                    },
+                    "required": ["contract_proof"]
+                }
+            },
+            "errors": [
+                {
+                    "$ref": "#/components/errors/PROOF_LIMIT_EXCEEDED"
+                }
+            ]
+        },
+        {
+            "name": "pathfinder_getTxStatus",
+            "summary": "Returns the status of a transaction",
+            "description": "Returns a transaction's current status, including if it has been rejected by the sequencer.",
+            "params": [
+                {
+                    "name": "transaction_hash",
+                    "summary": "The hash of the requested transaction",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/components/schemas/TXN_HASH"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "description": "The status of the transaction.",
+                "schema": {
+                    "$ref": "#/components/schemas/TX_GATEWAY_STATUS"
+                }
+            }
+        }
+    ],
+    "components": {
+        "contentDescriptors": {},
+        "schemas": {
+            "PROOF": {
+                "type": "array",
+                "title": "Ordered set of merkle tree nodes which constitute a merkle proof",
+                "description": "Set of merkle tree nodes which constitute a merkle proof. Ordered from root towards the target.",
+                "items": {
+                    "$ref": "#/components/schemas/NODE"
+                }
+            },
+            "NODE": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/BINARY_NODE"
+                    }, 
+                    {
+                        "$ref": "#/components/schemas/EDGE_NODE"
+                    }
+                ]
+            },
+            "BINARY_NODE": {
+                "type": "object",
+                "properties": {
+                    "binary": {
+                        "type": "object",
+                        "properties": {
+                            "left": {
+                                "title": "Left child's hash",
+                                "$ref": "#/components/schemas/FELT"
+                            },
+                            "right": {
+                                "title": "Right child's hash",
+                                "$ref": "#/components/schemas/FELT"
+                            }
+                        },
+                        "required": ["left", "right"]
+                    }
+                },
+                "required": ["binary"]
+            },
+            "EDGE_NODE": {
+                "type": "object",
+                "properties": {
+                    "edge": {
+                        "type": "object",
+                        "properties": {
+                            "child": {
+                                "title": "Child's hash",
+                                "$ref": "#/components/schemas/FELT"
+                            },
+                            "path": {
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "title": "The path of this edge node",
+                                        "$ref": "#/components/schemas/FELT"
+                                    },
+                                    "len": {
+                                        "title": "The bit length of this path",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["value", "len"]
+                            }
+                        },
+                        "required": ["child", "path"]
+                    }
+                },
+                "required": ["edge"]
+            },
+            "TXN_HASH": {
+                "$ref": "#/components/schemas/FELT",
+                "description": "The transaction hash, as assigned in Starknet",
+                "title": "A transaction's hash"
+            },
+            "TX_GATEWAY_STATUS": {
+                "type": "string",
+                "enum": [
+                    "NOT_RECEIVED",
+                    "RECEIVED",
+                    "PENDING",
+                    "REJECTED",
+                    "ACCEPTED_ON_L1",
+                    "ACCEPTED_ON_L2",
+                    "REVERTED",
+                    "ABORTED"
+                ],
+                "description": "The status of a transaction"
+            }
+        },
+        "errors": {
+            "BLOCK_NOT_FOUND": {
+                "code": 24,
+                "message": "Block not found"
+            },
+            "PROOF_LIMIT_EXCEEDED": {
+                "code": 10000,
+                "message": "Too many storage keys requested",
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "description": "The maximum number of storage keys a request may have",
+                            "type": "integer"
+                        },
+                        "requested": {
+                            "description": "The number of storage keys this request had",
+                            "type": "integer"
+                        }
+                    },
+                    "required": ["limit", "requested"]
+                }
+            }
+        }
+    }
+}
