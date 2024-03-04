@@ -16,6 +16,11 @@ regex = "1.10.3"
 once_cell = "1.19.0"
 tracing = { workspace = true }
 
+starknet-crypto = "0.6.1"
+blockifier = { git = "https://github.com/starkware-libs/blockifier", tag = "v0.5.0-rc.2" }
+starknet_api = "0.8.0"
+cairo-vm = "0.9.2"
+
 [dev-dependencies]
 async-once-cell = "0.5.3"
 tracing-subscriber = "0.3.18"
