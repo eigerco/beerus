@@ -536,6 +536,7 @@ dependencies = [
  "axum",
  "blockifier",
  "cairo-vm",
+ "hex",
  "iamgroot",
  "once_cell",
  "regex",

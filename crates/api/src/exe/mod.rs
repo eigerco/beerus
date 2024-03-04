@@ -33,7 +33,7 @@ use starknet_api::{
     },
 };
 
-use crate::gen;
+use crate::gen::{self, blocking::Rpc};
 
 pub mod err;
 pub mod map;
@@ -41,7 +41,7 @@ pub mod map;
 use err::Error;
 
 // https://github.com/eqlabs/pathfinder/blob/v0.11.0-rc0/crates/executor/src/call.rs#L16
-pub fn exec(_url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
+pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
     #[allow(unused_variables)]
     let gen::BroadcastedTxn::BroadcastedInvokeTxn(gen::BroadcastedInvokeTxn(
         gen::InvokeTxn::InvokeTxnV0(gen::InvokeTxnV0 {
@@ -125,7 +125,8 @@ pub fn exec(_url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
         initial_gas: u64::MAX,
     };
 
-    let mut proxy = StateProxy {};
+    let client = gen::client::blocking::Client::new(url);
+    let mut proxy = StateProxy { client };
 
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
@@ -135,7 +136,7 @@ pub fn exec(_url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
 }
 
 struct StateProxy {
-    // TODO: add blocking client
+    client: gen::client::blocking::Client,
 }
 
 impl StateReader for StateProxy {
@@ -145,7 +146,21 @@ impl StateReader for StateProxy {
         key: StarknetStorageKey,
     ) -> StateResult<StarkFelt> {
         tracing::info!(?contract_address, ?key, "get_storage_at");
-        todo!()
+
+        let felt: gen::Felt = contract_address.0.key().try_into()?;
+        let contract_address = gen::Address(felt);
+
+        let felt: gen::Felt = key.0.key().try_into()?;
+        let key = gen::StorageKey::try_new(felt.as_ref())
+            .map_err(Into::<Error>::into)?;
+
+        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+
+        let ret = self
+            .client
+            .getStorageAt(contract_address, key, block_id)
+            .map_err(Into::<Error>::into)?;
+        Ok(ret.try_into()?)
     }
 
     fn get_nonce_at(
