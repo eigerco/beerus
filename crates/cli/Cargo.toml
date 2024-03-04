@@ -10,9 +10,14 @@ path = "src/main.rs"
 
 [dependencies]
 tokio = { workspace = true }
+beerus-api = { path = "../api", optional = true }
 beerus-core = { path = "../core" }
 beerus-rpc = { path = "../rpc" }
 clap = { version = "4.4.7", features = ["derive"] }
 tracing-subscriber.workspace = true
 tracing.workspace = true
 eyre.workspace = true
+
+[features]
+default = []
+experimental = ["beerus-api"]
