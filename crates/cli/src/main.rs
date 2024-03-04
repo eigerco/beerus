@@ -29,6 +29,11 @@ async fn main() -> eyre::Result<()> {
     let mut beerus = BeerusClient::new(&config).await?;
     beerus.start().await?;
 
+    #[cfg(feature = "experimental")]
+    tokio::spawn(async move {
+        beerus_api::rpc::serve(&config.starknet_rpc, "127.0.0.1:9000").await;
+    });
+
     let (address, server) = BeerusRpc::new(beerus).run().await?;
     info!("Beerus JSON-RPC server started 🚀: http://{address}");
     server.stopped().await;
