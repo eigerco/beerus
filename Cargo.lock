@@ -447,13 +447,13 @@ dependencies = [
  "async-trait",
  "axum",
  "iamgroot",
- "log",
  "once_cell",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

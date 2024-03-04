@@ -3633,7 +3633,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3656,10 +3656,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -3672,7 +3672,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -3703,7 +3703,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3726,10 +3726,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -3742,7 +3742,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -3762,7 +3762,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3785,7 +3785,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -3800,7 +3800,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -3831,7 +3831,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3854,10 +3854,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -3870,7 +3870,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -3903,7 +3903,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3926,10 +3926,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -3942,7 +3942,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -3973,7 +3973,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -3996,10 +3996,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4012,7 +4012,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4033,7 +4033,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4056,7 +4056,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -4071,7 +4071,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4091,7 +4091,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4114,7 +4114,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -4129,7 +4129,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4158,7 +4158,7 @@ pub mod gen {
                     jsonrpc::Request::new("starknet_call".to_string(), params)
                         .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4181,10 +4181,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4197,7 +4197,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4217,7 +4217,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4240,7 +4240,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -4255,7 +4255,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4288,7 +4288,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4311,10 +4311,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4327,7 +4327,7 @@ pub mod gen {
                         )
                     })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4358,7 +4358,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4381,10 +4381,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4397,7 +4397,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4430,7 +4430,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4453,10 +4453,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4469,7 +4469,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4500,7 +4500,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4523,10 +4523,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4539,7 +4539,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4570,7 +4570,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4593,10 +4593,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4609,7 +4609,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4641,7 +4641,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4664,10 +4664,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4680,7 +4680,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4712,7 +4712,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4735,10 +4735,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4751,7 +4751,7 @@ pub mod gen {
                         )
                     })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4782,7 +4782,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4805,10 +4805,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4821,7 +4821,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4851,7 +4851,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4874,10 +4874,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4890,7 +4890,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4921,7 +4921,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -4944,10 +4944,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -4960,7 +4960,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -4991,7 +4991,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5014,10 +5014,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5030,7 +5030,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5062,7 +5062,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5085,10 +5085,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5101,7 +5101,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5135,7 +5135,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5158,10 +5158,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5174,7 +5174,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5205,7 +5205,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5228,10 +5228,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5244,7 +5244,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5275,7 +5275,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5298,10 +5298,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5314,7 +5314,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5345,7 +5345,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5368,10 +5368,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5384,7 +5384,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5417,7 +5417,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5440,10 +5440,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5456,7 +5456,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5476,7 +5476,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5499,7 +5499,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -5514,7 +5514,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5535,7 +5535,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5558,7 +5558,7 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
                     return Err(err);
@@ -5573,7 +5573,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5604,7 +5604,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5627,10 +5627,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5643,7 +5643,7 @@ pub mod gen {
                             )
                         })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
@@ -5674,7 +5674,7 @@ pub mod gen {
                 )
                 .with_id(jsonrpc::Id::Number(1));
 
-                log::debug!("REQ: {req:#?}");
+                tracing::debug!("REQ: {req:#?}");
 
                 let mut res: jsonrpc::Response = self
                     .client
@@ -5697,10 +5697,10 @@ pub mod gen {
                         )
                     })?;
 
-                log::debug!("RES: {res:#?}");
+                tracing::debug!("RES: {res:#?}");
 
                 if let Some(err) = res.error.take() {
-                    log::error!("{err:#?}");
+                    tracing::error!("{err:#?}");
                     return Err(err);
                 }
 
@@ -5713,7 +5713,7 @@ pub mod gen {
                         )
                     })?;
 
-                    log::debug!("RET: {ret:#?}");
+                    tracing::debug!("RET: {ret:#?}");
 
                     Ok(ret)
                 } else {
