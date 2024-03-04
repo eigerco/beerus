@@ -59,6 +59,19 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
         return Err(Error::Custom("unexpected transaction type"));
     };
 
+    let calldata: Result<Vec<StarkFelt>, _> =
+        calldata.into_iter().map(|felt| felt.try_into()).collect();
+
+    let contract_address: StarkFelt = contract_address.0.try_into()?;
+
+    let entry_point_selector =
+        EntryPointSelector(entry_point_selector.try_into()?);
+
+    let signature: Result<Vec<StarkFelt>, _> =
+        signature.into_iter().map(|felt| felt.try_into()).collect();
+
+    let version: StarkFelt = StarkFelt::ONE;
+
     let mut resources = ExecutionResources::default();
 
     let one = NonZeroU128::new(1).unwrap();
@@ -96,8 +109,8 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
     let tx_info = TransactionInfo::Deprecated(DeprecatedTransactionInfo {
         common_fields: CommonAccountFields {
             transaction_hash: TransactionHash(StarkHash::ZERO),
-            version: TransactionVersion(StarkHash::ZERO),
-            signature: TransactionSignature(vec![StarkFelt::ZERO]),
+            version: TransactionVersion(version),
+            signature: TransactionSignature(signature?),
             nonce: Nonce(StarkFelt::ZERO),
             sender_address: ContractAddress(StarkHash::ZERO.try_into()?),
             only_query: true,
@@ -118,9 +131,9 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
         class_hash: None,
         code_address: None,
         entry_point_type: EntryPointType::External,
-        entry_point_selector: EntryPointSelector(StarkHash::ZERO),
-        calldata: Calldata(Arc::new(vec![StarkFelt::ZERO])),
-        storage_address: ContractAddress(StarkHash::ZERO.try_into()?),
+        entry_point_selector,
+        calldata: Calldata(Arc::new(calldata?)),
+        storage_address: ContractAddress(contract_address.try_into()?),
         caller_address: ContractAddress(StarkHash::ZERO.try_into()?),
         call_type: CallType::Call,
         initial_gas: u64::MAX,
