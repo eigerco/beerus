@@ -1,6 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BroadcastedInvokeTxn, BroadcastedTxn, Felt,
-    FunctionCall, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc,
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc
 };
 
 mod common;
@@ -144,6 +143,20 @@ async fn test_estimateFee() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let ret = ctx.client.getBlockTransactionCount(block_id).await?;
+    assert!(*ret.as_ref() > 0);
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -160,7 +173,6 @@ async fn test_?() -> Result<(), common::Error> {
 }
 */
 
-// TODO: getBlockTransactionCount
 // TODO: getBlockWithTxHashes
 // TODO: getBlockWithTxs
 // TODO: getClass
