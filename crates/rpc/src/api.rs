@@ -9,12 +9,12 @@ use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
     BroadcastedTransaction, ContractClass, DeclareTransactionResult,
-    DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate,
-    FieldElement, FunctionCall, InvokeTransactionResult,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MaybePendingTransactionReceipt, MsgFromL1,
-    SimulationFlagForEstimateFee, SyncStatusType, Transaction,
-    TransactionStatus,
+    DeployAccountTransactionResult, EventFilterWithPage,
+    EventsPage, FeeEstimate, FieldElement, FunctionCall,
+    InvokeTransactionResult, MaybePendingBlockWithTxHashes,
+    MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MaybePendingTransactionReceipt, MsgFromL1, SimulationFlagForEstimateFee,
+    SyncStatusType, Transaction, TransactionStatus,
 };
 use starknet::macros::selector;
 use starknet::providers::Provider;
@@ -157,9 +157,7 @@ pub trait BeerusRpc {
     #[method(name = "getEvents")]
     async fn get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        params: EventFilterWithPage,
     ) -> Result<EventsPage, BeerusRpcError>;
 
     #[method(name = "getNonce")]
@@ -465,13 +463,15 @@ impl BeerusRpcServer for BeerusRpc {
 
     async fn get_events(
         &self,
-        filter: EventFilter,
-        continuation_token: Option<String>,
-        chunk_size: u64,
+        params: EventFilterWithPage,
     ) -> Result<EventsPage, BeerusRpcError> {
         self.beerus
             .starknet_client
-            .get_events(filter, continuation_token, chunk_size)
+            .get_events(
+                params.event_filter,
+                params.result_page_request.continuation_token,
+                params.result_page_request.chunk_size,
+            )
             .await
             .map_err(BeerusRpcError::from)
     }
