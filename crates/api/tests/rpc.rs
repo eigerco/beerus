@@ -256,7 +256,8 @@ async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
 
     let index = GetTransactionByBlockIdAndIndexIndex::try_new(0)?;
 
-    let ret = ctx.client.getTransactionByBlockIdAndIndex(block_id, index).await?;
+    let ret =
+        ctx.client.getTransactionByBlockIdAndIndex(block_id, index).await?;
     assert!(!ret.transaction_hash.0.as_ref().is_empty());
     Ok(())
 }
