@@ -144,6 +144,22 @@ async fn test_estimateFee() -> Result<(), common::Error> {
     Ok(())
 }
 
+/*
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_?() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let ret = ctx.client.?().await?;
+    println!("{ret:#?}");
+
+    assert_eq!(ret, ?);
+    Ok(())
+}
+*/
+
 // TODO: getBlockTransactionCount
 // TODO: getBlockWithTxHashes
 // TODO: getBlockWithTxs
