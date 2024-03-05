@@ -168,7 +168,9 @@ async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
 
     let ret = ctx.client.getBlockWithTxHashes(block_id).await?;
     assert!(matches!(ret, GetBlockWithTxHashesResult::BlockWithTxHashes(_)));
-    let GetBlockWithTxHashesResult::BlockWithTxHashes(ret) = ret;
+    let GetBlockWithTxHashesResult::BlockWithTxHashes(ret) = ret else {
+        panic!("unexpected pending block");
+    };
     assert!(ret.block_body_with_tx_hashes.transactions.len() > 0);
     Ok(())
 }
@@ -184,7 +186,9 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
 
     let ret = ctx.client.getBlockWithTxs(block_id).await?;
     assert!(matches!(ret, GetBlockWithTxsResult::BlockWithTxs(_)));
-    let GetBlockWithTxsResult::BlockWithTxs(ret) = ret;
+    let GetBlockWithTxsResult::BlockWithTxs(ret) = ret else {
+        panic!("unexpected pending block");
+    };
     assert!(ret.block_body_with_txs.transactions.len() > 0);
     Ok(())
 }
