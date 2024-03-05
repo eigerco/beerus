@@ -2214,7 +2214,7 @@ pub mod gen {
             &self,
             block_id: BlockId,
             contract_address: Address,
-            keys: Vec<Address>,
+            keys: Vec<StorageKey>,
         ) -> std::result::Result<GetProofResult, jsonrpc::Error>;
 
         /// Returns the status of a transaction
@@ -2413,13 +2413,13 @@ pub mod gen {
         params: &Value,
     ) -> jsonrpc::Response {
         #[derive(Deserialize, Serialize)]
-        struct ArgByPos(BlockId, Address, Vec<Address>);
+        struct ArgByPos(BlockId, Address, Vec<StorageKey>);
 
         #[derive(Deserialize, Serialize)]
         struct ArgByName {
             block_id: BlockId,
             contract_address: Address,
-            keys: Vec<Address>,
+            keys: Vec<StorageKey>,
         }
 
         let args =
@@ -3603,7 +3603,7 @@ pub mod gen {
                 &self,
                 block_id: BlockId,
                 contract_address: Address,
-                keys: Vec<Address>,
+                keys: Vec<StorageKey>,
             ) -> std::result::Result<GetProofResult, jsonrpc::Error>;
 
             /// Returns the status of a transaction
@@ -3804,13 +3804,13 @@ pub mod gen {
             params: &Value,
         ) -> jsonrpc::Response {
             #[derive(Deserialize, Serialize)]
-            struct ArgByPos(BlockId, Address, Vec<Address>);
+            struct ArgByPos(BlockId, Address, Vec<StorageKey>);
 
             #[derive(Deserialize, Serialize)]
             struct ArgByName {
                 block_id: BlockId,
                 contract_address: Address,
-                keys: Vec<Address>,
+                keys: Vec<StorageKey>,
             }
 
             let args = serde_json::from_value::<ArgByName>(params.clone())
@@ -5066,7 +5066,7 @@ pub mod gen {
                 &self,
                 block_id: BlockId,
                 contract_address: Address,
-                keys: Vec<Address>,
+                keys: Vec<StorageKey>,
             ) -> std::result::Result<GetProofResult, jsonrpc::Error>
             {
                 let args = (block_id, contract_address, keys);
@@ -7241,7 +7241,7 @@ pub mod gen {
                     &self,
                     block_id: BlockId,
                     contract_address: Address,
-                    keys: Vec<Address>,
+                    keys: Vec<StorageKey>,
                 ) -> std::result::Result<GetProofResult, jsonrpc::Error>
                 {
                     let args = (block_id, contract_address, keys);
