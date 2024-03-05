@@ -1,5 +1,9 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult, Txn, TxnHash
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+    GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
+    InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult,
+    Txn, TxnHash,
 };
 
 mod common;
@@ -214,7 +218,9 @@ async fn test_getNonce() -> Result<(), common::Error> {
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
-    let address = Address(Felt::try_new("0x10b6c96d364cf182964fbd4a3438a5ae84cab990770c07994f9cb99fd26f6dc")?);
+    let address = Address(Felt::try_new(
+        "0x10b6c96d364cf182964fbd4a3438a5ae84cab990770c07994f9cb99fd26f6dc",
+    )?);
 
     let ret = ctx.client.getNonce(block_id, address).await?;
     assert!(!ret.as_ref().is_empty());
@@ -228,7 +234,8 @@ async fn test_getTransactionByHash() -> Result<(), common::Error> {
         return Ok(());
     };
 
-    let hash = "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a";
+    let hash =
+        "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a";
 
     let transaction_hash = TxnHash(Felt::try_new(hash)?);
 
@@ -250,7 +257,7 @@ async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
     let index = GetTransactionByBlockIdAndIndexIndex::try_new(0)?;
 
     let ret = ctx.client.getTransactionByBlockIdAndIndex(block_id, index).await?;
-    assert!(!ret.transaction_hash.as_ref().is_empty());
+    assert!(!ret.transaction_hash.0.as_ref().is_empty());
     Ok(())
 }
 
