@@ -205,6 +205,22 @@ async fn test_syncing() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getNonce() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let address = Address(Felt::try_new("0x10b6c96d364cf182964fbd4a3438a5ae84cab990770c07994f9cb99fd26f6dc")?);
+
+    let ret = ctx.client.getNonce(block_id, address).await?;
+    assert!(!ret.as_ref().is_empty());
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -224,7 +240,6 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getClass
 // TODO: getClassAt
 // TODO: getClassHashAt
-// TODO: getNonce
 // TODO: getProof
 // TODO: getStorageAt
 // TODO: getTransactionByBlockIdAndIndex
