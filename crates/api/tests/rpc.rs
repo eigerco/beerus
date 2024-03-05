@@ -285,6 +285,30 @@ async fn test_getStorageAt() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getProof() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let contract_address = Address(Felt::try_new(
+        "0x49D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
+    )?);
+
+    let key = StorageKey::try_new(
+        "0x02c401056f9582175d3219f1ac8f974b7960f2edfc8bc03197718dc8967ba1ab",
+    )?;
+
+    let block_id =
+        BlockId::BlockNumber { block_number: BlockNumber::try_new(354824)? };
+
+    let ret = ctx.client.getProof(block_id, contract_address, vec![key]).await?;
+    assert_eq!(ret.class_commitment.unwrap().as_ref(), "0x4570dad16b85ea5076806bfb74c85bbb2b38485e6f3bd1bf163ab5f9ce1de53");
+    assert_eq!(ret.state_commitment.unwrap().as_ref(), "0xd9b8e8d51f3f284e62eb8c1fd7278c20bd4c0cd3033c4cce32c513e93ed663");
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -304,6 +328,5 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getClass
 // TODO: getClassAt
 // TODO: getClassHashAt
-// TODO: getProof
 // TODO: getTransactionReceipt
 // TODO: getTransactionStatus
