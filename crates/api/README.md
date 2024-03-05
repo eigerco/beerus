@@ -33,18 +33,18 @@ cd /path/to/beerus
 cd ..
 git clone https://github.com/sergey-melnychuk/iamgroot.git --branch v0.2.3
 cd iamgroot && cargo build --release
-cp ./target/release/iamgroot ../beerus/
+cp ./target/release/iamgroot ../beerus/tmp
 cd ../beerus
 
-RUST_LOG=off ./iamgroot CODE \
+RUST_LOG=off ./tmp/iamgroot CODE \
 etc/spec/starknet/0.6.0/starknet_query_api_openrpc.json \
 etc/spec/starknet/0.6.0/starknet_write_api_openrpc.json \
 etc/spec/starknet/0.6.0/starknet_trace_api_openrpc.json \
 etc/spec/pathfinder_api_openrpc.json \
 --async --blocking --client --reexport > crates/api/src/gen.rs
 
-cargo fmt && cargo check --features experimental
+cargo fmt && cargo check
 
 # if previons line succeeded, iamgroot is no longer necessary
-rm ./iamgroot
+rm ./tmp/iamgroot
 ```
