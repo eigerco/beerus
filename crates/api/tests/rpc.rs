@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult, Txn, TxnHash
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult, Txn, TxnHash
 };
 
 mod common;
@@ -238,6 +238,22 @@ async fn test_getTransactionByHash() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let index = GetTransactionByBlockIdAndIndexIndex::try_new(0)?;
+
+    let ret = ctx.client.getTransactionByBlockIdAndIndex(block_id, index).await?;
+    assert!(!ret.transaction_hash.as_ref().is_empty());
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -259,6 +275,5 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getClassHashAt
 // TODO: getProof
 // TODO: getStorageAt
-// TODO: getTransactionByBlockIdAndIndex
 // TODO: getTransactionReceipt
 // TODO: getTransactionStatus
