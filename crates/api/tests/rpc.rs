@@ -1,9 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
-    InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult,
-    Txn, TxnHash,
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnStatus
 };
 
 mod common;
@@ -309,6 +305,21 @@ async fn test_getProof() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getTransactionStatus() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let transaction_hash = TxnHash(Felt::try_new("0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a")?);
+
+    let ret = ctx.client.getTransactionStatus(transaction_hash).await?;
+    assert!(matches!(ret.execution_status, Some(TxnExecutionStatus::Succeeded)));
+    assert!(matches!(ret.finality_status, TxnStatus::AcceptedOnL1));
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -329,4 +340,3 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getClassAt
 // TODO: getClassHashAt
 // TODO: getTransactionReceipt
-// TODO: getTransactionStatus
