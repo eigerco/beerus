@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnStatus
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
 };
 
 mod common;
@@ -320,6 +320,25 @@ async fn test_getTransactionStatus() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getTransactionReceipt() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let hash = "0x4c1672e824b5cd7477fca31ee3ab5a1058534ed1820bb27abc976c2e6095151";
+
+    let transaction_hash = TxnHash(Felt::try_new(hash)?);
+
+    let ret = ctx.client.getTransactionReceipt(transaction_hash).await?;
+    let GetTransactionReceiptResult::TxnReceipt(TxnReceipt::InvokeTxnReceipt(ret)) = ret else {
+        panic!("unexpected pending block");
+    };
+    assert_eq!(ret.common_receipt_properties.transaction_hash.0.as_ref(), hash);
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -339,4 +358,3 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getClass
 // TODO: getClassAt
 // TODO: getClassHashAt
-// TODO: getTransactionReceipt
