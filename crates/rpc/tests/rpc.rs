@@ -1,9 +1,7 @@
 use reqwest::Url;
 use starknet::{
     core::types::{
-        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
-        EventFilter, FieldElement, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction,
+        BlockHashAndNumber, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, DeclareTransaction, EventFilter, FieldElement, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction
     },
     providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
 };
@@ -106,12 +104,15 @@ async fn rpc_test() {
     }
 
     // TODO starknet_getClass
+    // test_get_class().await;
+
     // TODO starknet_getClassAt
     // TODO starknet_getClassHashAt
     // starknet_getEvents is tested with starknet_getTransactionReceipt
     // TODO starknet_getNonce
     // TODO starknet_getProof
     // TODO starknet_getStateRoot
+
     // TODO starknet_getStateUpdate
     // TODO starknet_getStorateAt
 
@@ -182,7 +183,7 @@ async fn rpc_test() {
         .await;
     }
 
-    // TODO starknet_getTransactionReceipt
+    // starknet_getTransactionReceipt
     {
         async fn check_transaction(
             client: &JsonRpcClient<HttpTransport>,
@@ -329,3 +330,23 @@ fn test_scope<T, F>(scope_name: &'static str, test: T) where T: FnOnce() -> F, F
     }
 }
  */
+
+async fn test_get_class(client: JsonRpcClient<HttpTransport>, block: BlockWithTxs, block_id: BlockId) {
+    let class_hash = block.transactions.iter().find_map(|transaction| {
+        match transaction {
+            Transaction::Invoke(_)
+            | Transaction::L1Handler(_)
+            | Transaction::Deploy(_)
+            | Transaction::DeployAccount(_) => None,
+            Transaction::Declare(DeclareTransaction::V0(declare)) => Some(declare.class_hash),
+            Transaction::Declare(DeclareTransaction::V1(declare)) => Some(declare.class_hash),
+            Transaction::Declare(DeclareTransaction::V2(declare)) => Some(declare.class_hash),
+            Transaction::Declare(DeclareTransaction::V3(declare)) => Some(declare.class_hash),
+        }
+    });
+
+    // TODO Try lower blocks if this happens.
+    let class_hash = class_hash.expect("No declare transaction found");
+
+    let class = client.get_class(block_id, class_hash).await.expect("getClass failed");
+}
