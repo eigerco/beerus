@@ -1,5 +1,10 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+    GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex,
+    GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version,
+    PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus,
+    TxnHash, TxnReceipt, TxnStatus,
 };
 
 mod common;
@@ -299,9 +304,16 @@ async fn test_getProof() -> Result<(), common::Error> {
     let block_id =
         BlockId::BlockNumber { block_number: BlockNumber::try_new(354824)? };
 
-    let ret = ctx.client.getProof(block_id, contract_address, vec![key]).await?;
-    assert_eq!(ret.class_commitment.unwrap().as_ref(), "0x4570dad16b85ea5076806bfb74c85bbb2b38485e6f3bd1bf163ab5f9ce1de53");
-    assert_eq!(ret.state_commitment.unwrap().as_ref(), "0xd9b8e8d51f3f284e62eb8c1fd7278c20bd4c0cd3033c4cce32c513e93ed663");
+    let ret =
+        ctx.client.getProof(block_id, contract_address, vec![key]).await?;
+    assert_eq!(
+        ret.class_commitment.unwrap().as_ref(),
+        "0x4570dad16b85ea5076806bfb74c85bbb2b38485e6f3bd1bf163ab5f9ce1de53"
+    );
+    assert_eq!(
+        ret.state_commitment.unwrap().as_ref(),
+        "0xd9b8e8d51f3f284e62eb8c1fd7278c20bd4c0cd3033c4cce32c513e93ed663"
+    );
     Ok(())
 }
 
@@ -312,10 +324,15 @@ async fn test_getTransactionStatus() -> Result<(), common::Error> {
         return Ok(());
     };
 
-    let transaction_hash = TxnHash(Felt::try_new("0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a")?);
+    let transaction_hash = TxnHash(Felt::try_new(
+        "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a",
+    )?);
 
     let ret = ctx.client.getTransactionStatus(transaction_hash).await?;
-    assert!(matches!(ret.execution_status, Some(TxnExecutionStatus::Succeeded)));
+    assert!(matches!(
+        ret.execution_status,
+        Some(TxnExecutionStatus::Succeeded)
+    ));
     assert!(matches!(ret.finality_status, TxnStatus::AcceptedOnL1));
     Ok(())
 }
@@ -327,12 +344,16 @@ async fn test_getTransactionReceipt() -> Result<(), common::Error> {
         return Ok(());
     };
 
-    let hash = "0x4c1672e824b5cd7477fca31ee3ab5a1058534ed1820bb27abc976c2e6095151";
+    let hash =
+        "0x4c1672e824b5cd7477fca31ee3ab5a1058534ed1820bb27abc976c2e6095151";
 
     let transaction_hash = TxnHash(Felt::try_new(hash)?);
 
     let ret = ctx.client.getTransactionReceipt(transaction_hash).await?;
-    let GetTransactionReceiptResult::TxnReceipt(TxnReceipt::InvokeTxnReceipt(ret)) = ret else {
+    let GetTransactionReceiptResult::TxnReceipt(TxnReceipt::InvokeTxnReceipt(
+        ret,
+    )) = ret
+    else {
         panic!("unexpected pending block");
     };
     assert_eq!(ret.common_receipt_properties.transaction_hash.0.as_ref(), hash);

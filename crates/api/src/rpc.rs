@@ -34,7 +34,8 @@ pub async fn serve(url: &str, bind: &str) -> Server {
 }
 
 fn serve_on(url: &str, listener: TcpListener) -> Server {
-    const DEFAULT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+    const DEFAULT_TIMEOUT: std::time::Duration =
+        std::time::Duration::from_secs(30);
     let client = reqwest::ClientBuilder::new()
         .connect_timeout(DEFAULT_TIMEOUT)
         .timeout(DEFAULT_TIMEOUT)
