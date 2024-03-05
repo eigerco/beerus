@@ -9,7 +9,7 @@ use starknet::core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
     BroadcastedTransaction, ContractClass, DeclareTransactionResult,
-    DeployAccountTransactionResult, EventFilter, EventFilterWithPage,
+    DeployAccountTransactionResult, EventFilterWithPage,
     EventsPage, FeeEstimate, FieldElement, FunctionCall,
     InvokeTransactionResult, MaybePendingBlockWithTxHashes,
     MaybePendingBlockWithTxs, MaybePendingStateUpdate,
