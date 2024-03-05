@@ -279,10 +279,9 @@ impl gen::Rpc for Context {
             ?result,
             "getStorageAt"
         );
-        let felt = Felt::try_new(key.as_ref())?;
-        let keys = vec![Address(felt)];
+
         let proof =
-            self.client.getProof(block_id, contract_address, keys).await?;
+            self.client.getProof(block_id, contract_address, vec![key]).await?;
         tracing::info!(?proof, "getStorageAt");
         // TODO: validate proof
         Ok(result)
@@ -359,7 +358,7 @@ impl gen::Rpc for Context {
         &self,
         block_id: gen::BlockId,
         contract_address: gen::Address,
-        keys: Vec<gen::Address>,
+        keys: Vec<gen::StorageKey>,
     ) -> std::result::Result<gen::GetProofResult, jsonrpc::Error> {
         self.client.getProof(block_id, contract_address, keys).await
     }
