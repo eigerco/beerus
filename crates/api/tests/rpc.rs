@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult, Txn, TxnHash
 };
 
 mod common;
@@ -221,6 +221,23 @@ async fn test_getNonce() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getTransactionByHash() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let hash = "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a";
+
+    let transaction_hash = TxnHash(Felt::try_new(hash)?);
+
+    let ret = ctx.client.getTransactionByHash(transaction_hash).await?;
+    assert!(matches!(ret.txn, Txn::InvokeTxn(InvokeTxn::InvokeTxnV1(_))));
+    assert_eq!(ret.transaction_hash.0.as_ref(), hash);
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -243,6 +260,5 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getProof
 // TODO: getStorageAt
 // TODO: getTransactionByBlockIdAndIndex
-// TODO: getTransactionByHash
 // TODO: getTransactionReceipt
 // TODO: getTransactionStatus
