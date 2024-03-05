@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc
 };
 
 mod common;
@@ -157,6 +157,22 @@ async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let ret = ctx.client.getBlockWithTxHashes(block_id).await?;
+    assert!(matches!(ret, GetBlockWithTxHashesResult::BlockWithTxHashes(_)));
+    let GetBlockWithTxHashesResult::BlockWithTxHashes(ret) = ret;
+    assert!(ret.block_body_with_tx_hashes.transactions.len() > 0);
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -173,7 +189,6 @@ async fn test_?() -> Result<(), common::Error> {
 }
 */
 
-// TODO: getBlockWithTxHashes
 // TODO: getBlockWithTxs
 // TODO: getClass
 // TODO: getClassAt
