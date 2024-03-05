@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, SyncingResult
 };
 
 mod common;
@@ -189,6 +189,17 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_syncing() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let ret = ctx.client.syncing().await?;
+    assert!(matches!(ret, SyncingResult::SyncStatus(_)));
+    Ok(())
+}
 
 /*
 #[tokio::test]
@@ -216,4 +227,3 @@ async fn test_?() -> Result<(), common::Error> {
 // TODO: getTransactionByHash
 // TODO: getTransactionReceipt
 // TODO: getTransactionStatus
-// TODO: syncing
