@@ -74,7 +74,8 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
 
     let mut resources = ExecutionResources::default();
 
-    let one = NonZeroU128::new(1).unwrap();
+    let one = NonZeroU128::new(1)
+        .ok_or_else(|| Error::Custom("NonZeroU128 is zero"))?;
     let block_info = BlockInfo {
         block_number: StarknetBlockNumber(0),
         block_timestamp: BlockTimestamp(0),
