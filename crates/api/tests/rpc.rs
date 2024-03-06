@@ -1,5 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
 };
 
 mod common;
@@ -383,6 +383,35 @@ async fn test_getClass() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getClassAt() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let contract_address = Address(Felt::try_new("0x40688250Ef0074B4c9e1057B19F9b62139ac28179c7d35e2daE5abAD909d558")?);
+
+    let ret = ctx.client.getClassAt(block_id, contract_address).await?;
+    let GetClassAtResult::ContractClass(ret) = ret else {
+        panic!("unexpected contract class type");
+    };
+
+    assert!(!ret.abi.unwrap_or_default().is_empty());
+
+    assert_eq!(ret.contract_class_version, "0.1.0");
+
+    assert!(!ret.entry_points_by_type.constructor.is_empty());
+    assert!(!ret.entry_points_by_type.external.is_empty());
+    assert!(ret.entry_points_by_type.l1_handler.is_empty());
+
+    assert!(!ret.sierra_program.is_empty());
+
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -399,5 +428,4 @@ async fn test_?() -> Result<(), common::Error> {
 }
 */
 
-// TODO: getClassAt
 // TODO: getClassHashAt
