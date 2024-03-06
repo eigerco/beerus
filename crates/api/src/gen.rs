@@ -388,8 +388,11 @@ pub mod gen {
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct ContractClassEntryPointsByType {
+        #[serde(rename = "CONSTRUCTOR")]
         pub constructor: Vec<SierraEntryPoint>,
+        #[serde(rename = "EXTERNAL")]
         pub external: Vec<SierraEntryPoint>,
+        #[serde(rename = "L1_HANDLER")]
         pub l1_handler: Vec<SierraEntryPoint>,
     }
 
@@ -717,12 +720,15 @@ pub mod gen {
     pub struct DeprecatedContractClassEntryPointsByType {
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
+        #[serde(rename = "CONSTRUCTOR")]
         pub constructor: Option<Vec<DeprecatedCairoEntryPoint>>,
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
+        #[serde(rename = "EXTERNAL")]
         pub external: Option<Vec<DeprecatedCairoEntryPoint>>,
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
+        #[serde(rename = "L1_HANDLER")]
         pub l1_handler: Option<Vec<DeprecatedCairoEntryPoint>>,
     }
 
@@ -995,6 +1001,7 @@ pub mod gen {
         pub r#type: FunctionAbiType,
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
+        #[serde(rename = "stateMutability")]
         pub statemutability: Option<FunctionStateMutability>,
     }
 

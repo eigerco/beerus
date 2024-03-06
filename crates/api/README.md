@@ -31,7 +31,7 @@ USAGE:
 cd /path/to/beerus
 
 cd ..
-git clone https://github.com/sergey-melnychuk/iamgroot.git --branch v0.2.3
+git clone https://github.com/sergey-melnychuk/iamgroot.git --branch v0.2.4
 cd iamgroot && cargo build --release
 cp ./target/release/iamgroot ../beerus/tmp
 cd ../beerus
