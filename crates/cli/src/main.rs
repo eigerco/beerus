@@ -30,7 +30,7 @@ async fn main() -> eyre::Result<()> {
     beerus.start().await?;
 
     let (address, server) = BeerusRpc::new(beerus).run().await?;
-    info!("Beerus JSON-RPC server started 🚀: http://{address}");
+    info!("Beerus JSON-RPC server started 🚀: {address}");
     server.stopped().await;
 
     Ok(())
