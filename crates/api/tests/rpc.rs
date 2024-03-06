@@ -412,6 +412,22 @@ async fn test_getClassAt() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getClassHashAt() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let contract_address = Address(Felt::try_new("0x7f38ab7537dbb5f8dc2d049d441f2b250c2186a13d943b8467cfa86b8dba12b")?);
+
+    let ret = ctx.client.getClassHashAt(block_id, contract_address).await?;
+    assert_eq!(ret.as_ref(), "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003");
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -427,5 +443,3 @@ async fn test_?() -> Result<(), common::Error> {
     Ok(())
 }
 */
-
-// TODO: getClassHashAt
