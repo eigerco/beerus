@@ -9,11 +9,10 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum BeerusRpcError {
-    #[error("Spec version mismatch (expected {expected} but received {received})")]
-    SpecVersionMismatch {
-        expected: String,
-        received: String,
-    },
+    #[error(
+        "Spec version mismatch (expected {expected} but received {received})"
+    )]
+    SpecVersionMismatch { expected: String, received: String },
     #[error("{0}")]
     Provider(ProviderError),
     #[error("{0:?}")]

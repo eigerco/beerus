@@ -221,7 +221,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxHashes, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_block_with_tx_hashes(l1_block_num)
             .await?;
@@ -233,7 +234,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<MaybePendingBlockWithTxs, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_block_with_txs(l1_block_num)
             .await?;
@@ -245,10 +247,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<MaybePendingStateUpdate, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
-            .starknet_client
-            .get_state_update(l1_block_num)
-            .await?;
+        let result =
+            self.beerus.starknet_client.get_state_update(l1_block_num).await?;
         Ok(result)
     }
 
@@ -289,7 +289,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         transaction_hash: FieldElement,
     ) -> Result<Transaction, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_transaction_by_hash(transaction_hash)
             .await?;
@@ -300,7 +301,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         transaction_hash: FieldElement,
     ) -> Result<TransactionStatus, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_transaction_status(transaction_hash)
             .await?;
@@ -313,7 +315,8 @@ impl BeerusRpcServer for BeerusRpc {
         index: u64,
     ) -> Result<Transaction, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_transaction_by_block_id_and_index(l1_block_num, index)
             .await?;
@@ -324,7 +327,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         transaction_hash: FieldElement,
     ) -> Result<MaybePendingTransactionReceipt, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_transaction_receipt(transaction_hash)
             .await?;
@@ -337,7 +341,8 @@ impl BeerusRpcServer for BeerusRpc {
         class_hash: FieldElement,
     ) -> Result<ContractClass, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_class(l1_block_num, class_hash)
             .await?;
@@ -350,7 +355,8 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
     ) -> Result<Felt, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_class_hash_at(l1_block_num, contract_address)
             .await
@@ -364,7 +370,8 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
     ) -> Result<ContractClass, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_class_at(l1_block_num, contract_address)
             .await?;
@@ -376,7 +383,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<u64, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_block_transaction_count(l1_block_num)
             .await?;
@@ -389,7 +397,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<FeltArray, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .call(request, l1_block_num)
             .await
@@ -404,7 +413,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .estimate_fee(request, simulation_flags, l1_block_num)
             .await?;
@@ -417,7 +427,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .estimate_message_fee(message, l1_block_num)
             .await?;
@@ -431,31 +442,18 @@ impl BeerusRpcServer for BeerusRpc {
     async fn block_hash_and_number(
         &self,
     ) -> Result<BlockHashAndNumber, BeerusRpcError> {
-        let block_hash = self
-            .beerus
-            .state_block_hash()
-            .await?;
-        let block_number = self
-            .beerus
-            .state_block_number()
-            .await?;
+        let block_hash = self.beerus.state_block_hash().await?;
+        let block_number = self.beerus.state_block_number().await?;
         Ok(BlockHashAndNumber { block_hash, block_number })
     }
 
     async fn chain_id(&self) -> Result<Felt, BeerusRpcError> {
-        let result = self.beerus
-            .starknet_client
-            .chain_id()
-            .await
-            .map(Felt)?;
+        let result = self.beerus.starknet_client.chain_id().await.map(Felt)?;
         Ok(result)
     }
 
     async fn syncing(&self) -> Result<SyncStatusType, BeerusRpcError> {
-        let result = self.beerus
-            .starknet_client
-            .syncing()
-            .await?;
+        let result = self.beerus.starknet_client.syncing().await?;
         Ok(result)
     }
 
@@ -463,7 +461,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         filter: EventFilterWithPage,
     ) -> Result<EventsPage, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_events(
                 filter.event_filter,
@@ -480,7 +479,8 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
     ) -> Result<Felt, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .get_nonce(l1_block_num, contract_address)
             .await
@@ -492,7 +492,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         invoke_transaction: BroadcastedInvokeTransaction,
     ) -> Result<InvokeTransactionResult, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .add_invoke_transaction(invoke_transaction)
             .await?;
@@ -503,7 +504,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         declare_transaction: BroadcastedDeclareTransaction,
     ) -> Result<DeclareTransactionResult, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .add_declare_transaction(declare_transaction)
             .await?;
@@ -514,7 +516,8 @@ impl BeerusRpcServer for BeerusRpc {
         &self,
         deploy_account_transaction: BroadcastedDeployAccountTransaction,
     ) -> Result<DeployAccountTransactionResult, BeerusRpcError> {
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .add_deploy_account_transaction(deploy_account_transaction)
             .await?;
@@ -528,7 +531,8 @@ impl BeerusRpcServer for BeerusRpc {
         block_id: BlockId,
     ) -> Result<FeeEstimate, BeerusRpcError> {
         let l1_block_num = self.beerus.get_local_block_id(block_id).await;
-        let result = self.beerus
+        let result = self
+            .beerus
             .starknet_client
             .estimate_fee_single(request, simulation_flags, l1_block_num)
             .await?;
@@ -546,16 +550,13 @@ impl BeerusRpcServer for BeerusRpc {
         contract_address: FieldElement,
         keys: Vec<FieldElement>,
     ) -> Result<StorageProof, BeerusRpcError> {
-        let result = self.beerus
-            .get_proof(block_id, &contract_address, &keys)
-            .await?;
+        let result =
+            self.beerus.get_proof(block_id, &contract_address, &keys).await?;
         Ok(result)
     }
 
     async fn get_state_root(&self) -> Result<Felt, BeerusRpcError> {
-        let result = self.beerus.state_root()
-            .await
-            .map(Felt)?;
+        let result = self.beerus.state_root().await.map(Felt)?;
         Ok(result)
     }
 
@@ -595,13 +596,12 @@ impl BeerusRpcServer for BeerusRpc {
             .0;
 
         // verify the storage proof w/ the untrusted value
-        proof
-            .verify(
-                root,
-                self.beerus.config.fee_token_addr,
-                balance_key,
-                balance[0],
-            )?;
+        proof.verify(
+            root,
+            self.beerus.config.fee_token_addr,
+            balance_key,
+            balance[0],
+        )?;
 
         Ok(Felt(balance[0]))
     }

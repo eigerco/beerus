@@ -18,7 +18,9 @@ impl BeerusRpc {
         Self { beerus }
     }
 
-    pub async fn run(self) -> Result<(SocketAddr, ServerHandle), BeerusRpcError> {
+    pub async fn run(
+        self,
+    ) -> Result<(SocketAddr, ServerHandle), BeerusRpcError> {
         self.check_rpc_spec_versions().await?;
 
         let server =
@@ -32,9 +34,7 @@ impl BeerusRpc {
     async fn check_rpc_spec_versions(&self) -> Result<(), BeerusRpcError> {
         let expected = self.spec_version().await?;
 
-        let received = self.beerus.starknet_client
-            .spec_version()
-            .await?;
+        let received = self.beerus.starknet_client.spec_version().await?;
 
         if expected == received {
             Ok(())
