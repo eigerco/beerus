@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
 
+use crate::exe::err::Error;
+
 use super::gen::*;
 
 pub struct Server(oneshot::Sender<()>, JoinHandle<()>, u16);
@@ -28,19 +30,19 @@ impl Server {
     }
 }
 
-pub async fn serve(url: &str, bind: &str) -> Server {
-    let listener = TcpListener::bind(bind).await.unwrap();
-    serve_on(url, listener)
+pub async fn serve(url: &str, bind: &str) -> Result<Server, Error> {
+    let listener = TcpListener::bind(bind).await?;
+    let server = serve_on(url, listener)?;
+    Ok(server)
 }
 
-fn serve_on(url: &str, listener: TcpListener) -> Server {
+fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
     const DEFAULT_TIMEOUT: std::time::Duration =
         std::time::Duration::from_secs(30);
     let client = reqwest::ClientBuilder::new()
         .connect_timeout(DEFAULT_TIMEOUT)
         .timeout(DEFAULT_TIMEOUT)
-        .build()
-        .unwrap();
+        .build()?;
 
     let ctx = Context {
         client: Arc::new(gen::client::Client::with_client(url, client)),
@@ -49,17 +51,19 @@ fn serve_on(url: &str, listener: TcpListener) -> Server {
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
 
     let (tx, rx) = oneshot::channel::<()>();
-    let port = listener.local_addr().unwrap().port();
+    let port = listener.local_addr()?.port();
     let jh = tokio::spawn(async move {
-        axum::serve(listener, app.into_make_service())
+        let ret = axum::serve(listener, app.into_make_service())
             .with_graceful_shutdown(async move {
                 let _ = rx.await;
             })
-            .await
-            .unwrap();
+            .await;
+        if let Err(e) = ret {
+            tracing::error!("server shut down with error: {e:?}");
+        }
     });
 
-    Server(tx, jh, port)
+    Ok(Server(tx, jh, port))
 }
 
 #[derive(Deserialize, Serialize)]
