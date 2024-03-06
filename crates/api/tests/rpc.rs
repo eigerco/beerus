@@ -1,5 +1,10 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
+    GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
+    InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+    SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
 };
 
 mod common;
@@ -377,9 +382,15 @@ async fn test_getClass() -> Result<(), common::Error> {
 
     assert!(matches!(ret.abi, Some(vec) if !vec.is_empty()));
 
-    assert!(matches!(ret.entry_points_by_type.constructor, Some(vec) if !vec.is_empty()));
-    assert!(matches!(ret.entry_points_by_type.l1_handler, Some(vec) if !vec.is_empty()));
-    assert!(matches!(ret.entry_points_by_type.external, Some(vec) if !vec.is_empty()));
+    assert!(
+        matches!(ret.entry_points_by_type.constructor, Some(vec) if !vec.is_empty())
+    );
+    assert!(
+        matches!(ret.entry_points_by_type.l1_handler, Some(vec) if !vec.is_empty())
+    );
+    assert!(
+        matches!(ret.entry_points_by_type.external, Some(vec) if !vec.is_empty())
+    );
     Ok(())
 }
 
@@ -392,7 +403,9 @@ async fn test_getClassAt() -> Result<(), common::Error> {
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
-    let contract_address = Address(Felt::try_new("0x40688250Ef0074B4c9e1057B19F9b62139ac28179c7d35e2daE5abAD909d558")?);
+    let contract_address = Address(Felt::try_new(
+        "0x40688250Ef0074B4c9e1057B19F9b62139ac28179c7d35e2daE5abAD909d558",
+    )?);
 
     let ret = ctx.client.getClassAt(block_id, contract_address).await?;
     let GetClassAtResult::ContractClass(ret) = ret else {
@@ -421,9 +434,14 @@ async fn test_getClassHashAt() -> Result<(), common::Error> {
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
-    let contract_address = Address(Felt::try_new("0x7f38ab7537dbb5f8dc2d049d441f2b250c2186a13d943b8467cfa86b8dba12b")?);
+    let contract_address = Address(Felt::try_new(
+        "0x7f38ab7537dbb5f8dc2d049d441f2b250c2186a13d943b8467cfa86b8dba12b",
+    )?);
 
     let ret = ctx.client.getClassHashAt(block_id, contract_address).await?;
-    assert_eq!(ret.as_ref(), "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003");
+    assert_eq!(
+        ret.as_ref(),
+        "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003"
+    );
     Ok(())
 }
