@@ -427,19 +427,3 @@ async fn test_getClassHashAt() -> Result<(), common::Error> {
     assert_eq!(ret.as_ref(), "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003");
     Ok(())
 }
-
-/*
-#[tokio::test]
-#[allow(non_snake_case)]
-async fn test_?() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
-        return Ok(());
-    };
-
-    let ret = ctx.client.?().await?;
-    println!("{ret:#?}");
-
-    assert_eq!(ret, ?);
-    Ok(())
-}
-*/
