@@ -5,15 +5,32 @@ use starknet::core::types::StarknetError;
 use starknet::providers::ProviderError;
 use starknet::providers::ProviderError::StarknetError as StarknetProviderError;
 
-#[derive(Debug)]
+use thiserror::Error;
+
+#[derive(Error, Debug)]
 pub enum BeerusRpcError {
+    #[error("Spec version mismatch (expected {expected} but received {received})")]
+    SpecVersionMismatch {
+        expected: String,
+        received: String,
+    },
+    #[error("{0}")]
     Provider(ProviderError),
-    Other((i32, String)),
+    #[error("{0:?}")]
+    Custom((i32, String)),
+    #[error("{0}")]
+    Rpc(jsonrpsee::core::Error),
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
     fn from(err: BeerusRpcError) -> Self {
         match err {
+            BeerusRpcError::SpecVersionMismatch { .. } => {
+                ErrorObjectOwned::owned(-33002, err.to_string(), None::<()>)
+            }
+            BeerusRpcError::Rpc(_) => {
+                ErrorObjectOwned::owned(-33001, err.to_string(), None::<()>)
+            }
             BeerusRpcError::Provider(provider_err) => match provider_err {
                 StarknetProviderError(sn_err) => match &sn_err {
                     StarknetError::FailedToReceiveTransaction => {
@@ -189,7 +206,7 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                     None::<()>,
                 ),
             },
-            BeerusRpcError::Other(other_err) => {
+            BeerusRpcError::Custom(other_err) => {
                 ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
             }
         }
@@ -204,12 +221,18 @@ impl From<ProviderError> for BeerusRpcError {
 
 impl From<CoreError> for BeerusRpcError {
     fn from(err: CoreError) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        BeerusRpcError::Custom((-32601, format!("{err}")))
     }
 }
 
 impl From<Report> for BeerusRpcError {
     fn from(err: Report) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        BeerusRpcError::Custom((-32601, format!("{err}")))
+    }
+}
+
+impl From<jsonrpsee::core::Error> for BeerusRpcError {
+    fn from(err: jsonrpsee::core::Error) -> Self {
+        Self::Rpc(err)
     }
 }
