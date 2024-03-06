@@ -1,10 +1,5 @@
 use beerus_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetTransactionByBlockIdAndIndexIndex,
-    GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version,
-    PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus,
-    TxnHash, TxnReceipt, TxnStatus,
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult, InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus
 };
 
 mod common;
@@ -360,6 +355,34 @@ async fn test_getTransactionReceipt() -> Result<(), common::Error> {
     Ok(())
 }
 
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_getClass() -> Result<(), common::Error> {
+    let Some(ctx) = common::ctx().await else {
+        return Ok(());
+    };
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+
+    let class_hash = Felt::try_new(
+        "0xd0e183745e9dae3e4e78a8ffedcce0903fc4900beace4e0abf192d4c202da3",
+    )?;
+
+    let ret = ctx.client.getClass(block_id, class_hash).await?;
+    let GetClassResult::DeprecatedContractClass(ret) = ret else {
+        panic!("unexpected contract class type");
+    };
+
+    assert!(!ret.program.as_ref().is_empty());
+
+    assert!(matches!(ret.abi, Some(vec) if !vec.is_empty()));
+
+    assert!(matches!(ret.entry_points_by_type.constructor, Some(vec) if !vec.is_empty()));
+    assert!(matches!(ret.entry_points_by_type.l1_handler, Some(vec) if !vec.is_empty()));
+    assert!(matches!(ret.entry_points_by_type.external, Some(vec) if !vec.is_empty()));
+    Ok(())
+}
+
 /*
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -376,6 +399,5 @@ async fn test_?() -> Result<(), common::Error> {
 }
 */
 
-// TODO: getClass
 // TODO: getClassAt
 // TODO: getClassHashAt
