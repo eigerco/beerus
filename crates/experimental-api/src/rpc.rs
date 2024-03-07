@@ -4,7 +4,11 @@ use axum::{
 use iamgroot::jsonrpc;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::{net::{TcpListener, ToSocketAddrs}, sync::oneshot, task::JoinHandle};
+use tokio::{
+    net::{TcpListener, ToSocketAddrs},
+    sync::oneshot,
+    task::JoinHandle,
+};
 
 use crate::exe::err::Error;
 
@@ -30,7 +34,10 @@ impl Server {
     }
 }
 
-pub async fn serve<A: ToSocketAddrs>(url: &str, bind: A) -> Result<Server, Error> {
+pub async fn serve<A: ToSocketAddrs>(
+    url: &str,
+    bind: A,
+) -> Result<Server, Error> {
     let listener = TcpListener::bind(bind).await?;
     let server = serve_on(url, listener)?;
     Ok(server)
