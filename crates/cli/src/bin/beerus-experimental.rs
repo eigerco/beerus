@@ -9,9 +9,12 @@ async fn main() -> eyre::Result<()> {
 
     #[cfg(feature = "experimental")]
     {
-        let addr = "127.0.0.1:9000";
-        let server = beerus_experimental_api::rpc::serve(&config.starknet_rpc, addr).await?;
-        tracing::info!(at = addr, "experimental rpc server started");
+        let server = beerus_experimental_api::rpc::serve(
+            &config.starknet_rpc,
+            &config.rpc_addr,
+        )
+        .await?;
+        tracing::info!(port = server.port(), "experimental rpc server started");
         server.done().await;
     }
 
