@@ -1,4 +1,4 @@
-use beerus_api::gen::{
+use beerus_experimental_api::gen::{
     Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
     BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
     GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
@@ -126,7 +126,7 @@ async fn test_estimateFee() -> Result<(), common::Error> {
                         max_fee: Felt::try_new("0x28ed6103d0000")?, 
                         nonce: Felt::try_new("0x1")?,
                         version: InvokeTxnV1Version::V0x1,
-                        r#type: beerus_api::gen::InvokeTxnV1Type::Invoke, 
+                        r#type: beerus_experimental_api::gen::InvokeTxnV1Type::Invoke, 
                     }
                 )
             )

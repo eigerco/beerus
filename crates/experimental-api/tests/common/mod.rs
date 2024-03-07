@@ -1,4 +1,4 @@
-use beerus_api::{
+use beerus_experimental_api::{
     gen::client::Client,
     rpc::{serve, Server},
 };
