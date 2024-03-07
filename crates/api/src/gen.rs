@@ -1,7 +1,6 @@
 pub use gen::*;
 
 #[allow(clippy::module_inception)]
-
 // vvv GENERATED CODE BELOW vvv
 #[allow(dead_code)]
 #[allow(non_snake_case)]
