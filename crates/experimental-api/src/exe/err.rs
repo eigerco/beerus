@@ -1,12 +1,22 @@
-#[derive(Debug)]
+use thiserror::Error as ThisError;
+
+#[derive(Debug, ThisError)]
 pub enum Error {
+    #[error("IO error: {0:?}")]
     Io(std::io::Error),
+    #[error("Reqwest error: {0:?}")]
     Reqwest(reqwest::Error),
+    #[error("Codegen error: {0:?}")]
     IamGroot(iamgroot::jsonrpc::Error),
+    #[error("Starknet API error: {0:?}")]
     StarknetApi(starknet_api::StarknetApiError),
+    #[error("Blockifier state error: {0:?}")]
     State(blockifier::state::errors::StateError),
+    #[error("Blockifier entry point error: {0:?}")]
     EntryPoint(blockifier::execution::errors::EntryPointExecutionError),
+    #[error("Blockifier transaction error: {0:?}")]
     Transaction(blockifier::transaction::errors::TransactionExecutionError),
+    #[error("{0}")]
     Custom(&'static str),
 }
 
