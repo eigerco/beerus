@@ -126,7 +126,6 @@ async fn handle_request(
     }
 }
 
-#[allow(unused_variables)]
 #[async_trait::async_trait]
 impl gen::Rpc for Context {
     async fn addDeclareTransaction(

@@ -43,15 +43,14 @@ use err::Error;
 
 // https://github.com/eqlabs/pathfinder/blob/v0.11.0-rc0/crates/executor/src/call.rs#L16
 pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
-    #[allow(unused_variables)]
     let gen::BroadcastedTxn::BroadcastedInvokeTxn(gen::BroadcastedInvokeTxn(
         gen::InvokeTxn::InvokeTxnV0(gen::InvokeTxnV0 {
             calldata,
             contract_address,
             entry_point_selector,
-            max_fee,
             signature,
-            version,
+            max_fee: _,
+            version: _,
             ..
         }),
     )) = txn
@@ -253,7 +252,6 @@ impl StateReader for StateProxy {
     }
 }
 
-#[allow(unused_variables)]
 impl BlockifierState for StateProxy {
     fn set_storage_at(
         &mut self,
