@@ -1,10 +1,11 @@
 pub use gen::*;
 
+#[allow(clippy::module_inception)]
+
 // vvv GENERATED CODE BELOW vvv
 #[allow(dead_code)]
 #[allow(non_snake_case)]
 #[allow(clippy::enum_variant_names)]
-#[allow(clippy::module_inception)]
 pub mod gen {
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
@@ -2441,8 +2442,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2451,7 +2453,10 @@ pub mod gen {
         match rpc.getProof(block_id, contract_address, keys).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2481,8 +2486,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2491,7 +2497,10 @@ pub mod gen {
         match rpc.getTxStatus(transaction_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2534,8 +2543,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2544,7 +2554,10 @@ pub mod gen {
         match rpc.addDeclareTransaction(declare_transaction).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2574,8 +2587,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2585,7 +2599,10 @@ pub mod gen {
         {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2615,8 +2632,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2625,7 +2643,10 @@ pub mod gen {
         match rpc.addInvokeTransaction(invoke_transaction).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2682,8 +2703,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2692,7 +2714,10 @@ pub mod gen {
         match rpc.call(request, block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2742,8 +2767,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2752,7 +2778,10 @@ pub mod gen {
         match rpc.estimateFee(request, simulation_flags, block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2783,8 +2812,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2793,7 +2823,10 @@ pub mod gen {
         match rpc.estimateMessageFee(message, block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2823,8 +2856,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2833,7 +2867,10 @@ pub mod gen {
         match rpc.getBlockTransactionCount(block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2863,8 +2900,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2873,7 +2911,10 @@ pub mod gen {
         match rpc.getBlockWithTxHashes(block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2903,8 +2944,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2913,7 +2955,10 @@ pub mod gen {
         match rpc.getBlockWithTxs(block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2944,8 +2989,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2954,7 +3000,10 @@ pub mod gen {
         match rpc.getClass(block_id, class_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -2985,8 +3034,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -2995,7 +3045,10 @@ pub mod gen {
         match rpc.getClassAt(block_id, contract_address).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3026,8 +3079,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3036,7 +3090,10 @@ pub mod gen {
         match rpc.getClassHashAt(block_id, contract_address).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3066,8 +3123,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3076,7 +3134,10 @@ pub mod gen {
         match rpc.getEvents(filter).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3107,8 +3168,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3117,7 +3179,10 @@ pub mod gen {
         match rpc.getNonce(block_id, contract_address).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3147,8 +3212,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3157,7 +3223,10 @@ pub mod gen {
         match rpc.getStateUpdate(block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3190,8 +3259,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3200,7 +3270,10 @@ pub mod gen {
         match rpc.getStorageAt(contract_address, key, block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3231,8 +3304,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3241,7 +3315,10 @@ pub mod gen {
         match rpc.getTransactionByBlockIdAndIndex(block_id, index).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3271,8 +3348,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3281,7 +3359,10 @@ pub mod gen {
         match rpc.getTransactionByHash(transaction_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3311,8 +3392,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3321,7 +3403,10 @@ pub mod gen {
         match rpc.getTransactionReceipt(transaction_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3351,8 +3436,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3361,7 +3447,10 @@ pub mod gen {
         match rpc.getTransactionStatus(transaction_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3394,8 +3483,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3407,7 +3497,10 @@ pub mod gen {
         {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3463,8 +3556,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3473,7 +3567,10 @@ pub mod gen {
         match rpc.traceBlockTransactions(block_id).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3503,8 +3600,9 @@ pub mod gen {
 
         let args: ArgByName = match args {
             Ok(args) => args,
-            Err(_) => {
-                return jsonrpc::Response::error(-32602, "Invalid params")
+            Err(error) => {
+                tracing::debug!(?error, "failed to parse request params");
+                return jsonrpc::Response::error(-32602, "Invalid params");
             }
         };
 
@@ -3513,7 +3611,10 @@ pub mod gen {
         match rpc.traceTransaction(transaction_hash).await {
             Ok(ret) => match serde_json::to_value(ret) {
                 Ok(ret) => jsonrpc::Response::result(ret),
-                Err(_) => jsonrpc::Response::error(-32603, "Internal error"),
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse response object");
+                    jsonrpc::Response::error(-32603, "Internal error")
+                }
             },
             Err(e) => jsonrpc::Response::error(e.code, &e.message),
         }
@@ -3832,8 +3933,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -3842,7 +3944,11 @@ pub mod gen {
             match rpc.getProof(block_id, contract_address, keys) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -3874,8 +3980,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -3884,7 +3991,11 @@ pub mod gen {
             match rpc.getTxStatus(transaction_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -3929,8 +4040,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -3939,7 +4051,11 @@ pub mod gen {
             match rpc.addDeclareTransaction(declare_transaction) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -3972,8 +4088,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -3982,7 +4099,11 @@ pub mod gen {
             match rpc.addDeployAccountTransaction(deploy_account_transaction) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4014,8 +4135,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4024,7 +4146,11 @@ pub mod gen {
             match rpc.addInvokeTransaction(invoke_transaction) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4083,8 +4209,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4093,7 +4220,11 @@ pub mod gen {
             match rpc.call(request, block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4145,8 +4276,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4155,7 +4287,11 @@ pub mod gen {
             match rpc.estimateFee(request, simulation_flags, block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4188,8 +4324,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4198,7 +4335,11 @@ pub mod gen {
             match rpc.estimateMessageFee(message, block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4230,8 +4371,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4240,7 +4382,11 @@ pub mod gen {
             match rpc.getBlockTransactionCount(block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4272,8 +4418,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4282,7 +4429,11 @@ pub mod gen {
             match rpc.getBlockWithTxHashes(block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4314,8 +4465,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4324,7 +4476,11 @@ pub mod gen {
             match rpc.getBlockWithTxs(block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4357,8 +4513,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4367,7 +4524,11 @@ pub mod gen {
             match rpc.getClass(block_id, class_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4401,8 +4562,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4411,7 +4573,11 @@ pub mod gen {
             match rpc.getClassAt(block_id, contract_address) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4445,8 +4611,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4455,7 +4622,11 @@ pub mod gen {
             match rpc.getClassHashAt(block_id, contract_address) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4487,8 +4658,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4497,7 +4669,11 @@ pub mod gen {
             match rpc.getEvents(filter) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4531,8 +4707,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4541,7 +4718,11 @@ pub mod gen {
             match rpc.getNonce(block_id, contract_address) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4573,8 +4754,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4583,7 +4765,11 @@ pub mod gen {
             match rpc.getStateUpdate(block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4618,8 +4804,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4628,7 +4815,11 @@ pub mod gen {
             match rpc.getStorageAt(contract_address, key, block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4661,8 +4852,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4671,7 +4863,11 @@ pub mod gen {
             match rpc.getTransactionByBlockIdAndIndex(block_id, index) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4703,8 +4899,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4713,7 +4910,11 @@ pub mod gen {
             match rpc.getTransactionByHash(transaction_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4745,8 +4946,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4755,7 +4957,11 @@ pub mod gen {
             match rpc.getTransactionReceipt(transaction_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4787,8 +4993,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4797,7 +5004,11 @@ pub mod gen {
             match rpc.getTransactionStatus(transaction_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4839,8 +5050,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4853,7 +5065,11 @@ pub mod gen {
             ) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4911,8 +5127,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4921,7 +5138,11 @@ pub mod gen {
             match rpc.traceBlockTransactions(block_id) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
@@ -4953,8 +5174,9 @@ pub mod gen {
 
             let args: ArgByName = match args {
                 Ok(args) => args,
-                Err(_) => {
-                    return jsonrpc::Response::error(-32602, "Invalid params")
+                Err(error) => {
+                    tracing::debug!(?error, "failed to parse request params");
+                    return jsonrpc::Response::error(-32602, "Invalid params");
                 }
             };
 
@@ -4963,7 +5185,11 @@ pub mod gen {
             match rpc.traceTransaction(transaction_hash) {
                 Ok(ret) => match serde_json::to_value(ret) {
                     Ok(ret) => jsonrpc::Response::result(ret),
-                    Err(_) => {
+                    Err(error) => {
+                        tracing::debug!(
+                            ?error,
+                            "failed to parse response object"
+                        );
                         jsonrpc::Response::error(-32603, "Internal error")
                     }
                 },
