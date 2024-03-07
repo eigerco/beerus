@@ -1,7 +1,7 @@
 [package]
 description = "JSON-RPC server & client auto-generated from the OpenRPC specification"
 edition = "2021"
-name = "beerus-api"
+name = "beerus-experimental-api"
 version = "0.3.0"
 
 [dependencies]

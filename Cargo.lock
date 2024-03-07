@@ -522,32 +522,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "beerus-api"
-version = "0.3.0"
-dependencies = [
- "async-trait",
- "axum",
- "blockifier",
- "cairo-vm",
- "hex",
- "iamgroot",
- "once_cell",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "starknet-crypto 0.6.1",
- "starknet_api",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "beerus-cli"
 version = "0.4.0"
 dependencies = [
- "beerus-api",
  "beerus-core",
+ "beerus-experimental-api",
  "beerus-rpc",
  "clap",
  "eyre",
@@ -582,6 +561,27 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "wasm-bindgen-futures",
+]
+
+[[package]]
+name = "beerus-experimental-api"
+version = "0.3.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "blockifier",
+ "cairo-vm",
+ "hex",
+ "iamgroot",
+ "once_cell",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "starknet-crypto 0.6.1",
+ "starknet_api",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
