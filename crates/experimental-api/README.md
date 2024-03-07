@@ -1,24 +1,32 @@
-beerus-api
+beerus-experimental-api
 ==========
 
 **This is highly experimental. Don't try this at home.**
 
 SCOPE:
 
-- iamgroot: take spec upgrade from O(N) to O(1 + e)
-  - (N == number of updates to the spec)
-  - (e == DTO mapping if necessary)
-  - [X] auto-generated `Rpc` trait
-  - [X] auto-generated RPC Client
-- stateless execution/tracing on transactions
+- iamgroot: enforced RPC spec consistency
+  - owned DTO and RPC code
+    - no 3rd-party dependencies besides `serde_json`
+    - seamless migration between any web frameworks
+    - space for customisations & optimisations
+  - seamless support for multiple spec versions
+  - no more "spec inconsistensy" fixes
+  - auto-generated `Rpc` trait (both blocking and async)
+  - auto-generated RPC Client (both blocking and async)
+- blockifier: stateless execution/tracing of transactions
+  - necessary step towards trustless-ness
+    - verify state consumed/produced by a transaction
+  - follows existing Helios approach 
+    - Helios uses `revm` for execution
+  - blockifier: chain/block/tx context
+  - blockifier: `BlockifierState` impl
+  - blockifier: `StateReader` impl
   - see [example](https://github.com/sergey-melnychuk/beerthem/blob/main/examples/exec.rs)
-  - [ ] blockifier: chain/block/etc context
-  - [ ] blockifier: implement `BlockifierState`
-  - [ ] blockifier: implement `StateReader`
-- [ ] helios: standalone lightweight client
+- helios: standalone lightweight client
   - `reqwest` + `keccak` + `primitive_types` should be enough
   - see [example](https://github.com/eqlabs/pathfinder/blob/v0.11.0/crates/ethereum/src/lib.rs#L108)
-- [ ] axum: `wasm32-unknown-unknown` is not supported
+- axum: `wasm32-unknown-unknown` is not supported
   - any server that supports JSON over HTTP can do
     - the generated code is not bound to any specific framework or library
     - thus allows seamless migration practically anywhere
