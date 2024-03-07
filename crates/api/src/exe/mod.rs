@@ -151,7 +151,7 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
 
-    println!("{call_info:?}");
+    tracing::info!(result=?call_info, "execution completed");
     Ok(())
 }
 
