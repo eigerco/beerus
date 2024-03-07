@@ -2,9 +2,7 @@ pub use gen::*;
 
 #[allow(clippy::module_inception)]
 // vvv GENERATED CODE BELOW vvv
-#[allow(dead_code)]
 #[allow(non_snake_case)]
-#[allow(unused_variables)]
 #[allow(clippy::enum_variant_names)]
 pub mod gen {
     use serde::{Deserialize, Serialize};
