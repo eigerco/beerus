@@ -11,7 +11,7 @@ eyre.workspace = true
 jsonrpsee = { version = "0.20.3", features = ["macros", "server", "server-core"] }
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
-thiserror = "1.0.50"
+thiserror.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
