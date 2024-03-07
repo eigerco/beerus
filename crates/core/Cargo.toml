@@ -24,7 +24,7 @@ serde_json = "1.0"
 starknet-crypto = "0.6.1"
 
 starknet.workspace = true
-thiserror = "1.0.26"
+thiserror.workspace = true
 toml = "0.7.3"
 tracing.workspace = true
 tracing-subscriber.workspace = true
