@@ -31,7 +31,7 @@ USAGE:
 cd /path/to/beerus
 
 cd ..
-git clone https://github.com/sergey-melnychuk/iamgroot.git --branch v0.2.5
+git clone https://github.com/sergey-melnychuk/iamgroot.git --branch v0.2.6
 cd iamgroot && cargo build --release
 cp ./target/release/iamgroot ../beerus/tmp
 cd ../beerus
@@ -41,7 +41,7 @@ etc/spec/starknet/0.6.0/starknet_query_api_openrpc.json \
 etc/spec/starknet/0.6.0/starknet_write_api_openrpc.json \
 etc/spec/starknet/0.6.0/starknet_trace_api_openrpc.json \
 etc/spec/pathfinder_api_openrpc.json \
---async --blocking --client --reexport > crates/api/src/gen.rs
+--async --blocking --client --reexport > crates/experimental-api/src/gen.rs
 
 cargo fmt && cargo check
 
