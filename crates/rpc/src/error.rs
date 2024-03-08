@@ -1,14 +1,18 @@
 use beerus_core::CoreError;
 use eyre::Report;
+use jsonrpsee::core::Error;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError;
 use starknet::providers::ProviderError;
 use starknet::providers::ProviderError::StarknetError as StarknetProviderError;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum BeerusRpcError {
+    #[error(transparent)]
     Provider(ProviderError),
-    Other((i32, String)),
+    #[error("Other: `{code}` :: `{msg}`")]
+    Other { code: i32, msg: String },
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
@@ -189,8 +193,8 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                     None::<()>,
                 ),
             },
-            BeerusRpcError::Other(other_err) => {
-                ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
+            BeerusRpcError::Other { code, msg } => {
+                ErrorObjectOwned::owned(code, msg, None::<()>)
             }
         }
     }
@@ -204,12 +208,18 @@ impl From<ProviderError> for BeerusRpcError {
 
 impl From<CoreError> for BeerusRpcError {
     fn from(err: CoreError) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
     }
 }
 
 impl From<Report> for BeerusRpcError {
     fn from(err: Report) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
+    }
+}
+
+impl From<Error> for BeerusRpcError {
+    fn from(err: Error) -> Self {
+        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
     }
 }
