@@ -11,8 +11,8 @@ use thiserror::Error;
 pub enum BeerusRpcError {
     #[error(transparent)]
     Provider(ProviderError),
-    #[error("Other: `{code}` :: `{msg}`")]
-    Other { code: i32, msg: String },
+    #[error("{:?}", .0)]
+    Other((i32, String)),
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
@@ -193,8 +193,8 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                     None::<()>,
                 ),
             },
-            BeerusRpcError::Other { code, msg } => {
-                ErrorObjectOwned::owned(code, msg, None::<()>)
+            BeerusRpcError::Other(other_err) => {
+                ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
             }
         }
     }
@@ -208,18 +208,18 @@ impl From<ProviderError> for BeerusRpcError {
 
 impl From<CoreError> for BeerusRpcError {
     fn from(err: CoreError) -> Self {
-        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }
 
 impl From<Report> for BeerusRpcError {
     fn from(err: Report) -> Self {
-        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }
 
 impl From<Error> for BeerusRpcError {
     fn from(err: Error) -> Self {
-        BeerusRpcError::Other { code: -32601, msg: format!("{err}") }
+        BeerusRpcError::Other((-32601, format!("{err}")))
     }
 }
