@@ -7454,6 +7454,7 @@ pub mod gen {
         pub mod blocking {
             use super::*;
 
+            #[derive(Clone)]
             pub struct Client {
                 client: reqwest::blocking::Client,
                 url: String,

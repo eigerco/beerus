@@ -4,6 +4,7 @@ use blockifier::{
     block::{BlockInfo, GasPrices},
     context::{BlockContext, ChainInfo, FeeTokenAddresses, TransactionContext},
     execution::{
+        call_info::CallInfo,
         common_hints::ExecutionMode,
         contract_class::ContractClass,
         entry_point::{CallEntryPoint, CallType, EntryPointExecutionContext},
@@ -41,44 +42,28 @@ pub mod map;
 
 use err::Error;
 
-// https://github.com/eqlabs/pathfinder/blob/v0.11.0-rc0/crates/executor/src/call.rs#L16
-pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
-    let gen::BroadcastedTxn::BroadcastedInvokeTxn(gen::BroadcastedInvokeTxn(
-        gen::InvokeTxn::InvokeTxnV0(gen::InvokeTxnV0 {
-            calldata,
-            contract_address,
-            entry_point_selector,
-            signature,
-            max_fee: _,
-            version: _,
-            ..
-        }),
-    )) = txn
-    else {
-        return Err(Error::Custom("unexpected transaction type"));
-    };
+pub fn exec(
+    client: &gen::client::blocking::Client,
+    call: gen::FunctionCall,
+) -> Result<CallInfo, Error> {
+    let gen::FunctionCall { calldata, contract_address, entry_point_selector } =
+        call;
 
     let calldata: Result<Vec<StarkFelt>, _> =
         calldata.into_iter().map(|felt| felt.try_into()).collect();
 
     let contract_address: StarkFelt = contract_address.0.try_into()?;
 
-    let entry_point_selector =
-        EntryPointSelector(entry_point_selector.try_into()?);
-
-    let signature: Result<Vec<StarkFelt>, _> =
-        signature.into_iter().map(|felt| felt.try_into()).collect();
-
-    let version: StarkFelt = StarkFelt::ONE;
+    let entry_point_selector: StarkFelt = entry_point_selector.try_into()?;
 
     let mut resources = ExecutionResources::default();
 
     let one = NonZeroU128::new(1)
         .ok_or_else(|| Error::Custom("NonZeroU128 is zero"))?;
     let block_info = BlockInfo {
-        block_number: StarknetBlockNumber(0),
-        block_timestamp: BlockTimestamp(0),
-        sequencer_address: ContractAddress(StarkHash::ZERO.try_into()?),
+        block_number: StarknetBlockNumber::default(),
+        block_timestamp: BlockTimestamp::default(),
+        sequencer_address: ContractAddress::default(),
         gas_prices: GasPrices {
             eth_l1_gas_price: one,
             strk_l1_gas_price: one,
@@ -91,10 +76,8 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
     let chain_info = ChainInfo {
         chain_id: BlockifierChainId("00".to_owned()),
         fee_token_addresses: FeeTokenAddresses {
-            strk_fee_token_address: ContractAddress(
-                StarkHash::ZERO.try_into()?,
-            ),
-            eth_fee_token_address: ContractAddress(StarkHash::ZERO.try_into()?),
+            strk_fee_token_address: ContractAddress::default(),
+            eth_fee_token_address: ContractAddress::default(),
         },
     };
 
@@ -108,14 +91,17 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
 
     let tx_info = TransactionInfo::Deprecated(DeprecatedTransactionInfo {
         common_fields: CommonAccountFields {
-            transaction_hash: TransactionHash(StarkHash::ZERO),
-            version: TransactionVersion(version),
-            signature: TransactionSignature(signature?),
-            nonce: Nonce(StarkFelt::ZERO),
-            sender_address: ContractAddress(StarkHash::ZERO.try_into()?),
+            transaction_hash: TransactionHash::default(),
+            version: TransactionVersion(StarkFelt::ONE),
+            signature: TransactionSignature(vec![
+                StarkHash::ZERO,
+                StarkHash::ZERO,
+            ]),
+            nonce: Nonce(StarkHash::ZERO),
+            sender_address: ContractAddress::default(),
             only_query: true,
         },
-        max_fee: Fee(42),
+        max_fee: Fee::default(),
     });
 
     let tx_context = Arc::new(TransactionContext { block_context, tx_info });
@@ -126,33 +112,30 @@ pub fn exec(url: &str, txn: gen::BroadcastedTxn) -> Result<(), Error> {
         /*limit_steps_by_resources=*/ false,
     )?;
 
-    // TODO: convert and put necessary data from the input
     let call_entry_point = CallEntryPoint {
         class_hash: None,
         code_address: None,
         entry_point_type: EntryPointType::External,
-        entry_point_selector,
+        entry_point_selector: EntryPointSelector(entry_point_selector),
         calldata: Calldata(Arc::new(calldata?)),
         storage_address: ContractAddress(contract_address.try_into()?),
-        caller_address: ContractAddress(StarkHash::ZERO.try_into()?),
+        caller_address: ContractAddress::default(),
         call_type: CallType::Call,
         initial_gas: u64::MAX,
     };
 
-    let client = gen::client::blocking::Client::new(url);
     let diff = CommitmentStateDiff {
         storage_updates: Default::default(),
         address_to_nonce: Default::default(),
         address_to_class_hash: Default::default(),
         class_hash_to_compiled_class_hash: Default::default(),
     };
-    let mut proxy = StateProxy { client, diff };
+    let mut proxy = StateProxy { client: client.clone(), diff };
 
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
 
-    tracing::info!(result=?call_info, "execution completed");
-    Ok(())
+    Ok(call_info)
 }
 
 struct StateProxy {
@@ -171,8 +154,7 @@ impl StateReader for StateProxy {
         let felt: gen::Felt = contract_address.0.key().try_into()?;
         let contract_address = gen::Address(felt);
 
-        let felt: gen::Felt = key.0.key().try_into()?;
-        let key = gen::StorageKey::try_new(felt.as_ref())
+        let key = gen::StorageKey::try_new(&key.0.to_string())
             .map_err(Into::<Error>::into)?;
 
         let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
