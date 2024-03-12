@@ -16,6 +16,8 @@ pub enum Error {
     EntryPoint(blockifier::execution::errors::EntryPointExecutionError),
     #[error("Blockifier transaction error: {0:?}")]
     Transaction(blockifier::transaction::errors::TransactionExecutionError),
+    #[error("Program error: {0:?}")]
+    Program(cairo_vm::types::errors::program_errors::ProgramError),
     #[error("{0}")]
     Custom(&'static str),
 }
@@ -53,6 +55,14 @@ impl From<blockifier::transaction::errors::TransactionExecutionError>
         error: blockifier::transaction::errors::TransactionExecutionError,
     ) -> Self {
         Self::Transaction(error)
+    }
+}
+
+impl From<cairo_vm::types::errors::program_errors::ProgramError> for Error {
+    fn from(
+        error: cairo_vm::types::errors::program_errors::ProgramError,
+    ) -> Self {
+        Self::Program(error)
     }
 }
 
