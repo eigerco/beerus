@@ -1527,8 +1527,8 @@ checksum = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1"
 
 [[package]]
 name = "client"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "common",
  "config",
@@ -1620,8 +1620,8 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "ethers",
  "eyre",
@@ -1633,8 +1633,8 @@ dependencies = [
 
 [[package]]
 name = "config"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "common",
  "dirs 4.0.0",
@@ -1655,8 +1655,8 @@ dependencies = [
 
 [[package]]
 name = "consensus"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2570,8 +2570,8 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 
 [[package]]
 name = "execution"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3086,8 +3086,8 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "helios"
-version = "0.5.4"
-source = "git+https://github.com/a16z/helios?tag=0.5.4#ba3364394a013dae3275b60438c9d7a7736d7fe3"
+version = "0.5.5"
+source = "git+https://github.com/a16z/helios?tag=0.5.5#c8f5a4d623ec90df2d3ceb9490b8aaa48179e94f"
 dependencies = [
  "client",
  "common",
