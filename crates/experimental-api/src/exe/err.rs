@@ -4,6 +4,10 @@ use thiserror::Error as ThisError;
 pub enum Error {
     #[error("IO error: {0:?}")]
     Io(std::io::Error),
+    #[error("Base64 error: {0:?}")]
+    Base64(base64::DecodeError),
+    #[error("Serde error: {0:?}")]
+    Serde(serde_json::Error),
     #[error("Reqwest error: {0:?}")]
     Reqwest(reqwest::Error),
     #[error("Codegen error: {0:?}")]
@@ -25,6 +29,18 @@ pub enum Error {
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
         Self::Io(error)
+    }
+}
+
+impl From<base64::DecodeError> for Error {
+    fn from(error: base64::DecodeError) -> Self {
+        Self::Base64(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Self::Serde(error)
     }
 }
 
