@@ -25,6 +25,3 @@ hex = "0.4.3"
 
 base64 = "0.22.0"
 flate2 = "1.0.28"
-
-[dev-dependencies]
-tracing-subscriber.workspace = true
