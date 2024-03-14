@@ -61,7 +61,7 @@ fn build_contract_class(
 
     let mut class = serde_json::to_value(class)?;
     class["program"] = serde_json::from_str(&program)?;
-    let json = serde_json::to_string_pretty(&class)?;
+    let json = serde_json::to_string(&class)?;
 
     let class = ContractClassV0::try_from_json_string(&json)?;
     Ok(class)
