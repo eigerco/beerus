@@ -101,9 +101,6 @@ impl IntoResponse for RpcError {
 #[derive(Clone)]
 struct Context {
     client: Arc<gen::client::Client>,
-    // TODO: add Helios client
-    // TODO: add executor impl (based on blockifier)
-    // TODO: add mappings from DTO to blockifier
 }
 
 async fn handle_request(
