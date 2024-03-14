@@ -3,7 +3,6 @@ use beerus_experimental_api::{
     gen::{client::blocking::Client, FunctionCall},
 };
 
-#[allow(dead_code)]
 mod common;
 
 #[test]
