@@ -25,7 +25,7 @@ impl BeerusRpc {
             self.beerus.starknet_client.spec_version().await?;
 
         if remote_spec_version != SPEC_VERION {
-            return Err(BeerusRpcError::Other((-32601, format!("Spec version mismatch between Beerus {} and remote Starkent RPC {}", SPEC_VERION, remote_spec_version))));
+            return Err(BeerusRpcError::UnexpectedSpecVersion(format!("Spec version mismatch between Beerus {} and remote Starkent RPC {}", SPEC_VERION, remote_spec_version)));
         }
 
         // build the RPC server
