@@ -1,18 +1,37 @@
-use beerus_experimental_api::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-    GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
-    InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
-    SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
+use beerus_experimental_api::{
+    gen::client::Client,
+    gen::{
+        Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+        BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+        GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
+        GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
+        InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
+    },
+    rpc::{serve, Server},
 };
 
 mod common;
 
+pub struct Context {
+    pub client: Client,
+    pub server: Server,
+}
+
+pub async fn ctx() -> Option<Context> {
+    let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
+    let server = serve(&url, "127.0.0.1:0").await.ok()?;
+    tracing::info!(port = server.port(), "test server is up");
+
+    let url = format!("http://localhost:{}/rpc", server.port());
+    let client = Client::new(&url);
+    Some(Context { server, client })
+}
+
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_specVersion() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -24,7 +43,7 @@ async fn test_specVersion() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_chainId() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -36,7 +55,7 @@ async fn test_chainId() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_blockHashAndNumber() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -49,7 +68,7 @@ async fn test_blockHashAndNumber() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_blockNumber() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -61,7 +80,7 @@ async fn test_blockNumber() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_call() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -87,7 +106,7 @@ async fn test_call() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_estimateFee() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -151,7 +170,7 @@ async fn test_estimateFee() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -165,7 +184,7 @@ async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -183,7 +202,7 @@ async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getBlockWithTxs() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -201,7 +220,7 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_syncing() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -213,7 +232,7 @@ async fn test_syncing() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getNonce() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -231,7 +250,7 @@ async fn test_getNonce() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getTransactionByHash() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -249,7 +268,7 @@ async fn test_getTransactionByHash() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -266,7 +285,7 @@ async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getStorageAt() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -289,7 +308,7 @@ async fn test_getStorageAt() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getProof() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -320,7 +339,7 @@ async fn test_getProof() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getTransactionStatus() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -340,7 +359,7 @@ async fn test_getTransactionStatus() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getTransactionReceipt() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -363,7 +382,7 @@ async fn test_getTransactionReceipt() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getClass() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -397,7 +416,7 @@ async fn test_getClass() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getClassAt() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
@@ -428,7 +447,7 @@ async fn test_getClassAt() -> Result<(), common::Error> {
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getClassHashAt() -> Result<(), common::Error> {
-    let Some(ctx) = common::ctx().await else {
+    let Some(ctx) = ctx().await else {
         return Ok(());
     };
 
