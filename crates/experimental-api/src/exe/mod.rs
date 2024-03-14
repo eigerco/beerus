@@ -228,8 +228,6 @@ impl StateReader for StateProxy {
         class_hash: ClassHash,
     ) -> StateResult<CompiledClassHash> {
         tracing::info!(?class_hash, "get_compiled_class_hash");
-
-        // TODO: learn what a proper impl must be like
         Err(StateError::UndeclaredClassHash(class_hash))
     }
 }
@@ -280,8 +278,6 @@ impl BlockifierState for StateProxy {
         contract_class: ContractClass,
     ) -> StateResult<()> {
         tracing::info!(?class_hash, ?contract_class, "set_contract_class");
-        // The `CommitmentStateDiff` does not have a relevant map for this.
-        // TODO: find out how & where to store this state update
         Ok(())
     }
 
@@ -310,6 +306,5 @@ impl BlockifierState for StateProxy {
 
     fn add_visited_pcs(&mut self, class_hash: ClassHash, pcs: &HashSet<usize>) {
         tracing::info!(?class_hash, pcs.len = pcs.len(), "add_visited_pcs");
-        // TODO: learn the purpose of this method, and implement accordingly
     }
 }
