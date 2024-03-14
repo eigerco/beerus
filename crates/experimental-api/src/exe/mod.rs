@@ -130,7 +130,7 @@ pub fn exec(
         address_to_class_hash: Default::default(),
         class_hash_to_compiled_class_hash: Default::default(),
     };
-    let mut proxy = StateProxy { client: client.clone(), diff };
+    let mut proxy = StateProxy { client: client.to_owned(), diff };
 
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
