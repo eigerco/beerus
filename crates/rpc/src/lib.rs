@@ -18,9 +18,7 @@ impl BeerusRpc {
         Self { beerus }
     }
 
-    pub async fn run(
-        self,
-    ) -> Result<(SocketAddr, ServerHandle), RunError> {
+    pub async fn run(self) -> Result<(SocketAddr, ServerHandle), RunError> {
         self.check_spec_version(SPEC_VERION).await?;
 
         let server =
@@ -31,10 +29,7 @@ impl BeerusRpc {
         Ok((addr, handle))
     }
 
-    async fn check_spec_version(
-        &self,
-        expected: &str,
-    ) -> Result<(), RunError> {
+    async fn check_spec_version(&self, expected: &str) -> Result<(), RunError> {
         let actual = self.beerus.starknet_client.spec_version().await?;
         if actual != expected {
             return Err(RunError::WrongSpecVersion(
