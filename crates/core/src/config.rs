@@ -30,11 +30,11 @@ pub const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 pub const MAINNET_CONSENSUS_RPC: &str = "https://www.lightclientdata.org";
 pub const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
 
-// testnet constants
-pub const TESTNET_CC_ADDRESS: &str = "de29d060D45901Fb19ED6C6e959EB22d8626708e";
-pub const TESTNET_CONSENSUS_RPC: &str =
-    "http://testing.prater.beacon-api.nimbus.team";
-pub const TESTNET_FALLBACK_RPC: &str = "https://sync-goerli.beaconcha.in";
+// sepolia testnet constants
+pub const SEPOLIA_CC_ADDRESS: &str = "E2Bb56ee936fd6433DC0F6e7e3b8365C906AA057";
+pub const SEPOLIA_CONSENSUS_RPC: &str =
+    "http://unstable.sepolia.beacon-api.nimbus.team";
+pub const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
 
 /// global config
 #[derive(Clone, Deserialize, Debug)]
@@ -122,7 +122,7 @@ impl Config {
     pub fn get_core_contract_address(&self) -> Result<Address> {
         match self.network {
             Network::MAINNET => Ok(Address::from_str(MAINNET_CC_ADDRESS)?),
-            Network::GOERLI => Ok(Address::from_str(TESTNET_CC_ADDRESS)?),
+            Network::SEPOLIA => Ok(Address::from_str(SEPOLIA_CC_ADDRESS)?),
             network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
@@ -130,7 +130,7 @@ impl Config {
     pub fn get_consensus_rpc(&self) -> Result<String> {
         match self.network {
             Network::MAINNET => Ok(MAINNET_CONSENSUS_RPC.to_owned()),
-            Network::GOERLI => Ok(TESTNET_CONSENSUS_RPC.to_owned()),
+            Network::SEPOLIA => Ok(SEPOLIA_CONSENSUS_RPC.to_owned()),
             network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
@@ -138,7 +138,7 @@ impl Config {
     pub fn get_fallback_address(&self) -> Result<String> {
         match self.network {
             Network::MAINNET => Ok(MAINNET_FALLBACK_RPC.to_owned()),
-            Network::GOERLI => Ok(TESTNET_FALLBACK_RPC.to_owned()),
+            Network::SEPOLIA => Ok(SEPOLIA_FALLBACK_RPC.to_owned()),
             network => eyre::bail!("unsupported network: {network:?}"),
         }
     }
@@ -152,9 +152,9 @@ impl Config {
                     cf.fetch_latest_checkpoint(&Network::MAINNET).await?;
                 Ok(format!("{checkpoint:x}"))
             }
-            Network::GOERLI => {
+            Network::SEPOLIA => {
                 let checkpoint =
-                    cf.fetch_latest_checkpoint(&Network::GOERLI).await?;
+                    cf.fetch_latest_checkpoint(&Network::SEPOLIA).await?;
                 Ok(format!("{checkpoint:x}"))
             }
             network => Err(eyre!("unsupported network: {network:?}")),
