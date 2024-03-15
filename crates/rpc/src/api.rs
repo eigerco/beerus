@@ -433,16 +433,10 @@ impl BeerusRpcServer for BeerusRpc {
     async fn block_hash_and_number(
         &self,
     ) -> Result<BlockHashAndNumber, RpcError> {
-        let block_hash = self
-            .beerus
-            .state_block_hash()
-            .await
-            .map_err(RpcError::from)?;
-        let block_number = self
-            .beerus
-            .state_block_number()
-            .await
-            .map_err(RpcError::from)?;
+        let block_hash =
+            self.beerus.state_block_hash().await.map_err(RpcError::from)?;
+        let block_number =
+            self.beerus.state_block_number().await.map_err(RpcError::from)?;
         Ok(BlockHashAndNumber { block_hash, block_number })
     }
 
@@ -456,11 +450,7 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn syncing(&self) -> Result<SyncStatusType, RpcError> {
-        self.beerus
-            .starknet_client
-            .syncing()
-            .await
-            .map_err(RpcError::from)
+        self.beerus.starknet_client.syncing().await.map_err(RpcError::from)
     }
 
     async fn get_events(
