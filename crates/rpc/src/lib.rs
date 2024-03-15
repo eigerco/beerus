@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 
 use api::{BeerusRpcServer, SPEC_VERION};
 use beerus_core::client::BeerusClient;
-use error::BeerusRunError;
+use error::RunError;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
 use starknet::providers::Provider;
 
@@ -20,7 +20,7 @@ impl BeerusRpc {
 
     pub async fn run(
         self,
-    ) -> Result<(SocketAddr, ServerHandle), BeerusRunError> {
+    ) -> Result<(SocketAddr, ServerHandle), RunError> {
         self.check_spec_version(SPEC_VERION).await?;
 
         let server =
@@ -34,10 +34,10 @@ impl BeerusRpc {
     async fn check_spec_version(
         &self,
         expected: &str,
-    ) -> Result<(), BeerusRunError> {
+    ) -> Result<(), RunError> {
         let actual = self.beerus.starknet_client.spec_version().await?;
         if actual != expected {
-            return Err(BeerusRunError::WrongSpecVersion(
+            return Err(RunError::WrongSpecVersion(
                 actual,
                 expected.to_owned(),
             ));
