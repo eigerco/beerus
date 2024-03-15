@@ -18,17 +18,17 @@ pub enum RunError {
 }
 
 #[derive(Error, Debug)]
-pub enum BeerusRpcError {
+pub enum RpcError {
     #[error(transparent)]
     Provider(ProviderError),
     #[error("{0:?}")]
     Other((i32, String)),
 }
 
-impl From<BeerusRpcError> for ErrorObjectOwned {
-    fn from(err: BeerusRpcError) -> Self {
+impl From<RpcError> for ErrorObjectOwned {
+    fn from(err: RpcError) -> Self {
         match err {
-            BeerusRpcError::Provider(provider_err) => match provider_err {
+            RpcError::Provider(provider_err) => match provider_err {
                 StarknetProviderError(sn_err) => match &sn_err {
                     StarknetError::FailedToReceiveTransaction => {
                         ErrorObjectOwned::owned(1, sn_err.message(), None::<()>)
@@ -203,33 +203,33 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
                     None::<()>,
                 ),
             },
-            BeerusRpcError::Other(other_err) => {
+            RpcError::Other(other_err) => {
                 ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
             }
         }
     }
 }
 
-impl From<ProviderError> for BeerusRpcError {
+impl From<ProviderError> for RpcError {
     fn from(err: ProviderError) -> Self {
-        BeerusRpcError::Provider(err)
+        RpcError::Provider(err)
     }
 }
 
-impl From<CoreError> for BeerusRpcError {
+impl From<CoreError> for RpcError {
     fn from(err: CoreError) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        RpcError::Other((-32601, format!("{err}")))
     }
 }
 
-impl From<Report> for BeerusRpcError {
+impl From<Report> for RpcError {
     fn from(err: Report) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        RpcError::Other((-32601, format!("{err}")))
     }
 }
 
-impl From<Error> for BeerusRpcError {
+impl From<Error> for RpcError {
     fn from(err: Error) -> Self {
-        BeerusRpcError::Other((-32601, format!("{err}")))
+        RpcError::Other((-32601, format!("{err}")))
     }
 }
