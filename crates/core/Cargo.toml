@@ -16,8 +16,7 @@ bitvec = "1.0.1"
 ethabi = "18.0.0"
 ethers = "2.0.11"
 eyre.workspace = true
-## TODO: This PR is needed: https://github.com/a16z/helios/pull/326
-helios = { git = "https://github.com/a16z/helios", tag = "0.5.5" }
+helios = { git = "https://github.com/a16z/helios", rev = "5ee0477" }
 reqwest = { version = "0.11.16", default-features = false, features = ["rustls-tls"] }
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
