@@ -1,7 +1,6 @@
 use beerus_core::CoreError;
 use eyre::Report;
 use jsonrpsee::core::Error;
-use jsonrpsee::types::error::ErrorCode;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError;
 use starknet::providers::ProviderError;
@@ -9,13 +8,21 @@ use starknet::providers::ProviderError::StarknetError as StarknetProviderError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+pub enum BeerusRunError {
+    #[error("wrong RPC spec version: expected {1} but got {0}")]
+    WrongSpecVersion(String, String),
+    #[error(transparent)]
+    RpcServer(#[from] jsonrpsee::core::Error),
+    #[error(transparent)]
+    Provider(#[from] ProviderError),
+}
+
+#[derive(Error, Debug)]
 pub enum BeerusRpcError {
     #[error(transparent)]
     Provider(ProviderError),
     #[error("{0:?}")]
     Other((i32, String)),
-    #[error("unexpected RPC spec version: {0}")]
-    UnexpectedSpecVersion(String),
 }
 
 impl From<BeerusRpcError> for ErrorObjectOwned {
@@ -198,13 +205,6 @@ impl From<BeerusRpcError> for ErrorObjectOwned {
             },
             BeerusRpcError::Other(other_err) => {
                 ErrorObjectOwned::owned(other_err.0, other_err.1, None::<()>)
-            }
-            BeerusRpcError::UnexpectedSpecVersion(err) => {
-                ErrorObjectOwned::owned(
-                    ErrorCode::InvalidParams.code(),
-                    err,
-                    None::<()>,
-                )
             }
         }
     }
