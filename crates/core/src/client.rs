@@ -204,7 +204,7 @@ impl BeerusClient {
                         info!("synced block: {block_number}")
                     }
                     Ok(None) => debug!("already at head block"),
-                    Err(e) => error!("failed to pull block: {e}"),
+                    Err(e) => error!("sync error: {e}"),
                 };
                 debug!("state loop: delay {poll_interval:?}");
                 thread::sleep(poll_interval);
@@ -332,11 +332,11 @@ async fn sync(
     let starknet_state_root =
         get_starknet_state_root(l1_client, core_contract_addr)
             .await
-            .context("starknet state root")?;
+            .context("failed to get starknet state root")?;
     let l1_starknet_block_number =
         get_starknet_state_block_number(l1_client, core_contract_addr)
             .await
-            .context("starknet state block")?;
+            .context("failed to get starknet block")?;
     let local_block_number = node.read().await.l1_block_number;
 
     debug!("starknet block number: {l1_starknet_block_number}, local block number: {local_block_number}");
@@ -349,7 +349,7 @@ async fn sync(
     match l2_client
         .get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest))
         .await
-        .context("get block")?
+        .context("failed to get block")?
     {
         MaybePendingBlockWithTxHashes::Block(l2_latest_block) => {
             let blocks_behind =
