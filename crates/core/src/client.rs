@@ -207,7 +207,7 @@ impl BeerusClient {
                     Err(e) => error!("sync error: {e}"),
                 };
                 debug!("state loop: delay {poll_interval:?}");
-                thread::sleep(poll_interval);
+                tokio::time::sleep(poll_interval).await;
             }
         };
 
