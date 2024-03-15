@@ -3,10 +3,11 @@ pub mod error;
 
 use std::net::SocketAddr;
 
-use api::BeerusRpcServer;
+use api::{BeerusRpcServer, SPEC_VERION};
 use beerus_core::client::BeerusClient;
-use jsonrpsee::core::Error;
+use error::BeerusRpcError;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
+use starknet::providers::Provider;
 
 pub struct BeerusRpc {
     beerus: BeerusClient,
@@ -17,13 +18,24 @@ impl BeerusRpc {
         Self { beerus }
     }
 
-    pub async fn run(self) -> Result<(SocketAddr, ServerHandle), Error> {
+    pub async fn run(
+        self,
+    ) -> Result<(SocketAddr, ServerHandle), BeerusRpcError> {
+        let remote_spec_version =
+            self.beerus.starknet_client.spec_version().await?;
+
+        if remote_spec_version != SPEC_VERION {
+            return Err(BeerusRpcError::UnexpectedSpecVersion(
+                remote_spec_version,
+            ));
+        }
+
         // build the RPC server
         let server =
             ServerBuilder::default().build(self.beerus.config.rpc_addr).await?;
 
         // start the RPC Server
-        let addr = server.local_addr()?;
+        let addr = server.local_addr().map_err(BeerusRpcError::from)?;
         let handle = server.start(self.into_rpc());
         Ok((addr, handle))
     }

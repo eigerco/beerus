@@ -22,6 +22,8 @@ use starknet::providers::Provider;
 use crate::error::BeerusRpcError;
 use crate::BeerusRpc;
 
+pub const SPEC_VERION: &str = "0.6.0";
+
 /// [`starknet::core::types::FieldElement`] may be serialized in a way that is not compliant with
 /// the Starknet OpenRPC spec (missing the "0x" prefix).
 /// This wrapper fixes that.
@@ -538,7 +540,7 @@ impl BeerusRpcServer for BeerusRpc {
     }
 
     async fn spec_version(&self) -> Result<String, BeerusRpcError> {
-        Ok(String::from("0.6.0"))
+        Ok(String::from(SPEC_VERION))
     }
 
     // ------------------- Extended Starknet Provider Endpoints -------------------
