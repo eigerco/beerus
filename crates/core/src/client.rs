@@ -330,9 +330,13 @@ async fn sync(
     node: Arc<RwLock<NodeData>>,
 ) -> Result<Option<u64>> {
     let starknet_state_root =
-        get_starknet_state_root(l1_client, core_contract_addr).await?;
+        get_starknet_state_root(l1_client, core_contract_addr)
+            .await
+            .context("starknet state root")?;
     let l1_starknet_block_number =
-        get_starknet_state_block_number(l1_client, core_contract_addr).await?;
+        get_starknet_state_block_number(l1_client, core_contract_addr)
+            .await
+            .context("starknet state block")?;
     let local_block_number = node.read().await.l1_block_number;
 
     debug!("starknet block number: {l1_starknet_block_number}, local block number: {local_block_number}");
@@ -345,8 +349,9 @@ async fn sync(
     match l2_client
         .get_block_with_tx_hashes(BlockId::Tag(StarknetBlockTag::Latest))
         .await
+        .context("get block")?
     {
-        Ok(MaybePendingBlockWithTxHashes::Block(l2_latest_block)) => {
+        MaybePendingBlockWithTxHashes::Block(l2_latest_block) => {
             let blocks_behind =
                 l2_latest_block.block_number - l1_starknet_block_number;
             info!(
@@ -360,10 +365,9 @@ async fn sync(
             guard.update(l1_starknet_block_number, starknet_state_root);
             Ok(Some(l2_latest_block.block_number))
         }
-        Ok(MaybePendingBlockWithTxHashes::PendingBlock(_)) => {
+        MaybePendingBlockWithTxHashes::PendingBlock(_) => {
             Err(eyre!("expecting latest got pending"))
         }
-        Err(e) => Err(eyre!("failed to fetch last block: {e}")),
     }
 }
 
