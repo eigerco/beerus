@@ -1,6 +1,6 @@
 use beerus_core::CoreError;
 use eyre::Report;
-use jsonrpsee::core::Error;
+use jsonrpsee::core::Error as JsonRpcError;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError;
 use starknet::providers::ProviderError;
@@ -12,7 +12,7 @@ pub enum RunError {
     #[error("wrong RPC spec version: expected {1} but got {0}")]
     WrongSpecVersion(String, String),
     #[error(transparent)]
-    RpcServer(#[from] jsonrpsee::core::Error),
+    RpcServer(#[from] JsonRpcError),
     #[error(transparent)]
     Provider(#[from] ProviderError),
 }
@@ -20,7 +20,7 @@ pub enum RunError {
 #[derive(Error, Debug)]
 pub enum RpcError {
     #[error(transparent)]
-    Provider(ProviderError),
+    Provider(#[from] ProviderError),
     #[error("{0:?}")]
     Other((i32, String)),
 }
@@ -210,26 +210,22 @@ impl From<RpcError> for ErrorObjectOwned {
     }
 }
 
-impl From<ProviderError> for RpcError {
-    fn from(err: ProviderError) -> Self {
-        RpcError::Provider(err)
-    }
-}
-
+// TODO: break this unnecessary coupling
 impl From<CoreError> for RpcError {
     fn from(err: CoreError) -> Self {
         RpcError::Other((-32601, format!("{err}")))
     }
 }
 
+// TODO: break this unnecessary coupling
 impl From<Report> for RpcError {
     fn from(err: Report) -> Self {
         RpcError::Other((-32601, format!("{err}")))
     }
 }
 
-impl From<Error> for RpcError {
-    fn from(err: Error) -> Self {
+impl From<JsonRpcError> for RpcError {
+    fn from(err: JsonRpcError) -> Self {
         RpcError::Other((-32601, format!("{err}")))
     }
 }
