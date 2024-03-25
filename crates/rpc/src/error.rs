@@ -9,7 +9,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum RunError {
-    #[error("wrong RPC spec version: expected {1} but got {0}")]
+    #[error("wrong RPC spec version: local is {1} but remove is {0}")]
     WrongSpecVersion(String, String),
     #[error(transparent)]
     RpcServer(#[from] JsonRpcError),
