@@ -25,6 +25,11 @@ pub enum RpcError {
     Other((i32, String)),
 }
 
+// TODO: Remove this completely after full releace cycle
+#[allow(unused_imports)]
+#[deprecated]
+use self::RpcError as BeerusRpcError;
+
 impl From<RpcError> for ErrorObjectOwned {
     fn from(err: RpcError) -> Self {
         match err {
