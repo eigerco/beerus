@@ -1,5 +1,5 @@
 use beerus_experimental_api::{
-    exe::exec,
+    exe::call,
     gen::{client::blocking::Client, FunctionCall},
 };
 
@@ -11,6 +11,11 @@ fn test_exec() -> Result<(), common::Error> {
         return Ok(());
     };
     let client = Client::new(&url);
+
+    // TODO: drop the logging
+    // cargo add -p beerus-experimental-api tracing-subscriber --dev
+    // RUST_LOG=beerus_experimental_api=debug cargo test --package beerus-experimental-api --test exe -- test_exec --exact --nocapture
+    tracing_subscriber::fmt::init();
 
     // TX: 0xcbb2b87d5378e682d650e0e7d36679b4557ba2bfa9d4e285b7168c04376b21
     let json = serde_json::json!({
@@ -31,9 +36,9 @@ fn test_exec() -> Result<(), common::Error> {
       "contract_address": "0x13e3ca9a377084c37dc7eacbd1d9f8c3e3733935bcbad887c32a0e213cd6fe0",
       "entry_point_selector": "0x162da33a4585851fe8d3af3c2a9c60b557814e221e0d4f30ff0b2189d9c7775"
     });
-    let call: FunctionCall = serde_json::from_value(json)?;
+    let function_call: FunctionCall = serde_json::from_value(json)?;
 
-    let call_info = exec(&client, call)?;
+    let call_info = call(&client, function_call)?;
     assert!(call_info.execution.retdata.0.is_empty());
 
     Ok(())
