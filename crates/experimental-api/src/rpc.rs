@@ -185,7 +185,7 @@ impl gen::Rpc for Context {
         .map_err(|e| {
             iamgroot::jsonrpc::Error::new(
                 500,
-                format!("join error: {}", e.to_string()),
+                format!("join error: {e}"),
             )
         })??;
 
