@@ -175,7 +175,6 @@ impl gen::Rpc for Context {
         request: FunctionCall,
         _block_id: BlockId,
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
-
         let client = gen::client::blocking::Client::new(&self.url);
 
         let call_info = tokio::task::spawn_blocking(move || {
@@ -183,13 +182,13 @@ impl gen::Rpc for Context {
         })
         .await
         .map_err(|e| {
-            iamgroot::jsonrpc::Error::new(
-                500,
-                format!("join error: {e}"),
-            )
+            iamgroot::jsonrpc::Error::new(500, format!("join error: {e}"))
         })??;
 
-        let ret: Result<Vec<Felt>, Error> = call_info.execution.retdata.0
+        let ret: Result<Vec<Felt>, Error> = call_info
+            .execution
+            .retdata
+            .0
             .into_iter()
             .map(|e| e.try_into())
             .collect();

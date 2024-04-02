@@ -46,10 +46,7 @@ impl From<Error> for iamgroot::jsonrpc::Error {
     fn from(error: Error) -> Self {
         match error {
             Error::IamGroot(e) => e,
-            e => iamgroot::jsonrpc::Error {
-                code: 500,
-                message: e.to_string(),
-            }    
+            e => iamgroot::jsonrpc::Error { code: 500, message: e.to_string() },
         }
     }
 }
