@@ -6,7 +6,7 @@ use beerus_experimental_api::{
 mod common;
 
 #[test]
-fn test_exec() -> Result<(), common::Error> {
+fn test_call() -> Result<(), common::Error> {
     let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL") else {
         return Ok(());
     };
