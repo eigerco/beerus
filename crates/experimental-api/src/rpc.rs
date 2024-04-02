@@ -53,6 +53,7 @@ fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
 
     let ctx = Context {
         client: Arc::new(gen::client::Client::with_client(url, client)),
+        url: url.to_owned(),
     };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
@@ -101,6 +102,7 @@ impl IntoResponse for RpcError {
 #[derive(Clone)]
 struct Context {
     client: Arc<gen::client::Client>,
+    url: String,
 }
 
 async fn handle_request(
@@ -171,9 +173,28 @@ impl gen::Rpc for Context {
     async fn call(
         &self,
         request: FunctionCall,
-        block_id: BlockId,
+        _block_id: BlockId,
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
-        self.client.call(request, block_id).await
+
+        let client = gen::client::blocking::Client::new(&self.url);
+
+        let call_info = tokio::task::spawn_blocking(move || {
+            crate::exe::call(&client, request)
+        })
+        .await
+        .map_err(|e| {
+            iamgroot::jsonrpc::Error::new(
+                500,
+                format!("join error: {}", e.to_string()),
+            )
+        })??;
+
+        let ret: Result<Vec<Felt>, Error> = call_info.execution.retdata.0
+            .into_iter()
+            .map(|e| e.try_into())
+            .collect();
+
+        Ok(ret?)
     }
 
     async fn chainId(&self) -> std::result::Result<ChainId, jsonrpc::Error> {

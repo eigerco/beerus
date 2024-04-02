@@ -42,12 +42,12 @@ pub mod map;
 
 use err::Error;
 
-pub fn exec(
+pub fn call(
     client: &gen::client::blocking::Client,
-    call: gen::FunctionCall,
+    function_call: gen::FunctionCall,
 ) -> Result<CallInfo, Error> {
     let gen::FunctionCall { calldata, contract_address, entry_point_selector } =
-        call;
+        function_call;
 
     let calldata: Result<Vec<StarkFelt>, _> =
         calldata.into_iter().map(|felt| felt.try_into()).collect();
@@ -135,6 +135,7 @@ pub fn exec(
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
 
+    tracing::debug!(?call_info, "call completed");
     Ok(call_info)
 }
 
