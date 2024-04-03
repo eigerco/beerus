@@ -38,7 +38,7 @@ More API providers can be found [here](https://docs.starknet.io/documentation/to
 
 | field   | example | description |
 | ----------- | ----------- | ----------- |
-| network | MAINNET or GOERLI | network to query |
+| network | MAINNET or SEPOLIA| network to query |
 | eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
 | starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/YOURAPIKEY | untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
