@@ -39,12 +39,25 @@ More API providers can be found [here](https://docs.starknet.io/documentation/to
 | field   | example | description |
 | ----------- | ----------- | ----------- |
 | network | MAINNET or SEPOLIA| network to query |
-| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/YOURAPIKEY | untrusted l1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/YOURAPIKEY | untrusted l2 node provider url |
+| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}| untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 | fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
+
+When you select a network, check that `eth_execution_rpc` and `starknet_rpc` urls also point to their corresponding networks. For example:
+
+MAINNET
+```
+eth_execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}"
+starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}"
+```
+SEPOLIA
+```
+eth_execution_rpc = "https://eth-sepolia.g.alchemy.com/v2/{YOUR_API_KEY}"
+starknet_rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}"
+```
 
 ### Running Beerus for the first time
 
