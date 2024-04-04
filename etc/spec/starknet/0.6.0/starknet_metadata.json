@@ -141,7 +141,7 @@
                     "name": {
                         "title": "name",
                         "type": "string",
-                        "description": "the constructor name, currently forced to be `contructor`",
+                        "description": "the constructor name, currently forced to be `constructor`",
                         "enum": [
                             "constructor"
                         ]

@@ -3,7 +3,7 @@ pub mod error;
 
 use std::net::SocketAddr;
 
-use api::{BeerusRpcServer, SPEC_VERION};
+use api::{BeerusRpcServer, SPEC_VERSION};
 use beerus_core::client::BeerusClient;
 use error::RunError;
 use jsonrpsee::server::{ServerBuilder, ServerHandle};
@@ -19,7 +19,7 @@ impl BeerusRpc {
     }
 
     pub async fn run(self) -> Result<(SocketAddr, ServerHandle), RunError> {
-        self.check_spec_version(SPEC_VERION).await?;
+        self.check_spec_version(SPEC_VERSION).await?;
 
         let server =
             ServerBuilder::default().build(self.beerus.config.rpc_addr).await?;
