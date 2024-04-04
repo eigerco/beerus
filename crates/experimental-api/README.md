@@ -11,7 +11,7 @@ SCOPE:
     - seamless migration between any web frameworks
     - space for customisations & optimisations
   - seamless support for multiple spec versions
-  - no more "spec inconsistensy" fixes
+  - no more "spec inconsistency" fixes
   - auto-generated `Rpc` trait (both blocking and async)
   - auto-generated RPC Client (both blocking and async)
 - blockifier: stateless execution/tracing of transactions
