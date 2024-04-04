@@ -57,6 +57,10 @@ When planning "big" changes to the project, it's encouraged to ask for feedback 
 
 How big is "big"? As a rule of thumb, if the work spans more than one coding day, it's probably advisable to create an issue first and then work on it after confirmation. However, this may differ depending on the contributor context. I.e. if the author is already a maintainer, the base context will be high and the risk of rejection low. It is probably the opposite in the case of an external, non-habitual contributor. So, the author should use common sense here.
 
+### A note on tiny & non-code changes (e.g. typo fixes)
+
+Pull requests with only typo fixes will not be merged. Please raise an issue if you want to inform us about any typos or any other issues not directly related to code or documentation inconsistencies. There is even a [crate](https://github.com/crate-ci/typos) to automate such tedious typo-fixing activities, please consider contributing your typo fixes there for everyone else to use.
+
 ## Style Guides
 
 ### Commit Messages
