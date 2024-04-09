@@ -598,8 +598,10 @@ name = "beerus-rpc"
 version = "0.4.0"
 dependencies = [
  "beerus-core",
+ "cached 0.49.3",
  "eyre",
  "jsonrpsee 0.20.3",
+ "lazy_static",
  "pretty_assertions",
  "reqwest",
  "serde",
@@ -736,7 +738,7 @@ dependencies = [
  "ark-ff",
  "ark-secp256k1",
  "ark-secp256r1",
- "cached",
+ "cached 0.44.0",
  "cairo-felt",
  "cairo-lang-casm",
  "cairo-lang-runner",
@@ -877,7 +879,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b195e4fbc4b6862bbd065b991a34750399c119797efff72492f28a5864de8700"
 dependencies = [
  "async-trait",
- "cached_proc_macro",
+ "cached_proc_macro 0.17.0",
  "cached_proc_macro_types",
  "futures",
  "hashbrown 0.13.2",
@@ -888,12 +890,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "cached"
+version = "0.49.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e8e463fceca5674287f32d252fb1d94083758b8709c160efae66d263e5f4eba"
+dependencies = [
+ "ahash 0.8.7",
+ "cached_proc_macro 0.20.0",
+ "cached_proc_macro_types",
+ "hashbrown 0.14.3",
+ "instant",
+ "once_cell",
+ "thiserror",
+]
+
+[[package]]
 name = "cached_proc_macro"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b48814962d2fd604c50d2b9433c2a41a0ab567779ee2c02f7fba6eca1221f082"
 dependencies = [
  "cached_proc_macro_types",
+ "darling 0.14.4",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "cached_proc_macro"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad9f16c0d84de31a2ab7fdf5f7783c14631f7075cf464eb3bb43119f61c9cb2a"
+dependencies = [
  "darling 0.14.4",
  "proc-macro2",
  "quote",
