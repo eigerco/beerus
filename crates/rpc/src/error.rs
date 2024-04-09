@@ -1,4 +1,3 @@
-use beerus_core::CoreError;
 use eyre::Report;
 use jsonrpsee::core::Error as JsonRpcError;
 use jsonrpsee::types::ErrorObjectOwned;
@@ -215,14 +214,6 @@ impl From<RpcError> for ErrorObjectOwned {
     }
 }
 
-// TODO: break this unnecessary coupling
-impl From<CoreError> for RpcError {
-    fn from(err: CoreError) -> Self {
-        RpcError::Other((-32601, format!("{err}")))
-    }
-}
-
-// TODO: break this unnecessary coupling
 impl From<Report> for RpcError {
     fn from(err: Report) -> Self {
         RpcError::Other((-32601, format!("{err}")))

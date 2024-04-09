@@ -26,10 +26,9 @@ use tokio::task;
 use tracing::{debug, error, info};
 
 use crate::config::Config;
-use crate::storage_proofs::types::StorageProofResponse;
+use crate::storage_proofs::types::{RPCError, StorageProofResponse};
 use crate::storage_proofs::StorageProof;
-use crate::utils::*;
-use crate::CoreError;
+use crate::utils::simple_call_opts;
 
 abigen!(
     StarknetCoreContracts,
@@ -224,7 +223,7 @@ impl BeerusClient {
             .await
     }
 
-    pub async fn state_block_number(&self) -> Result<u64, CoreError> {
+    pub async fn state_block_number(&self) -> Result<u64> {
         get_starknet_state_block_number(
             &self.helios_client,
             self.core_contract_addr,
@@ -232,18 +231,14 @@ impl BeerusClient {
         .await
     }
 
-    pub async fn state_block_hash(&self) -> Result<FieldElement, CoreError> {
+    pub async fn state_block_hash(&self) -> Result<FieldElement> {
         let data = StateBlockHashCall::selector();
         let call_opts = simple_call_opts(self.core_contract_addr, data.into());
 
-        let sn_block_hash = self
-            .helios_client
-            .call(&call_opts, BlockTag::Latest)
-            .await
-            .map_err(CoreError::FetchL1Val)?;
+        let sn_block_hash =
+            self.helios_client.call(&call_opts, BlockTag::Latest).await?;
 
-        FieldElement::from_byte_slice_be(&sn_block_hash)
-            .map_err(|e| CoreError::FetchL1Val(eyre!("{e}")))
+        Ok(FieldElement::from_byte_slice_be(&sn_block_hash)?)
     }
 
     pub async fn get_local_root(&self) -> FieldElement {
@@ -284,10 +279,8 @@ impl BeerusClient {
         block_id: BlockId,
         contract_address: &FieldElement,
         keys: &[FieldElement],
-    ) -> Result<StorageProof, CoreError> {
-        let client = reqwest::Client::builder().build().map_err(|e| {
-            CoreError::StorageProof(eyre!("build request: {e:?}"))
-        })?;
+    ) -> Result<StorageProof> {
+        let client = reqwest::Client::builder().build()?;
 
         let keys =
             keys.iter().map(|i| format!("0x{i:x}")).collect::<Vec<String>>();
@@ -305,21 +298,15 @@ impl BeerusClient {
             .request(reqwest::Method::POST, &self.proof_addr)
             .json(&params);
 
-        let response = request.send().await.map_err(|e| {
-            CoreError::StorageProof(eyre!("proof request: {e:?}"))
-        })?;
+        let response = request.send().await.context("proof request")?;
         let body: StorageProofResponse =
-            response.json().await.map_err(|e| {
-                CoreError::StorageProof(eyre!("proof response: {e:?}"))
-            })?;
+            response.json().await.context("proof response")?;
 
-        body.result.ok_or_else(|| {
-            let error = body
-                .error
-                .map(|e| eyre!("failed to get proof: {e:?}"))
-                .unwrap_or_else(|| eyre!("undefined"));
-            CoreError::StorageProof(error)
-        })
+        if let Some(RPCError { code, message }) = body.error {
+            eyre::bail!("RPC error: {code} {message}")
+        }
+
+        body.result.ok_or_else(|| eyre!("RPC result is missing"))
     }
 }
 
@@ -381,20 +368,20 @@ async fn get_starknet_state_root(
     let state_root = l1_client
         .call(&call_opts, BlockTag::Latest)
         .await
-        .map_err(CoreError::FetchL1Val)?;
+        .context("failed to fetch state root")?;
     FieldElement::from_byte_slice_be(&state_root).map_err(|e| eyre!(e))
 }
 
 async fn get_starknet_state_block_number(
     l1_client: &Client<impl Database>,
     core_contract_addr: Address,
-) -> Result<u64, CoreError> {
+) -> Result<u64> {
     let data = StateBlockNumberCall::selector();
     let call_opts = simple_call_opts(core_contract_addr, data.into());
 
     let block_number = l1_client
         .call(&call_opts, BlockTag::Latest)
         .await
-        .map_err(CoreError::FetchL1Val)?;
+        .context("failed to fetch block number")?;
     Ok(U256::from_big_endian(&block_number).as_u64())
 }
