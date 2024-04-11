@@ -9,10 +9,11 @@ use cached::SizedCache;
 use reqwest::Url;
 use starknet::{
     core::types::{
-        BlockId, BlockWithTxHashes, BlockWithTxs, DeclareTransaction,
-        DeployAccountTransaction, FieldElement, InvokeTransaction,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, Transaction, TransactionReceipt,
+        BlockHashAndNumber, BlockId, BlockWithTxHashes, BlockWithTxs,
+        DeclareTransaction, DeployAccountTransaction, FieldElement,
+        InvokeTransaction, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, Transaction,
+        TransactionReceipt,
     },
     providers::{
         jsonrpc::HttpTransport, JsonRpcClient, Provider, ProviderError,
@@ -160,6 +161,34 @@ async fn context<F: Fn(&BlockWithTxs) -> Option<T>, T>(
 }
 
 // starknet_blockNumber is already tested in the creation of the test context.
+
+#[tokio::test]
+async fn test_block_hash_and_number() {
+    async fn run() -> Result<(), &'static str> {
+        let TestContext { client, block, block_id: _, extracted_value: () } =
+            latest_block_context().await;
+
+        let BlockHashAndNumber { block_hash, block_number } = client
+            .block_hash_and_number()
+            .await
+            .expect("Failed to retrieve the block hash & number");
+
+        if block_number != block.block_number {
+            return Err("Block number mismatch");
+        }
+        if block_hash != block.block_hash {
+            return Err("Block hash mismatch");
+        }
+
+        Ok(())
+    }
+
+    // There is a very slight chance the test occurs right when a new block is produced, making the assertions fail.
+    // Just run the test twice.
+    if run().await.is_err() {
+        run().await.expect("Block hash or number mismatch")
+    }
+}
 
 #[tokio::test]
 async fn test_chain_id() {
