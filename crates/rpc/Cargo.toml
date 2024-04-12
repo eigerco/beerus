@@ -5,7 +5,7 @@ name = "beerus-rpc"
 version = "0.4.0"
 
 [features]
-integration-tests = ["cached", "lazy_static", "pretty_assertions", "reqwest", "serde_json", "tokio"]
+integration-tests = ["pretty_assertions", "reqwest", "serde_json", "tokio"]
 
 [dependencies]
 beerus-core = { path = "../core" }
@@ -18,8 +18,6 @@ thiserror.workspace = true
 tracing.workspace = true
 
 # Integration test dependencies
-cached = { version = "0.49.3", optional = true }
-lazy_static = { version = "1.4.0", optional = true }
 pretty_assertions = { version = "1.4.0", optional = true }
 reqwest = { version = "0.11.16", optional = true }
 serde_json = { version = "1.0", optional = true }
