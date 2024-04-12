@@ -451,26 +451,6 @@ async fn test_get_transaction_status() {
     .await;
 }
 
-/* TODO
-   Add more test scenarios to cover the following methods:
-
-   starknet_call
-   starknet_estimateFee
-   starknet_estimateFeeSingle
-   starknet_getEvents
-   starknet_getStateUpdate
-   starknet_getStorageAt
-   starknet_getTransactionReceipt
-   starknet_syncing
-   pathfinder_getProof
-
-   Extended endpoints (unsupported by starknet-rs' `JsonRpcClient`):
-
-   starknet_getStateRoot
-   starknet_getProof
-   starknet_getBalance
-*/
-
 fn truncate_felt_to_u128(felt: &FieldElement) -> u128 {
     u128::from_be_bytes(felt.to_bytes_be()[16..].try_into().unwrap())
 }
