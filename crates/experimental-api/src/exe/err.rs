@@ -1,3 +1,4 @@
+use cairo_lang_starknet_classes::casm_contract_class::StarknetSierraCompilationError;
 use thiserror::Error as ThisError;
 
 #[derive(Debug, ThisError)]
@@ -24,6 +25,8 @@ pub enum Error {
     ),
     #[error("Program error: {0:?}")]
     Program(#[from] cairo_vm::types::errors::program_errors::ProgramError),
+    #[error("Sierra compilation error: {0:?}")]
+    SierraCompilation(#[from] StarknetSierraCompilationError),
     #[error("{0}")]
     Custom(&'static str),
 }

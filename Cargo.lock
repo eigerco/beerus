@@ -577,6 +577,7 @@ dependencies = [
  "axum",
  "base64 0.22.0",
  "blockifier",
+ "cairo-lang-starknet-classes",
  "cairo-vm",
  "flate2",
  "hex",
