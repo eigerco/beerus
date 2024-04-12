@@ -10,6 +10,8 @@ pub enum Error {
     Exe(#[from] beerus_experimental_api::exe::err::Error),
     #[error("serde failed: {0:?}")]
     Json(#[from] serde_json::Error),
+    #[error("starknet api error: {0:?}")]
+    Api(#[from] starknet_api::StarknetApiError),
 }
 
 impl From<iamgroot::jsonrpc::Error> for Error {

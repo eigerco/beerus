@@ -6,16 +6,12 @@ use beerus_experimental_api::{
 mod common;
 
 #[test]
-fn test_call() -> Result<(), common::Error> {
+fn test_call_deprecated_contract_class() -> Result<(), common::Error> {
     let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL") else {
         return Ok(());
     };
     let client = Client::new(&url);
-
-    // TODO: drop the logging
-    // cargo add -p beerus-experimental-api tracing-subscriber --dev
-    // RUST_LOG=beerus_experimental_api=debug cargo test --package beerus-experimental-api --test exe -- test_exec --exact --nocapture
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::try_init().ok();
 
     // TX: 0xcbb2b87d5378e682d650e0e7d36679b4557ba2bfa9d4e285b7168c04376b21
     let json = serde_json::json!({
@@ -39,7 +35,31 @@ fn test_call() -> Result<(), common::Error> {
     let function_call: FunctionCall = serde_json::from_value(json)?;
 
     let call_info = call(&client, function_call)?;
+    println!("{call_info:#?}");
     assert!(call_info.execution.retdata.0.is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn test_call_regular_contract_class() -> Result<(), common::Error> {
+    let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL") else {
+        return Ok(());
+    };
+    let client = Client::new(&url);
+    tracing_subscriber::fmt::try_init().ok();
+
+    let json = serde_json::json!({
+      "calldata": [],
+      "contract_address": "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      "entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"
+    });
+    let function_call: FunctionCall = serde_json::from_value(json)?;
+
+    let call_info = call(&client, function_call)?;
+    println!("{call_info:#?}");
+    assert_eq!(call_info.execution.retdata.0.len(), 1);
+    assert_eq!(call_info.execution.retdata.0[0], "0x4574686572".try_into()?);
 
     Ok(())
 }

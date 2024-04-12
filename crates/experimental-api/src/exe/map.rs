@@ -1,4 +1,6 @@
-use blockifier::execution::contract_class::{ContractClassV0, ContractClassV1};
+use blockifier::execution::contract_class::ContractClassV0;
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::contract_class::ContractClass as CairoContractClass;
 
 use self::gen::DeprecatedContractClass;
 
@@ -40,10 +42,23 @@ impl TryFrom<gen::GetClassResult> for ContractClass {
     type Error = Error;
 
     fn try_from(value: gen::GetClassResult) -> Result<Self, Self::Error> {
-        let json = serde_json::to_string(&value)?;
         Ok(match value {
-            gen::GetClassResult::ContractClass(_) => {
-                let class = ContractClassV1::try_from_json_string(&json)?;
+            gen::GetClassResult::ContractClass(ref class) => {
+                let mut json = serde_json::to_value(&value)?;
+                if let Some(abi) = class.abi.as_ref() {
+                    let abi: serde_json::Value = serde_json::from_str(abi)?;
+                    json["abi"] = abi;
+                }
+                let contract_class: CairoContractClass =
+                    serde_json::from_value(json)?;
+                let casm_contract_class =
+                    CasmContractClass::from_contract_class(
+                        contract_class,
+                        /*add_pythonic_hints=*/ false,
+                        /*max_bytecode_size=*/ u16::MAX as usize,
+                    )?;
+                let class = casm_contract_class.try_into()?;
+
                 ContractClass::V1(class)
             }
             gen::GetClassResult::DeprecatedContractClass(class) => {
