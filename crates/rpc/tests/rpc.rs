@@ -11,9 +11,7 @@ use starknet::{
         MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
         MaybePendingTransactionReceipt, Transaction, TransactionReceipt,
     },
-    providers::{
-        jsonrpc::HttpTransport, JsonRpcClient, Provider,
-    },
+    providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
 };
 
 fn rpc_client() -> JsonRpcClient<HttpTransport> {
@@ -328,7 +326,7 @@ async fn test_get_transaction_by_block_id_and_index() {
         // `starknet-rs` doesn't implement `PartialEq` on its DTOs, and transactions have many *variants which makes pure Rust comparison painful.
         // Just serialize these to compare them.
         pretty_assertions::assert_eq!(
-            serde_json::to_value(&transaction).unwrap(),
+            serde_json::to_value(transaction).unwrap(),
             serde_json::to_value(&expected.transactions[transaction_index])
                 .unwrap(),
         )
@@ -357,8 +355,8 @@ async fn test_get_transaction_by_hash() {
         // `starknet-rs` doesn't implement `PartialEq` on its DTOs, and transactions have many *variants which makes pure Rust comparison painful.
         // Just serialize these to compare them.
         pretty_assertions::assert_eq!(
-            serde_json::to_value(&transaction).unwrap(),
-            serde_json::to_value(&expected).unwrap(),
+            serde_json::to_value(transaction).unwrap(),
+            serde_json::to_value(expected).unwrap(),
         )
     }
 
