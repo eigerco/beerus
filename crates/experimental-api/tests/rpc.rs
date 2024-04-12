@@ -125,14 +125,14 @@ async fn test_estimateFee() -> Result<(), common::Error> {
         "0x1",
     ];
     let calldata: Result<Vec<Felt>, _> =
-        calldata.into_iter().map(|felt| Felt::try_new(felt)).collect();
+        calldata.into_iter().map(Felt::try_new).collect();
 
     let signature = vec![
         "0x42527ffe9912b338983cbed67e139cfcc26a4d8cf1d1c2a85e4125fdf5f59ed",
         "0x636147d06fefd02ed37984b752556d4b9aefdac1a50b3df0528ec7c201ad84b",
     ];
     let signature: Result<Vec<Felt>, _> =
-        signature.into_iter().map(|felt| Felt::try_new(felt)).collect();
+        signature.into_iter().map(Felt::try_new).collect();
 
     let request = vec![
         BroadcastedTxn::BroadcastedInvokeTxn(
@@ -195,7 +195,7 @@ async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
     let GetBlockWithTxHashesResult::BlockWithTxHashes(ret) = ret else {
         panic!("unexpected pending block");
     };
-    assert!(ret.block_body_with_tx_hashes.transactions.len() > 0);
+    assert!(!ret.block_body_with_tx_hashes.transactions.is_empty());
     Ok(())
 }
 
@@ -213,7 +213,7 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
     let GetBlockWithTxsResult::BlockWithTxs(ret) = ret else {
         panic!("unexpected pending block");
     };
-    assert!(ret.block_body_with_txs.transactions.len() > 0);
+    assert!(!ret.block_body_with_txs.transactions.is_empty());
     Ok(())
 }
 
