@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::{thread, time};
+use std::time;
 
 use ethabi::ethereum_types::H160;
 use ethabi::Uint as U256;
@@ -137,7 +137,7 @@ impl BeerusClient {
             .context("failed to fetch syncing status")?
         {
             debug!("{} syncing: head={}", config.network, sync.highest_block);
-            thread::sleep(time::Duration::from_secs(1));
+            tokio::time::sleep(time::Duration::from_secs(1)).await;
         }
 
         get_starknet_state_root(
