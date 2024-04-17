@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use ethers::types::Address;
-use eyre::{eyre, Result};
+use eyre::{eyre, Context, Result};
 use helios::client::{Client, ClientBuilder};
 use helios::config::checkpoints;
 use helios::config::networks::Network;
@@ -84,15 +84,18 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn from_env() -> Self {
-        Self {
+    pub fn from_env() -> Result<Self> {
+        fn require_env_var(var_key: &'static str) -> Result<String> {
+            std::env::var(var_key).map_err(|_| eyre!("The \"{}\" env var must be set or a configuration file must be specified", var_key))
+        }
+
+        Ok(Self {
             network: Network::from_str(
                 &std::env::var("NETWORK").unwrap_or_default(),
             )
             .unwrap_or(Network::MAINNET),
-            eth_execution_rpc: std::env::var("ETH_EXECUTION_RPC")
-                .unwrap_or_default(),
-            starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
+            eth_execution_rpc: require_env_var("ETH_EXECUTION_RPC")?,
+            starknet_rpc: require_env_var("STARKNET_RPC")?,
             data_dir: PathBuf::from(
                 std::env::var("DATA_DIR").unwrap_or_default(),
             ),
@@ -100,9 +103,19 @@ impl Config {
                 &std::env::var("POLL_SECS").unwrap_or_default(),
             )
             .unwrap_or(DEFAULT_POLL_SECS),
-            rpc_addr: rpc_addr(),
-            fee_token_addr: fee_token_addr(),
-        }
+            rpc_addr: if let Ok(addr) = std::env::var("RPC_ADDR") {
+                SocketAddr::from_str(&addr)
+                    .context("Invalid value for `RPC_ADDR`")?
+            } else {
+                rpc_addr()
+            },
+            fee_token_addr: if let Ok(addr) = std::env::var("FEE_TOKEN_ADDR") {
+                FieldElement::from_hex_be(&addr)
+                    .context("Invalid value for `FEE_TOKEN_ADDR`")?
+            } else {
+                fee_token_addr()
+            },
+        })
     }
 
     pub fn from_file(path: &str) -> Result<Self> {
