@@ -2,7 +2,7 @@
   <img src="etc/beerus.png" height="250" />
   <div align="center">
 
-  [![CI Action Status](https://github.com/eigerco/beerus/actions/workflows/ci.yml/badge.svg)](https://github.com/eigerco/beerus/actions/workflows/ci.yml)
+  [![CI Action Status](https://github.com/eigerco/beerus/actions/workflows/rust-integration-tests-alchemy.yml/badge.svg)](https://github.com/eigerco/beerus/actions/workflows/rust-integration-tests-alchemy.yml)
   [![Check Workflow Status](https://github.com/eigerco/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/eigerco/beerus/actions/workflows/check.yml)
   ![starknet-version-v0.13.0](https://img.shields.io/badge/Starknet_Version-v0.13.0-2ea44f?labelColor=282d33&logo=ethereum)
   [![jsonrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?labelColor=282d33&logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
