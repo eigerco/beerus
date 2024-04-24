@@ -2,7 +2,7 @@
 description = "JSON-RPC server & client auto-generated from the OpenRPC specification"
 edition = "2021"
 name = "beerus-experimental-api"
-version = "0.3.0"
+version = "0.1.0"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -26,6 +26,7 @@ hex = "0.4.3"
 base64 = "0.22.0"
 flate2 = "1.0.28"
 cairo-lang-starknet-classes = "2.6.3"
+ureq = { version = "2.9.6", features = ["json"] }
 
 [dev-dependencies]
 tracing-subscriber.workspace = true

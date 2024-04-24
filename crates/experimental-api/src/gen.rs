@@ -1,7 +1,7 @@
 pub use gen::*;
 
-#[allow(clippy::module_inception)]
 // vvv GENERATED CODE BELOW vvv
+#[allow(clippy::module_inception)]
 #[allow(non_snake_case)]
 #[allow(clippy::enum_variant_names)]
 pub mod gen {
@@ -5284,6 +5284,7 @@ pub mod gen {
     pub mod client {
         use super::*;
 
+        #[derive(Clone)]
         pub struct Client {
             client: reqwest::Client,
             url: String,
@@ -7456,22 +7457,12 @@ pub mod gen {
 
             #[derive(Clone)]
             pub struct Client {
-                client: reqwest::blocking::Client,
                 url: String,
             }
 
             impl Client {
                 pub fn new(url: &str) -> Self {
-                    Self {
-                        url: url.to_string(),
-                        client: reqwest::blocking::Client::new(),
-                    }
-                }
-                pub fn with_client(
-                    url: &str,
-                    client: reqwest::blocking::Client,
-                ) -> Self {
-                    Self { url: url.to_string(), client }
+                    Self { url: url.to_string() }
                 }
             }
 
@@ -7500,18 +7491,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7569,18 +7557,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7628,18 +7613,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7699,18 +7681,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7770,18 +7749,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7841,18 +7817,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7900,18 +7873,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -7959,18 +7929,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8029,18 +7996,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8088,18 +8052,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8159,18 +8120,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8229,18 +8187,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8300,18 +8255,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8371,18 +8323,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8440,18 +8389,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8510,18 +8456,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8580,18 +8523,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8649,18 +8589,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8718,18 +8655,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8787,18 +8721,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8856,18 +8787,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8926,18 +8854,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -8998,18 +8923,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9069,18 +8991,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9140,18 +9059,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9211,18 +9127,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9284,18 +9197,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9343,18 +9253,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9402,18 +9309,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9473,18 +9377,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
@@ -9542,18 +9443,15 @@ pub mod gen {
 
                     tracing::debug!(request=?req, "processing");
 
-                    let mut res: jsonrpc::Response = self
-                        .client
-                        .post(&self.url)
-                        .json(&req)
-                        .send()
+                    let mut res: jsonrpc::Response = ureq::post(&self.url)
+                        .send_json(&req)
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 4002,
                                 format!("Request failed: {e}."),
                             )
                         })?
-                        .json()
+                        .into_json()
                         .map_err(|e| {
                             jsonrpc::Error::new(
                                 5001,
