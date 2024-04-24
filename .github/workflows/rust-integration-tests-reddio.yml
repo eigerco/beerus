@@ -20,8 +20,8 @@ jobs:
         env:
           ETH_EXECUTION_RPC: ${{ secrets.ETH_EXECUTION_RPC_MAINNET }}
           STARKNET_RPC: ${{ secrets.STARKNET_RPC_0_6_0_MAINNET_REDDIO }}
-        # Start Beerus, then try to reach the port every second for 60 seconds.
-        run: ./target/release/beerus & for i in {1..60}; do timeout 1 bash -c "echo > /dev/tcp/localhost/3030" 2> /dev/null && break || sleep 1; done
+        # Start Beerus, then try to reach it. If still unavaible after 120 seconds, make the step fail.
+        run: ./target/release/beerus & ./scripts/wait-for-it.sh localhost:3030 -t 120
 
       - name: run integration test on MAINNET
         run: cargo test --package beerus-rpc --features integration-tests
