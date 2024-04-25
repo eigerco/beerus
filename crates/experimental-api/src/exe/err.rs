@@ -3,29 +3,29 @@ use thiserror::Error as ThisError;
 
 #[derive(Debug, ThisError)]
 pub enum Error {
-    #[error("IO error: {0:?}")]
+    #[error("io error: {0:?}")]
     Io(#[from] std::io::Error),
-    #[error("Base64 error: {0:?}")]
+    #[error("base64 error: {0:?}")]
     Base64(#[from] base64::DecodeError),
-    #[error("Serde error: {0:?}")]
+    #[error("serde error: {0:?}")]
     Serde(#[from] serde_json::Error),
-    #[error("Reqwest error: {0:?}")]
+    #[error("reqwest error: {0:?}")]
     Reqwest(#[from] reqwest::Error),
-    #[error("Codegen error: {0:?}")]
+    #[error("codegen error: {0:?}")]
     IamGroot(iamgroot::jsonrpc::Error),
-    #[error("Starknet API error: {0:?}")]
+    #[error("starknet api error: {0:?}")]
     StarknetApi(#[from] starknet_api::StarknetApiError),
-    #[error("Blockifier state error: {0:?}")]
+    #[error("blockifier state error: {0:?}")]
     State(#[from] blockifier::state::errors::StateError),
-    #[error("Blockifier entry point error: {0:?}")]
+    #[error("blockifier entry point error: {0:?}")]
     EntryPoint(#[from] blockifier::execution::errors::EntryPointExecutionError),
-    #[error("Blockifier transaction error: {0:?}")]
+    #[error("blockifier transaction error: {0:?}")]
     Transaction(
         #[from] blockifier::transaction::errors::TransactionExecutionError,
     ),
-    #[error("Program error: {0:?}")]
+    #[error("program error: {0:?}")]
     Program(#[from] cairo_vm::types::errors::program_errors::ProgramError),
-    #[error("Sierra compilation error: {0:?}")]
+    #[error("sierra compilation error: {0:?}")]
     SierraCompilation(#[from] StarknetSierraCompilationError),
     #[error("{0}")]
     Custom(&'static str),
