@@ -415,7 +415,7 @@
                         }
                     },
                     {
-                        "$ref": "#/components/schemas/EVENT"
+                        "$ref": "#/components/schemas/EVENT_CONTENT"
                     }
                 ]
             },
@@ -445,7 +445,7 @@
             "FUNCTION_CALL": {
                 "$ref": "./starknet_api_openrpc.json#/components/schemas/FUNCTION_CALL"
             },
-            "EVENT": {
+            "EVENT_CONTENT": {
                 "$ref": "./starknet_api_openrpc.json#/components/schemas/EVENT_CONTENT"
             },
             "MSG_TO_L1": {
