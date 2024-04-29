@@ -601,18 +601,12 @@ name = "beerus-rpc"
 version = "0.4.0"
 dependencies = [
  "beerus-core",
- "cached 0.49.3",
  "eyre",
  "jsonrpsee 0.20.3",
- "lazy_static",
- "pretty_assertions",
- "reqwest",
  "serde",
- "serde_json",
  "serde_with",
  "starknet",
  "thiserror",
- "tokio",
  "tracing",
 ]
 
@@ -3556,6 +3550,22 @@ dependencies = [
 [[package]]
 name = "integration-tests"
 version = "0.1.0"
+dependencies = [
+ "beerus-core",
+ "cached 0.49.3",
+ "eyre",
+ "jsonrpsee 0.20.3",
+ "lazy_static",
+ "pretty_assertions",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "starknet",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
 
 [[package]]
 name = "ipnet"

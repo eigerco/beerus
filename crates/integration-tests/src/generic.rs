@@ -1,6 +1,7 @@
-// These tests need Beerus to run in the background, hence why they're hidden behind the following feature.
-#![cfg(feature = "integration-tests")]
-
+/// Chain-agnostic tests.
+/// 
+/// A Beerus server (regular or experimental) must be running with its RPC interface binded on the default 
+/// port for these tests to pass.
 use beerus_core::config::DEFAULT_PORT;
 use cached::Cached;
 use std::{ops::Deref, sync::Mutex};
