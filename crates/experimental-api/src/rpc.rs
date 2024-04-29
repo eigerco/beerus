@@ -56,7 +56,7 @@ fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
         url: url.to_owned(),
     };
 
-    let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
+    let app = Router::new().route("/", post(handle_request)).with_state(ctx);
 
     let (tx, rx) = oneshot::channel::<()>();
     let port = listener.local_addr()?.port();
