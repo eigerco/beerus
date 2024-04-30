@@ -24,16 +24,6 @@ jobs:
       - run: cargo test --all
       - run: cargo check -p beerus-core --target wasm32-unknown-unknown
 
-  test-experimental:
-    runs-on: ubuntu-latest
-    env:
-      BEERUS_EXPERIMENTAL_TEST_STARKNET_URL: ${{ secrets.STARKNET_RPC_0_6_0_MAINNET }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test -p beerus-experimental-api
-
   clippy:
     runs-on: ubuntu-latest
     steps:

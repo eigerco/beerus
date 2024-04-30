@@ -1,3 +1,6 @@
+/// Tools used by multiple test suites.
+
+// TODO Doc
 pub fn backend_url() -> String {
     static VAR_NAME: &str = "TEST_BACKEND_URL";
     match std::env::var(VAR_NAME).ok() {

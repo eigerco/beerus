@@ -25,7 +25,9 @@ jobs:
         run: ./target/release/beerus & ./scripts/wait-for-it.sh localhost:3030 -t 120
 
       - name: run integration test on MAINNET
-        run: cargo test --package beerus-rpc --features integration-tests
+        env:
+          TEST_BACKEND_URL: http://localhost:3030
+        run: cargo test --package integration-tests --features enabled
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
