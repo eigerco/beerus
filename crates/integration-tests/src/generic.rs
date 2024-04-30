@@ -1,9 +1,7 @@
 /// Chain-agnostic tests.
 /// 
-/// A Beerus server (regular or experimental) must be running with its RPC interface binded on the default 
-/// port for these tests to pass.
+// TODO Doc
 // TODO Offer the possibility to run an embedded server. Add a feature toggle for this. Experimental too.
-use beerus_core::config::DEFAULT_PORT;
 use cached::Cached;
 use std::{ops::Deref, sync::Mutex};
 
@@ -21,12 +19,14 @@ use starknet::{
     },
 };
 
+use crate::common::backend_url;
+
 lazy_static::lazy_static! {
     static ref BLOCK_CACHE: Mutex<SizedCache<u64, MaybePendingBlockWithTxs>> = Mutex::new(SizedCache::with_size(1000));
 }
 
 fn rpc_client() -> JsonRpcClient<HttpTransport> {
-    let rpc_url: Url = format!("http://localhost:{}", DEFAULT_PORT)
+    let rpc_url: Url = backend_url()
         .parse()
         .expect("Invalid RPC URL");
     JsonRpcClient::new(HttpTransport::new(rpc_url))

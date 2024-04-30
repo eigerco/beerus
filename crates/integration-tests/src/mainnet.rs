@@ -11,14 +11,15 @@ use beerus_experimental_api::{
     rpc::{serve, Server},
 };
 
+use crate::common::backend_url;
+
 pub struct Context {
     pub client: Client,
     pub server: Server,
 }
 
 pub async fn ctx() -> Option<Context> {
-    let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
-    let server = serve(&url, "127.0.0.1:0").await.ok()?;
+    let server = serve(&backend_url(), "127.0.0.1:0").await.ok()?;
     tracing::info!(port = server.port(), "test server is up");
 
     let url = format!("http://localhost:{}/", server.port());
