@@ -3552,14 +3552,19 @@ name = "integration-tests"
 version = "0.1.0"
 dependencies = [
  "beerus-core",
+ "beerus-experimental-api",
  "cached 0.49.3",
+ "iamgroot",
  "lazy_static",
  "pretty_assertions",
  "reqwest",
  "serde",
  "serde_json",
  "starknet",
+ "starknet_api",
+ "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

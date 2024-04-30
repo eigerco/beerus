@@ -11,8 +11,6 @@ use beerus_experimental_api::{
     rpc::{serve, Server},
 };
 
-mod common;
-
 pub struct Context {
     pub client: Client,
     pub server: Server,
@@ -28,9 +26,30 @@ pub async fn ctx() -> Option<Context> {
     Some(Context { server, client })
 }
 
+// TODO Deduplicate
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("rpc call failed: {0:?}")]
+    Rpc(iamgroot::jsonrpc::Error),
+    #[error("missing env variable: {0:?}")]
+    Var(#[from] std::env::VarError),
+    #[error("execution failed: {0:?}")]
+    Exe(#[from] beerus_experimental_api::exe::err::Error),
+    #[error("serde failed: {0:?}")]
+    Json(#[from] serde_json::Error),
+    #[error("starknet api error: {0:?}")]
+    Api(#[from] starknet_api::StarknetApiError),
+}
+
+impl From<iamgroot::jsonrpc::Error> for Error {
+    fn from(error: iamgroot::jsonrpc::Error) -> Self {
+        Self::Rpc(error)
+    }
+}
+
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_specVersion() -> Result<(), common::Error> {
+async fn test_specVersion() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -42,7 +61,7 @@ async fn test_specVersion() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_chainId() -> Result<(), common::Error> {
+async fn test_chainId() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -54,7 +73,7 @@ async fn test_chainId() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_blockHashAndNumber() -> Result<(), common::Error> {
+async fn test_blockHashAndNumber() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -67,7 +86,7 @@ async fn test_blockHashAndNumber() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_blockNumber() -> Result<(), common::Error> {
+async fn test_blockNumber() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -79,7 +98,7 @@ async fn test_blockNumber() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_call() -> Result<(), common::Error> {
+async fn test_call() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -105,7 +124,7 @@ async fn test_call() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_estimateFee() -> Result<(), common::Error> {
+async fn test_estimateFee() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -169,7 +188,7 @@ async fn test_estimateFee() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
+async fn test_getBlockTransactionCount() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -183,7 +202,7 @@ async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
+async fn test_getBlockWithTxHashes() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -201,7 +220,7 @@ async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockWithTxs() -> Result<(), common::Error> {
+async fn test_getBlockWithTxs() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -219,7 +238,7 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_syncing() -> Result<(), common::Error> {
+async fn test_syncing() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -231,7 +250,7 @@ async fn test_syncing() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getNonce() -> Result<(), common::Error> {
+async fn test_getNonce() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -249,7 +268,7 @@ async fn test_getNonce() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionByHash() -> Result<(), common::Error> {
+async fn test_getTransactionByHash() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -267,7 +286,7 @@ async fn test_getTransactionByHash() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
+async fn test_getTransactionByBlockIdAndIndex() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -284,7 +303,7 @@ async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getStorageAt() -> Result<(), common::Error> {
+async fn test_getStorageAt() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -307,7 +326,7 @@ async fn test_getStorageAt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getProof() -> Result<(), common::Error> {
+async fn test_getProof() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -338,7 +357,7 @@ async fn test_getProof() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionStatus() -> Result<(), common::Error> {
+async fn test_getTransactionStatus() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -358,7 +377,7 @@ async fn test_getTransactionStatus() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionReceipt() -> Result<(), common::Error> {
+async fn test_getTransactionReceipt() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -381,7 +400,7 @@ async fn test_getTransactionReceipt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClass() -> Result<(), common::Error> {
+async fn test_getClass() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -415,7 +434,7 @@ async fn test_getClass() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClassAt() -> Result<(), common::Error> {
+async fn test_getClassAt() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };
@@ -446,7 +465,7 @@ async fn test_getClassAt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClassHashAt() -> Result<(), common::Error> {
+async fn test_getClassHashAt() -> Result<(), Error> {
     let Some(ctx) = ctx().await else {
         return Ok(());
     };

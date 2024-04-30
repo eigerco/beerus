@@ -2,6 +2,7 @@
 /// 
 /// A Beerus server (regular or experimental) must be running with its RPC interface binded on the default 
 /// port for these tests to pass.
+// TODO Offer the possibility to run an embedded server. Add a feature toggle for this. Experimental too.
 use beerus_core::config::DEFAULT_PORT;
 use cached::Cached;
 use std::{ops::Deref, sync::Mutex};
