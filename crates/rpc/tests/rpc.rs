@@ -99,24 +99,26 @@ mod blocks {
     }
 }
 
-/// Creates a `TestContext` with the latest block.
-async fn latest_block_context(
-) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
-    let block = blocks::head().await.expect("failed to pull latest block");
-    let block_id = BlockId::Number(block.block_number);
-    (rpc_client(), block, block_id)
-}
+mod fixtures {
+    use super::*;
 
-/// Creates a `TestContext` with the latest block with at least N transactions.
-async fn n_txs_context(
-    min_tx_number: usize,
-) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
-    let block =
-        blocks::find(|block| block.transactions.len() >= min_tx_number, 1000)
-            .await
-            .expect("failed to pull block with necessary tx count");
-    let block_id = BlockId::Number(block.block_number);
-    (rpc_client(), block, block_id)
+    pub async fn latest_block(
+    ) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
+        let block = blocks::head().await.expect("failed to pull latest block");
+        let block_id = BlockId::Number(block.block_number);
+        (rpc_client(), block, block_id)
+    }
+
+    pub async fn block_with_min_ten_txs() -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
+        let block = blocks::find(
+            |block| block.transactions.len() >= 10,
+            1000,
+        )
+        .await
+        .expect("failed to pull block with necessary tx count");
+        let block_id = BlockId::Number(block.block_number);
+        (rpc_client(), block, block_id)
+    }
 }
 
 #[tokio::test]
@@ -128,7 +130,7 @@ async fn test_chain_id() {
 
 #[tokio::test]
 async fn test_get_block_transaction_count() {
-    let (client, block, block_id) = latest_block_context().await;
+    let (client, block, block_id) = fixtures::latest_block().await;
 
     let tx_count = client
         .get_block_transaction_count(block_id)
@@ -137,11 +139,9 @@ async fn test_get_block_transaction_count() {
     assert_eq!(tx_count, block.transactions.len() as u64);
 }
 
-// starknet_getBlockWithTxs is already tested in the creation of the test context.
-
 #[tokio::test]
 async fn test_get_block_with_tx_hashes() {
-    let (client, block, block_id) = n_txs_context(10).await;
+    let (client, block, block_id) = fixtures::block_with_min_ten_txs().await;
 
     let BlockWithTxHashes {
         status,
@@ -318,8 +318,7 @@ async fn test_get_nonce() {
 
 #[tokio::test]
 async fn test_get_transaction_by_block_id_and_index() {
-    let txs = 10;
-    let (client, block, block_id) = n_txs_context(txs).await;
+    let (client, block, block_id) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
@@ -338,7 +337,7 @@ async fn test_get_transaction_by_block_id_and_index() {
         )
     }
 
-    for transaction_index in 0..txs {
+    for transaction_index in 0..block.transactions.len() {
         check_transaction(&client, block_id, transaction_index, &block).await;
     }
 
@@ -348,8 +347,7 @@ async fn test_get_transaction_by_block_id_and_index() {
 
 #[tokio::test]
 async fn test_get_transaction_by_hash() {
-    let txs = 10;
-    let (client, block, _) = n_txs_context(txs).await;
+    let (client, block, _) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
@@ -365,7 +363,7 @@ async fn test_get_transaction_by_hash() {
         )
     }
 
-    for transaction_index in 0..txs {
+    for transaction_index in 0..block.transactions.len() {
         check_transaction(&client, &block.transactions[transaction_index])
             .await;
     }
@@ -383,8 +381,7 @@ async fn test_get_transaction_by_hash() {
 
 #[tokio::test]
 async fn test_get_transaction_status() {
-    let txs = 10;
-    let (client, block, _) = n_txs_context(txs).await;
+    let (client, block, _) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
@@ -396,7 +393,7 @@ async fn test_get_transaction_status() {
             .expect("Failed to retrieve the transaction status");
     }
 
-    for transaction_index in 0..txs {
+    for transaction_index in 0..block.transactions.len() {
         check_transaction(
             &client,
             *block.transactions[transaction_index].transaction_hash(),
