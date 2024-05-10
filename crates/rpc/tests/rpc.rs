@@ -102,6 +102,7 @@ mod blocks {
 mod fixtures {
     use super::*;
 
+    // TODO(#643): consider adding a cache here if necessary
     pub async fn latest_block(
     ) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
         let block = blocks::head().await.expect("failed to pull latest block");
@@ -109,6 +110,7 @@ mod fixtures {
         (rpc_client(), block, block_id)
     }
 
+    // TODO(#643): consider adding a cache here if necessary
     pub async fn block_with_min_ten_txs(
     ) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
         let block = blocks::find(|block| block.transactions.len() >= 10, 1000)
