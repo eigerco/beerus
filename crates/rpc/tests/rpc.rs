@@ -109,13 +109,11 @@ mod fixtures {
         (rpc_client(), block, block_id)
     }
 
-    pub async fn block_with_min_ten_txs() -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
-        let block = blocks::find(
-            |block| block.transactions.len() >= 10,
-            1000,
-        )
-        .await
-        .expect("failed to pull block with necessary tx count");
+    pub async fn block_with_min_ten_txs(
+    ) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
+        let block = blocks::find(|block| block.transactions.len() >= 10, 1000)
+            .await
+            .expect("failed to pull block with necessary tx count");
         let block_id = BlockId::Number(block.block_number);
         (rpc_client(), block, block_id)
     }
@@ -125,7 +123,7 @@ mod fixtures {
 async fn test_chain_id() {
     let client = rpc_client();
 
-    client.chain_id().await.expect("Failed to retrieve the chain ID");
+    client.chain_id().await.expect("chainId failed");
 }
 
 #[tokio::test]
@@ -135,7 +133,7 @@ async fn test_get_block_transaction_count() {
     let tx_count = client
         .get_block_transaction_count(block_id)
         .await
-        .expect("Failed to retrieve the transaction count");
+        .expect("getBlockTransactionCount failed");
     assert_eq!(tx_count, block.transactions.len() as u64);
 }
 
@@ -154,9 +152,15 @@ async fn test_get_block_with_tx_hashes() {
         transactions,
         l1_gas_price,
         starknet_version,
-    } = match client.get_block_with_tx_hashes(block_id).await.expect("Failed to retrieve the block with transaction hashes") {
+    } = match client
+        .get_block_with_tx_hashes(block_id)
+        .await
+        .expect("getBlockWithTxHashes failed")
+    {
         MaybePendingBlockWithTxHashes::Block(with_tx_hashes) => with_tx_hashes,
-        MaybePendingBlockWithTxHashes::PendingBlock(_) => panic!("This block was already verified as not pending, it shouldn't be a pending block now"),
+        MaybePendingBlockWithTxHashes::PendingBlock(_) => {
+            panic!("getBlockWithTxHashes returned a pending block")
+        }
     };
 
     assert_eq!(status, block.status);
@@ -225,19 +229,19 @@ async fn test_get_class_at() {
         1000,
     )
     .await
-    .expect("failed to find deploy tx hash");
+    .expect("failed to find a deploy tx hash");
     let block_id = BlockId::Number(block.block_number);
 
     let client = rpc_client();
     let receipt = match client
         .get_transaction_receipt(tx_hash)
         .await
-        .expect("the transaction to have a matching receipt")
+        .expect("getTransactionReceipt failed")
     {
         MaybePendingTransactionReceipt::Receipt(
             TransactionReceipt::DeployAccount(receipt),
         ) => receipt,
-        _ => panic!("Expected a valid receipt, got a pending one"),
+        _ => panic!("getTransactionReceipt returned a pending tx receipt"),
     };
 
     client
@@ -262,19 +266,19 @@ async fn test_get_class_hash_at() {
         1000,
     )
     .await
-    .expect("failed to find deploy tx hash");
+    .expect("failed to find a deploy tx hash");
     let block_id = BlockId::Number(block.block_number);
 
     let client = rpc_client();
     let receipt = match client
         .get_transaction_receipt(tx_hash)
         .await
-        .expect("the transaction to have a matching receipt")
+        .expect("getTransactionReceipt failed")
     {
         MaybePendingTransactionReceipt::Receipt(
             TransactionReceipt::DeployAccount(receipt),
         ) => receipt,
-        _ => panic!("Expected a valid receipt, got a pending one"),
+        _ => panic!("getTransactionReceipt returned a pending tx receipt"),
     };
 
     client
@@ -304,7 +308,7 @@ async fn test_get_nonce() {
         1000,
     )
     .await
-    .expect("failed to find invoke tx");
+    .expect("failed to find an invoke tx");
     let block_id = BlockId::Number(block.block_number);
 
     let nonce = truncate_felt_to_u128(&nonce);
@@ -353,7 +357,10 @@ async fn test_get_transaction_by_hash() {
         client: &JsonRpcClient<HttpTransport>,
         expected: &Transaction,
     ) {
-        let transaction = client.get_transaction_by_hash(expected.transaction_hash()).await.expect("Failed to retrieve a specific transaction by its block ID and index");
+        let transaction = client
+            .get_transaction_by_hash(expected.transaction_hash())
+            .await
+            .expect("getTransactionByHash failed");
 
         // `starknet-rs` doesn't implement `PartialEq` on its DTOs, and transactions have many *variants which makes pure Rust comparison painful.
         // Just serialize these to compare them.
@@ -367,16 +374,6 @@ async fn test_get_transaction_by_hash() {
         check_transaction(&client, &block.transactions[transaction_index])
             .await;
     }
-
-    check_transaction(
-        &client,
-        block
-            .transactions
-            .last()
-            .as_ref()
-            .expect("We need a last transaction here"),
-    )
-    .await;
 }
 
 #[tokio::test]
@@ -390,7 +387,7 @@ async fn test_get_transaction_status() {
         let _status = client
             .get_transaction_status(transaction_hash)
             .await
-            .expect("Failed to retrieve the transaction status");
+            .expect("getTransactionStatus failed");
     }
 
     for transaction_index in 0..block.transactions.len() {
@@ -400,17 +397,6 @@ async fn test_get_transaction_status() {
         )
         .await;
     }
-
-    check_transaction(
-        &client,
-        *block
-            .transactions
-            .last()
-            .as_ref()
-            .expect("We need a last transaction here")
-            .transaction_hash(),
-    )
-    .await;
 }
 
 fn truncate_felt_to_u128(felt: &FieldElement) -> u128 {
