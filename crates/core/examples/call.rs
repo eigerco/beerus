@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let res = beerus.starknet_client.call(calldata, &block_id).await?;
+    let res = beerus.starknet_client.call(calldata, block_id).await?;
     println!("{:?}", res);
     Ok(())
 }
