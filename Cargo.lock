@@ -602,7 +602,9 @@ version = "0.4.0"
 dependencies = [
  "beerus-core",
  "eyre",
+ "futures",
  "jsonrpsee 0.20.3",
+ "pin-utils",
  "pretty_assertions",
  "reqwest",
  "serde",

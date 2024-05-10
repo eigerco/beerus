@@ -1,126 +1,123 @@
 // These tests need Beerus to run in the background, hence why they're hidden behind the following feature.
 #![cfg(feature = "integration-tests")]
 
-use beerus_core::config::DEFAULT_PORT;
-
 use reqwest::Url;
 use starknet::{
     core::types::{
         BlockId, BlockWithTxHashes, BlockWithTxs, DeclareTransaction,
         DeployAccountTransaction, FieldElement, InvokeTransaction,
-        MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-        MaybePendingTransactionReceipt, Transaction, TransactionReceipt,
+        MaybePendingBlockWithTxHashes, MaybePendingTransactionReceipt,
+        Transaction, TransactionReceipt,
     },
     providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
 };
 
+const TEST_RPC_URL: &str = "http://localhost:3030";
+
 fn rpc_client() -> JsonRpcClient<HttpTransport> {
-    let rpc_url: Url = format!("http://localhost:{}", DEFAULT_PORT)
-        .parse()
-        .expect("Invalid RPC URL");
-    JsonRpcClient::new(HttpTransport::new(rpc_url))
+    let url: Url = TEST_RPC_URL.try_into().expect("Invalid RPC URL");
+    JsonRpcClient::new(HttpTransport::new(url))
 }
 
-struct TestContext<T> {
-    client: JsonRpcClient<HttpTransport>,
-    block: BlockWithTxs,
-    block_id: BlockId,
-    extracted_value: T,
-}
-
-/// Creates a `TestContext` with the latest block.
-async fn latest_block_context() -> TestContext<()> {
-    context(|_block| Some(())).await
-}
-
-/// Creates a `TestContext` with the latest block with at least N transactions.
-async fn n_txs_context(min_tx_number: usize) -> TestContext<()> {
-    context(|block| {
-        if block.transactions.len() >= min_tx_number {
-            Some(())
-        } else {
-            None
-        }
-    })
-    .await
-}
-
-/// Instantiate a client and look for a block matching the `extractor`, going from latest
-///  to older.
-///
-/// # Parameters
-///
-/// * `extractor`: a closure returning `Some(T)` in the case of a match. The value returned
-///  by the extractor will end up in the `TestContext`'s `extracted_value` field.
-async fn context<F: Fn(&BlockWithTxs) -> Option<T>, T>(
-    extractor: F,
-) -> TestContext<T> {
-    let client = rpc_client();
-
-    let latest = client
-        .block_number()
-        .await
-        .expect("Failed to retrieve the latest block number");
-
-    let block = match client
-        .get_block_with_txs(BlockId::Number(latest))
-        .await
-        .expect("Failed to retrieve the latest block")
-    {
-        MaybePendingBlockWithTxs::Block(block) => block,
-        MaybePendingBlockWithTxs::PendingBlock(_) => {
-            panic!("The latest block shouldn't be a pending block")
-        }
+mod blocks {
+    use futures::{stream, Stream, StreamExt};
+    use starknet::{
+        core::types::{BlockId, BlockWithTxs, MaybePendingBlockWithTxs},
+        providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
     };
 
-    if let Some(extracted_value) = extractor(&block) {
-        return TestContext {
-            client,
-            block_id: BlockId::Number(block.block_number),
-            block,
-            extracted_value,
-        };
+    use super::rpc_client;
+
+    struct State {
+        client: JsonRpcClient<HttpTransport>,
+        latest: Option<u64>,
     }
 
-    // The latest block doesn't match the criterion.
-    // Go to the lower blocks one by one until a match is found.
-
-    let mut limit = 1_000;
-    let mut block_number = block.block_number;
-
-    while limit > 0 {
-        limit -= 1;
-        block_number -= 1;
-
-        if block_number == 0 {
-            panic!("Reached the genesis block, still no suitable block found");
-        }
-
-        let block = match client
-            .get_block_with_txs(BlockId::Number(block_number))
-            .await
-            .expect("Block retrieval failed")
-        {
-            MaybePendingBlockWithTxs::Block(block) => block,
-            MaybePendingBlockWithTxs::PendingBlock(_) => {
-                continue;
+    async fn next(state: State) -> Option<(BlockWithTxs, State)> {
+        let latest = if let Some(latest) = state.latest.as_ref() {
+            *latest
+        } else {
+            match state.client.block_number().await {
+                Ok(latest) => latest,
+                _ => {
+                    return None;
+                }
             }
         };
 
-        if let Some(extracted_value) = extractor(&block) {
-            return TestContext {
-                client,
-                block_id: BlockId::Number(block.block_number),
-                block,
-                extracted_value,
-            };
+        let block = match state
+            .client
+            .get_block_with_txs(BlockId::Number(latest))
+            .await
+        {
+            Ok(MaybePendingBlockWithTxs::Block(block)) => block,
+            _ => {
+                return None;
+            }
+        };
+
+        if latest == 0 {
+            return None;
         }
+
+        let state = State { latest: Some(latest - 1), ..state };
+        Some((block, state))
     }
 
-    panic!("No suitable block found")
+    fn stream() -> impl Stream<Item = BlockWithTxs> {
+        let state = State { client: rpc_client(), latest: None };
+        stream::unfold(state, next)
+    }
+
+    pub async fn head() -> Option<BlockWithTxs> {
+        let stream = stream();
+        pin_utils::pin_mut!(stream);
+        stream.next().await
+    }
+
+    pub async fn find(
+        predicate: impl Fn(&BlockWithTxs) -> bool,
+        limit: usize,
+    ) -> Option<BlockWithTxs> {
+        let stream = stream().take(limit).filter(|block| {
+            let found = predicate(block);
+            std::future::ready(found)
+        });
+        pin_utils::pin_mut!(stream);
+        stream.next().await
+    }
+
+    pub async fn map<T>(
+        predicate: impl Fn(&BlockWithTxs) -> Option<T>,
+        limit: usize,
+    ) -> Option<(BlockWithTxs, T)> {
+        let stream = stream().take(limit).filter_map(|block| async {
+            predicate(&block).map(|result| (block, result))
+        });
+        pin_utils::pin_mut!(stream);
+        stream.next().await
+    }
 }
 
-// starknet_blockNumber is already tested in the creation of the test context.
+/// Creates a `TestContext` with the latest block.
+async fn latest_block_context(
+) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
+    let block = blocks::head().await.expect("failed to pull latest block");
+    let block_id = BlockId::Number(block.block_number);
+    (rpc_client(), block, block_id)
+}
+
+/// Creates a `TestContext` with the latest block with at least N transactions.
+async fn n_txs_context(
+    min_tx_number: usize,
+) -> (JsonRpcClient<HttpTransport>, BlockWithTxs, BlockId) {
+    let block =
+        blocks::find(|block| block.transactions.len() >= min_tx_number, 1000)
+            .await
+            .expect("failed to pull block with necessary tx count");
+    let block_id = BlockId::Number(block.block_number);
+    (rpc_client(), block, block_id)
+}
 
 #[tokio::test]
 async fn test_chain_id() {
@@ -131,8 +128,7 @@ async fn test_chain_id() {
 
 #[tokio::test]
 async fn test_get_block_transaction_count() {
-    let TestContext { client, block, block_id, extracted_value: () } =
-        latest_block_context().await;
+    let (client, block, block_id) = latest_block_context().await;
 
     let tx_count = client
         .get_block_transaction_count(block_id)
@@ -145,9 +141,7 @@ async fn test_get_block_transaction_count() {
 
 #[tokio::test]
 async fn test_get_block_with_tx_hashes() {
-    let txs = 10;
-    let TestContext { client, block, block_id, extracted_value: () } =
-        n_txs_context(txs).await;
+    let (client, block, block_id) = n_txs_context(10).await;
 
     let BlockWithTxHashes {
         status,
@@ -185,8 +179,8 @@ async fn test_get_block_with_tx_hashes() {
 
 #[tokio::test]
 async fn test_get_class() {
-    let TestContext { client, block: _, block_id, extracted_value } =
-        context(|block| {
+    let (block, tx_hash) = blocks::map(
+        |block| {
             block.transactions.iter().find_map(
                 |transaction| match transaction {
                     Transaction::Declare(DeclareTransaction::V0(declare)) => {
@@ -204,31 +198,39 @@ async fn test_get_class() {
                     _ => None,
                 },
             )
-        })
-        .await;
+        },
+        1000,
+    )
+    .await
+    .expect("failed to find tx hash");
 
-    client.get_class(block_id, extracted_value).await.expect("getClass failed");
+    let client = rpc_client();
+    let block_id = BlockId::Number(block.block_number);
+    client.get_class(block_id, tx_hash).await.expect("getClass failed");
 }
 
 #[tokio::test]
 async fn test_get_class_at() {
-    let TestContext {
-        client,
-        block: _,
-        block_id,
-        extracted_value: deploy_tx_hash,
-    } = context(|block| {
-        block.transactions.iter().find_map(|transaction| match transaction {
-            Transaction::DeployAccount(DeployAccountTransaction::V3(
-                deploy,
-            )) => Some(deploy.transaction_hash),
-            _ => None,
-        })
-    })
-    .await;
+    let (block, tx_hash) = blocks::map(
+        |block| {
+            block.transactions.iter().find_map(
+                |transaction| match transaction {
+                    Transaction::DeployAccount(
+                        DeployAccountTransaction::V3(deploy),
+                    ) => Some(deploy.transaction_hash),
+                    _ => None,
+                },
+            )
+        },
+        1000,
+    )
+    .await
+    .expect("failed to find deploy tx hash");
+    let block_id = BlockId::Number(block.block_number);
 
+    let client = rpc_client();
     let receipt = match client
-        .get_transaction_receipt(deploy_tx_hash)
+        .get_transaction_receipt(tx_hash)
         .await
         .expect("the transaction to have a matching receipt")
     {
@@ -246,23 +248,26 @@ async fn test_get_class_at() {
 
 #[tokio::test]
 async fn test_get_class_hash_at() {
-    let TestContext {
-        client,
-        block: _,
-        block_id,
-        extracted_value: deploy_tx_hash,
-    } = context(|block| {
-        block.transactions.iter().find_map(|transaction| match transaction {
-            Transaction::DeployAccount(DeployAccountTransaction::V3(
-                deploy,
-            )) => Some(deploy.transaction_hash),
-            _ => None,
-        })
-    })
-    .await;
+    let (block, tx_hash) = blocks::map(
+        |block| {
+            block.transactions.iter().find_map(
+                |transaction| match transaction {
+                    Transaction::DeployAccount(
+                        DeployAccountTransaction::V3(deploy),
+                    ) => Some(deploy.transaction_hash),
+                    _ => None,
+                },
+            )
+        },
+        1000,
+    )
+    .await
+    .expect("failed to find deploy tx hash");
+    let block_id = BlockId::Number(block.block_number);
 
+    let client = rpc_client();
     let receipt = match client
-        .get_transaction_receipt(deploy_tx_hash)
+        .get_transaction_receipt(tx_hash)
         .await
         .expect("the transaction to have a matching receipt")
     {
@@ -280,40 +285,41 @@ async fn test_get_class_hash_at() {
 
 #[tokio::test]
 async fn test_get_nonce() {
-    let TestContext {
-        client,
-        block: _,
-        block_id,
-        extracted_value: (original_nonce, sender),
-    } = context(|block| {
-        // Browse the transaction in reverse order to make sure we got the latest nonce.
-        block.transactions.iter().rev().find_map(
-            |transaction| match transaction {
-                Transaction::Invoke(InvokeTransaction::V1(invoke)) => {
-                    Some((invoke.nonce, invoke.sender_address))
+    let client = rpc_client();
+    let (block, (nonce, sender)) = blocks::map(
+        |block| {
+            // Browse the transaction in reverse order to make sure we got the latest nonce.
+            block.transactions.iter().rev().find_map(|transaction| {
+                match transaction {
+                    Transaction::Invoke(InvokeTransaction::V1(invoke)) => {
+                        Some((invoke.nonce, invoke.sender_address))
+                    }
+                    Transaction::Invoke(InvokeTransaction::V3(invoke)) => {
+                        Some((invoke.nonce, invoke.sender_address))
+                    }
+                    _ => None,
                 }
-                Transaction::Invoke(InvokeTransaction::V3(invoke)) => {
-                    Some((invoke.nonce, invoke.sender_address))
-                }
-                _ => None,
-            },
-        )
-    })
-    .await;
-    let original_nonce = truncate_felt_to_u128(&original_nonce);
+            })
+        },
+        1000,
+    )
+    .await
+    .expect("failed to find invoke tx");
+    let block_id = BlockId::Number(block.block_number);
 
-    let incremented_nonce =
+    let nonce = truncate_felt_to_u128(&nonce);
+
+    let updated_nonce =
         client.get_nonce(block_id, sender).await.expect("getNonce failed");
-    let incremented_nonce = truncate_felt_to_u128(&incremented_nonce);
+    let updated_nonce = truncate_felt_to_u128(&updated_nonce);
 
-    assert_eq!(original_nonce + 1, incremented_nonce);
+    assert_eq!(updated_nonce, nonce + 1);
 }
 
 #[tokio::test]
 async fn test_get_transaction_by_block_id_and_index() {
     let txs = 10;
-    let TestContext { client, block, block_id, extracted_value: () } =
-        n_txs_context(txs).await;
+    let (client, block, block_id) = n_txs_context(txs).await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
@@ -343,8 +349,7 @@ async fn test_get_transaction_by_block_id_and_index() {
 #[tokio::test]
 async fn test_get_transaction_by_hash() {
     let txs = 10;
-    let TestContext { client, block, block_id: _, extracted_value: () } =
-        n_txs_context(txs).await;
+    let (client, block, _) = n_txs_context(txs).await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
@@ -379,8 +384,7 @@ async fn test_get_transaction_by_hash() {
 #[tokio::test]
 async fn test_get_transaction_status() {
     let txs = 10;
-    let TestContext { client, block, block_id: _, extracted_value: () } =
-        n_txs_context(txs).await;
+    let (client, block, _) = n_txs_context(txs).await;
 
     async fn check_transaction(
         client: &JsonRpcClient<HttpTransport>,
