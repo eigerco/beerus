@@ -33,7 +33,9 @@ mod blocks {
         latest: Option<u64>,
     }
 
-    async fn next(state: State) -> Option<(BlockWithTxs, State)> {
+    async fn change_stream_state(
+        state: State,
+    ) -> Option<(BlockWithTxs, State)> {
         let latest = if let Some(latest) = state.latest.as_ref() {
             *latest
         } else {
@@ -66,7 +68,7 @@ mod blocks {
 
     fn stream() -> impl Stream<Item = BlockWithTxs> {
         let state = State { client: rpc_client(), latest: None };
-        stream::unfold(state, next)
+        stream::unfold(state, change_stream_state)
     }
 
     pub async fn head() -> Option<BlockWithTxs> {
