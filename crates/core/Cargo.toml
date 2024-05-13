@@ -29,9 +29,11 @@ toml = "0.7.3"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 url = "2.3.1"
+validator = { version = "0.18", features = ["derive"] }
 
 [dev-dependencies]
 rstest = "0.18.2"
+wiremock = "0.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 gloo-timers = "0.2.6"
