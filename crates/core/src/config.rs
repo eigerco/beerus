@@ -291,9 +291,11 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_urls() {
-        let mut config = Config::default();
-        config.eth_execution_rpc = "foo".to_string();
-        config.starknet_rpc = "bar".to_string();
+        let config = Config {
+            eth_execution_rpc: "foo".to_string(),
+            starknet_rpc: "bar".to_string(),
+            ..Default::default()
+        };
 
         let response = config.validate_params().await;
 
@@ -364,8 +366,7 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_poll_secs() {
-        let mut config = Config::default();
-        config.poll_secs = 99;
+        let config = Config { poll_secs: 99, ..Default::default() };
 
         let response = config.validate_params().await;
 
