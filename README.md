@@ -43,7 +43,7 @@ hurl etc/rpc/starknet_getStateRoot.hurl
 | eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
 | starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}| untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
-| poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state |
+| poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state, min = 1 and max = 3600 |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 | fee_token_addr | 0x049d36...e004dc7 | `OPTIONAL` fee token to check for `getBalance` |
 

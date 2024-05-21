@@ -6,6 +6,7 @@ use clap::Parser;
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
     let config = get_config(Args::parse())?;
+    config.validate_params().await?;
 
     #[cfg(feature = "experimental")]
     {

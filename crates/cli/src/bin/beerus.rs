@@ -9,6 +9,7 @@ use tracing::info;
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
     let config = get_config(Args::parse())?;
+    config.validate_params().await?;
 
     info!("init beerus client: {:?}", config.network);
     let mut beerus = BeerusClient::new(&config).await?;
