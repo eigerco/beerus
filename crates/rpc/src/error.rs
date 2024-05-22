@@ -1,5 +1,4 @@
 use eyre::Report;
-use jsonrpsee::core::Error as JsonRpcError;
 use jsonrpsee::types::ErrorObjectOwned;
 use starknet::core::types::StarknetError;
 use starknet::providers::ProviderError;
@@ -11,7 +10,7 @@ pub enum RunError {
     #[error("wrong RPC spec version: local is {1} but remove is {0}")]
     WrongSpecVersion(String, String),
     #[error(transparent)]
-    RpcServer(#[from] JsonRpcError),
+    RpcServer(#[from] std::io::Error),
     #[error(transparent)]
     Provider(#[from] ProviderError),
 }
@@ -216,12 +215,6 @@ impl From<RpcError> for ErrorObjectOwned {
 
 impl From<Report> for RpcError {
     fn from(err: Report) -> Self {
-        RpcError::Other((-32601, format!("{err}")))
-    }
-}
-
-impl From<JsonRpcError> for RpcError {
-    fn from(err: JsonRpcError) -> Self {
         RpcError::Other((-32601, format!("{err}")))
     }
 }

@@ -11,30 +11,34 @@ ignore = [["aquamarine"]]
 [dependencies]
 tokio = { workspace = true }
 aquamarine = "0.5"
-async-trait = "0.1.58"
+async-trait = "0.1.80"
 bitvec = "1.0.1"
 ethabi = "18.0.0"
-ethers = "2.0.11"
+# There is a bug in ethers so we should pin its version
+# to the exact version that Helios is using
+ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fdfc91d0353878901af5a5c5ef" }
 eyre.workspace = true
-helios = { git = "https://github.com/a16z/helios", rev = "5ee0477" }
-reqwest = { version = "0.11.16", default-features = false, features = ["rustls-tls"] }
+helios = { git = "https://github.com/a16z/helios", rev = "1572a24" }
+reqwest = { version = "0.12.3", default-features = false, features = [
+    "json",
+    "rustls-tls",
+] }
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
 serde_json = "1.0"
-starknet-crypto = "0.6.1"
-
+starknet-crypto = "0.6.2"
 starknet.workspace = true
 thiserror.workspace = true
-toml = "0.7.3"
+toml = "0.8.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
-url = "2.3.1"
+url = "2.5.0"
 validator = { version = "0.18", features = ["derive"] }
 
 [dev-dependencies]
-rstest = "0.18.2"
-wiremock = "0.5"
+rstest = "0.19.0"
+wiremock = "0.6"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-gloo-timers = "0.2.6"
-wasm-bindgen-futures = "0.4.33"
+gloo-timers = "0.3.0"
+wasm-bindgen-futures = "0.4.42"
