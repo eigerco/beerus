@@ -11,7 +11,11 @@ integration-tests = ["pretty_assertions", "reqwest", "serde_json", "tokio"]
 beerus-core = { path = "../core" }
 starknet.workspace = true
 eyre.workspace = true
-jsonrpsee = { version = "0.20.3", features = ["macros", "server", "server-core"] }
+jsonrpsee = { version = "0.22.4", features = [
+    "macros",
+    "server",
+    "server-core",
+] }
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
 thiserror.workspace = true
@@ -19,7 +23,7 @@ tracing.workspace = true
 
 # Integration test dependencies
 pretty_assertions = { version = "1.4.0", optional = true }
-reqwest = { version = "0.11.16", optional = true }
+reqwest = { version = "0.12.3", optional = true }
 serde_json = { version = "1.0", optional = true }
 tokio = { workspace = true, optional = true }
 futures = "0.3.30"
