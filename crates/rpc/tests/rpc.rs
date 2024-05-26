@@ -1,6 +1,3 @@
-// These tests need Beerus to run in the background, hence why they're hidden behind the following feature.
-#![cfg(feature = "integration-tests")]
-
 use reqwest::Url;
 use starknet::{
     core::types::{
@@ -12,9 +9,8 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
 };
 
-const TEST_RPC_URL: &str = "http://localhost:3030";
-
 fn rpc_client() -> JsonRpcClient<HttpTransport> {
+    const TEST_RPC_URL: &str = "http://localhost:3030";
     let url: Url = TEST_RPC_URL.try_into().expect("Invalid RPC URL");
     JsonRpcClient::new(HttpTransport::new(url))
 }
@@ -123,15 +119,31 @@ mod fixtures {
     }
 }
 
+#[macro_export]
+macro_rules! setup {
+    () => {{
+        let run: bool = std::env::var("BEERUS_INTEGRATION_TEST_RUN")
+            .ok()
+            .map(|value| &value == "1")
+            .unwrap_or_default();
+        if !run {
+            return;
+        }
+
+        // TODO(#648): check that Beerus is up and running (GET /ready)
+    }};
+}
+
 #[tokio::test]
 async fn test_chain_id() {
+    setup!();
     let client = rpc_client();
-
     client.chain_id().await.expect("chainId failed");
 }
 
 #[tokio::test]
 async fn test_get_block_transaction_count() {
+    setup!();
     let (client, block, block_id) = fixtures::latest_block().await;
 
     let tx_count = client
@@ -143,6 +155,7 @@ async fn test_get_block_transaction_count() {
 
 #[tokio::test]
 async fn test_get_block_with_tx_hashes() {
+    setup!();
     let (client, block, block_id) = fixtures::block_with_min_ten_txs().await;
 
     let BlockWithTxHashes {
@@ -187,6 +200,7 @@ async fn test_get_block_with_tx_hashes() {
 
 #[tokio::test]
 async fn test_get_class() {
+    setup!();
     let (block, tx_hash) = blocks::map(
         |block| {
             block.transactions.iter().find_map(
@@ -219,6 +233,7 @@ async fn test_get_class() {
 
 #[tokio::test]
 async fn test_get_class_at() {
+    setup!();
     let (block, tx_hash) = blocks::map(
         |block| {
             block.transactions.iter().find_map(
@@ -256,6 +271,7 @@ async fn test_get_class_at() {
 
 #[tokio::test]
 async fn test_get_class_hash_at() {
+    setup!();
     let (block, tx_hash) = blocks::map(
         |block| {
             block.transactions.iter().find_map(
@@ -293,6 +309,7 @@ async fn test_get_class_hash_at() {
 
 #[tokio::test]
 async fn test_get_nonce() {
+    setup!();
     let client = rpc_client();
     let (block, (nonce, sender)) = blocks::map(
         |block| {
@@ -326,6 +343,7 @@ async fn test_get_nonce() {
 
 #[tokio::test]
 async fn test_get_transaction_by_block_id_and_index() {
+    setup!();
     let (client, block, block_id) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
@@ -355,6 +373,7 @@ async fn test_get_transaction_by_block_id_and_index() {
 
 #[tokio::test]
 async fn test_get_transaction_by_hash() {
+    setup!();
     let (client, block, _) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
@@ -382,6 +401,7 @@ async fn test_get_transaction_by_hash() {
 
 #[tokio::test]
 async fn test_get_transaction_status() {
+    setup!();
     let (client, block, _) = fixtures::block_with_min_ten_txs().await;
 
     async fn check_transaction(
