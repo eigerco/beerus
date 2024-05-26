@@ -12,7 +12,7 @@ pub enum Error {
     #[error("reqwest error: {0:?}")]
     Reqwest(#[from] reqwest::Error),
     #[error("codegen error: {0:?}")]
-    IamGroot(iamgroot::jsonrpc::Error),
+    IamGroot(#[from] iamgroot::jsonrpc::Error),
     #[error("starknet api error: {0:?}")]
     StarknetApi(#[from] starknet_api::StarknetApiError),
     #[error("blockifier state error: {0:?}")]
@@ -29,12 +29,6 @@ pub enum Error {
     SierraCompilation(#[from] StarknetSierraCompilationError),
     #[error("{0}")]
     Custom(&'static str),
-}
-
-impl From<iamgroot::jsonrpc::Error> for Error {
-    fn from(error: iamgroot::jsonrpc::Error) -> Self {
-        Self::IamGroot(error)
-    }
 }
 
 impl From<Error> for blockifier::state::errors::StateError {
