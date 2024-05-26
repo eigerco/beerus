@@ -1,8 +1,7 @@
 name: rust-integration-tests-chainstack
 on:
   schedule:
-    - cron: "0 8,20 * * *"
-  workflow_dispatch:
+    - cron: "0 8 * * *"
 
 jobs:
   integration:

@@ -1,8 +1,7 @@
 name: hurl-integration-tests
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 8,20 * * *"
+    - cron: "0 8 * * *"
 
 jobs:
   integration:
