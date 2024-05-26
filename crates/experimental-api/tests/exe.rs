@@ -5,12 +5,11 @@ use beerus_experimental_api::{
 
 mod common;
 
+use common::Error;
+
 #[test]
-fn test_call_deprecated_contract_class() -> Result<(), common::Error> {
-    let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL") else {
-        return Ok(());
-    };
-    let client = Client::new(&url);
+fn test_call_deprecated_contract_class() -> Result<(), Error> {
+    let client = client!();
     tracing_subscriber::fmt::try_init().ok();
 
     // TX: 0xcbb2b87d5378e682d650e0e7d36679b4557ba2bfa9d4e285b7168c04376b21
@@ -42,11 +41,8 @@ fn test_call_deprecated_contract_class() -> Result<(), common::Error> {
 }
 
 #[test]
-fn test_call_regular_contract_class() -> Result<(), common::Error> {
-    let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL") else {
-        return Ok(());
-    };
-    let client = Client::new(&url);
+fn test_call_regular_contract_class() -> Result<(), Error> {
+    let client = client!();
     tracing_subscriber::fmt::try_init().ok();
 
     let json = serde_json::json!({
