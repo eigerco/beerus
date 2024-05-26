@@ -4,9 +4,6 @@ edition = "2021"
 name = "beerus-rpc"
 version = "0.4.0"
 
-[features]
-integration-tests = ["pretty_assertions", "reqwest", "serde_json", "tokio"]
-
 [dependencies]
 beerus-core = { path = "../core" }
 starknet.workspace = true
@@ -21,10 +18,10 @@ serde_with.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 
-# Integration test dependencies
-pretty_assertions = { version = "1.4.0", optional = true }
-reqwest = { version = "0.12.3", optional = true }
-serde_json = { version = "1.0", optional = true }
-tokio = { workspace = true, optional = true }
+[dev-dependencies]
+pretty_assertions = "1.4.0"
+reqwest = "0.12.13"
+serde_json = "1.0"
+tokio.workspace = true
 futures = "0.3.30"
 pin-utils = "0.1.0"

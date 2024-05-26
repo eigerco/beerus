@@ -7,6 +7,8 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      - BEERUS_INTEGRATION_TEST_RUN: 0
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
@@ -23,7 +25,7 @@ jobs:
         run: ./target/release/beerus & ./scripts/wait-for-it.sh localhost:3030 -t 120
 
       - name: run integration test on MAINNET
-        run: cargo test --package beerus-rpc --features integration-tests
+        run: cargo test -p beerus-rpc
 
       - name: stop RPC
         run: kill $(lsof -t -i:3030)
