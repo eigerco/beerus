@@ -1,4 +1,62 @@
+use beerus_experimental_api::{
+    gen::client::Client,
+    rpc::{serve, Server},
+};
 use thiserror::Error;
+
+#[allow(dead_code)] // used in macros
+pub struct Context {
+    pub client: Client,
+    pub server: Server,
+}
+
+#[allow(dead_code)] // used in macros
+pub async fn ctx() -> Option<Context> {
+    let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
+    let server = serve(&url, "127.0.0.1:0").await.ok()?;
+    tracing::info!(port = server.port(), "test server is up");
+
+    let url = format!("http://localhost:{}/rpc", server.port());
+    let client = Client::new(&url);
+    Some(Context { server, client })
+}
+
+#[macro_export]
+macro_rules! setup {
+    () => {{
+        let run: bool = std::env::var("BEERUS_EXPERIMENTAL_TEST_RUN")
+            .ok()
+            .map(|value| &value == "1")
+            .unwrap_or_default();
+        if !run {
+            return Ok(());
+        }
+        if let Some(ctx) = common::ctx().await {
+            ctx
+        } else {
+            panic!("Invalid test setup");
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! client {
+    () => {{
+        let run: bool = std::env::var("BEERUS_EXPERIMENTAL_TEST_RUN")
+            .ok()
+            .map(|value| &value == "1")
+            .unwrap_or_default();
+        if !run {
+            return Ok(());
+        }
+        if let Ok(url) = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL")
+        {
+            Client::new(&url)
+        } else {
+            panic!("Invalid test setup");
+        }
+    }};
+}
 
 #[derive(Debug, Error)]
 pub enum Error {

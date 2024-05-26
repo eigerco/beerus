@@ -1,39 +1,20 @@
-use beerus_experimental_api::{
-    gen::client::Client,
-    gen::{
-        Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-        BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-        GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-        GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
-        InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
-        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
-    },
-    rpc::{serve, Server},
+use beerus_experimental_api::gen::{
+    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
+    GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
+    InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+    SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
 };
 
 mod common;
 
-pub struct Context {
-    pub client: Client,
-    pub server: Server,
-}
-
-pub async fn ctx() -> Option<Context> {
-    let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
-    let server = serve(&url, "127.0.0.1:0").await.ok()?;
-    tracing::info!(port = server.port(), "test server is up");
-
-    let url = format!("http://localhost:{}/rpc", server.port());
-    let client = Client::new(&url);
-    Some(Context { server, client })
-}
+use common::Error;
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_specVersion() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_specVersion() -> Result<(), Error> {
+    let ctx = setup!();
 
     let ret = ctx.client.specVersion().await?;
     assert_eq!(ret, "0.6.0");
@@ -42,10 +23,8 @@ async fn test_specVersion() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_chainId() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_chainId() -> Result<(), Error> {
+    let ctx = setup!();
 
     let ret = ctx.client.chainId().await?;
     assert_eq!(ret.as_ref(), "0x534e5f4d41494e");
@@ -54,10 +33,8 @@ async fn test_chainId() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_blockHashAndNumber() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_blockHashAndNumber() -> Result<(), Error> {
+    let ctx = setup!();
 
     let ret = ctx.client.blockHashAndNumber().await?;
     assert!(*ret.block_number.as_ref() > 600612);
@@ -67,10 +44,8 @@ async fn test_blockHashAndNumber() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_blockNumber() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_blockNumber() -> Result<(), Error> {
+    let ctx = setup!();
 
     let ret = ctx.client.blockNumber().await?;
     assert!(*ret.as_ref() > 600612);
@@ -79,10 +54,8 @@ async fn test_blockNumber() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_call() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_call() -> Result<(), Error> {
+    let ctx = setup!();
 
     let request = FunctionCall {
         calldata: Vec::default(),
@@ -105,10 +78,8 @@ async fn test_call() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_estimateFee() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_estimateFee() -> Result<(), Error> {
+    let ctx = setup!();
 
     let calldata = vec![
         "0x2",
@@ -169,10 +140,8 @@ async fn test_estimateFee() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getBlockTransactionCount() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -183,10 +152,8 @@ async fn test_getBlockTransactionCount() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getBlockWithTxHashes() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -201,10 +168,8 @@ async fn test_getBlockWithTxHashes() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getBlockWithTxs() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getBlockWithTxs() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -219,10 +184,8 @@ async fn test_getBlockWithTxs() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_syncing() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_syncing() -> Result<(), Error> {
+    let ctx = setup!();
 
     let ret = ctx.client.syncing().await?;
     assert!(matches!(ret, SyncingResult::SyncStatus(_)));
@@ -231,10 +194,8 @@ async fn test_syncing() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getNonce() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getNonce() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -249,10 +210,8 @@ async fn test_getNonce() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionByHash() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getTransactionByHash() -> Result<(), Error> {
+    let ctx = setup!();
 
     let hash =
         "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a";
@@ -267,10 +226,8 @@ async fn test_getTransactionByHash() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getTransactionByBlockIdAndIndex() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -284,10 +241,8 @@ async fn test_getTransactionByBlockIdAndIndex() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getStorageAt() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getStorageAt() -> Result<(), Error> {
+    let ctx = setup!();
 
     let contract_address = Address(Felt::try_new(
         "0x6a05844a03bb9e744479e3298f54705a35966ab04140d3d8dd797c1f6dc49d0",
@@ -307,10 +262,8 @@ async fn test_getStorageAt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getProof() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getProof() -> Result<(), Error> {
+    let ctx = setup!();
 
     let contract_address = Address(Felt::try_new(
         "0x49D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",
@@ -338,10 +291,8 @@ async fn test_getProof() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionStatus() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getTransactionStatus() -> Result<(), Error> {
+    let ctx = setup!();
 
     let transaction_hash = TxnHash(Felt::try_new(
         "0x2e2a98c1731ece2691edfbb4ed9b057182cec569735bd89825f17e3b342583a",
@@ -358,10 +309,8 @@ async fn test_getTransactionStatus() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getTransactionReceipt() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getTransactionReceipt() -> Result<(), Error> {
+    let ctx = setup!();
 
     let hash =
         "0x4c1672e824b5cd7477fca31ee3ab5a1058534ed1820bb27abc976c2e6095151";
@@ -381,10 +330,8 @@ async fn test_getTransactionReceipt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClass() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getClass() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -415,10 +362,8 @@ async fn test_getClass() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClassAt() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getClassAt() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
@@ -446,10 +391,8 @@ async fn test_getClassAt() -> Result<(), common::Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_getClassHashAt() -> Result<(), common::Error> {
-    let Some(ctx) = ctx().await else {
-        return Ok(());
-    };
+async fn test_getClassHashAt() -> Result<(), Error> {
+    let ctx = setup!();
 
     let block_id = BlockId::BlockTag(BlockTag::Latest);
 
