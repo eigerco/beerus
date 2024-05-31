@@ -7,7 +7,7 @@ use super::StorageProof;
 
 /// Holds the data and proofs for a specific contract.
 #[serde_as]
-#[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone, Serialize, Default)]
 pub struct ContractData {
     /// Required to verify the contract state hash to contract root calculation.
     #[serde_as(as = "UfeHex")]

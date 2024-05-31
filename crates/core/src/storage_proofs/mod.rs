@@ -11,7 +11,7 @@ use types::{BinaryNode, ContractData, Direction, EdgeNode, TrieNode};
 use crate::utils::{felt_from_bits, felt_to_bits};
 
 #[serde_as]
-#[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone, Serialize, Default)]
 pub struct StorageProof {
     /// The global state commitment for Starknet 0.11.0 blocks onwards, if absent the hash
     /// of the first node in the [contract_proof](GetProofOutput#contract_proof) is the global state
@@ -39,36 +39,63 @@ impl StorageProof {
         key: FieldElement,
         value: FieldElement,
     ) -> Result<FieldElement> {
-        verify_proof(
-            self.contract_data.root,
-            &felt_to_bits(key),
-            value,
-            &mut self.contract_data.storage_proofs[0],
-        )?;
+        self.verify_storage_proofs(&felt_to_bits(key), value)?;
+        self.verify_contract_proof(global_root, contract_address)
+    }
 
+    fn verify_storage_proofs(
+        &mut self,
+        key: &BitSlice<u8, Msb0>,
+        value: FieldElement,
+    ) -> Result<FieldElement> {
+        let root = self.contract_data.root;
+        let storage_proofs = &mut self.contract_data.storage_proofs[0];
+
+        match Self::parse_proof(key, value, storage_proofs) {
+            Some(computed_root) => match computed_root == root {
+                true => Ok(computed_root),
+                false => Err(eyre!(
+                    "Proof invalid:\nprovided-root -> {:x}\ncomputed-root -> {:x}\n",
+                    root, computed_root
+                )),
+            },
+            None => Err(eyre!("Proof invalid for root {:x}", root)),
+        }
+    }
+
+    fn verify_contract_proof(
+        &mut self,
+        global_root: FieldElement,
+        contract_address: FieldElement,
+    ) -> Result<FieldElement> {
         let state_hash = self.calculate_contract_state_hash();
 
-        if let Some(storage_commitment) = parse_proof(
+        match Self::parse_proof(
             &felt_to_bits(contract_address),
             state_hash,
             &mut self.contract_proof,
         ) {
-            let parsed_global_root =
-                self.calculate_global_root(storage_commitment);
-            if self.state_commitment == parsed_global_root
-                && global_root == parsed_global_root
-            {
-                return Ok(parsed_global_root);
+            Some(storage_commitment) => {
+                let parsed_global_root =
+                    self.calculate_global_root(storage_commitment);
+                match self.state_commitment == parsed_global_root && global_root == parsed_global_root {
+                    true => Ok(parsed_global_root),
+                    false => Err(eyre!(
+                        "Proof invalid:\nstate commitment -> {:x}\nparsed global root -> {:x}\n global root -> {:x}", 
+                        self.state_commitment, parsed_global_root, global_root
+                    )),
+                }
             }
+            None => Err(eyre!(
+                "Could not parse global root for root: {:x}",
+                global_root
+            )),
         }
-
-        Err(eyre!("could not parse global root for root: {global_root}"))
     }
 
-    pub fn calculate_contract_state_hash(&self) -> FieldElement {
+    fn calculate_contract_state_hash(&self) -> FieldElement {
         // The contract state hash is defined as H(H(H(hash, root), nonce), CONTRACT_STATE_HASH_VERSION)
         const CONTRACT_STATE_HASH_VERSION: FieldElement = FieldElement::ZERO;
-
         let hash = pedersen_hash(
             &self.contract_data.class_hash,
             &self.contract_data.root,
@@ -77,7 +104,7 @@ impl StorageProof {
         pedersen_hash(&hash, &CONTRACT_STATE_HASH_VERSION)
     }
 
-    pub fn calculate_global_root(
+    fn calculate_global_root(
         &self,
         storage_commitment: FieldElement,
     ) -> FieldElement {
@@ -89,83 +116,65 @@ impl StorageProof {
             self.class_commitment,
         ])
     }
-}
 
-pub fn verify_proof(
-    root: FieldElement,
-    key: &BitSlice<u8, Msb0>,
-    value: FieldElement,
-    proof: &mut [TrieNode],
-) -> Result<FieldElement> {
-    match parse_proof(key, value, proof) {
-        Some(computed_root) => {
-            if computed_root == root {
-                Ok(computed_root)
-            } else {
-                Err(eyre!("proof invalid:\nprovided-root -> {root}\ncomputed-root -> {computed_root}\n"))
-            }
+    fn parse_proof(
+        key: &BitSlice<u8, Msb0>,
+        value: FieldElement,
+        proof: &mut [TrieNode],
+    ) -> Option<FieldElement> {
+        if key.len() != 251 {
+            return None;
         }
-        None => Err(eyre!("proof invalid for root {root}")),
-    }
-}
 
-pub fn parse_proof(
-    key: &BitSlice<u8, Msb0>,
-    value: FieldElement,
-    proof: &mut [TrieNode],
-) -> Option<FieldElement> {
-    if key.len() != 251 {
-        return None;
-    }
+        // initialized to the value so if the last node
+        // in the proof is a binary node we can still verify
+        let (mut hold, mut path_len) = (value, 0);
+        // reverse the proof in order to hash from the leaf towards the root
+        for (i, node) in proof.iter().rev().enumerate() {
+            match node {
+                TrieNode::Edge(EdgeNode { child, path }) => {
+                    // calculate edge hash given by provider
+                    let provided_hash = pedersen_hash(child, &path.value)
+                        + FieldElement::from(path.len as u64);
+                    if i == 0 {
+                        // mask storage key
+                        let computed_hash =
+                            match felt_from_bits(key, Some(251 - path.len)) {
+                                Ok(masked_key) => {
+                                    pedersen_hash(&value, &masked_key)
+                                        + FieldElement::from(path.len as u64)
+                                }
+                                Err(_) => return None,
+                            };
 
-    // initialized to the value so if the last node
-    // in the proof is a binary node we can still verify
-    let (mut hold, mut path_len) = (value, 0);
-    // reverse the proof in order to hash from the leaf towards the root
-    for (i, node) in proof.iter().rev().enumerate() {
-        match node {
-            TrieNode::Edge(EdgeNode { child, path }) => {
-                // calculate edge hash given by provider
-                let provided_hash = pedersen_hash(child, &path.value)
-                    + FieldElement::from(path.len as u64);
-                if i == 0 {
-                    // mask storage key
-                    let computed_hash =
-                        match felt_from_bits(key, Some(251 - path.len)) {
-                            Ok(masked_key) => {
-                                pedersen_hash(&value, &masked_key)
-                                    + FieldElement::from(path.len as u64)
-                            }
-                            Err(_) => return None,
+                        // verify computed hash against provided hash
+                        if provided_hash != computed_hash {
+                            return None;
+                        };
+                    }
+
+                    // walk up the remaining path
+                    path_len += path.len;
+                    hold = provided_hash;
+                }
+                TrieNode::Binary(BinaryNode { left, right }) => {
+                    path_len += 1;
+                    // identify path direction for this node
+                    let expected_hash =
+                        match Direction::from(key[251 - path_len]) {
+                            Direction::Left => pedersen_hash(&hold, right),
+                            Direction::Right => pedersen_hash(left, &hold),
                         };
 
-                    // verify computed hash against provided hash
-                    if provided_hash != computed_hash {
+                    hold = pedersen_hash(left, right);
+                    // verify calculated hash vs provided hash for the node
+                    if hold != expected_hash {
                         return None;
                     };
                 }
+            };
+        }
 
-                // walk up the remaining path
-                path_len += path.len;
-                hold = provided_hash;
-            }
-            TrieNode::Binary(BinaryNode { left, right }) => {
-                path_len += 1;
-
-                // identify path direction for this node
-                let expected_hash = match Direction::from(key[251 - path_len]) {
-                    Direction::Left => pedersen_hash(&hold, right),
-                    Direction::Right => pedersen_hash(left, &hold),
-                };
-
-                hold = pedersen_hash(left, right);
-                // verify calculated hash vs provided hash for the node
-                if hold != expected_hash {
-                    return None;
-                };
-            }
-        };
+        Some(hold)
     }
-
-    Some(hold)
 }
