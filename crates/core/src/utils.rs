@@ -20,7 +20,15 @@ pub fn felt_from_bits(
         return Err(eyre!("expecting 251 bits"));
     }
 
-    let mask = if let Some(x) = mask { x } else { 0 };
+    let mask = match mask {
+        Some(x) => {
+            if x > 251 {
+                return Err(eyre!("Mask cannot be bigger than 251"));
+            }
+            x
+        }
+        None => 0,
+    };
 
     let mut bytes = [0u8; 32];
     bytes.view_bits_mut::<Msb0>()[5 + mask..].copy_from_bitslice(&bits[mask..]);
