@@ -31,10 +31,21 @@ Then run:
 cargo run --release -- -c ./path/to/config.toml
 ```
 
-Once Beerus has started to verify that everything is working correctly, run this command:
+Once Beerus has started to verify that it is up and running, try this request:
 ```
-hurl etc/rpc/starknet_getStateRoot.hurl
+curl -H 'Content-type: application/json' -d'{
+    "jsonrpc": "2.0",
+    "method": "starknet_getStateRoot",
+    "params": [],
+    "id": 1
+}' http://127.0.0.1:3030
 ```
+
+The successful result should look similar to the one below:
+```
+{"jsonrpc":"2.0","result":"0x539895aff28be4958188c1d4e8e68ee6772bdd49dd9362a4fbb189e61c54ff1","id":1}
+```
+
 ### Configuration
 
 | field   | example | description |
