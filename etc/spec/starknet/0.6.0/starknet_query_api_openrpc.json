@@ -743,7 +743,7 @@
         },
         {
             "name": "starknet_syncing",
-            "summary": "Returns an object about the sync status, or false if the node is not synching",
+            "summary": "Returns an object about the sync status, or false if the node is not syncing",
             "params": [],
             "result": {
                 "name": "syncing",

@@ -2407,7 +2407,7 @@ pub mod gen {
             &self,
         ) -> std::result::Result<String, jsonrpc::Error>;
 
-        /// Returns an object about the sync status, or false if the node is not synching
+        /// Returns an object about the sync status, or false if the node is not syncing
         async fn syncing(
             &self,
         ) -> std::result::Result<SyncingResult, jsonrpc::Error>;
@@ -3898,7 +3898,7 @@ pub mod gen {
                 &self,
             ) -> std::result::Result<String, jsonrpc::Error>;
 
-            /// Returns an object about the sync status, or false if the node is not synching
+            /// Returns an object about the sync status, or false if the node is not syncing
             fn syncing(
                 &self,
             ) -> std::result::Result<SyncingResult, jsonrpc::Error>;
