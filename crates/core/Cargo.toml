@@ -36,7 +36,7 @@ url = "2.5.0"
 validator = { version = "0.18", features = ["derive"] }
 
 [dev-dependencies]
-rstest = "0.19.0"
+rstest = "0.21.0"
 wiremock = "0.6"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
