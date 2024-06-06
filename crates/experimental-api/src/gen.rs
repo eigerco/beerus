@@ -9,6 +9,10 @@ pub mod gen {
     use serde_json::Value;
 
     use iamgroot::jsonrpc;
+    use starknet_crypto::{pedersen_hash, poseidon_hash_many, FieldElement};
+
+    use beerus_core::storage_proofs::types::Direction;
+    use beerus_core::utils::{felt_from_bits, felt_to_bits};
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct Address(pub Felt);
@@ -954,7 +958,7 @@ pub mod gen {
         pub unit: PriceUnit,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq)]
     #[serde(try_from = "String")]
     pub struct Felt(String);
 
@@ -2137,7 +2141,7 @@ pub mod gen {
         pub transaction_hash: Option<Felt>,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, Default)]
     pub struct ContractData {
         pub class_hash: Felt,
         pub contract_state_hash_version: Felt,
@@ -2148,7 +2152,7 @@ pub mod gen {
         pub storage_proofs: Option<Vec<Proof>>,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, Default)]
     pub struct GetProofResult {
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
@@ -2160,6 +2164,210 @@ pub mod gen {
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(default)]
         pub state_commitment: Option<Felt>,
+    }
+
+    impl GetProofResult {
+        pub fn verify(
+            &mut self,
+            global_root: Felt,
+            contract_address: Address,
+            key: StorageKey,
+            value: Felt,
+        ) -> Result<(), jsonrpc::Error> {
+            let contract_data =
+                self.contract_data.as_ref().ok_or(jsonrpc::Error::new(
+                    -32700,
+                    "No contract data found".to_string(),
+                ))?;
+            self.verify_storage_proofs(contract_data, key, value)?;
+            self.verify_contract_proof(
+                contract_data,
+                global_root,
+                contract_address.0,
+            )
+        }
+
+        fn verify_storage_proofs(
+            &self,
+            contract_data: &ContractData,
+            key: StorageKey,
+            value: Felt,
+        ) -> Result<(), jsonrpc::Error> {
+            let root = &contract_data.root;
+            let storage_proofs = &contract_data.storage_proofs.as_ref().ok_or(
+                jsonrpc::Error::new(
+                    -32700,
+                    "No storage proof found".to_string(),
+                ),
+            )?[0];
+
+            // TODO {:x} format on Err returns
+            match Self::parse_proof(key.0, value, storage_proofs) {
+                Some(computed_root) => match computed_root == *root {
+                    true => Ok(()),
+                    false => Err(jsonrpc::Error::new(
+                        -32700,
+                        format!(
+                            "Proof invalid:\nprovided-root -> {:#?}\ncomputed-root -> {:#?}\n",
+                            root, computed_root
+                        ),
+                    )),
+                },
+                None => Err(jsonrpc::Error::new(
+                    -32700,
+                    format!("Proof invalid for root -> {:#?}\n", root),
+                )),
+            }
+        }
+
+        fn verify_contract_proof(
+            &self,
+            contract_data: &ContractData,
+            global_root: Felt,
+            contract_address: Felt,
+        ) -> Result<(), jsonrpc::Error> {
+            let state_hash = Self::calculate_contract_state_hash(contract_data);
+
+            // TODO {:x} format on Err returns
+            match Self::parse_proof(
+                contract_address.0,
+                state_hash,
+                &self.contract_proof,
+            ) {
+                Some(storage_commitment) => {
+                    let class_commitment =
+                        self.class_commitment.as_ref().unwrap();
+                    let parsed_global_root = Self::calculate_global_root(
+                        class_commitment,
+                        storage_commitment,
+                    );
+                    let state_commitment =
+                        self.state_commitment.as_ref().unwrap();
+                    match *state_commitment == parsed_global_root && global_root == parsed_global_root {
+                        true => Ok(()),
+                        false => Err(jsonrpc::Error::new(
+                            -32700,
+                            format!("Proof invalid:\nstate commitment -> {:#?}\nparsed global root -> {:#?}\n global root -> {:#?}", 
+                            self.state_commitment, parsed_global_root, global_root)
+                        )),
+                    }
+                }
+                None => Err(jsonrpc::Error::new(
+                    -32700,
+                    format!(
+                        "Could not parse global root for root: {:#?}",
+                        global_root
+                    ),
+                )),
+            }
+        }
+
+        fn calculate_contract_state_hash(contract_data: &ContractData) -> Felt {
+            // The contract state hash is defined as H(H(H(hash, root), nonce), CONTRACT_STATE_HASH_VERSION)
+            const CONTRACT_STATE_HASH_VERSION: FieldElement =
+                FieldElement::ZERO;
+            let hash = pedersen_hash(
+                &FieldElement::from_hex_be(&contract_data.class_hash.0)
+                    .unwrap(),
+                &FieldElement::from_hex_be(&contract_data.root.0).unwrap(),
+            );
+            let hash = pedersen_hash(
+                &hash,
+                &FieldElement::from_hex_be(&contract_data.nonce.0).unwrap(),
+            );
+            let hash = pedersen_hash(&hash, &CONTRACT_STATE_HASH_VERSION);
+            Felt::try_new(&format!("0x{:x}", hash)).unwrap()
+        }
+
+        fn calculate_global_root(
+            class_commitment: &Felt,
+            storage_commitment: Felt,
+        ) -> Felt {
+            let global_state_ver =
+                FieldElement::from_byte_slice_be(b"STARKNET_STATE_V0").unwrap();
+            let hash = poseidon_hash_many(&[
+                global_state_ver,
+                FieldElement::from_hex_be(&storage_commitment.0).unwrap(),
+                FieldElement::from_hex_be(&class_commitment.0).unwrap(),
+            ]);
+            Felt::try_new(&format!("0x{:x}", hash)).unwrap()
+        }
+
+        fn parse_proof(
+            key: String,
+            value: Felt,
+            proof: &[Node],
+        ) -> Option<Felt> {
+            let key = felt_to_bits(FieldElement::from_hex_be(&key).unwrap());
+            if key.len() != 251 {
+                return None;
+            }
+            let value = FieldElement::from_hex_be(&value.0).unwrap();
+            // initialized to the value so if the last node
+            // in the proof is a binary node we can still verify
+            let (mut hold, mut path_len) = (value, 0);
+            // reverse the proof in order to hash from the leaf towards the root
+            for (i, node) in proof.iter().rev().enumerate() {
+                match node {
+                    Node::EdgeNode(EdgeNode {
+                        edge: EdgeNodeEdge { child, path },
+                    }) => {
+                        // calculate edge hash given by provider
+                        let child_felt =
+                            FieldElement::from_hex_be(&child.0).unwrap();
+                        let path_value =
+                            FieldElement::from_hex_be(&path.value.0).unwrap();
+                        let provided_hash =
+                            pedersen_hash(&child_felt, &path_value)
+                                + FieldElement::from(path.len as u64);
+                        if i == 0 {
+                            // mask storage key
+                            let computed_hash = match felt_from_bits(
+                                &key,
+                                Some(251 - path.len as usize),
+                            ) {
+                                Ok(masked_key) => {
+                                    pedersen_hash(&value, &masked_key)
+                                        + FieldElement::from(path.len as u64)
+                                }
+                                Err(_) => return None,
+                            };
+                            // verify computed hash against provided hash
+                            if provided_hash != computed_hash {
+                                return None;
+                            };
+                        }
+
+                        // walk up the remaining path
+                        path_len += path.len;
+                        hold = provided_hash;
+                    }
+                    Node::BinaryNode(BinaryNode {
+                        binary: BinaryNodeBinary { left, right },
+                    }) => {
+                        path_len += 1;
+                        let left = FieldElement::from_hex_be(&left.0).unwrap();
+                        let right =
+                            FieldElement::from_hex_be(&right.0).unwrap();
+                        // identify path direction for this node
+                        let expected_hash =
+                            match Direction::from(key[251 - path_len as usize])
+                            {
+                                Direction::Left => pedersen_hash(&hold, &right),
+                                Direction::Right => pedersen_hash(&left, &hold),
+                            };
+
+                        hold = pedersen_hash(&left, &right);
+                        // verify calculated hash vs provided hash for the node
+                        if hold != expected_hash {
+                            return None;
+                        };
+                    }
+                };
+            }
+
+            Some(Felt::try_new(&format!("0x{:x}", hold)).unwrap())
+        }
     }
 
     pub mod error {

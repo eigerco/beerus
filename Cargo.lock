@@ -583,6 +583,7 @@ dependencies = [
  "async-trait",
  "axum",
  "base64 0.22.1",
+ "beerus-core",
  "blockifier",
  "cairo-lang-starknet-classes",
  "cairo-vm",
