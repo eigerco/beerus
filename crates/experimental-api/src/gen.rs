@@ -9722,9 +9722,9 @@ pub mod gen {
                     }
                 }
             }]"#;
-            let mut proof: Vec<Node> =
-                serde_json::from_str(&edge_node_string).unwrap();
-            let ret_val = GetProofResult::parse_proof(key, value, &mut proof);
+            let proof: Vec<Node> =
+                serde_json::from_str(edge_node_string).unwrap();
+            let ret_val = GetProofResult::parse_proof(key, value, &proof);
 
             assert!(ret_val.is_some());
             let ret_val = ret_val.unwrap();
@@ -9776,9 +9776,8 @@ pub mod gen {
                     }
                 }
             }]"#;
-            let mut proof: Vec<Node> =
-                serde_json::from_str(&proof_string).unwrap();
-            let ret_val = GetProofResult::parse_proof(key, value, &mut proof);
+            let proof: Vec<Node> = serde_json::from_str(proof_string).unwrap();
+            let ret_val = GetProofResult::parse_proof(key, value, &proof);
 
             assert!(ret_val.is_some());
             let ret_val = ret_val.unwrap();
@@ -9792,7 +9791,7 @@ pub mod gen {
         fn invalid_one_level_parse_proof() {
             let key = "0xabc".to_string();
             let value = Felt::try_new("0xdef").unwrap();
-            let mut proof: Vec<Node> = serde_json::from_str(
+            let proof: Vec<Node> = serde_json::from_str(
                 r#"[{
                 "edge": {
                     "child": "0xfaa",
@@ -9804,9 +9803,7 @@ pub mod gen {
             }]"#,
             )
             .unwrap();
-            assert!(
-                GetProofResult::parse_proof(key, value, &mut proof).is_none()
-            );
+            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
         }
 
         #[test]
@@ -9823,11 +9820,9 @@ pub mod gen {
                     }
                 }
             }]"#;
-            let mut proof: Vec<Node> =
-                serde_json::from_str(&edge_node_string).unwrap();
-            assert!(
-                GetProofResult::parse_proof(key, value, &mut proof).is_none()
-            );
+            let proof: Vec<Node> =
+                serde_json::from_str(edge_node_string).unwrap();
+            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
         }
 
         #[test]
@@ -9872,11 +9867,8 @@ pub mod gen {
                     }
                 }
             }]"#;
-            let mut proof: Vec<Node> =
-                serde_json::from_str(&proof_string).unwrap();
-            assert!(
-                GetProofResult::parse_proof(key, value, &mut proof).is_none()
-            );
+            let proof: Vec<Node> = serde_json::from_str(proof_string).unwrap();
+            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
         }
 
         #[test]
@@ -9902,7 +9894,7 @@ pub mod gen {
                         "0x1e224db31dfb3e1b8c95670a12f1903d4a32ac7bb83f4b209029e14155bbca9",
                     )
                     .unwrap(),
-                    storage_proofs: Some(vec![serde_json::from_str(&edge_node_string).unwrap()]),
+                    storage_proofs: Some(vec![serde_json::from_str(edge_node_string).unwrap()]),
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -9932,7 +9924,7 @@ pub mod gen {
                 contract_data: Some(ContractData {
                     root: Felt::try_new("0x42").unwrap(),
                     storage_proofs: Some(vec![serde_json::from_str(
-                        &edge_node_string,
+                        edge_node_string,
                     )
                     .unwrap()]),
                     ..Default::default()
@@ -9985,7 +9977,7 @@ pub mod gen {
                 }
             }]"#;
             let storage_proof = GetProofResult {
-                contract_proof: serde_json::from_str(&edge_node_string).unwrap(),
+                contract_proof: serde_json::from_str(edge_node_string).unwrap(),
                 state_commitment: Some(
                     Felt::try_new("0x1e2a7a7ee40c1d897c8c0a9515720ea02c8075ee9e00db277f5f8c3e4edcb54")
                         .unwrap(),
@@ -10003,7 +9995,6 @@ pub mod gen {
                     ..Default::default()
                 }),
                 class_commitment: Some(Felt::try_new("0x0").unwrap()),
-                ..Default::default()
             };
 
             let global_root =
