@@ -4,7 +4,7 @@
 
 To contribute to the project, start with the proper development copy.
 You may want to use the GitHub interface to fork [Beerus](https://github.com/eigerco/beerus) and check out your fork.
-For development environment setup and first build, see the [README.md](https://github.com/eigerco/beerus/README.md)
+For development environment setup and first build, see the [README.md](https://github.com/eigerco/beerus/blob/main/README.md)
 
 ### Legal Notice
 
