@@ -4,7 +4,6 @@
 
 To contribute to the project, start with the proper development copy.
 You may want to use the GitHub interface to fork [Beerus](https://github.com/eigerco/beerus) and check out your fork.
-For development environment setup and first build, see the [README.md](https://github.com/eigerco/beerus/README.md)
 
 ### Legal Notice
 
@@ -33,7 +32,7 @@ If you've been working on a change for a while, it is very likely that some othe
 ```shell
 git fetch upstream
 git rebase upstream/master
-git push origin my-feature-branch -f
+git push origin my-feature-branch --force
 ```
 
 Project history should be bisect-able so that when regressions are identified it could be easily to use git bisect to be able to pin-point the exact commit which introduced the regression. This requires that every commit is able to be built and passes all lints and tests. So if your pull request includes multiple commits be sure that each and every commit is able to be built and passes all checks performed by CI.
