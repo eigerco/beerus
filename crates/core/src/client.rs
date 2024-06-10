@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time;
 
@@ -90,7 +91,7 @@ pub struct BeerusClient {
     /// Starknet Client
     ///
     /// Untrusted Starknet L2 rpc.
-    pub starknet_client: JsonRpcClient<HttpTransport>,
+    pub starknet_client: Arc<JsonRpcClient<HttpTransport>>,
     /// Proof Address
     ///
     /// Clone of the starknet client dedicated for fetching proofs.
@@ -113,11 +114,12 @@ pub struct BeerusClient {
     /// - current local root(updated via cache of unproven block data)
     /// - current block number(updated via cache of unproven block data)
     pub node: Arc<RwLock<NodeData>>,
-    /// Beerus Config
-    ///
-    /// Configuration for Beerus client including l1 + l2
-    /// untrusted rpc addresses, and network information
-    pub config: Config,
+
+    /// RPC address
+    pub rpc_addr: SocketAddr,
+
+    /// Fee token address
+    pub fee_token_addr: FieldElement,
 }
 
 impl BeerusClient {
@@ -148,12 +150,13 @@ impl BeerusClient {
 
         Ok(Self {
             helios_client: Arc::new(helios_client),
-            starknet_client: config.to_starknet_client(),
+            starknet_client: Arc::new(config.to_starknet_client()),
             proof_addr: config.starknet_rpc.clone(),
             poll_secs: config.poll_secs,
             core_contract_addr: config.get_core_contract_address()?,
             node: Arc::new(RwLock::new(NodeData::new())),
-            config: config.clone(), // TODO: stop config propagation here
+            rpc_addr: config.rpc_addr,
+            fee_token_addr: config.fee_token_addr,
         })
     }
 
@@ -181,18 +184,18 @@ impl BeerusClient {
     ///     Beerus->>Beerus: Update local state to the new, unproven state
     /// end
     /// ```
-    pub async fn start(&mut self) -> Result<()> {
+    pub async fn start(&self) -> Result<()> {
         let l1_client = self.helios_client.clone();
-        let l2_client = self.config.to_starknet_client();
-        let core_contract_addr = self.config.get_core_contract_address()?;
+        let l2_client = self.starknet_client.clone();
+        let core_contract_addr = self.core_contract_addr;
         let node = self.node.clone();
-        let poll_interval = time::Duration::from_secs(self.config.poll_secs);
+        let poll_interval = time::Duration::from_secs(self.poll_secs);
 
         let state_loop = async move {
             loop {
                 match sync(
-                    &l1_client,
-                    &l2_client,
+                    l1_client.clone(),
+                    l2_client.clone(),
                     core_contract_addr,
                     node.clone(),
                 )
@@ -310,17 +313,17 @@ impl BeerusClient {
 }
 
 async fn sync(
-    l1_client: &Client<impl Database>,
-    l2_client: &JsonRpcClient<HttpTransport>,
+    l1_client: Arc<Client<impl Database>>,
+    l2_client: Arc<JsonRpcClient<HttpTransport>>,
     core_contract_addr: H160,
     node: Arc<RwLock<NodeData>>,
 ) -> Result<Option<u64>> {
     let starknet_state_root =
-        get_starknet_state_root(l1_client, core_contract_addr)
+        get_starknet_state_root(l1_client.as_ref(), core_contract_addr)
             .await
             .context("failed to get starknet state root")?;
     let l1_starknet_block_number =
-        get_starknet_state_block_number(l1_client, core_contract_addr)
+        get_starknet_state_block_number(l1_client.as_ref(), core_contract_addr)
             .await
             .context("failed to get starknet block")?;
     let local_block_number = node.read().await.l1_block_number;

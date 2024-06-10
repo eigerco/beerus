@@ -567,11 +567,7 @@ impl BeerusRpcServer for BeerusRpc {
         // get the proof for the contracts erc20 balance in the fee token contract
         let mut proof = self
             .beerus
-            .get_proof(
-                block_id,
-                &self.beerus.config.fee_token_addr,
-                &[balance_key],
-            )
+            .get_proof(block_id, &self.beerus.fee_token_addr, &[balance_key])
             .await
             .map_err(RpcError::from)?;
 
@@ -579,7 +575,7 @@ impl BeerusRpcServer for BeerusRpc {
         let balance = self
             .call(
                 FunctionCall {
-                    contract_address: self.beerus.config.fee_token_addr,
+                    contract_address: self.beerus.fee_token_addr,
                     entry_point_selector: selector!("balanceOf"),
                     calldata: vec![contract_address],
                 },
@@ -590,12 +586,7 @@ impl BeerusRpcServer for BeerusRpc {
 
         // verify the storage proof w/ the untrusted value
         proof
-            .verify(
-                root,
-                self.beerus.config.fee_token_addr,
-                balance_key,
-                balance[0],
-            )
+            .verify(root, self.beerus.fee_token_addr, balance_key, balance[0])
             .map_err(RpcError::from)?;
 
         Ok(Felt(balance[0]))

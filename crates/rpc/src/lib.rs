@@ -22,7 +22,7 @@ impl BeerusRpc {
         self.check_spec_version(SPEC_VERSION).await?;
 
         let server =
-            ServerBuilder::default().build(self.beerus.config.rpc_addr).await?;
+            ServerBuilder::default().build(self.beerus.rpc_addr).await?;
 
         let addr = server.local_addr()?;
         let handle = server.start(self.into_rpc());

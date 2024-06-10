@@ -12,7 +12,7 @@ async fn main() -> eyre::Result<()> {
     config.validate_params().await?;
 
     info!("init beerus client: {:?}", config.network);
-    let mut beerus = BeerusClient::new(&config).await?;
+    let beerus = BeerusClient::new(&config).await?;
     beerus.start().await?;
 
     let (address, server) = BeerusRpc::new(beerus).run().await?;
