@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
         ),
         ..Default::default()
     };
-    let mut beerus = BeerusClient::new(&config).await?;
+    let beerus = BeerusClient::new(&config).await?;
     beerus.start().await?;
 
     let block_id = BlockId::Number(33482);

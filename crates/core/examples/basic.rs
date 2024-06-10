@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
         ),
         ..Default::default()
     };
-    let mut beerus = BeerusClient::new(&config).await?;
+    let beerus = BeerusClient::new(&config).await?;
     beerus.start().await?;
 
     let current_starknet_block = beerus.state_root().await?;
