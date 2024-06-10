@@ -1,5 +1,4 @@
 use beerus_core::storage_proofs::StorageProof;
-use beerus_core::utils::get_balance_key;
 use jsonrpsee::core::async_trait;
 use jsonrpsee::proc_macros::rpc;
 use serde::{Deserialize, Serialize};
@@ -16,6 +15,7 @@ use starknet::core::types::{
     SimulationFlagForEstimateFee, SyncStatusType, Transaction,
     TransactionStatus,
 };
+use starknet::core::utils::get_storage_var_address;
 use starknet::macros::selector;
 use starknet::providers::Provider;
 
@@ -560,7 +560,9 @@ impl BeerusRpcServer for BeerusRpc {
         let root = self.beerus.get_local_root().await;
 
         // get the storage key for the queried contract address
-        let balance_key = get_balance_key(contract_address);
+        let balance_key =
+            get_storage_var_address("ERC20_balances", &[contract_address])
+                .unwrap();
 
         // get the proof for the contracts erc20 balance in the fee token contract
         let mut proof = self

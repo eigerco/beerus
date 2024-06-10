@@ -1,14 +1,13 @@
 pub mod types;
-use bitvec::prelude::Msb0;
 use bitvec::slice::BitSlice;
+use bitvec::vec::BitVec;
+use bitvec::{prelude::Msb0, view::BitView};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use starknet::core::serde::unsigned_field_element::UfeHex;
 use starknet_crypto::{pedersen_hash, poseidon_hash_many, FieldElement};
 use types::{BinaryNode, ContractData, Direction, EdgeNode, TrieNode};
-
-use crate::utils::{felt_from_bits, felt_to_bits};
 
 #[serde_as]
 #[derive(Debug, PartialEq, Deserialize, Clone, Serialize)]
@@ -168,4 +167,24 @@ pub fn parse_proof(
     }
 
     Some(hold)
+}
+
+fn felt_to_bits(felt: FieldElement) -> BitVec<u8, Msb0> {
+    felt.to_bytes_be().view_bits::<Msb0>()[5..].to_bitvec()
+}
+
+fn felt_from_bits(
+    bits: &BitSlice<u8, Msb0>,
+    mask: Option<usize>,
+) -> Result<FieldElement> {
+    if bits.len() != 251 {
+        return Err(eyre!("expecting 251 bits"));
+    }
+
+    let mask = if let Some(x) = mask { x } else { 0 };
+
+    let mut bytes = [0u8; 32];
+    bytes.view_bits_mut::<Msb0>()[5 + mask..].copy_from_bitslice(&bits[mask..]);
+
+    FieldElement::from_bytes_be(&bytes).map_err(|e| eyre!(format!("{e}")))
 }

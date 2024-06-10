@@ -4,7 +4,7 @@ use std::time;
 use ethabi::ethereum_types::H160;
 use ethabi::Uint as U256;
 use ethers::prelude::{abigen, EthCall};
-use ethers::types::{Address, SyncingStatus};
+use ethers::types::{Address, Bytes, SyncingStatus};
 use eyre::{eyre, Context, Result};
 use helios::client::Client;
 #[cfg(target_arch = "wasm32")]
@@ -12,7 +12,7 @@ use helios::prelude::ConfigDB;
 use helios::prelude::Database;
 #[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB;
-use helios::types::BlockTag;
+use helios::types::{BlockTag, CallOpts};
 use serde_json::json;
 use starknet::core::types::{
     BlockId, BlockTag as StarknetBlockTag, FieldElement,
@@ -28,7 +28,6 @@ use tracing::{debug, error, info};
 use crate::config::Config;
 use crate::storage_proofs::types::{RPCError, StorageProofResponse};
 use crate::storage_proofs::StorageProof;
-use crate::utils::simple_call_opts;
 
 abigen!(
     StarknetCoreContracts,
@@ -154,7 +153,7 @@ impl BeerusClient {
             poll_secs: config.poll_secs,
             core_contract_addr: config.get_core_contract_address()?,
             node: Arc::new(RwLock::new(NodeData::new())),
-            config: config.clone(),
+            config: config.clone(), // TODO: stop config propagation here
         })
     }
 
@@ -384,4 +383,15 @@ async fn get_starknet_state_block_number(
         .await
         .context("failed to fetch block number")?;
     Ok(U256::from_big_endian(&block_number).as_u64())
+}
+
+fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
+    CallOpts {
+        from: None,
+        to: Some(addr),
+        gas: None,
+        gas_price: None,
+        value: None,
+        data: Some(data),
+    }
 }
