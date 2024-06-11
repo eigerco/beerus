@@ -17,6 +17,12 @@ pub mod gen {
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct Address(pub Felt);
 
+    impl From<Address> for String {
+        fn from(value: Address) -> String {
+            value.0 .0
+        }
+    }
+
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct BinaryNode {
         pub binary: BinaryNodeBinary,
@@ -965,6 +971,7 @@ pub mod gen {
     mod felt {
         use super::jsonrpc;
         use super::Felt;
+        use crate::gen::Address;
         use once_cell::sync::Lazy;
         use regex::Regex;
 
@@ -998,6 +1005,12 @@ pub mod gen {
         impl AsRef<String> for Felt {
             fn as_ref(&self) -> &String {
                 &self.0
+            }
+        }
+
+        impl From<Address> for Felt {
+            fn from(value: Address) -> Self {
+                value.0
             }
         }
     }
@@ -1663,6 +1676,12 @@ pub mod gen {
                 &self.0
             }
         }
+
+        impl From<StorageKey> for String {
+            fn from(value: StorageKey) -> Self {
+                value.0
+            }
+        }
     }
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -2183,7 +2202,7 @@ pub mod gen {
             self.verify_contract_proof(
                 contract_data,
                 global_root,
-                contract_address.0,
+                contract_address,
             )
         }
 
@@ -2201,21 +2220,20 @@ pub mod gen {
                 ),
             )?[0];
 
-            // TODO {:x} format on Err returns
-            match Self::parse_proof(key.0, value, storage_proofs) {
+            match Self::parse_proof(key, value, storage_proofs)? {
                 Some(computed_root) => match computed_root == *root {
                     true => Ok(()),
                     false => Err(jsonrpc::Error::new(
                         -32700,
                         format!(
-                            "Proof invalid:\nprovided-root -> {:#?}\ncomputed-root -> {:#?}\n",
-                            root, computed_root
+                            "Proof invalid:\nprovided-root -> {}\ncomputed-root -> {}\n",
+                            root.as_ref(), computed_root.as_ref()
                         ),
                     )),
                 },
                 None => Err(jsonrpc::Error::new(
                     -32700,
-                    format!("Proof invalid for root -> {:#?}\n", root),
+                    format!("Proof invalid for root -> {}\n", root.as_ref()),
                 )),
             }
         }
@@ -2224,85 +2242,162 @@ pub mod gen {
             &self,
             contract_data: &ContractData,
             global_root: Felt,
-            contract_address: Felt,
+            contract_address: Address,
         ) -> Result<(), jsonrpc::Error> {
-            let state_hash = Self::calculate_contract_state_hash(contract_data);
+            let state_hash =
+                Self::calculate_contract_state_hash(contract_data)?;
 
-            // TODO {:x} format on Err returns
             match Self::parse_proof(
-                contract_address.0,
+                contract_address,
                 state_hash,
                 &self.contract_proof,
-            ) {
+            )? {
                 Some(storage_commitment) => {
-                    let class_commitment =
-                        self.class_commitment.as_ref().unwrap();
+                    let class_commitment = self
+                        .class_commitment
+                        .as_ref()
+                        .ok_or(jsonrpc::Error::new(
+                            -32700,
+                            "No class commitment".to_string(),
+                        ))?;
                     let parsed_global_root = Self::calculate_global_root(
                         class_commitment,
                         storage_commitment,
-                    );
-                    let state_commitment =
-                        self.state_commitment.as_ref().unwrap();
+                    )
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32700,
+                            "Failed to calculate global root".to_string(),
+                        )
+                    })?;
+                    let state_commitment = self
+                        .state_commitment
+                        .as_ref()
+                        .ok_or(jsonrpc::Error::new(
+                            -32700,
+                            "No state commitment".to_string(),
+                        ))?;
                     match *state_commitment == parsed_global_root && global_root == parsed_global_root {
                         true => Ok(()),
                         false => Err(jsonrpc::Error::new(
                             -32700,
-                            format!("Proof invalid:\nstate commitment -> {:#?}\nparsed global root -> {:#?}\n global root -> {:#?}", 
-                            self.state_commitment, parsed_global_root, global_root)
+                            format!("Proof invalid:\nstate commitment -> {}\nparsed global root -> {}\n global root -> {}", 
+                            state_commitment.as_ref(), parsed_global_root.as_ref(), global_root.as_ref())
                         )),
                     }
                 }
                 None => Err(jsonrpc::Error::new(
                     -32700,
                     format!(
-                        "Could not parse global root for root: {:#?}",
-                        global_root
+                        "Could not parse global root for root: {}",
+                        global_root.as_ref()
                     ),
                 )),
             }
         }
 
-        fn calculate_contract_state_hash(contract_data: &ContractData) -> Felt {
+        fn calculate_contract_state_hash(
+            contract_data: &ContractData,
+        ) -> Result<Felt, jsonrpc::Error> {
             // The contract state hash is defined as H(H(H(hash, root), nonce), CONTRACT_STATE_HASH_VERSION)
             const CONTRACT_STATE_HASH_VERSION: FieldElement =
                 FieldElement::ZERO;
             let hash = pedersen_hash(
-                &FieldElement::from_hex_be(&contract_data.class_hash.0)
-                    .unwrap(),
-                &FieldElement::from_hex_be(&contract_data.root.0).unwrap(),
+                &FieldElement::from_hex_be(contract_data.class_hash.as_ref())
+                    .map_err(|_| {
+                    jsonrpc::Error::new(
+                        -32701,
+                        "Failed to create Field Element".to_string(),
+                    )
+                })?,
+                &FieldElement::from_hex_be(contract_data.root.as_ref())
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    })?,
             );
             let hash = pedersen_hash(
                 &hash,
-                &FieldElement::from_hex_be(&contract_data.nonce.0).unwrap(),
+                &FieldElement::from_hex_be(contract_data.nonce.as_ref())
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    })?,
             );
             let hash = pedersen_hash(&hash, &CONTRACT_STATE_HASH_VERSION);
-            Felt::try_new(&format!("0x{:x}", hash)).unwrap()
+            Felt::try_new(&format!("0x{:x}", hash)).map_err(|_| {
+                jsonrpc::Error::new(
+                    -32701,
+                    "Failed to create Field Element".to_string(),
+                )
+            })
         }
 
         fn calculate_global_root(
             class_commitment: &Felt,
             storage_commitment: Felt,
-        ) -> Felt {
+        ) -> Result<Felt, jsonrpc::Error> {
             let global_state_ver =
-                FieldElement::from_byte_slice_be(b"STARKNET_STATE_V0").unwrap();
+                FieldElement::from_byte_slice_be(b"STARKNET_STATE_V0")
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    })?;
             let hash = poseidon_hash_many(&[
                 global_state_ver,
-                FieldElement::from_hex_be(&storage_commitment.0).unwrap(),
-                FieldElement::from_hex_be(&class_commitment.0).unwrap(),
+                FieldElement::from_hex_be(storage_commitment.as_ref())
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    })?,
+                FieldElement::from_hex_be(class_commitment.as_ref()).map_err(
+                    |_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    },
+                )?,
             ]);
-            Felt::try_new(&format!("0x{:x}", hash)).unwrap()
+            Felt::try_new(&format!("0x{:x}", hash)).map_err(|_| {
+                jsonrpc::Error::new(
+                    -32701,
+                    "Failed to create Field Element".to_string(),
+                )
+            })
         }
 
         fn parse_proof(
-            key: String,
+            key: impl Into<String>,
             value: Felt,
             proof: &[Node],
-        ) -> Option<Felt> {
-            let key = felt_to_bits(FieldElement::from_hex_be(&key).unwrap());
+        ) -> Result<Option<Felt>, jsonrpc::Error> {
+            let key = felt_to_bits(
+                FieldElement::from_hex_be(&key.into()).map_err(|_| {
+                    jsonrpc::Error::new(
+                        -32701,
+                        "Failed to create Field Element".to_string(),
+                    )
+                })?,
+            );
             if key.len() != 251 {
-                return None;
+                return Ok(None);
             }
-            let value = FieldElement::from_hex_be(&value.0).unwrap();
+            let value =
+                FieldElement::from_hex_be(value.as_ref()).map_err(|_| {
+                    jsonrpc::Error::new(
+                        -32701,
+                        "Failed to create Field Element".to_string(),
+                    )
+                })?;
             // initialized to the value so if the last node
             // in the proof is a binary node we can still verify
             let (mut hold, mut path_len) = (value, 0);
@@ -2313,10 +2408,24 @@ pub mod gen {
                         edge: EdgeNodeEdge { child, path },
                     }) => {
                         // calculate edge hash given by provider
-                        let child_felt =
-                            FieldElement::from_hex_be(&child.0).unwrap();
+                        let child_felt = FieldElement::from_hex_be(
+                            child.as_ref(),
+                        )
+                        .map_err(|_| {
+                            jsonrpc::Error::new(
+                                -32701,
+                                "Failed to create Field Element".to_string(),
+                            )
+                        })?;
                         let path_value =
-                            FieldElement::from_hex_be(&path.value.0).unwrap();
+                            FieldElement::from_hex_be(path.value.as_ref())
+                                .map_err(|_| {
+                                    jsonrpc::Error::new(
+                                        -32701,
+                                        "Failed to create Field Element"
+                                            .to_string(),
+                                    )
+                                })?;
                         let provided_hash =
                             pedersen_hash(&child_felt, &path_value)
                                 + FieldElement::from(path.len as u64);
@@ -2330,11 +2439,11 @@ pub mod gen {
                                     pedersen_hash(&value, &masked_key)
                                         + FieldElement::from(path.len as u64)
                                 }
-                                Err(_) => return None,
+                                Err(_) => return Ok(None),
                             };
                             // verify computed hash against provided hash
                             if provided_hash != computed_hash {
-                                return None;
+                                return Ok(None);
                             };
                         }
 
@@ -2346,9 +2455,21 @@ pub mod gen {
                         binary: BinaryNodeBinary { left, right },
                     }) => {
                         path_len += 1;
-                        let left = FieldElement::from_hex_be(&left.0).unwrap();
-                        let right =
-                            FieldElement::from_hex_be(&right.0).unwrap();
+                        let left = FieldElement::from_hex_be(left.as_ref())
+                            .map_err(|_| {
+                                jsonrpc::Error::new(
+                                    -32701,
+                                    "Failed to create Field Element"
+                                        .to_string(),
+                                )
+                            })?;
+                        let right = FieldElement::from_hex_be(right.as_ref())
+                            .map_err(|_| {
+                            jsonrpc::Error::new(
+                                -32701,
+                                "Failed to create Field Element".to_string(),
+                            )
+                        })?;
                         // identify path direction for this node
                         let expected_hash =
                             match Direction::from(key[251 - path_len as usize])
@@ -2360,13 +2481,13 @@ pub mod gen {
                         hold = pedersen_hash(&left, &right);
                         // verify calculated hash vs provided hash for the node
                         if hold != expected_hash {
-                            return None;
+                            return Ok(None);
                         };
                     }
                 };
             }
 
-            Some(Felt::try_new(&format!("0x{:x}", hold)).unwrap())
+            Ok(Some(Felt::try_new(&format!("0x{:x}", hold))?))
         }
     }
 
@@ -9705,7 +9826,7 @@ pub mod gen {
     #[cfg(test)]
     mod tests {
         use crate::gen::{
-            ContractData, Felt, GetProofResult, Node, StorageKey,
+            Address, ContractData, Felt, GetProofResult, Node, StorageKey,
         };
 
         #[test]
@@ -9724,7 +9845,8 @@ pub mod gen {
             }]"#;
             let proof: Vec<Node> =
                 serde_json::from_str(edge_node_string).unwrap();
-            let ret_val = GetProofResult::parse_proof(key, value, &proof);
+            let ret_val =
+                GetProofResult::parse_proof(key, value, &proof).unwrap();
 
             assert!(ret_val.is_some());
             let ret_val = ret_val.unwrap();
@@ -9777,7 +9899,8 @@ pub mod gen {
                 }
             }]"#;
             let proof: Vec<Node> = serde_json::from_str(proof_string).unwrap();
-            let ret_val = GetProofResult::parse_proof(key, value, &proof);
+            let ret_val =
+                GetProofResult::parse_proof(key, value, &proof).unwrap();
 
             assert!(ret_val.is_some());
             let ret_val = ret_val.unwrap();
@@ -9803,7 +9926,9 @@ pub mod gen {
             }]"#,
             )
             .unwrap();
-            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
+            assert!(GetProofResult::parse_proof(key, value, &proof)
+                .unwrap()
+                .is_none());
         }
 
         #[test]
@@ -9822,7 +9947,9 @@ pub mod gen {
             }]"#;
             let proof: Vec<Node> =
                 serde_json::from_str(edge_node_string).unwrap();
-            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
+            assert!(GetProofResult::parse_proof(key, value, &proof)
+                .unwrap()
+                .is_none());
         }
 
         #[test]
@@ -9868,7 +9995,9 @@ pub mod gen {
                 }
             }]"#;
             let proof: Vec<Node> = serde_json::from_str(proof_string).unwrap();
-            assert!(GetProofResult::parse_proof(key, value, &proof).is_none());
+            assert!(GetProofResult::parse_proof(key, value, &proof)
+                .unwrap()
+                .is_none());
         }
 
         #[test]
@@ -9947,7 +10076,7 @@ pub mod gen {
                 ..Default::default()
             };
             assert_eq!(
-                GetProofResult::calculate_contract_state_hash(&contract_data),
+                GetProofResult::calculate_contract_state_hash(&contract_data).unwrap(),
                 Felt::try_new("0x30a3c317f49a18c65bb5d22c87172f3f60101d54425457a66237474dd2d66db")
                     .unwrap()
             );
@@ -9959,7 +10088,7 @@ pub mod gen {
                 GetProofResult::calculate_global_root(
                     &Felt::try_new("0xabc").unwrap(),
                     Felt::try_new("0xdef").unwrap()
-                ),
+                ).unwrap(),
                 Felt::try_new("0x42e26eb87a82c4b4130cb6bfbd33be7788436aa66f787ede4aef9456b58939")
                     .unwrap()
             );
@@ -10000,9 +10129,8 @@ pub mod gen {
             let global_root =
                 Felt::try_new("0x1e2a7a7ee40c1d897c8c0a9515720ea02c8075ee9e00db277f5f8c3e4edcb54")
                     .unwrap();
-            let contract_address =
-                Felt::try_new("0x6a05844a03bb9e744479e3298f54705a35966ab04140d3d8dd797c1f6dc49d0")
-                    .unwrap();
+            let contract_address = Address(Felt::try_new("0x6a05844a03bb9e744479e3298f54705a35966ab04140d3d8dd797c1f6dc49d0")
+                    .unwrap());
             let contract_data = storage_proof.contract_data.as_ref().unwrap();
             assert!(storage_proof
                 .verify_contract_proof(
@@ -10021,7 +10149,7 @@ pub mod gen {
                 ..Default::default()
             };
             let global_root = Felt::try_new("0x0").unwrap();
-            let contract_address = Felt::try_new("0x0").unwrap();
+            let contract_address = Address(Felt::try_new("0x0").unwrap());
             let contract_data = ContractData::default();
             assert!(invalid_storage_proof
                 .verify_contract_proof(
