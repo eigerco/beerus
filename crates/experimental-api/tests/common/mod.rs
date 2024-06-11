@@ -1,8 +1,12 @@
+use std::sync::Arc;
+
+use beerus_core::client::NodeData;
 use beerus_experimental_api::{
     gen::client::Client,
     rpc::{serve, Server},
 };
 use thiserror::Error;
+use tokio::sync::RwLock;
 
 #[allow(dead_code)] // used in macros
 pub struct Context {
@@ -13,7 +17,8 @@ pub struct Context {
 #[allow(dead_code)] // used in macros
 pub async fn ctx() -> Option<Context> {
     let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
-    let server = serve(&url, "127.0.0.1:0").await.ok()?;
+    let node = Arc::new(RwLock::new(NodeData::default()));
+    let server = serve(&url, "127.0.0.1:0", node.clone()).await.ok()?;
     tracing::info!(port = server.port(), "test server is up");
 
     let url = format!("http://localhost:{}/rpc", server.port());

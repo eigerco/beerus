@@ -106,7 +106,7 @@ pub mod gen {
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     #[serde(try_from = "i64")]
-    pub struct BlockNumber(i64);
+    pub struct BlockNumber(pub i64);
 
     mod blocknumber {
         use super::jsonrpc;

@@ -1,12 +1,13 @@
 use axum::{
     extract::State, response::IntoResponse, routing::post, Json, Router,
 };
+use beerus_core::client::NodeData;
 use iamgroot::jsonrpc;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::{
     net::{TcpListener, ToSocketAddrs},
-    sync::oneshot,
+    sync::{oneshot, RwLock},
     task::JoinHandle,
 };
 
@@ -37,13 +38,18 @@ impl Server {
 pub async fn serve<A: ToSocketAddrs>(
     url: &str,
     bind: A,
+    node: Arc<RwLock<NodeData>>,
 ) -> Result<Server, Error> {
     let listener = TcpListener::bind(bind).await?;
-    let server = serve_on(url, listener)?;
+    let server = serve_on(url, listener, node)?;
     Ok(server)
 }
 
-fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
+fn serve_on(
+    url: &str,
+    listener: TcpListener,
+    node: Arc<RwLock<NodeData>>,
+) -> Result<Server, Error> {
     const DEFAULT_TIMEOUT: std::time::Duration =
         std::time::Duration::from_secs(30);
     let client = reqwest::ClientBuilder::new()
@@ -54,6 +60,7 @@ fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
     let ctx = Context {
         client: Arc::new(gen::client::Client::with_client(url, client)),
         url: url.to_owned(),
+        node,
     };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
@@ -103,6 +110,7 @@ impl IntoResponse for RpcError {
 struct Context {
     client: Arc<gen::client::Client>,
     url: String,
+    node: Arc<RwLock<NodeData>>,
 }
 
 async fn handle_request(
@@ -291,6 +299,28 @@ impl gen::Rpc for Context {
         key: StorageKey,
         block_id: BlockId,
     ) -> std::result::Result<Felt, jsonrpc::Error> {
+        let l1_block_num = self.node.read().await.l1_block_number as i64;
+        let block_id = match block_id {
+            gen::BlockId::BlockNumber {
+                block_number: BlockNumber(user_request_block_num),
+            } => {
+                let mut block_num = l1_block_num;
+                if user_request_block_num < block_num {
+                    block_num = user_request_block_num;
+                }
+                BlockId::BlockNumber {
+                    block_number: BlockNumber::try_new(block_num)?,
+                }
+            }
+            _ => BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(l1_block_num)?,
+            },
+        };
+        let l1_root = Felt::try_new(&format!(
+            "0x{:x}",
+            self.node.read().await.l1_state_root
+        ))?;
+
         let result = self
             .client
             .getStorageAt(
@@ -307,10 +337,12 @@ impl gen::Rpc for Context {
             "getStorageAt"
         );
 
-        let proof =
-            self.client.getProof(block_id, contract_address, vec![key]).await?;
+        let mut proof = self
+            .client
+            .getProof(block_id, contract_address.clone(), vec![key.clone()])
+            .await?;
         tracing::info!(?proof, "getStorageAt");
-        // TODO: validate proof
+        proof.verify(l1_root, contract_address, key, result.clone())?;
         Ok(result)
     }
 
