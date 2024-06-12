@@ -5,6 +5,7 @@ use beerus_experimental_api::{
     gen::client::Client,
     rpc::{serve, Server},
 };
+use starknet_crypto::FieldElement;
 use thiserror::Error;
 use tokio::sync::RwLock;
 
@@ -17,7 +18,14 @@ pub struct Context {
 #[allow(dead_code)] // used in macros
 pub async fn ctx() -> Option<Context> {
     let url = std::env::var("BEERUS_EXPERIMENTAL_TEST_STARKNET_URL").ok()?;
-    let node = Arc::new(RwLock::new(NodeData::default()));
+    let node = Arc::new(RwLock::new(NodeData {
+        l1_block_number: 647978,
+        l1_state_root: FieldElement::from_hex_be(
+            "0x463aee312c3eeaa8351d59fec0ee5a87168434f07482b4e618a123936603d90",
+        )
+        .unwrap(),
+        ..Default::default()
+    }));
     let server = serve(&url, "127.0.0.1:0", node.clone()).await.ok()?;
     tracing::info!(port = server.port(), "test server is up");
 

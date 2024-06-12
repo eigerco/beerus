@@ -252,8 +252,7 @@ async fn test_getStorageAt() -> Result<(), Error> {
         "0x0341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1",
     )?;
 
-    let block_id =
-        BlockId::BlockNumber { block_number: BlockNumber::try_new(600612)? };
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
 
     let ret = ctx.client.getStorageAt(contract_address, key, block_id).await?;
     assert_eq!(ret.as_ref(), "0x47616d65206f66204c69666520546f6b656e");
