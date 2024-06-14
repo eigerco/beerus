@@ -1,9 +1,8 @@
 name: release
 on:
-  workflow_dispatch:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 jobs:
   release:
@@ -15,10 +14,10 @@ jobs:
           - os: ubuntu-latest
             artifact_name: beerus-linux-x86_64.tar.gz
             asset_name: beerus-linux-x86_64.tar.gz
-            container: quay.io/pypa/manylinux2014_x86_64
-          - os: macos-latest
-            artifact_name: beerus-darwin-x86_64.tar.gz
-            asset_name: beerus-darwin-x86_64.tar.gz
+          ## TODO: decide to keep or drop darwin support
+          # - os: macos-latest
+          #   artifact_name: beerus-darwin-x86_64.tar.gz
+          #   asset_name: beerus-darwin-x86_64.tar.gz
 
     container:
         image: ${{ matrix.container || '' }}
