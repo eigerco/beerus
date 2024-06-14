@@ -130,6 +130,8 @@ impl Context {
                     block_number: BlockNumber::try_new(block_num)?,
                 })
             }
+            // TODO Resolve block hash to number
+            // and check if the number is acceptable
             gen::BlockId::BlockHash { block_hash } => {
                 Ok(gen::BlockId::BlockHash { block_hash })
             }

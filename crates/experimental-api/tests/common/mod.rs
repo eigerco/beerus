@@ -21,7 +21,7 @@ pub async fn ctx() -> Option<Context> {
     let node = Arc::new(RwLock::new(NodeData {
         l1_block_number: 647978,
         l1_state_root: FieldElement::from_hex_be(
-            "0x463aee312c3eeaa8351d59fec0ee5a87168434f07482b4e618a123936603d90",
+            "0x2a5aa70350b7d047cd3dd2f5ad01f8925409a64fc42e509e8e79c3a2c17425",
         )
         .unwrap(),
         ..Default::default()
