@@ -1,12 +1,13 @@
 use axum::{
     extract::State, response::IntoResponse, routing::post, Json, Router,
 };
+use beerus_core::client::NodeData;
 use iamgroot::jsonrpc;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::{
     net::{TcpListener, ToSocketAddrs},
-    sync::oneshot,
+    sync::{oneshot, RwLock},
     task::JoinHandle,
 };
 
@@ -37,13 +38,18 @@ impl Server {
 pub async fn serve<A: ToSocketAddrs>(
     url: &str,
     bind: A,
+    node: Arc<RwLock<NodeData>>,
 ) -> Result<Server, Error> {
     let listener = TcpListener::bind(bind).await?;
-    let server = serve_on(url, listener)?;
+    let server = serve_on(url, listener, node)?;
     Ok(server)
 }
 
-fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
+fn serve_on(
+    url: &str,
+    listener: TcpListener,
+    node: Arc<RwLock<NodeData>>,
+) -> Result<Server, Error> {
     const DEFAULT_TIMEOUT: std::time::Duration =
         std::time::Duration::from_secs(30);
     let client = reqwest::ClientBuilder::new()
@@ -54,6 +60,7 @@ fn serve_on(url: &str, listener: TcpListener) -> Result<Server, Error> {
     let ctx = Context {
         client: Arc::new(gen::client::Client::with_client(url, client)),
         url: url.to_owned(),
+        node,
     };
 
     let app = Router::new().route("/rpc", post(handle_request)).with_state(ctx);
@@ -103,6 +110,42 @@ impl IntoResponse for RpcError {
 struct Context {
     client: Arc<gen::client::Client>,
     url: String,
+    node: Arc<RwLock<NodeData>>,
+}
+
+impl Context {
+    pub async fn get_proper_block_id(
+        &self,
+        block_id: BlockId,
+    ) -> std::result::Result<BlockId, jsonrpc::Error> {
+        let l1_block_num = self.node.read().await.l1_block_number as i64;
+        match block_id {
+            gen::BlockId::BlockNumber { block_number } => {
+                let mut block_num = l1_block_num;
+                let user_request_block_num = *block_number.as_ref();
+                if user_request_block_num < block_num {
+                    block_num = user_request_block_num;
+                }
+                Ok(BlockId::BlockNumber {
+                    block_number: BlockNumber::try_new(block_num)?,
+                })
+            }
+            // TODO Resolve block hash to number
+            // and check if the number is acceptable
+            gen::BlockId::BlockHash { block_hash } => {
+                Ok(gen::BlockId::BlockHash { block_hash })
+            }
+            _ => Ok(BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(l1_block_num)?,
+            }),
+        }
+    }
+
+    pub async fn get_l1_root(
+        &self,
+    ) -> std::result::Result<Felt, jsonrpc::Error> {
+        Felt::try_new(&format!("0x{:x}", self.node.read().await.l1_state_root))
+    }
 }
 
 async fn handle_request(
@@ -291,6 +334,9 @@ impl gen::Rpc for Context {
         key: StorageKey,
         block_id: BlockId,
     ) -> std::result::Result<Felt, jsonrpc::Error> {
+        let block_id = self.get_proper_block_id(block_id).await?;
+        let l1_root = self.get_l1_root().await?;
+
         let result = self
             .client
             .getStorageAt(
@@ -307,10 +353,12 @@ impl gen::Rpc for Context {
             "getStorageAt"
         );
 
-        let proof =
-            self.client.getProof(block_id, contract_address, vec![key]).await?;
+        let mut proof = self
+            .client
+            .getProof(block_id, contract_address.clone(), vec![key.clone()])
+            .await?;
         tracing::info!(?proof, "getStorageAt");
-        // TODO: validate proof
+        proof.verify(l1_root, contract_address, key, result.clone())?;
         Ok(result)
     }
 
@@ -399,5 +447,116 @@ impl gen::Rpc for Context {
 
     async fn version(&self) -> std::result::Result<String, jsonrpc::Error> {
         self.client.version().await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use beerus_core::client::NodeData;
+    use tokio::sync::RwLock;
+
+    use crate::rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt};
+
+    use super::{client::Client, Context};
+
+    #[tokio::test]
+    async fn returns_latest_block_number() {
+        let context = Context {
+            client: Arc::new(Client::new("")),
+            url: "".to_string(),
+            node: Arc::new(RwLock::new(NodeData {
+                l1_block_number: 3,
+                ..Default::default()
+            })),
+        };
+        assert_eq!(
+            context
+                .get_proper_block_id(BlockId::BlockNumber {
+                    block_number: BlockNumber::try_new(27).unwrap()
+                })
+                .await
+                .unwrap(),
+            BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(3).unwrap()
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn returns_historical_block_number() {
+        let context = Context {
+            client: Arc::new(Client::new("")),
+            url: "".to_string(),
+            node: Arc::new(RwLock::new(NodeData {
+                l1_block_number: 42,
+                ..Default::default()
+            })),
+        };
+        assert_eq!(
+            context
+                .get_proper_block_id(BlockId::BlockNumber {
+                    block_number: BlockNumber::try_new(27).unwrap()
+                })
+                .await
+                .unwrap(),
+            BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(27).unwrap()
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn on_latest_and_pending_returns_latest_block_number() {
+        let context = Context {
+            client: Arc::new(Client::new("")),
+            url: "".to_string(),
+            node: Arc::new(RwLock::new(NodeData {
+                l1_block_number: 42,
+                ..Default::default()
+            })),
+        };
+        assert_eq!(
+            context
+                .get_proper_block_id(BlockId::BlockTag(BlockTag::Latest))
+                .await
+                .unwrap(),
+            BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(42).unwrap()
+            }
+        );
+        assert_eq!(
+            context
+                .get_proper_block_id(BlockId::BlockTag(BlockTag::Pending))
+                .await
+                .unwrap(),
+            BlockId::BlockNumber {
+                block_number: BlockNumber::try_new(42).unwrap()
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn on_hash_block_returns_hash_block() {
+        let context = Context {
+            client: Arc::new(Client::new("")),
+            url: "".to_string(),
+            node: Arc::new(RwLock::new(NodeData {
+                l1_block_number: 42,
+                ..Default::default()
+            })),
+        };
+        assert_eq!(
+            context
+                .get_proper_block_id(BlockId::BlockHash {
+                    block_hash: BlockHash(Felt::try_new("0xabc").unwrap())
+                })
+                .await
+                .unwrap(),
+            BlockId::BlockHash {
+                block_hash: BlockHash(Felt::try_new("0xabc").unwrap())
+            }
+        );
     }
 }

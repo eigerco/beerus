@@ -34,7 +34,7 @@ pub mod gen {
         pub transactions: Vec<BlockTransaction>,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
     pub struct BlockHash(pub Felt);
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -92,7 +92,7 @@ pub mod gen {
         }
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
     #[serde(untagged)]
     pub enum BlockId {
         BlockHash { block_hash: BlockHash },
@@ -100,7 +100,7 @@ pub mod gen {
         BlockTag(BlockTag),
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
     #[serde(try_from = "i64")]
     pub struct BlockNumber(i64);
 
@@ -159,7 +159,7 @@ pub mod gen {
         Rejected,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
     pub enum BlockTag {
         #[serde(rename = "latest")]
         Latest,
@@ -954,7 +954,7 @@ pub mod gen {
         pub unit: PriceUnit,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
     #[serde(try_from = "String")]
     pub struct Felt(String);
 

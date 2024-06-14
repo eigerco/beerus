@@ -1,4 +1,5 @@
 use beerus_cli::{get_config, Args};
+use beerus_core::client::BeerusClient;
 
 use clap::Parser;
 
@@ -8,11 +9,15 @@ async fn main() -> eyre::Result<()> {
     let config = get_config(Args::parse())?;
     config.validate_params().await?;
 
+    let mut beerus = BeerusClient::new(&config).await?;
+    beerus.start().await?;
+
     #[cfg(feature = "experimental")]
     {
         let server = beerus_experimental_api::rpc::serve(
             &config.starknet_rpc,
             &config.rpc_addr,
+            beerus.node.clone(),
         )
         .await?;
         tracing::info!(port = server.port(), "experimental rpc server started");
