@@ -29,7 +29,7 @@ hex = "0.4.3"
 
 base64 = "0.22.0"
 flate2 = "1.0.28"
-cairo-lang-starknet-classes = "2.6.3"
+cairo-lang-starknet-classes = "2.6.4"
 ureq = { version = "2.9.6", features = ["json"] }
 
 beerus-core = { path = "../core" }
