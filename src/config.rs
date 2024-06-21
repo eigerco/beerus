@@ -49,7 +49,7 @@ fn default_poll_secs() -> u64 {
 }
 
 fn default_rpc_addr() -> SocketAddr {
-    SocketAddr::from(([127, 0, 0, 1], 3030))
+    SocketAddr::from(([0, 0, 0, 0], 3030))
 }
 
 impl Config {
@@ -69,7 +69,10 @@ impl Config {
                 &std::env::var("POLL_SECS").unwrap_or_default(),
             )
             .unwrap_or(DEFAULT_POLL_SECS),
-            rpc_addr: default_rpc_addr(),
+            rpc_addr: std::env::var("RPC_ADDR")
+                .ok()
+                .and_then(|rpc_addr| rpc_addr.parse::<SocketAddr>().ok())
+                .unwrap_or_else(default_rpc_addr),
         }
     }
 
