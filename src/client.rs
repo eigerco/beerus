@@ -50,6 +50,11 @@ impl Client {
             root: as_felt(state_root.as_bytes())?,
         })
     }
+
+    pub async fn spec_version(&self) -> Result<String> {
+        let version = self.starknet.specVersion().await?;
+        Ok(version)
+    }
 }
 
 fn as_felt(bytes: &[u8]) -> Result<Felt> {
