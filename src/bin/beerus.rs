@@ -4,6 +4,8 @@ use beerus::config::Config;
 use clap::Parser;
 use tokio::sync::RwLock;
 
+const RPC_SPEC_VERSION: &str = "0.6.0";
+
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
@@ -13,6 +15,11 @@ async fn main() -> eyre::Result<()> {
 
     let beerus = beerus::client::Client::new(&config).await?;
     beerus.start().await?;
+
+    let rpc_spec_version = beerus.spec_version().await?;
+    if rpc_spec_version != RPC_SPEC_VERSION {
+        eyre::bail!("RPC spec version mismatch: expected {RPC_SPEC_VERSION} but got {rpc_spec_version}");
+    }
 
     let state = beerus.get_state().await?;
     tracing::info!(?state, "initialized");
