@@ -25,6 +25,8 @@ const SEPOLIA_CONSENSUS_RPC: &str =
     "http://unstable.sepolia.beacon-api.nimbus.team";
 const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
 
+pub type Helios = Client<DB>;
+
 pub struct EthereumClient {
     helios: Arc<RwLock<Client<DB>>>,
     starknet_core_contract_address: Address,
@@ -51,6 +53,10 @@ impl EthereumClient {
         }
 
         Ok(())
+    }
+
+    pub fn helios(&self) -> Arc<RwLock<Helios>> {
+        self.helios.clone()
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {

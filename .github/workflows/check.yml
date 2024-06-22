@@ -36,7 +36,7 @@ jobs:
       - run: cargo check --tests --examples
 
   check-wasm:
-    if: false ## disabled until wasm effort is in progress
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

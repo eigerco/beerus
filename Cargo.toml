@@ -5,8 +5,9 @@ name = "beerus"
 version = "0.5.0"
 
 [features]
-default = ["rpc"]
+default = ["rpc", "blockifier"]
 rpc = ["dep:axum"]
+blockifier = ["dep:blockifier", "dep:cairo-vm", "dep:ureq"]
 
 ## FOR TESTING ONLY
 ## skip proof validation of state root is 0x0
@@ -16,11 +17,6 @@ skip-zero-root-validation = []
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1.81"
-reqwest = { version = "0.12.3", default-features = false, features = [
-    "json",
-    "blocking",
-    "rustls-tls",
-] }
 ## Tokio WASM support: https://docs.rs/tokio/latest/tokio/#wasm-support
 tokio = { version = "1", features = [
     "sync",
@@ -45,14 +41,15 @@ ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fd
 helios = { git = "https://github.com/a16z/helios", rev = "1572a24" }
 
 starknet-crypto = "0.6.2"
-blockifier = "0.5.0"
+blockifier = { version = "0.5.0", optional = true }
 starknet_api = "0.10.0"
-cairo-vm = "0.9.3"
+cairo-vm = { version = "0.9.3", optional = true }
 
 base64 = "0.22.0"
 flate2 = "1.0.28"
 cairo-lang-starknet-classes = "2.6.4"
-ureq = { version = "2.10.0", features = ["json"] }
+ureq = { version = "2.10.0", features = ["json"], optional = true }
+
 hex = "0.4.3"
 bitvec = "1.0.1"
 validator = { version = "0.18.1", features = ["derive"] }
@@ -62,3 +59,17 @@ clap = { version = "4.5.13", features = ["derive"] }
 
 [dev-dependencies]
 wiremock = "0.6.1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.37"
+reqwest = { version = "0.12.3", default-features = false, features = [
+    "json",
+    "blocking",
+] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+reqwest = { version = "0.12.3", default-features = false, features = [
+    "json",
+    "blocking",
+    "rustls-tls",
+] }
