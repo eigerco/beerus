@@ -1,6 +1,9 @@
-use eyre::{Context, Result};
+use std::sync::Arc;
 
-use crate::eth::EthereumClient;
+use eyre::{Context, Result};
+use tokio::sync::RwLock;
+
+use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
 use crate::gen::{BlockId, Felt, Rpc};
 use crate::{config::Config, gen::FunctionCall};
@@ -26,6 +29,14 @@ impl Client {
 
     pub async fn start(&self) -> Result<()> {
         self.ethereum.start().await
+    }
+
+    pub fn ethereum(&self) -> Arc<RwLock<Helios>> {
+        self.ethereum.helios()
+    }
+
+    pub fn starknet(&self) -> &StarknetClient {
+        &self.starknet
     }
 
     pub async fn call_starknet(
