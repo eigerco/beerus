@@ -552,6 +552,7 @@ dependencies = [
  "ureq",
  "url",
  "validator",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "wiremock",
 ]

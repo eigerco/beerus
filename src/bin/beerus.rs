@@ -3,28 +3,8 @@ use clap::Parser;
 use beerus::config::Config;
 
 fn main() -> eyre::Result<()> {
-    // TODO: expose Beerus with ctor and get_proven_state & get_recent_state methods
-    // TODO: make a web page that calls those methods periodically (via setTimeout)
-    // TODO: expose Ethereum methods (via Helios) and Starknet methods (via client)
     #[cfg(target_arch = "wasm32")]
-    {
-        let _ = wasm_bindgen_futures::spawn_local(async {
-            tracing_subscriber::fmt::init();
-
-            let config = get_config(Args::parse()).expect("config missing");
-            config.validate_params().await.expect("config invalid");
-
-            let beerus = beerus::client::Client::new(&config)
-                .await
-                .expect("client failed");
-            beerus.start().await.expect("start failed");
-
-            let state = beerus.get_state().await.expect("get_state failed");
-            tracing::info!(?state, "initialized");
-        });
-
-        return Ok(());
-    }
+    return Ok(());
 
     #[cfg(not(target_arch = "wasm32"))]
     {
