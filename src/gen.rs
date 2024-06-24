@@ -3713,7 +3713,6 @@ pub mod gen {
         };
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     pub mod blocking {
         use super::*;
         pub trait Rpc {
@@ -5286,7 +5285,7 @@ pub mod gen {
                 response
             };
         }
-    }
+    } 
     pub mod client {
         use super::*;
 
