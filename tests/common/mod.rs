@@ -22,7 +22,7 @@ pub async fn ctx() -> Option<Context> {
     let root =
         "0x2a5aa70350b7d047cd3dd2f5ad01f8925409a64fc42e509e8e79c3a2c17425";
     let state = State {
-        block_number: 647978,
+        block_number: 652076,
         block_hash: Felt::try_new("0x0").unwrap(),
         root: Felt::try_new(root).unwrap(),
     };
