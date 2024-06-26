@@ -5285,7 +5285,7 @@ pub mod gen {
                 response
             };
         }
-    } 
+    }
     pub mod client {
         use super::*;
 

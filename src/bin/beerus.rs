@@ -19,9 +19,9 @@ fn main() -> eyre::Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 async fn run() -> eyre::Result<()> {
+    use beerus::config::Config;
     use std::{sync::Arc, time::Duration};
     use tokio::sync::RwLock;
-    use beerus::config::Config;
 
     const RPC_SPEC_VERSION: &str = "0.6.0";
 
