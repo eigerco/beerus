@@ -27,9 +27,13 @@ pub mod dto {
 
 #[wasm_bindgen]
 pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
-    let config: dto::Config = serde_json::from_str(config_json).expect("config");
+    let config: dto::Config = serde_json::from_str(config_json)
+        .map_err(|e| JsValue::from_str(&format!("failed to parse config: {e:?}")))?;
+    web_sys::console::log_1(&"beerus: config parsed".into());
+
     let config = Config {
-        network: Network::from_str(&config.network).expect("network"),
+        network: Network::from_str(&config.network)
+            .map_err(|e| JsValue::from_str(&format!("unrecognized network: {e:?}")))?,
         eth_execution_rpc: config.ethereum_url,
         starknet_rpc: config.starknet_url,
         data_dir: Default::default(),
@@ -39,16 +43,26 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
 
     let beerus = crate::client::Client::new(&config)
         .await
-        .expect("client failed");
-    beerus.start().await.expect("start failed");
+        .map_err(|e| JsValue::from_str(&format!("client failed: {e:?}")))?;
+    web_sys::console::log_1(&"beerus: client created".into());
 
-    let state = beerus.get_state().await.expect("get_state failed");
+    beerus.start()
+        .await
+        .map_err(|e| JsValue::from_str(&format!("start failed: {e:?}")))?;
+    web_sys::console::log_1(&"beerus: client started".into());
+
+    let state = beerus.get_state()
+        .await
+        .map_err(|e| JsValue::from_str(&format!("get_state failed: {e:?}")))?;
+    web_sys::console::log_1(&"beerus: state ready".into());
 
     let state = dto::State {
         block_number: state.block_number as i64,
         block_hash: state.block_hash.as_ref().to_owned(),
         root: state.root.as_ref().to_owned(),
     };
-    let ret = serde_json::to_string(&state).expect("json");
+    let ret = serde_json::to_string(&state)
+        .map_err(|e| JsValue::from_str(&format!("failed to return response: {e:?}")))?;
+    web_sys::console::log_1(&"beerus: state done".into());
     Ok(ret)
 }
