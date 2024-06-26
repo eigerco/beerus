@@ -19,13 +19,15 @@ use crate::config::Config;
 const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 
 #[cfg(feature = "wasm")]
-const MAINNET_CONSENSUS_RPC: &str = "http://127.0.0.1:3000/www.lightclientdata.org";
+const MAINNET_CONSENSUS_RPC: &str =
+    "http://127.0.0.1:3000/www.lightclientdata.org";
 
 #[cfg(not(feature = "wasm"))]
 const MAINNET_CONSENSUS_RPC: &str = "https:/www.lightclientdata.org";
 
 #[cfg(feature = "wasm")]
-const MAINNET_FALLBACK_RPC: &str = "http://127.0.0.1:3000/sync-mainnet.beaconcha.in";
+const MAINNET_FALLBACK_RPC: &str =
+    "http://127.0.0.1:3000/sync-mainnet.beaconcha.in";
 
 #[cfg(not(feature = "wasm"))]
 const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
@@ -33,13 +35,16 @@ const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
 const SEPOLIA_CC_ADDRESS: &str = "E2Bb56ee936fd6433DC0F6e7e3b8365C906AA057";
 
 #[cfg(feature = "wasm")]
-const SEPOLIA_CONSENSUS_RPC: &str = "http://127.0.0.1:3000/unstable.sepolia.beacon-api.nimbus.team";
+const SEPOLIA_CONSENSUS_RPC: &str =
+    "http://127.0.0.1:3000/unstable.sepolia.beacon-api.nimbus.team";
 
 #[cfg(not(feature = "wasm"))]
-const SEPOLIA_CONSENSUS_RPC: &str = "http://unstable.sepolia.beacon-api.nimbus.team";
+const SEPOLIA_CONSENSUS_RPC: &str =
+    "http://unstable.sepolia.beacon-api.nimbus.team";
 
 #[cfg(feature = "wasm")]
-const SEPOLIA_FALLBACK_RPC: &str = "http://127.0.0.1:3000/sync-sepolia.beaconcha.in";
+const SEPOLIA_FALLBACK_RPC: &str =
+    "http://127.0.0.1:3000/sync-sepolia.beaconcha.in";
 
 #[cfg(not(feature = "wasm"))]
 const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
@@ -53,7 +58,6 @@ pub struct EthereumClient {
 
 impl EthereumClient {
     pub async fn new(config: &Config) -> Result<Self> {
-
         #[cfg(target_arch = "wasm32")]
         web_sys::console::log_1(&"beerus: eth::new".into());
 
@@ -81,8 +85,9 @@ impl EthereumClient {
         {
             #[cfg(target_arch = "wasm32")]
             {
-                let js: wasm_bindgen::JsValue = sync.highest_block.low_u64().into();
-                web_sys::console::log_2(&"beerus: helios syncing".into(), &js); 
+                let js: wasm_bindgen::JsValue =
+                    sync.highest_block.low_u64().into();
+                web_sys::console::log_2(&"beerus: helios syncing".into(), &js);
             }
 
             tracing::info!(head=?sync.highest_block, "syncing");
@@ -180,7 +185,6 @@ impl EthereumClient {
 }
 
 async fn get_client(config: &Config) -> Result<Client<DB>> {
-
     #[cfg(target_arch = "wasm32")]
     web_sys::console::log_1(&"beerus: eth::client".into());
 
@@ -191,7 +195,10 @@ async fn get_client(config: &Config) -> Result<Client<DB>> {
     let checkpoint = get_checkpoint(config).await.context("checkpoint")?;
 
     #[cfg(target_arch = "wasm32")]
-    web_sys::console::log_2(&"beerus: eth::client checkpoint".into(), &checkpoint.clone().into());
+    web_sys::console::log_2(
+        &"beerus: eth::client checkpoint".into(),
+        &checkpoint.clone().into(),
+    );
 
     let builder = ClientBuilder::new()
         .network(config.network)
