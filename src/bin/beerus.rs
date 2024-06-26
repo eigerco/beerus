@@ -1,7 +1,5 @@
 use clap::Parser;
 
-use beerus::config::Config;
-
 fn main() -> eyre::Result<()> {
     #[cfg(target_arch = "wasm32")]
     return Ok(());
@@ -23,12 +21,18 @@ fn main() -> eyre::Result<()> {
 async fn run() -> eyre::Result<()> {
     use std::{sync::Arc, time::Duration};
     use tokio::sync::RwLock;
+    use beerus::config::Config;
 
     const RPC_SPEC_VERSION: &str = "0.6.0";
 
     tracing_subscriber::fmt::init();
 
-    let config = get_config(Args::parse())?;
+    let args = Args::parse();
+    let config = if let Some(path) = args.config.as_ref() {
+        Config::from_file(path)?
+    } else {
+        Config::from_env()
+    };
     config.validate_params().await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
@@ -64,15 +68,12 @@ async fn run() -> eyre::Result<()> {
         });
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let server =
-            beerus::rpc::serve(&config.starknet_rpc, &config.rpc_addr, state)
-                .await?;
+    let server =
+        beerus::rpc::serve(&config.starknet_rpc, &config.rpc_addr, state)
+            .await?;
 
-        tracing::info!(port = server.port(), "rpc server started");
-        server.done().await;
-    }
+    tracing::info!(port = server.port(), "rpc server started");
+    server.done().await;
 
     Ok(())
 }
@@ -82,13 +83,4 @@ async fn run() -> eyre::Result<()> {
 struct Args {
     #[clap(short = 'c', long)]
     config: Option<String>,
-}
-
-// #[cfg(not(target_arch = "wasm32"))]
-fn get_config(args: Args) -> eyre::Result<Config> {
-    Ok(if let Some(path) = args.config.as_ref() {
-        Config::from_file(path)?
-    } else {
-        Config::from_env()
-    })
 }

@@ -24,18 +24,33 @@ app.all('*', function (req, res, next) {
         if (req.path === '/favicon.ico') {
             return;
         }
-        var target = 'https:/' + req.originalUrl;
-        console.log(target);
+        console.log(req.originalUrl);
+        var target;
+        if (req.originalUrl.startsWith('/https://') || req.originalUrl.startsWith('/http://')) {
+            target = req.originalUrl.substring(1);
+        } else {
+            var prefix;
+            if (req.originalUrl.startsWith('/unstable.sepolia.beacon-api.nimbus.team')) {
+                // this one works only over http://
+                prefix = 'http:/';
+            } else {
+                prefix = 'https:/';
+            }
+            target = prefix + req.originalUrl;
+        }
+        console.log('>>> ' + target);
         if (!target) {
             res.status(500).send({ error: 'target missing' });
             return;
         }
         request({ url: target, method: req.method, json: req.body, headers: {} },
-            function (error, response, body) {
+            function (error, _, body) {
                 if (error) {
-                    console.error('error: ' + error)
+                    console.error('error: ' + error);
+                    return;
                 }
-                console.log(JSON.stringify(body));
+                let len = JSON.stringify(body).length;
+                console.log('<<< ' + target + ': ' + len + ' bytes');
             }).pipe(res);
     }
 });
