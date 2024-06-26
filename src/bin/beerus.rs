@@ -1,7 +1,5 @@
 use clap::Parser;
 
-use beerus::config::Config;
-
 fn main() -> eyre::Result<()> {
     #[cfg(target_arch = "wasm32")]
     return Ok(());
@@ -23,6 +21,7 @@ fn main() -> eyre::Result<()> {
 async fn run() -> eyre::Result<()> {
     use std::{sync::Arc, time::Duration};
     use tokio::sync::RwLock;
+    use beerus::config::Config;
 
     const RPC_SPEC_VERSION: &str = "0.6.0";
 
@@ -69,15 +68,12 @@ async fn run() -> eyre::Result<()> {
         });
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let server =
-            beerus::rpc::serve(&config.starknet_rpc, &config.rpc_addr, state)
-                .await?;
+    let server =
+        beerus::rpc::serve(&config.starknet_rpc, &config.rpc_addr, state)
+            .await?;
 
-        tracing::info!(port = server.port(), "rpc server started");
-        server.done().await;
-    }
+    tracing::info!(port = server.port(), "rpc server started");
+    server.done().await;
 
     Ok(())
 }

@@ -17,12 +17,32 @@ use tokio::sync::RwLock;
 use crate::config::Config;
 
 const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+
+#[cfg(feature = "wasm")]
 const MAINNET_CONSENSUS_RPC: &str = "http://127.0.0.1:3000/www.lightclientdata.org";
+
+#[cfg(not(feature = "wasm"))]
+const MAINNET_CONSENSUS_RPC: &str = "https:/www.lightclientdata.org";
+
+#[cfg(feature = "wasm")]
 const MAINNET_FALLBACK_RPC: &str = "http://127.0.0.1:3000/sync-mainnet.beaconcha.in";
 
+#[cfg(not(feature = "wasm"))]
+const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
+
 const SEPOLIA_CC_ADDRESS: &str = "E2Bb56ee936fd6433DC0F6e7e3b8365C906AA057";
+
+#[cfg(feature = "wasm")]
 const SEPOLIA_CONSENSUS_RPC: &str = "http://127.0.0.1:3000/unstable.sepolia.beacon-api.nimbus.team";
+
+#[cfg(not(feature = "wasm"))]
+const SEPOLIA_CONSENSUS_RPC: &str = "http://unstable.sepolia.beacon-api.nimbus.team";
+
+#[cfg(feature = "wasm")]
 const SEPOLIA_FALLBACK_RPC: &str = "http://127.0.0.1:3000/sync-sepolia.beaconcha.in";
+
+#[cfg(not(feature = "wasm"))]
+const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
 
 pub type Helios = Client<DB>;
 
@@ -168,26 +188,7 @@ async fn get_client(config: &Config) -> Result<Client<DB>> {
         get_consensus_rpc(config).context("consensus rpc url")?;
     let fallback_rpc =
         get_fallback_address(config).context("fallback rpc url")?;
-    /*
-    [Attempted fix of checkpoint resolution: query service via proxy]
-
-    Helios: config/src/checkpoints.rs:construct_url needs patching as below.
-    Commented lines need to be added without comments in order to make sure
-    that requests from browser are actually served by the CORS proxy.
-
-    pub fn construct_url(endpoint: &str) -> String {
-        // let endpoint = endpoint.strip_prefix("https://").unwrap_or(endpoint);
-        // let endpoint = format!("http://127.0.0.1:3000/{endpoint}");
-        format!("{endpoint}/checkpointz/v1/beacon/slots")
-    }
-
-     */
-    // TODO: FIXME: resolving checkpoint does not work in WebAssembly
-    // (Checkpoint needs to be resolved before building the client)
-    // let checkpoint = get_checkpoint(config).await.context("checkpoint")?;
-    let checkpoint = "3f220067597bd88a10b373d9dc5ae1d03b1bc25930bbcc26f44bd19aa6b1bd09"; // mainnet
-    // let checkpoint = "531710292412f11227529591ded4b0c4bfde4cf894fd9437458febbb39f9485b"; // sepolia
-    eprintln!("checkpoint: {checkpoint}");
+    let checkpoint = get_checkpoint(config).await.context("checkpoint")?;
 
     #[cfg(target_arch = "wasm32")]
     web_sys::console::log_2(&"beerus: eth::client checkpoint".into(), &checkpoint.clone().into());
@@ -233,7 +234,6 @@ fn get_fallback_address(config: &Config) -> Result<&str> {
     }
 }
 
-#[allow(dead_code)] // unusable in wasm unfortunately
 async fn get_checkpoint(config: &Config) -> Result<String> {
     if !matches!(config.network, Network::MAINNET | Network::SEPOLIA) {
         eyre::bail!("unsupported network: {:?}", config.network);
