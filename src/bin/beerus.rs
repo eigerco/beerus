@@ -1,20 +1,18 @@
 use clap::Parser;
 
+#[cfg(target_arch = "wasm32")]
+fn main() {}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn main() -> eyre::Result<()> {
-    #[cfg(target_arch = "wasm32")]
-    return Ok(());
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?
+        .block_on(async {
+            let _ = run().await;
+        });
 
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()?
-            .block_on(async {
-                let _ = run().await;
-            });
-
-        Ok(())
-    }
+    Ok(())
 }
 
 #[cfg(not(target_arch = "wasm32"))]
