@@ -5,12 +5,11 @@ fn main() {}
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eyre::Result<()> {
-    tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()?
-        .block_on(async {
+    tokio::runtime::Builder::new_multi_thread().enable_all().build()?.block_on(
+        async {
             let _ = run().await;
-        });
+        },
+    );
 
     Ok(())
 }
