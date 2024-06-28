@@ -16,14 +16,35 @@ use tokio::sync::RwLock;
 
 use crate::config::Config;
 
-const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
-const MAINNET_CONSENSUS_RPC: &str = "https://www.lightclientdata.org";
-const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
+#[cfg(feature = "wasm")]
+mod setup {
+    pub const MAINNET_CONSENSUS_RPC: &str =
+        "http://127.0.0.1:3000/www.lightclientdata.org";
+    pub const MAINNET_FALLBACK_RPC: &str =
+        "http://127.0.0.1:3000/sync-mainnet.beaconcha.in";
 
+    pub const SEPOLIA_CONSENSUS_RPC: &str =
+        "http://127.0.0.1:3000/unstable.sepolia.beacon-api.nimbus.team";
+    pub const SEPOLIA_FALLBACK_RPC: &str =
+        "http://127.0.0.1:3000/sync-sepolia.beaconcha.in";
+}
+
+#[cfg(not(feature = "wasm"))]
+mod setup {
+    pub const MAINNET_CONSENSUS_RPC: &str = "https://www.lightclientdata.org";
+    pub const MAINNET_FALLBACK_RPC: &str = "https://sync-mainnet.beaconcha.in";
+
+    pub const SEPOLIA_CONSENSUS_RPC: &str =
+        "http://unstable.sepolia.beacon-api.nimbus.team";
+    pub const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
+}
+
+use setup::*;
+
+const MAINNET_CC_ADDRESS: &str = "c662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
 const SEPOLIA_CC_ADDRESS: &str = "E2Bb56ee936fd6433DC0F6e7e3b8365C906AA057";
-const SEPOLIA_CONSENSUS_RPC: &str =
-    "http://unstable.sepolia.beacon-api.nimbus.team";
-const SEPOLIA_FALLBACK_RPC: &str = "https://sync-sepolia.beaconcha.in";
+
+pub type Helios = Client<DB>;
 
 pub struct EthereumClient {
     helios: Arc<RwLock<Client<DB>>>,
@@ -43,14 +64,27 @@ impl EthereumClient {
         let mut helios = self.helios.write().await;
         helios.start().await.context("helios start")?;
 
+        async fn sleep(delay: std::time::Duration) {
+            #[cfg(not(target_arch = "wasm32"))]
+            tokio::time::sleep(delay).await;
+
+            #[cfg(target_arch = "wasm32")]
+            let _ = wasm_timer::Delay::new(delay).await;
+        }
+
+        let delay = std::time::Duration::from_secs(1);
         while let SyncingStatus::IsSyncing(sync) =
             helios.syncing().await.context("helios sync")?
         {
             tracing::info!(head=?sync.highest_block, "syncing");
-            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            sleep(delay).await;
         }
 
         Ok(())
+    }
+
+    pub fn helios(&self) -> Arc<RwLock<Helios>> {
+        self.helios.clone()
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {
@@ -77,7 +111,7 @@ impl EthereumClient {
         let (number, _) = self.latest().await?;
         let tag = BlockTag::Number(number);
 
-        let data = 0x35befa5du32.to_be_bytes(); // keccak("stateBlockNumber()")
+        let data = 0x35befa5du32.to_be_bytes(); // keccak("stateBlockNumber()")[0..4]
         let block_number: [u8; 32] = self
             .call(&data, tag)
             .await
@@ -85,11 +119,11 @@ impl EthereumClient {
         let block_number: [u8; 8] = block_number[24..].try_into().unwrap();
         let block_number = u64::from_be_bytes(block_number);
 
-        let data = 0x382d83e3u32.to_be_bytes(); // keccak("stateBlockHash()")
+        let data = 0x382d83e3u32.to_be_bytes(); // keccak("stateBlockHash()")[0..4]
         let block_hash: H256 =
             self.call(&data, tag).await.context("helios: state block hash")?;
 
-        let data = 0x9588eca2u32.to_be_bytes(); // keccak("stateRoot()")"
+        let data = 0x9588eca2u32.to_be_bytes(); // keccak("stateRoot()")[0..4]
         let root: H256 =
             self.call(&data, tag).await.context("helios: state root")?;
 

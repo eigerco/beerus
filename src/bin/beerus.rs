@@ -1,16 +1,35 @@
-use std::{sync::Arc, time::Duration};
-
-use beerus::config::Config;
 use clap::Parser;
-use tokio::sync::RwLock;
 
-const RPC_SPEC_VERSION: &str = "0.6.0";
+#[cfg(target_arch = "wasm32")]
+fn main() {}
 
-#[tokio::main]
-async fn main() -> eyre::Result<()> {
+#[cfg(not(target_arch = "wasm32"))]
+fn main() -> eyre::Result<()> {
+    tokio::runtime::Builder::new_multi_thread().enable_all().build()?.block_on(
+        async {
+            let _ = run().await;
+        },
+    );
+
+    Ok(())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+async fn run() -> eyre::Result<()> {
+    use beerus::config::Config;
+    use std::{sync::Arc, time::Duration};
+    use tokio::sync::RwLock;
+
+    const RPC_SPEC_VERSION: &str = "0.6.0";
+
     tracing_subscriber::fmt::init();
 
-    let config = get_config(Args::parse())?;
+    let args = Args::parse();
+    let config = if let Some(path) = args.config.as_ref() {
+        Config::from_file(path)?
+    } else {
+        Config::from_env()
+    };
     config.validate_params().await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
@@ -61,12 +80,4 @@ async fn main() -> eyre::Result<()> {
 struct Args {
     #[clap(short = 'c', long)]
     config: Option<String>,
-}
-
-fn get_config(args: Args) -> eyre::Result<Config> {
-    Ok(if let Some(path) = args.config.as_ref() {
-        Config::from_file(path)?
-    } else {
-        Config::from_env()
-    })
 }
