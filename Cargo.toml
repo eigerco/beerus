@@ -44,7 +44,7 @@ once_cell = "1.19.0"
 ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fdfc91d0353878901af5a5c5ef" }
 helios = { git = "https://github.com/a16z/helios", rev = "1572a24" }
 
-starknet-crypto = "0.6.2"
+starknet-crypto = "0.7.1"
 blockifier = "0.5.0"
 starknet_api = "0.10.0"
 cairo-vm = "0.9.3"
