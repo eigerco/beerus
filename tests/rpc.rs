@@ -260,6 +260,12 @@ async fn test_getStorageAt() -> Result<(), Error> {
     Ok(())
 }
 
+// TODO Test case getStorageAt with hash
+//
+// TODO Test case getStorageAt with number
+//
+// TODO Test case getStorageAt with pending block
+
 #[tokio::test]
 #[allow(non_snake_case)]
 async fn test_getProof() -> Result<(), Error> {
