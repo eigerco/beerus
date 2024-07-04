@@ -1,5 +1,5 @@
 use beerus::gen::{
-    Address, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
     BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
     GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
     GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
@@ -252,11 +252,29 @@ async fn test_getStorageAt() -> Result<(), Error> {
         "0x0341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1",
     )?;
 
-    let block_id =
+    let block_id_number =
         BlockId::BlockNumber { block_number: BlockNumber::try_new(600612)? };
-
-    let ret = ctx.client.getStorageAt(contract_address, key, block_id).await?;
+    let ret = ctx
+        .client
+        .getStorageAt(contract_address.clone(), key.clone(), block_id_number)
+        .await?;
     assert_eq!(ret.as_ref(), "0x47616d65206f66204c69666520546f6b656e");
+
+    let block_id_hash = BlockId::BlockHash {
+        block_hash: BlockHash(Felt::try_new(
+            "0x1cbed30c5f1eb355f13e69562eda81b3f3edd5b46d5ef261ce5f24de55f0bdb",
+        )?),
+    };
+    let ret = ctx
+        .client
+        .getStorageAt(contract_address.clone(), key.clone(), block_id_hash)
+        .await?;
+    assert_eq!(ret.as_ref(), "0x47616d65206f66204c69666520546f6b656e");
+
+    let block_id_tag = BlockId::BlockTag(BlockTag::Pending);
+    let ret =
+        ctx.client.getStorageAt(contract_address, key, block_id_tag).await;
+    assert!(ret.is_err());
     Ok(())
 }
 

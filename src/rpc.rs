@@ -15,6 +15,7 @@ use crate::client::State as ClientState;
 use crate::exe::err::Error;
 
 use super::gen::*;
+use gen::GetBlockWithTxHashesResult;
 
 pub struct Server(oneshot::Sender<()>, JoinHandle<()>, u16);
 
@@ -140,40 +141,85 @@ impl Context {
         let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
         self.get_state(block_id).await
     }
-}
 
-fn resolve_block_id(
-    block_id: BlockId,
-    state: &ClientState,
-) -> std::result::Result<BlockId, jsonrpc::Error> {
-    let state_block_number = state.block_number as i64;
-    match block_id {
-        gen::BlockId::BlockNumber { ref block_number }
-            if block_number.as_ref() <= &state_block_number =>
+    async fn resolve_block_id(
+        &self,
+        block_id: BlockId,
+    ) -> std::result::Result<(BlockId, Felt), jsonrpc::Error> {
+        let state = &self.state.read().await;
+        match block_id {
+            gen::BlockId::BlockNumber { block_number } => {
+                self.resolve_block_by_number(block_number, state).await
+            }
+            gen::BlockId::BlockHash { block_hash } => {
+                self.resolve_block_by_hash(block_hash, state).await
+            }
+            gen::BlockId::BlockTag(BlockTag::Latest) => {
+                let block_number =
+                    BlockNumber::try_new(state.block_number as i64)?;
+                Ok((BlockId::BlockNumber { block_number }, state.root.clone()))
+            }
+            gen::BlockId::BlockTag(BlockTag::Pending) => Err(jsonrpc::Error {
+                code: -1,
+                message: "Pending block is not supported".to_owned(),
+            }),
+        }
+    }
+
+    async fn resolve_block_by_number(
+        &self,
+        block_number: BlockNumber,
+        current_state: &ClientState,
+    ) -> Result<(BlockId, Felt), jsonrpc::Error> {
+        let req_block_number = *block_number.as_ref() as u64;
+        if req_block_number >= current_state.block_number {
+            return Ok((
+                BlockId::BlockNumber {
+                    block_number: BlockNumber::try_new(
+                        current_state.block_number as i64,
+                    )?,
+                },
+                current_state.root.clone(),
+            ));
+        }
+        let state = self
+            .get_state(BlockId::BlockNumber {
+                block_number: block_number.clone(),
+            })
+            .await?;
+        if state.block_number != req_block_number {
+            return Err(jsonrpc::Error {
+                code: -1,
+                message: "Failed to verify requested block by number"
+                    .to_string(),
+            });
+        }
+        Ok((BlockId::BlockNumber { block_number }, state.root))
+    }
+
+    async fn resolve_block_by_hash(
+        &self,
+        block_hash: BlockHash,
+        current_state: &ClientState,
+    ) -> Result<(BlockId, Felt), jsonrpc::Error> {
+        if block_hash.0.as_ref() == current_state.block_hash.as_ref() {
+            return Ok((
+                BlockId::BlockHash { block_hash },
+                current_state.root.clone(),
+            ));
+        }
+        let state = self
+            .get_state(BlockId::BlockHash { block_hash: block_hash.clone() })
+            .await?;
+        if block_hash.0.as_ref() != state.block_hash.as_ref()
+            || state.block_number >= current_state.block_number
         {
-            Ok(block_id)
+            return Err(jsonrpc::Error {
+                code: -1,
+                message: "Failed to verify requested block by hash".to_string(),
+            });
         }
-        gen::BlockId::BlockNumber { .. } => {
-            let block_number = BlockNumber::try_new(state_block_number)?;
-            Ok(BlockId::BlockNumber { block_number })
-        }
-        gen::BlockId::BlockHash { ref block_hash }
-            if block_hash.0.as_ref() == state.block_hash.as_ref() =>
-        {
-            Ok(block_id)
-        }
-        gen::BlockId::BlockHash { .. } => {
-            // TODO Find matching block number and resolve it properly
-            Ok(block_id)
-        }
-        gen::BlockId::BlockTag(BlockTag::Latest) => {
-            let block_number = BlockNumber::try_new(state.block_number as i64)?;
-            Ok(BlockId::BlockNumber { block_number })
-        }
-        gen::BlockId::BlockTag(BlockTag::Pending) => Err(jsonrpc::Error {
-            code: -1,
-            message: "Pending block is not supported".to_owned(),
-        }),
+        Ok((BlockId::BlockHash { block_hash }, state.root))
     }
 }
 
@@ -365,8 +411,7 @@ impl gen::Rpc for Context {
         key: StorageKey,
         block_id: BlockId,
     ) -> std::result::Result<Felt, jsonrpc::Error> {
-        let state = self.state.read().await.clone();
-        let block_id = resolve_block_id(block_id, &state)?;
+        let (block_id, state_root) = self.resolve_block_id(block_id).await?;
 
         let result = self
             .client
@@ -388,9 +433,8 @@ impl gen::Rpc for Context {
             .client
             .getProof(block_id, contract_address.clone(), vec![key.clone()])
             .await?;
-        tracing::info!(?proof, "getProof");
 
-        proof.verify(state.root, contract_address, key, result.clone())?;
+        proof.verify(state_root, contract_address, key, result.clone())?;
         tracing::info!("getProof: verified");
 
         Ok(result)
@@ -486,27 +530,54 @@ impl gen::Rpc for Context {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
+    use iamgroot::jsonrpc;
+    use tokio::sync::RwLock;
+    use wiremock::{
+        matchers::any, Mock, MockGuard, MockServer, ResponseTemplate,
+    };
+
     use crate::rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt};
 
-    use super::{resolve_block_id, ClientState};
+    use super::{client::Client, ClientState, Context};
 
-    fn make_state(block_number: i64) -> ClientState {
+    fn make_state(block_number: u64, block_hash: &str) -> ClientState {
         ClientState {
-            block_number: block_number as u64,
-            block_hash: Felt::try_new("0x0").unwrap(),
+            block_number,
+            block_hash: Felt::try_new(block_hash).unwrap(),
             root: Felt::try_new("0x0").unwrap(),
         }
     }
 
-    fn number(block_number: i64) -> BlockId {
-        BlockId::BlockNumber {
-            block_number: BlockNumber::try_new(block_number).unwrap(),
+    fn make_context(
+        url_local: &str,
+        url_client: &str,
+        state: ClientState,
+    ) -> Context {
+        Context {
+            url: url_local.to_string(),
+            client: Arc::new(Client::new(url_client)),
+            state: Arc::new(RwLock::new(state)),
         }
     }
 
-    fn hash(block_hash: &str) -> BlockId {
+    fn block_from_hash(block_hash: &str) -> BlockId {
         BlockId::BlockHash {
             block_hash: BlockHash(Felt::try_new(block_hash).unwrap()),
+        }
+    }
+
+    fn block_from_number(block_number: u64) -> BlockId {
+        BlockId::BlockNumber {
+            block_number: BlockNumber::try_new(block_number as i64).unwrap(),
+        }
+    }
+
+    fn block_from_tag(tag: &str) -> BlockId {
+        match tag {
+            "pending" => BlockId::BlockTag(BlockTag::Pending),
+            _ => BlockId::BlockTag(BlockTag::Latest),
         }
     }
 
@@ -532,38 +603,386 @@ mod tests {
         }
     }
 
-    fn assert_resolved_block(current: i64, requested: i64, expected: i64) {
-        let state = make_state(current);
-        let resolved = resolve_block_id(number(requested), &state).unwrap();
-
-        if let BlockId::BlockNumber { block_number } = resolved {
-            assert_eq!(
-                block_number.as_ref(),
-                &expected,
-                "Block number must match"
-            );
-        } else {
-            unreachable!("Unexpected BlockId variant: {resolved:#?}")
-        }
+    fn get_block_with_tx_hashes_response(
+        block_num: u64,
+        block_hash: &str,
+    ) -> String {
+        serde_json::to_string(&serde_json::json!(
+            {
+                "jsonrpc": "2.0",
+                "id":1,
+                "result": {
+                    "block_hash": block_hash,
+                    "block_number": block_num,
+                    "l1_gas_price": {
+                        "price_in_fri": "0x2",
+                        "price_in_wei": "0x3"
+                    },
+                    "new_root": "0x4",
+                    "parent_hash": "0x5",
+                    "sequencer_address": "0x6",
+                    "starknet_version": "0.13.1",
+                    "status": "ACCEPTED_ON_L1",
+                    "timestamp": 1,
+                    "transactions" : []
+                }
+            }
+        ))
+        .unwrap()
     }
 
-    #[test]
-    fn resolve_to_lowest() {
-        assert_resolved_block(27, 3, 3);
+    async fn setup_test_env(
+        starknet_server: &MockServer,
+        helios_block_num: u64,
+        starknet_response_block_num: u64,
+        starknet_response_block_hash: &str,
+        expect_request: u64,
+    ) -> (MockGuard, Context) {
+        let mock_guard = Mock::given(any())
+            .respond_with(ResponseTemplate::new(200).set_body_string(
+                get_block_with_tx_hashes_response(
+                    starknet_response_block_num,
+                    starknet_response_block_hash,
+                ),
+            ))
+            .expect(expect_request)
+            .mount_as_scoped(starknet_server)
+            .await;
+        let state = make_state(helios_block_num, "0x27");
+        let context =
+            make_context("127.0.0.1:3030", &starknet_server.uri(), state);
+
+        (mock_guard, context)
     }
 
-    #[test]
-    fn resolve_to_current() {
-        assert_resolved_block(27, 42, 27);
+    async fn resolve_block_by_number_test(
+        requested_starknet_block_num: u64,
+        helios_block_num: u64,
+        starknet_response_block_num: u64,
+        expect_request: u64,
+    ) -> Result<(BlockId, Felt), jsonrpc::Error> {
+        let starknet_server = MockServer::start().await;
+        let request_block_num =
+            BlockNumber::try_new(requested_starknet_block_num as i64).unwrap();
+
+        let (_mock_guard, context) = setup_test_env(
+            &starknet_server,
+            helios_block_num,
+            starknet_response_block_num,
+            "0x3",
+            expect_request,
+        )
+        .await;
+
+        let state = &context.state.read().await;
+        context.resolve_block_by_number(request_block_num, state).await
     }
 
-    #[test]
-    fn resolve_by_hash() {
-        const HASH: &str = "0xCAFEBABE";
+    async fn resolve_block_by_hash_test(
+        requested_starknet_block_hash: &str,
+        helios_block_num: u64,
+        starknet_response_block_hash: &str,
+        starknet_response_block_num: u64,
+        expect_request: u64,
+    ) -> Result<(BlockId, Felt), jsonrpc::Error> {
+        let starknet_server = MockServer::start().await;
+        let request_block_hash =
+            BlockHash(Felt::try_new(requested_starknet_block_hash).unwrap());
 
-        let state = make_state(42);
-        let resolved = resolve_block_id(hash(HASH), &state).unwrap();
+        let (_mock_guard, context) = setup_test_env(
+            &starknet_server,
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expect_request,
+        )
+        .await;
 
-        assert!(eq(&resolved, &hash(HASH)));
+        let state = &context.state.read().await;
+        context.resolve_block_by_hash(request_block_hash, state).await
+    }
+
+    async fn resolve_block_id_test(
+        block: BlockId,
+        helios_block_num: u64,
+        starknet_response_block_num: u64,
+        starknet_response_block_hash: &str,
+        expect_request: u64,
+    ) -> Result<(BlockId, Felt), jsonrpc::Error> {
+        let starknet_server = MockServer::start().await;
+
+        let (_mock_guard, context) = setup_test_env(
+            &starknet_server,
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expect_request,
+        )
+        .await;
+
+        context.resolve_block_id(block).await
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_number_request_lower_success() {
+        let requested_starknet_block_num = 3;
+        let helios_state_block_num = 27;
+        let starknet_response_block_number = 3;
+        let expected_num_request = 1;
+
+        let result = resolve_block_by_number_test(
+            requested_starknet_block_num,
+            helios_state_block_num,
+            starknet_response_block_number,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(
+            &block_from_number(requested_starknet_block_num),
+            &returned_block
+        ));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_number_request_higher_success() {
+        let requested_starknet_block_num = 42;
+        let helios_state_block_num = 27;
+        let starknet_response_block_number = 42;
+        let expected_num_request = 0;
+
+        let result = resolve_block_by_number_test(
+            requested_starknet_block_num,
+            helios_state_block_num,
+            starknet_response_block_number,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(
+            &block_from_number(helios_state_block_num),
+            &returned_block
+        ));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_number_same_success() {
+        let requested_starknet_block_num = 27;
+        let helios_state_block_num = 27;
+        let starknet_response_block_number = requested_starknet_block_num;
+        let expected_num_request = 0;
+
+        let result = resolve_block_by_number_test(
+            requested_starknet_block_num,
+            helios_state_block_num,
+            starknet_response_block_number,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(
+            &block_from_number(requested_starknet_block_num),
+            &returned_block
+        ));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_number_wrong_number_return() {
+        let requested_starknet_block_num = 5;
+        let helios_state_block_num = 27;
+        let starknet_response_block_number = 999;
+        let expected_num_request = 1;
+
+        let result = resolve_block_by_number_test(
+            requested_starknet_block_num,
+            helios_state_block_num,
+            starknet_response_block_number,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_hash_different_success() {
+        let requested_starknet_block_hash = "0x3";
+        let helios_state_block_num = 27;
+        let starknet_response_block_hash = requested_starknet_block_hash;
+        let starknet_response_block_num = 3;
+        let expected_num_request = 1;
+
+        let result = resolve_block_by_hash_test(
+            requested_starknet_block_hash,
+            helios_state_block_num,
+            starknet_response_block_hash,
+            starknet_response_block_num,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(
+            &block_from_hash(requested_starknet_block_hash),
+            &returned_block
+        ));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_hash_same_success() {
+        let requested_starknet_block_hash = "0x27";
+        let helios_state_block_num = 27;
+        let starknet_response_block_hash = requested_starknet_block_hash;
+        let starknet_response_block_num = 27;
+        let expected_num_request = 0;
+
+        let result = resolve_block_by_hash_test(
+            requested_starknet_block_hash,
+            helios_state_block_num,
+            starknet_response_block_hash,
+            starknet_response_block_num,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(
+            &block_from_hash(requested_starknet_block_hash),
+            &returned_block
+        ));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_hash_wrong_number_return_error() {
+        let requested_starknet_block_hash = "0x99";
+        let helios_state_block_num = 27;
+        let starknet_response_block_hash = requested_starknet_block_hash;
+        let starknet_response_block_num = 27;
+        let expected_num_request = 1;
+
+        let result = resolve_block_by_hash_test(
+            requested_starknet_block_hash,
+            helios_state_block_num,
+            starknet_response_block_hash,
+            starknet_response_block_num,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn resolve_block_by_hash_wrong_hash_return_error() {
+        let requested_starknet_block_hash = "0x99";
+        let helios_state_block_num = 27;
+        let starknet_response_block_hash = "0xbad";
+        let starknet_response_block_num = 3;
+        let expected_num_request = 1;
+
+        let result = resolve_block_by_hash_test(
+            requested_starknet_block_hash,
+            helios_state_block_num,
+            starknet_response_block_hash,
+            starknet_response_block_num,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn resolve_block_id_number_success() {
+        let request_block = block_from_number(3);
+        let helios_block_num = 27;
+        let starknet_response_block_num = 3;
+        let starknet_response_block_hash = "0x3";
+        let expected_num_request = 1;
+
+        let result = resolve_block_id_test(
+            request_block.clone(),
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(&request_block, &returned_block));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_id_hash_success() {
+        let request_block = block_from_hash("0x3");
+        let helios_block_num = 27;
+        let starknet_response_block_num = 3;
+        let starknet_response_block_hash = "0x3";
+        let expected_num_request = 1;
+
+        let result = resolve_block_id_test(
+            request_block.clone(),
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(&request_block, &returned_block));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_id_tag_latest_success() {
+        let request_block = block_from_tag("latest");
+        let helios_block_num = 27;
+        let starknet_response_block_num = 33;
+        let starknet_response_block_hash = "0x33";
+        let expected_num_request = 0;
+
+        let result = resolve_block_id_test(
+            request_block.clone(),
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let (returned_block, _) = result.unwrap();
+        assert!(eq(&block_from_number(helios_block_num), &returned_block));
+    }
+
+    #[tokio::test]
+    async fn resolve_block_id_tag_pending_error() {
+        let request_block = block_from_tag("pending");
+        let helios_block_num = 27;
+        let starknet_response_block_num = 33;
+        let starknet_response_block_hash = "0x33";
+        let expected_num_request = 0;
+
+        let result = resolve_block_id_test(
+            request_block.clone(),
+            helios_block_num,
+            starknet_response_block_num,
+            starknet_response_block_hash,
+            expected_num_request,
+        )
+        .await;
+
+        assert!(result.is_err());
     }
 }
