@@ -52,7 +52,7 @@ cairo-vm = "0.9.3"
 base64 = "0.22.0"
 flate2 = "1.0.28"
 cairo-lang-starknet-classes = "2.6.4"
-ureq = { version = "2.9.6", features = ["json"] }
+ureq = { version = "2.10.0", features = ["json"] }
 hex = "0.4.3"
 bitvec = "1.0.1"
 validator = { version = "0.18.1", features = ["derive"] }
