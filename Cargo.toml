@@ -33,7 +33,7 @@ eyre = "0.6.12"
 starknet = "0.10.0"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.17"
-thiserror = "1.0.62"
+thiserror = "1.0.63"
 axum = { version = "0.7.5", optional = true }
 iamgroot = { git = "https://github.com/sergey-melnychuk/iamgroot", tag = "v0.2.8" }
 regex = "1.10.5"
