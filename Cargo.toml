@@ -61,4 +61,4 @@ toml = "0.8.15"
 clap = { version = "4.5.11", features = ["derive"] }
 
 [dev-dependencies]
-wiremock = "0.6.0"
+wiremock = "0.6.1"
