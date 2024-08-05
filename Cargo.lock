@@ -528,7 +528,7 @@ dependencies = [
  "bitvec 1.0.1",
  "blockifier",
  "cairo-lang-starknet-classes",
- "cairo-vm",
+ "cairo-vm 1.0.0",
  "clap",
  "ethers",
  "eyre",
@@ -687,7 +687,7 @@ dependencies = [
  "cairo-lang-runner",
  "cairo-lang-starknet-classes",
  "cairo-lang-utils",
- "cairo-vm",
+ "cairo-vm 0.9.3",
  "derive_more",
  "indexmap 2.2.6",
  "itertools 0.10.5",
@@ -1072,7 +1072,7 @@ dependencies = [
  "cairo-lang-sierra-type-size",
  "cairo-lang-starknet",
  "cairo-lang-utils",
- "cairo-vm",
+ "cairo-vm 0.9.3",
  "itertools 0.11.0",
  "keccak",
  "num-bigint",
@@ -1346,6 +1346,37 @@ dependencies = [
  "starknet-crypto 0.6.2",
  "starknet-curve 0.4.2",
  "thiserror-no-std",
+]
+
+[[package]]
+name = "cairo-vm"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94a9ff830d1c79b41b146c69ddbf60cfc3765b92fabb5d5126908bdc1b1a9232"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "bitvec 1.0.1",
+ "generic-array",
+ "hashbrown 0.14.5",
+ "hex",
+ "keccak",
+ "lazy_static",
+ "nom",
+ "num-bigint",
+ "num-integer",
+ "num-prime",
+ "num-traits 0.2.19",
+ "rand 0.8.5",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "sha2 0.10.8",
+ "sha3",
+ "starknet-crypto 0.6.2",
+ "starknet-types-core",
+ "thiserror-no-std",
+ "zip",
 ]
 
 [[package]]
@@ -3794,6 +3825,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "lambdaworks-crypto"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fb5d4f22241504f7c7b8d2c3a7d7835d7c07117f10bff2a7d96a9ef6ef217c3"
+dependencies = [
+ "lambdaworks-math",
+ "serde",
+ "sha2 0.10.8",
+ "sha3",
+]
+
+[[package]]
+name = "lambdaworks-math"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "358e172628e713b80a530a59654154bfc45783a6ed70ea284839800cebdf8f97"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6170,6 +6223,20 @@ dependencies = [
  "starknet-core",
  "starknet-crypto 0.6.2",
  "thiserror",
+]
+
+[[package]]
+name = "starknet-types-core"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce6bacf0ba19bc721e518bc4bf389ff13daa8a7c5db5fd320600473b8aa9fcbd"
+dependencies = [
+ "lambdaworks-crypto",
+ "lambdaworks-math",
+ "num-bigint",
+ "num-integer",
+ "num-traits 0.2.19",
+ "serde",
 ]
 
 [[package]]
