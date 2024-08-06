@@ -9,7 +9,7 @@ use beerus::gen::{
 
 mod common;
 
-use common::Error;
+use common::error::Error;
 
 #[tokio::test]
 #[allow(non_snake_case)]
