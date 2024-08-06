@@ -180,7 +180,18 @@ async fn call_method(url: &str, method: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
     use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
+
+    async fn setup_server_with_response(response: Value) -> MockServer {
+        let server = MockServer::start().await;
+        Mock::given(any())
+            .respond_with(ResponseTemplate::new(200).set_body_json(response))
+            .expect(1)
+            .mount(&server)
+            .await;
+        server
+    }
 
     #[tokio::test]
     async fn wrong_urls() {
@@ -204,14 +215,8 @@ mod tests {
 
     #[tokio::test]
     async fn correct_eth_url() {
-        let server = MockServer::start().await;
-        Mock::given(any())
-            .respond_with(ResponseTemplate::new(200)
-                .set_body_json(serde_json::json!({"jsonrpc":"2.0","id":0,"result":MAINNET_ETHEREUM_CHAINID})))
-            .expect(1)
-            .mount(&server)
-            .await;
-
+        let response = serde_json::json!({"jsonrpc":"2.0","id":0,"result":MAINNET_ETHEREUM_CHAINID});
+        let server = setup_server_with_response(response).await;
         let result = check_chain_id(
             MAINNET_ETHEREUM_CHAINID,
             &server.uri(),
@@ -223,14 +228,9 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_eth_url() {
-        let server = MockServer::start().await;
-        Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_json(
-                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
-            ))
-            .expect(1)
-            .mount(&server)
-            .await;
+        let response =
+            serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"});
+        let server = setup_server_with_response(response).await;
 
         let result = check_chain_id(
             MAINNET_ETHEREUM_CHAINID,
@@ -248,14 +248,9 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_starknet_url() {
-        let server = MockServer::start().await;
-        Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_json(
-                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
-            ))
-            .expect(1)
-            .mount(&server)
-            .await;
+        let response =
+            serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"});
+        let server = setup_server_with_response(response).await;
 
         let result = check_chain_id(
             MAINNET_STARKNET_CHAINID,
@@ -273,14 +268,9 @@ mod tests {
 
     #[tokio::test]
     async fn correct_eth_url_wrong_chain_id() {
-        let server = MockServer::start().await;
-        Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_json(
-                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
-            ))
-            .expect(1)
-            .mount(&server)
-            .await;
+        let response =
+            serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"});
+        let server = setup_server_with_response(response).await;
 
         let result = check_chain_id(
             MAINNET_STARKNET_CHAINID,
@@ -298,14 +288,9 @@ mod tests {
 
     #[tokio::test]
     async fn correct_starknet_url_wrong_chain_id() {
-        let server = MockServer::start().await;
-        Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_json(
-                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
-            ))
-            .expect(1)
-            .mount(&server)
-            .await;
+        let response =
+            serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"});
+        let server = setup_server_with_response(response).await;
 
         let result = check_chain_id(
             MAINNET_STARKNET_CHAINID,
