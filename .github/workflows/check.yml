@@ -83,3 +83,23 @@ jobs:
       - uses: crate-ci/typos@v1.21.0
         with:
           files: .
+
+  coverage:
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        run: rustup update stable
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov@v2
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --html --output-dir coverage
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v3
+      - name: Upload coverage to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          external_repository: ${{ github.repository }}
+          publish_dir: ./coverage/html
