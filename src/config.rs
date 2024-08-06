@@ -86,8 +86,11 @@ impl Config {
         }
     }
 
-    pub async fn check(&self) -> Result<()> {
+    pub async fn check(&self, skip_chain_id_validation: bool) -> Result<()> {
         self.validate()?;
+        if skip_chain_id_validation {
+            return Ok(());
+        }
 
         let expected_chain_id = match self.network {
             Network::MAINNET => MAINNET_ETHEREUM_CHAINID,
@@ -189,7 +192,8 @@ mod tests {
             poll_secs: 300,
             rpc_addr: SocketAddr::from(([0, 0, 0, 0], 3030)),
         };
-        let response = config.check().await;
+        let skip_chain_id_validation = false;
+        let response = config.check(skip_chain_id_validation).await;
 
         assert!(response.is_err());
         assert!(response
@@ -327,8 +331,8 @@ mod tests {
             poll_secs: 9999,
             rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
         };
-
-        let response = config.check().await;
+        let skip_chain_id_validation = false;
+        let response = config.check(skip_chain_id_validation).await;
 
         assert!(response.is_err());
         assert!(response.unwrap_err().to_string().contains("poll_secs"));

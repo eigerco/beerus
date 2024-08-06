@@ -10,8 +10,9 @@ const RPC_SPEC_VERSION: &str = "0.6.0";
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let config = get_config(Args::parse())?;
-    config.check().await?;
+    let args = Args::parse();
+    let config = get_config(&args)?;
+    config.check(args.skip_chain_id_validation).await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
     beerus.start().await?;
@@ -61,9 +62,11 @@ async fn main() -> eyre::Result<()> {
 struct Args {
     #[clap(short = 'c', long)]
     config: Option<String>,
+    #[clap(short, long, default_value_t = false)]
+    skip_chain_id_validation: bool,
 }
 
-fn get_config(args: Args) -> eyre::Result<Config> {
+fn get_config(args: &Args) -> eyre::Result<Config> {
     Ok(if let Some(path) = args.config.as_ref() {
         Config::from_file(path)?
     } else {
