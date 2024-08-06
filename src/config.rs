@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use eyre::{eyre, Result};
+use eyre::{eyre, Context, Result};
 
 use helios::config::networks::Network;
 use serde::Deserialize;
@@ -18,11 +18,6 @@ const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
 
 const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
-
-enum Blockchain {
-    Ethereum,
-    Starknet,
-}
 
 #[derive(Clone, Deserialize, Debug, Validate)]
 pub struct Config {
@@ -91,106 +86,110 @@ impl Config {
         }
     }
 
-    pub async fn validate_params(&self) -> Result<()> {
+    pub async fn check(&self) -> Result<()> {
         self.validate()?;
-        self.check_url(Blockchain::Ethereum).await?;
-        self.check_url(Blockchain::Starknet).await?;
-        self.validate_data_dir()
-    }
 
-    async fn check_url(&self, blockchain: Blockchain) -> Result<()> {
-        let (blockchain_name, url) = match blockchain {
-            Blockchain::Ethereum => ("eth", &self.eth_execution_rpc),
-            Blockchain::Starknet => ("starknet", &self.starknet_rpc),
-        };
-
-        let client = reqwest::Client::new();
-        let response = client
-            .post(url)
-            .header("Content-Type", "application/json")
-            .body(format!(
-                r#"{{"jsonrpc":"2.0","method":"{blockchain_name}_chainId","params":[],"id":0}}"#
-            ))
-            .send()
-            .await
-            .expect("Failed to execute request");
-
-        if !response.status().is_success() {
-            return Err(eyre!(
-                "Wrong response, check {blockchain_name} url and api key"
-            ));
-        };
-
-        let chain_id = match self.network {
-            Network::MAINNET => match blockchain {
-                Blockchain::Ethereum => MAINNET_ETHEREUM_CHAINID,
-                Blockchain::Starknet => MAINNET_STARKNET_CHAINID,
-            },
-            Network::SEPOLIA => match blockchain {
-                Blockchain::Ethereum => SEPOLIA_ETHEREUM_CHAINID,
-                Blockchain::Starknet => SEPOLIA_STARKNET_CHAINID,
-            },
-            network => {
-                return Err(eyre!(
-                    "Unsupported {network}, has to be MAINNET or SEPOLIA"
-                ))
+        let expected_chain_id = match self.network {
+            Network::MAINNET => MAINNET_ETHEREUM_CHAINID,
+            Network::SEPOLIA => SEPOLIA_ETHEREUM_CHAINID,
+            _ => {
+                eyre::bail!(
+                    "Ethereum chain id check failed: unsupported network"
+                );
             }
         };
+        check_chain_id(
+            expected_chain_id,
+            &self.eth_execution_rpc,
+            "eth_chainId",
+        )
+        .await?;
 
-        if response.text().await?.contains(&format!(r#"result":"{chain_id}"#)) {
-            Ok(())
-        } else {
-            Err(eyre!("Unverified chainId for {blockchain_name} url"))
-        }
-    }
-
-    fn validate_data_dir(&self) -> Result<()> {
-        if !self.data_dir.exists() {
-            tracing::warn!("Provided data dir does not exist");
-            return Ok(());
-        };
-
-        match self.data_dir.metadata() {
-            Ok(metadata) if metadata.permissions().readonly() => {
-                Err(eyre!("Unable to write, read only folder"))
+        let expected_chain_id = match self.network {
+            Network::MAINNET => MAINNET_STARKNET_CHAINID,
+            Network::SEPOLIA => SEPOLIA_STARKNET_CHAINID,
+            _ => {
+                eyre::bail!(
+                    "Starknet chain id check failed: unsupported network"
+                );
             }
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.into()),
-        }
+        };
+        check_chain_id(
+            expected_chain_id,
+            &self.starknet_rpc,
+            "starknet_chainId",
+        )
+        .await?;
+
+        check_data_dir(&self.data_dir)
     }
+}
+
+fn check_data_dir<P: AsRef<Path>>(path: &P) -> Result<()> {
+    let path = path.as_ref();
+    if !path.exists() {
+        eyre::bail!("path does not exist");
+    };
+
+    let meta = path.metadata().context("path metadata is missing")?;
+
+    if meta.permissions().readonly() {
+        eyre::bail!("path is readonly");
+    }
+
+    Ok(())
+}
+
+async fn check_chain_id(
+    expected_chain_id: &str,
+    url: &str,
+    method: &str,
+) -> Result<()> {
+    let chain_id = call_method(url, method).await?;
+    if chain_id != expected_chain_id {
+        eyre::bail!(
+            "Invalid chain id: expected {expected_chain_id} but got {chain_id}"
+        );
+    }
+    Ok(())
+}
+
+async fn call_method(url: &str, method: &str) -> Result<String> {
+    let response: serde_json::Value = reqwest::Client::new()
+        .post(url)
+        .json(&serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": [],
+            "id": 0
+        }))
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    response["result"]
+        .as_str()
+        .map(|result| result.to_owned())
+        .ok_or_else(|| eyre!("Result missing for method={method}"))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::net::SocketAddr;
-
-    use helios::config::networks::Network;
+    use super::*;
     use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
-
-    use crate::config::{Blockchain, Config, MAINNET_ETHEREUM_CHAINID};
-
-    impl Default for Config {
-        fn default() -> Self {
-            Self {
-                network: Network::MAINNET,
-                eth_execution_rpc: "".to_string(),
-                starknet_rpc: "".to_string(),
-                data_dir: Default::default(),
-                poll_secs: 300,
-                rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
-            }
-        }
-    }
 
     #[tokio::test]
     async fn wrong_urls() {
         let config = Config {
+            network: Network::MAINNET,
             eth_execution_rpc: "foo".to_string(),
             starknet_rpc: "bar".to_string(),
-            ..Default::default()
+            data_dir: Default::default(),
+            poll_secs: 300,
+            rpc_addr: SocketAddr::from(([0, 0, 0, 0], 3030)),
         };
-
-        let response = config.validate_params().await;
+        let response = config.check().await;
 
         assert!(response.is_err());
         assert!(response
@@ -201,115 +200,135 @@ mod tests {
 
     #[tokio::test]
     async fn correct_eth_url() {
-        let eth_mock_server = MockServer::start().await;
-        let config = Config {
-            eth_execution_rpc: eth_mock_server.uri(),
-            ..Default::default()
-        };
-
+        let server = MockServer::start().await;
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_string(format!(
-                r#"{{"jsonrpc":"2.0","id":0,"result":"{MAINNET_ETHEREUM_CHAINID}"}}"#
-            )))
+            .respond_with(ResponseTemplate::new(200)
+                .set_body_json(serde_json::json!({"jsonrpc":"2.0","id":0,"result":MAINNET_ETHEREUM_CHAINID})))
             .expect(1)
-            .mount(&eth_mock_server)
+            .mount(&server)
             .await;
 
-        assert!(config.check_url(Blockchain::Ethereum).await.is_ok());
+        let result = check_chain_id(
+            MAINNET_ETHEREUM_CHAINID,
+            &server.uri(),
+            "eth_chainId",
+        )
+        .await;
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
     async fn wrong_eth_url() {
-        let eth_mock_server = MockServer::start().await;
-        let config = Config {
-            eth_execution_rpc: eth_mock_server.uri(),
-            ..Default::default()
-        };
-
+        let server = MockServer::start().await;
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(400))
+            .respond_with(ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
+            ))
             .expect(1)
-            .mount(&eth_mock_server)
+            .mount(&server)
             .await;
 
-        let response = config.check_url(Blockchain::Ethereum).await;
+        let result = check_chain_id(
+            MAINNET_ETHEREUM_CHAINID,
+            &server.uri(),
+            "eth_chainId",
+        )
+        .await;
 
-        assert!(response.is_err());
-        assert!(response.unwrap_err().to_string().contains("eth"));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Result missing for method=eth_chainId"
+        );
     }
 
     #[tokio::test]
     async fn wrong_starknet_url() {
-        let starknet_rpc_server = MockServer::start().await;
-        let config = Config {
-            starknet_rpc: starknet_rpc_server.uri(),
-            ..Default::default()
-        };
-
+        let server = MockServer::start().await;
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(400))
+            .respond_with(ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
+            ))
             .expect(1)
-            .mount(&starknet_rpc_server)
+            .mount(&server)
             .await;
 
-        let response = config.check_url(Blockchain::Starknet).await;
+        let result = check_chain_id(
+            MAINNET_STARKNET_CHAINID,
+            &server.uri(),
+            "eth_chainId",
+        )
+        .await;
 
-        assert!(response.is_err());
-        assert!(response.unwrap_err().to_string().contains("starknet"));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Result missing for method=eth_chainId"
+        );
     }
 
     #[tokio::test]
     async fn correct_eth_url_wrong_chain_id() {
-        let eth_rpc_server = MockServer::start().await;
-        let config = Config {
-            eth_execution_rpc: eth_rpc_server.uri(),
-            ..Default::default()
-        };
-
+        let server = MockServer::start().await;
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_string(
-                r#"{{"jsonrpc":"2.0","id":0,"result":"foo"}}"#,
+            .respond_with(ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
             ))
             .expect(1)
-            .mount(&eth_rpc_server)
+            .mount(&server)
             .await;
 
-        let response = config.check_url(Blockchain::Ethereum).await;
+        let result = check_chain_id(
+            MAINNET_STARKNET_CHAINID,
+            &server.uri(),
+            "starknet_chainId",
+        )
+        .await;
 
-        assert!(response.is_err());
-        assert!(response.unwrap_err().to_string().contains("chainId for eth"));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Result missing for method=starknet_chainId"
+        );
     }
 
     #[tokio::test]
     async fn correct_starknet_url_wrong_chain_id() {
-        let starknet_rpc_server = MockServer::start().await;
-        let config = Config {
-            starknet_rpc: starknet_rpc_server.uri(),
-            ..Default::default()
-        };
-
+        let server = MockServer::start().await;
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(200).set_body_string(
-                r#"{{"jsonrpc":"2.0","id":0,"result":"foo"}}"#,
+            .respond_with(ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({"jsonrpc":"2.0","id":0,"error":"foo"}),
             ))
             .expect(1)
-            .mount(&starknet_rpc_server)
+            .mount(&server)
             .await;
 
-        let response = config.check_url(Blockchain::Starknet).await;
+        let result = check_chain_id(
+            MAINNET_STARKNET_CHAINID,
+            &server.uri(),
+            "starknet_chainId",
+        )
+        .await;
 
-        assert!(response.is_err());
-        assert!(response
-            .unwrap_err()
-            .to_string()
-            .contains("chainId for starknet"));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Result missing for method=starknet_chainId"
+        );
     }
 
     #[tokio::test]
     async fn wrong_poll_secs() {
-        let config = Config { poll_secs: 9999, ..Default::default() };
+        let config = Config {
+            network: Network::MAINNET,
+            eth_execution_rpc: "foo".to_string(),
+            starknet_rpc: "bar".to_string(),
+            data_dir: Default::default(),
+            poll_secs: 9999,
+            rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
+        };
 
-        let response = config.validate_params().await;
+        let response = config.check().await;
 
         assert!(response.is_err());
         assert!(response.unwrap_err().to_string().contains("poll_secs"));

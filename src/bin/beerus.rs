@@ -11,7 +11,7 @@ async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
     let config = get_config(Args::parse())?;
-    config.validate_params().await?;
+    config.check().await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
     beerus.start().await?;
