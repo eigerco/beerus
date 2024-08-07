@@ -70,6 +70,6 @@ fn get_config(args: &Args) -> eyre::Result<Config> {
     Ok(if let Some(path) = args.config.as_ref() {
         Config::from_file(path)?
     } else {
-        Config::from_env()
+        Config::from_env()?
     })
 }

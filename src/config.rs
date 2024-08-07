@@ -33,6 +33,8 @@ pub struct Config {
     pub poll_secs: u64,
     #[serde(default = "default_rpc_addr")]
     pub rpc_addr: SocketAddr,
+    #[serde(default = "default_skip_chain_id_validation")]
+    pub skip_chain_id_validation: Option<bool>,
 }
 
 fn default_data_dir() -> PathBuf {
@@ -47,9 +49,13 @@ fn default_rpc_addr() -> SocketAddr {
     SocketAddr::from(([0, 0, 0, 0], 3030))
 }
 
+fn default_skip_chain_id_validation() -> Option<bool> {
+    None
+}
+
 impl Config {
-    pub fn from_env() -> Self {
-        Self {
+    pub fn from_env() -> Result<Self> {
+        Ok(Self {
             network: Network::from_str(
                 &std::env::var("NETWORK").unwrap_or_default(),
             )
@@ -68,7 +74,16 @@ impl Config {
                 .ok()
                 .and_then(|rpc_addr| rpc_addr.parse::<SocketAddr>().ok())
                 .unwrap_or_else(default_rpc_addr),
-        }
+            skip_chain_id_validation: std::env::var("SKIP_CHAIN_ID_VALIDATION")
+                .ok()
+                .map(|value| match value.as_str() {
+                    "true" => Ok(Some(true)),
+                    "false" => Ok(Some(false)),
+                    val => Err(eyre!(
+                        "SKIP_CHAIN_ID_VALIDATION wrong value \"{val}\". Has to be \"true\" or \"false\"."
+                    )),
+                }).unwrap_or_else(|| Ok(default_skip_chain_id_validation()))?
+        })
     }
 
     pub fn from_file(path: &str) -> Result<Self> {
@@ -88,6 +103,18 @@ impl Config {
 
     pub async fn check(&self, skip_chain_id_validation: bool) -> Result<()> {
         self.validate()?;
+
+        let skip_chain_id_validation = match self.skip_chain_id_validation {
+            Some(value) => {
+                if skip_chain_id_validation && !value {
+                    eyre::bail!(
+                        "Missmatch in provided skip_chain_id_validation arguments from command line and configuration file"
+                    );
+                }
+                value
+            }
+            None => skip_chain_id_validation,
+        };
 
         let expected_chain_id = match self.network {
             Network::MAINNET => MAINNET_ETHEREUM_CHAINID,
@@ -206,6 +233,7 @@ mod tests {
             data_dir: Default::default(),
             poll_secs: 300,
             rpc_addr: SocketAddr::from(([0, 0, 0, 0], 3030)),
+            skip_chain_id_validation: None,
         };
         let skip_chain_id_validation = false;
         let response = config.check(skip_chain_id_validation).await;
@@ -330,6 +358,7 @@ mod tests {
             data_dir: Default::default(),
             poll_secs: 9999,
             rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
+            skip_chain_id_validation: None,
         };
         let skip_chain_id_validation = false;
         let response = config.check(skip_chain_id_validation).await;
