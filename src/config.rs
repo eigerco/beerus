@@ -108,7 +108,7 @@ impl Config {
             Some(value) => {
                 if skip_chain_id_validation && !value {
                     eyre::bail!(
-                        "Missmatch in provided skip_chain_id_validation arguments from command line and configuration file"
+                        "Mismatch in provided skip_chain_id_validation arguments from command line and configuration file"
                     );
                 }
                 value
@@ -365,5 +365,26 @@ mod tests {
 
         assert!(response.is_err());
         assert!(response.unwrap_err().to_string().contains("poll_secs"));
+    }
+
+    #[tokio::test]
+    async fn mismatch_skip_chain_id_validation() {
+        let config = Config {
+            network: Network::MAINNET,
+            eth_execution_rpc: "http://foo.com".to_string(),
+            starknet_rpc: "http://bar.com".to_string(),
+            data_dir: Default::default(),
+            poll_secs: 5,
+            rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
+            skip_chain_id_validation: Some(false),
+        };
+        let skip_chain_id_validation = true;
+        let response = config.check(skip_chain_id_validation).await;
+
+        assert!(response.is_err());
+        assert!(response
+            .unwrap_err()
+            .to_string()
+            .contains("skip_chain_id_validation"));
     }
 }
