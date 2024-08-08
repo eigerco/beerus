@@ -23,7 +23,6 @@ async fn main() -> Result<()> {
         data_dir: PathBuf::from("tmp"),
         poll_secs: 300,
         rpc_addr: ([127, 0, 0, 1], 3030).into(),
-        skip_chain_id_validation: None
     };
 
     let beerus = Client::new(&config).await?;
