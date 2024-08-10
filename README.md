@@ -22,7 +22,7 @@ We post development updates on the [Telegram channel](https://t.me/BeerusStarkne
 
 * 2024-JUN-18: "Beerus Reborn": brand new Beerus with RPC Codegen, Stateless Execution, State Proof Verification, release [v0.5.0](https://github.com/eigerco/beerus/releases/tag/v0.5.0)
 * 2024-FEB-29: Migrate to the [Starknet v0.6.0 OpenRPC spec](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
-* 2024-JAN-17: [Eiger takes over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
+* 2024-JAN-17: [Blog: Eiger takes responsibility over Beerus](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
 
 ## Getting Started
 
