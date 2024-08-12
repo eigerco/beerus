@@ -12,11 +12,17 @@
   [Helios](https://github.com/a16z/helios/).
 </div>
 
-## News
+## Project updates
+
+At the beginning of 2024 [Eiger](https://www.eiger.co/) took over the ownership of the Beerus repository and leadership of the project. Beerus was started by the Starkware Exploration Team and we are grateful for their trust and the excellent work they have done.
+
+One of our goals is to integrate Beerus into web-based wallets, enabling users to switch seamlessly to a light client mode. This transition is crucial for those who prefer not to rely on untrusted RPC providers, a critical step to trustless operation.
+
+We post development updates on the [Telegram channel](https://t.me/BeerusStarknet)
 
 * 2024-JUN-18: "Beerus Reborn": brand new Beerus with RPC Codegen, Stateless Execution, State Proof Verification, release [v0.5.0](https://github.com/eigerco/beerus/releases/tag/v0.5.0)
 * 2024-FEB-29: Migrate to the [Starknet v0.6.0 OpenRPC spec](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
-* 2024-JAN-17: [Eiger is taking over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
+* 2024-JAN-17: [Blog: Eiger takes responsibility over Beerus](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
 
 ## Getting Started
 
