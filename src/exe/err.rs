@@ -27,6 +27,22 @@ pub enum Error {
     Program(#[from] cairo_vm::types::errors::program_errors::ProgramError),
     #[error("sierra compilation error: {0:?}")]
     SierraCompilation(#[from] StarknetSierraCompilationError),
+    #[error("runner error: {0}")]
+    Runner(#[from] cairo_vm::vm::errors::runner_errors::RunnerError),
+    #[error("cairo vm error: {0}")]
+    VM(#[from] cairo_vm::vm::errors::vm_errors::VirtualMachineError),
+    #[error("cairo vm memory error: {0}")]
+    Mem(#[from] cairo_vm::vm::errors::memory_errors::MemoryError),
+    #[error("cairo vm math error: {0}")]
+    Math(#[from] cairo_vm::types::errors::math_errors::MathError),
+    #[error("cairo pre execution error: {0}")]
+    Pre(#[from] blockifier::execution::errors::PreExecutionError),
+    #[error("cairo post execution error: {0}")]
+    Post(#[from] blockifier::execution::errors::PostExecutionError),
+    #[error("cairo run error: {0}")]
+    Run(#[from] cairo_vm::vm::errors::cairo_run_errors::CairoRunError),
+    #[error("trace error: {0}")]
+    Trace(#[from] cairo_vm::vm::errors::trace_errors::TraceError),
     #[error("{0}")]
     Custom(&'static str),
 }

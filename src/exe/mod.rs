@@ -6,8 +6,9 @@ use blockifier::{
     execution::{
         call_info::CallInfo,
         common_hints::ExecutionMode,
-        contract_class::ContractClass,
+        contract_class::{ContractClass, ContractClassV0, ContractClassV1},
         entry_point::{CallEntryPoint, CallType, EntryPointExecutionContext},
+        syscalls::hint_processor::SyscallHintProcessor,
     },
     state::{
         cached_state::CommitmentStateDiff,
@@ -19,7 +20,15 @@ use blockifier::{
     },
     versioned_constants::VersionedConstants,
 };
-use cairo_vm::vm::runners::cairo_runner::ExecutionResources;
+use cairo_vm::{
+    felt::Felt252,
+    serde::deserialize_program::BuiltinName,
+    types::relocatable::MaybeRelocatable,
+    vm::{
+        runners::cairo_runner::{CairoArg, CairoRunner, ExecutionResources},
+        vm_core::VirtualMachine,
+    },
+};
 use starknet_api::{
     block::{BlockNumber as StarknetBlockNumber, BlockTimestamp},
     core::{
@@ -28,6 +37,7 @@ use starknet_api::{
     },
     deprecated_contract_class::EntryPointType,
     hash::{StarkFelt, StarkHash},
+    stark_felt,
     state::StorageKey as StarknetStorageKey,
     transaction::{
         Calldata, Fee, TransactionHash, TransactionSignature,
@@ -48,7 +58,7 @@ pub fn call(
     state_root: gen::Felt,
 ) -> Result<CallInfo, Error> {
     let gen::FunctionCall { calldata, contract_address, entry_point_selector } =
-        function_call;
+        function_call.clone();
 
     let calldata: Result<Vec<StarkFelt>, _> =
         calldata.into_iter().map(|felt| felt.try_into()).collect();
@@ -133,10 +143,222 @@ pub fn call(
     };
     let mut proxy = StateProxy { client: client.to_owned(), diff, state_root };
 
-    let call_info =
-        call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
+    // let call_info =
+    //     call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
+
+    let contract_address: StarkFelt =
+        function_call.contract_address.0.clone().try_into()?;
+    let contract_address: ContractAddress = contract_address.try_into()?;
+    let class_hash = proxy.get_class_hash_at(contract_address)?;
+    let contract_class = proxy.get_compiled_contract_class(class_hash)?;
+
+    let call_info = match contract_class {
+        ContractClass::V0(contract_class) => call_contract_v0(
+            &mut proxy,
+            &mut resources,
+            &mut context,
+            call_entry_point.clone(),
+            contract_class,
+            class_hash,
+        )?,
+        ContractClass::V1(contract_class) => call_contract_v1(
+            &mut proxy,
+            &mut resources,
+            &mut context,
+            call_entry_point.clone(),
+            contract_class,
+            class_hash,
+        )?,
+    };
 
     tracing::debug!(?call_info, "call completed");
+    Ok(call_info)
+}
+
+#[allow(unused_variables)]
+fn call_contract_v0(
+    proxy: &mut dyn blockifier::state::state_api::State,
+    resources: &mut ExecutionResources,
+    context: &mut EntryPointExecutionContext,
+    call_entry_point: CallEntryPoint,
+    contract_class: ContractClassV0,
+    class_hash: ClassHash,
+) -> Result<CallInfo, Error> {
+    // TODO: impl
+    unimplemented!()
+}
+
+fn call_contract_v1(
+    proxy: &mut dyn blockifier::state::state_api::State,
+    resources: &mut ExecutionResources,
+    context: &mut EntryPointExecutionContext,
+    call_entry_point: CallEntryPoint,
+    contract_class: ContractClassV1,
+    class_hash: ClassHash,
+) -> Result<CallInfo, Error> {
+    // CALL: prepare_program_extra_data
+    let proof_mode = false;
+    let mut runner =
+        CairoRunner::new(&contract_class.program, "starknet", proof_mode)?;
+    let trace_enabled = true;
+    let mut vm = VirtualMachine::new(trace_enabled);
+
+    let program_builtins = [
+        BuiltinName::bitwise,
+        BuiltinName::ec_op,
+        BuiltinName::ecdsa,
+        BuiltinName::output,
+        BuiltinName::pedersen,
+        BuiltinName::poseidon,
+        BuiltinName::range_check,
+        BuiltinName::segment_arena,
+    ];
+    runner.initialize_function_runner_cairo_1(&mut vm, &program_builtins)?;
+
+    let entry_point = contract_class.get_entry_point(&call_entry_point)?;
+
+    let start_ptr = vm.add_memory_segment();
+    let data = vec![MaybeRelocatable::from(0); 20];
+    vm.load_data(start_ptr, &data)?;
+
+    // Put a pointer to the builtin cost segment at the end of the program (after the
+    // additional `ret` statement).
+    let mut ptr = (vm.get_pc() + contract_class.bytecode_length())?;
+    vm.insert_value(
+        ptr,
+        Felt252::from_bytes_be(stark_felt!("0x208b7fff7fff7ffe").bytes()),
+    )?;
+    ptr += 1;
+    vm.insert_value(ptr, start_ptr)?; // Push a pointer to the builtin cost segment.
+    let program_extra_data_length = 2;
+
+    // Instantiate syscall handler.
+    let initial_syscall_ptr = vm.add_memory_segment();
+    let mut syscall_handler = SyscallHintProcessor::new(
+        proxy,
+        resources,
+        context,
+        initial_syscall_ptr,
+        call_entry_point,
+        &contract_class.hints,
+        Default::default(),
+    );
+    // END CALL: prepare_program_extra_data
+
+    // CALL: prepare_call_arguments
+    let call = &syscall_handler.call;
+    let mut args: Vec<CairoArg> = vec![];
+    for builtin_name in &entry_point.builtins {
+        if let Some(builtin) = vm
+            .get_builtin_runners()
+            .iter()
+            .find(|builtin| builtin.name() == builtin_name)
+        {
+            args.extend(
+                builtin.initial_stack().into_iter().map(CairoArg::Single),
+            );
+            continue;
+        }
+        if builtin_name == "segment_arena_builtin" {
+            let segment_arena = vm.add_memory_segment();
+
+            // Write into segment_arena.
+            let mut ptr = segment_arena;
+            let info_segment = vm.add_memory_segment();
+            vm.insert_value(ptr, info_segment)?;
+            ptr += 1;
+            let n_constructed = StarkFelt::default();
+            vm.insert_value(
+                ptr,
+                Felt252::from_bytes_be(n_constructed.bytes()),
+            )?;
+            ptr += 1;
+            let n_destructed = StarkFelt::default();
+            vm.insert_value(ptr, Felt252::from_bytes_be(n_destructed.bytes()))?;
+
+            args.push(CairoArg::Single(MaybeRelocatable::from(ptr)));
+            continue;
+        }
+        return Err(Error::Custom("invalid builtin"));
+    }
+    // Push gas counter.
+    args.push(CairoArg::Single(MaybeRelocatable::from(Felt252::from(
+        call.initial_gas,
+    ))));
+    // Push syscall ptr.
+    args.push(CairoArg::Single(MaybeRelocatable::from(initial_syscall_ptr)));
+
+    // Prepare calldata arguments.
+    let calldata = &call.calldata.0;
+    let calldata: Vec<MaybeRelocatable> = calldata
+        .iter()
+        .map(|&arg| MaybeRelocatable::from(Felt252::from_bytes_be(arg.bytes())))
+        .collect();
+
+    let calldata_start_ptr = {
+        let start_ptr = vm.add_memory_segment();
+        vm.load_data(start_ptr, &calldata)?;
+        start_ptr
+    };
+    let calldata_end_ptr =
+        MaybeRelocatable::from((calldata_start_ptr + calldata.len())?);
+    args.push(CairoArg::Single(MaybeRelocatable::from(calldata_start_ptr)));
+    args.push(CairoArg::Single(calldata_end_ptr));
+    // END CALL: prepare_call_arguments
+
+    let n_total_args = args.len();
+    // Fix the resources, in order to calculate the usage of this run at the end.
+    let previous_resources = syscall_handler.resources.clone();
+    // Execute.
+    let bytecode_length = contract_class.bytecode_length();
+    let program_segment_size = bytecode_length + program_extra_data_length;
+
+    // CALL: run_entry_point
+    let verify_secure = true;
+    let args: Vec<&CairoArg> = args.iter().collect();
+    runner.run_from_entrypoint(
+        entry_point.pc(),
+        &args,
+        verify_secure,
+        Some(program_segment_size),
+        &mut vm,
+        &mut syscall_handler,
+    )?;
+    // END CALL: run_entry_point
+
+    // CALL: register_visited_pcs
+    let mut class_visited_pcs = HashSet::new();
+    vm.relocate_trace(&[1, 1 + program_segment_size])?;
+    for trace_entry in vm.get_relocated_trace()? {
+        let pc = trace_entry.pc;
+        if pc < 1 {
+            return Err(Error::Custom("invalid pc"));
+        }
+        let real_pc = pc - 1;
+        // Jumping to a PC that is not inside the bytecode is possible. For example, to obtain
+        // the builtin costs. Filter out these values.
+        if real_pc < bytecode_length {
+            class_visited_pcs.insert(real_pc);
+        }
+    }
+    syscall_handler.state.add_visited_pcs(class_hash, &class_visited_pcs);
+    // END CALL: register_visited_pcs
+
+    // TODO: unwrap the call
+    let call_info =
+        blockifier::execution::entry_point_execution::finalize_execution(
+            vm,
+            runner,
+            syscall_handler,
+            previous_resources,
+            n_total_args,
+            program_extra_data_length,
+        )?;
+    if call_info.execution.failed {
+        // error_data = call_info.execution.retdata.0,
+        return Err(Error::Custom("execution failed"));
+    }
+
     Ok(call_info)
 }
 
@@ -171,6 +393,13 @@ impl StateReader for StateProxy {
             )
             .map_err(Into::<Error>::into)?;
 
+        // TODO: find more elegant way for this
+        // workaround to skip proof validation for testing
+        #[cfg(feature = "skip-zero-root-validation")]
+        if self.state_root.as_ref() == "0x0" {
+            return Ok(ret.try_into()?);
+        }
+
         let proof = self
             .client
             .getProof(
@@ -180,13 +409,6 @@ impl StateReader for StateProxy {
             )
             .map_err(Into::<Error>::into)?;
         tracing::info!(?proof, "get_storage_at: proof received");
-
-        // TODO: find more elegant way for this
-        // workaround to skip proof validation for testing
-        #[cfg(feature = "skip-zero-root-validation")]
-        if self.state_root.as_ref() == "0x0" {
-            return Ok(ret.try_into()?);
-        }
 
         let global_root = self.state_root.clone();
         let value = ret.clone();
