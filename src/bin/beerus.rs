@@ -3,6 +3,7 @@ use std::{sync::Arc, time::Duration};
 use beerus::config::Config;
 use clap::Parser;
 use tokio::sync::RwLock;
+use validator::Validate;
 
 const RPC_SPEC_VERSION: &str = "0.6.0";
 
@@ -11,8 +12,7 @@ async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
     let args = Args::parse();
-    let config = get_config(&args)?;
-    config.check(args.skip_chain_id_validation).await?;
+    let config = get_config(&args).await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
     beerus.start().await?;
@@ -66,10 +66,17 @@ struct Args {
     skip_chain_id_validation: bool,
 }
 
-fn get_config(args: &Args) -> eyre::Result<Config> {
-    Ok(if let Some(path) = args.config.as_ref() {
+async fn get_config(args: &Args) -> eyre::Result<Config> {
+    let config = if let Some(path) = args.config.as_ref() {
         Config::from_file(path)?
     } else {
-        Config::from_env()?
-    })
+        Config::from_env()
+    };
+    config.validate()?;
+    if args.skip_chain_id_validation {
+        tracing::warn!("Skipping chain id validation");
+        return Ok(config);
+    }
+    config.check().await?;
+    Ok(config)
 }
