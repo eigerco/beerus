@@ -18,7 +18,7 @@ async fn test_specVersion() -> Result<(), Error> {
     let ctx = setup!();
 
     let ret = ctx.client.specVersion().await?;
-    assert_eq!(ret, "0.6.0");
+    assert_eq!(ret, "0.7.1");
     Ok(())
 }
 

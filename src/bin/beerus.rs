@@ -4,7 +4,7 @@ use beerus::config::Config;
 use clap::Parser;
 use tokio::sync::RwLock;
 
-const RPC_SPEC_VERSION: &str = "0.6.0";
+const RPC_SPEC_VERSION: &str = "0.7.1";
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
