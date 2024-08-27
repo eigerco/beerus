@@ -12,9 +12,9 @@ cd ../beerus
 
 ## Generate the code
 RUST_LOG=off ./tmp/iamgroot CODE \
-etc/spec/starknet/0.6.0/starknet_query_api_openrpc.json \
-etc/spec/starknet/0.6.0/starknet_write_api_openrpc.json \
-etc/spec/starknet/0.6.0/starknet_trace_api_openrpc.json \
+etc/spec/starknet/0.7.0/starknet_query_api_openrpc.json \
+etc/spec/starknet/0.7.0/starknet_write_api_openrpc.json \
+etc/spec/starknet/0.7.0/starknet_trace_api_openrpc.json \
 etc/spec/pathfinder_api_openrpc.json \
 --async --blocking --client --reexport > ./src/gen.rs
 
