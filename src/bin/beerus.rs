@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use beerus::config::Config;
+use beerus::config::{check_data_dir, Config};
 use clap::Parser;
 use tokio::sync::RwLock;
 use validator::Validate;
@@ -75,8 +75,9 @@ async fn get_config(args: &Args) -> eyre::Result<Config> {
     config.validate()?;
     if args.skip_chain_id_validation {
         tracing::warn!("Skipping chain id validation");
-        return Ok(config);
+    } else {
+        config.check().await?;
     }
-    config.check().await?;
+    check_data_dir(&config.data_dir)?;
     Ok(config)
 }

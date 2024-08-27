@@ -117,13 +117,11 @@ impl Config {
             &self.starknet_rpc,
             "starknet_chainId",
         )
-        .await?;
-
-        check_data_dir(&self.data_dir)
+        .await
     }
 }
 
-fn check_data_dir<P: AsRef<Path>>(path: &P) -> Result<()> {
+pub fn check_data_dir<P: AsRef<Path>>(path: &P) -> Result<()> {
     let path = path.as_ref();
     if !path.exists() {
         eyre::bail!("path does not exist");
