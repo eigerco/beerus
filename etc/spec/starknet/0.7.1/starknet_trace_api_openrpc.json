@@ -1,7 +1,7 @@
 {
     "openrpc": "1.0.0-rc1",
     "info": {
-        "version": "0.7.0",
+        "version": "0.7.1",
         "title": "StarkNet Trace API",
         "license": {}
     },
@@ -290,6 +290,11 @@
                         "description": "the state diffs induced by the transaction",
                         "$ref": "#/components/schemas/STATE_DIFF"
                     },
+                    "execution_resources": {
+                        "title": "Execution resources",
+                        "description": "the resources consumed by the transaction, includes both computation and data",
+                        "$ref": "#/components/schemas/EXECUTION_RESOURCES"
+                    },
                     "type": {
                         "title": "Type",
                         "type": "string",
@@ -300,7 +305,8 @@
                 },
                 "required": [
                     "type",
-                    "function_invocation"
+                    "function_invocation",
+                    "execution_resources"
                 ]
             },
             "TRANSACTION_TRACE": {

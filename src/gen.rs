@@ -1233,6 +1233,7 @@ pub mod gen {
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct L1HandlerTxnTrace {
+        pub execution_resources: ExecutionResources,
         pub function_invocation: FunctionInvocation,
         pub r#type: L1HandlerTxnTraceType,
         #[serde(skip_serializing_if = "Option::is_none")]
