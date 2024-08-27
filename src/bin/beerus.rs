@@ -76,7 +76,7 @@ async fn get_config(args: &Args) -> eyre::Result<Config> {
     if args.skip_chain_id_validation {
         tracing::warn!("Skipping chain id validation");
     } else {
-        config.check().await?;
+        config.validate_chain_id().await?;
     }
     check_data_dir(&config.data_dir)?;
     Ok(config)

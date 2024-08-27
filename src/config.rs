@@ -86,7 +86,7 @@ impl Config {
         }
     }
 
-    pub async fn check(&self) -> Result<()> {
+    pub async fn validate_chain_id(&self) -> Result<()> {
         let expected_chain_id = match self.network {
             Network::MAINNET => MAINNET_ETHEREUM_CHAINID,
             Network::SEPOLIA => SEPOLIA_ETHEREUM_CHAINID,
