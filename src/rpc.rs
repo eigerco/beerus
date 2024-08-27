@@ -345,6 +345,13 @@ impl gen::Rpc for Context {
         self.client.getBlockTransactionCount(block_id).await
     }
 
+    async fn getBlockWithReceipts(
+        &self,
+        block_id: BlockId,
+    ) -> std::result::Result<GetBlockWithReceiptsResult, jsonrpc::Error> {
+        self.client.getBlockWithReceipts(block_id).await
+    }
+
     async fn getBlockWithTxHashes(
         &self,
         block_id: BlockId,
@@ -461,7 +468,7 @@ impl gen::Rpc for Context {
     async fn getTransactionReceipt(
         &self,
         transaction_hash: TxnHash,
-    ) -> std::result::Result<GetTransactionReceiptResult, jsonrpc::Error> {
+    ) -> std::result::Result<TxnReceiptWithBlockInfo, jsonrpc::Error> {
         self.client.getTransactionReceipt(transaction_hash).await
     }
 

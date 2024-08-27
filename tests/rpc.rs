@@ -2,9 +2,10 @@ use beerus::gen::{
     Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
     BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
     GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-    GetTransactionByBlockIdAndIndexIndex, GetTransactionReceiptResult,
-    InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
-    SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt, TxnStatus,
+    GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1,
+    InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn,
+    TxnExecutionStatus, TxnHash, TxnReceipt, TxnReceiptWithBlockInfo,
+    TxnStatus,
 };
 
 mod common;
@@ -336,9 +337,10 @@ async fn test_getTransactionReceipt() -> Result<(), Error> {
     let transaction_hash = TxnHash(Felt::try_new(hash)?);
 
     let ret = ctx.client.getTransactionReceipt(transaction_hash).await?;
-    let GetTransactionReceiptResult::TxnReceipt(TxnReceipt::InvokeTxnReceipt(
-        ret,
-    )) = ret
+    let TxnReceiptWithBlockInfo {
+        txn_receipt: TxnReceipt::InvokeTxnReceipt(ret),
+        ..
+    } = ret
     else {
         panic!("unexpected pending block");
     };
