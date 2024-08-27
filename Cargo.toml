@@ -7,14 +7,18 @@ version = "0.5.0"
 ## TODO: split into separate crate?
 ## 'cdylib' type is required for building a WebAssembly library
 ## wasm-pack build --release --target web --no-default-features --features wasm
-#[lib]
-#crate-type = ["cdylib"]
+## cargo check --target wasm32-unknown-unknown --no-default-features --features wasm
+[lib]
+crate-type = ["cdylib"]
 
 [features]
 default = ["rpc", "blockifier"]
 rpc = ["dep:axum"]
 blockifier = ["dep:blockifier", "dep:cairo-vm", "dep:ureq"]
-wasm = ["helios/beerus-wasm"]
+wasm = [
+    "helios/beerus-wasm", 
+    "blockifier",
+]
 
 ## FOR TESTING ONLY
 ## skip proof validation of state root is 0x0
@@ -48,14 +52,14 @@ ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fd
 helios = { git = "https://github.com/sergey-melnychuk/helios", branch = "beerus-wasm", default-features = false }
 
 starknet-crypto = "0.6.2"
-blockifier = { version = "0.5.0", optional = true }
+blockifier = { path = "../../misc/blockifier/crates/blockifier", optional = true }
 starknet_api = "0.10.0"
-cairo-vm = { version = "0.9.3", optional = true }
+cairo-vm = { path = "../../misc/cairo-vm/vm", default-features = false, optional = true }
 
 base64 = "0.22.0"
 flate2 = "1.0.28"
 cairo-lang-starknet-classes = "2.6.4"
-ureq = { version = "2.10.0", features = ["json"], optional = true }
+ureq = { version = "2.10.0", features = ["json"], default-features = false, optional = true }
 
 hex = "0.4.3"
 bitvec = "1.0.1"
