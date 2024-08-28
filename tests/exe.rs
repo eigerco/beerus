@@ -56,7 +56,10 @@ fn test_call_regular_contract_class() -> Result<(), Error> {
     let call_info = call(&client, function_call, state_root)?;
 
     assert_eq!(call_info.execution.retdata.0.len(), 1);
-    assert_eq!(call_info.execution.retdata.0[0], "0x4574686572".try_into()?);
+    assert_eq!(
+        call_info.execution.retdata.0[0].to_hex_string(),
+        "0x4574686572"
+    );
 
     Ok(())
 }

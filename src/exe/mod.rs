@@ -1,7 +1,8 @@
 use std::{collections::HashSet, num::NonZeroU128, sync::Arc};
 
 use blockifier::{
-    block::{BlockInfo, GasPrices},
+    blockifier::block::{BlockInfo, GasPrices},
+    bouncer::BouncerConfig,
     context::{BlockContext, ChainInfo, FeeTokenAddresses, TransactionContext},
     execution::{
         call_info::CallInfo,
@@ -27,13 +28,14 @@ use starknet_api::{
         ContractAddress, EntryPointSelector, Nonce,
     },
     deprecated_contract_class::EntryPointType,
-    hash::{StarkFelt, StarkHash},
+    hash::StarkHash,
     state::StorageKey as StarknetStorageKey,
     transaction::{
         Calldata, Fee, TransactionHash, TransactionSignature,
         TransactionVersion,
     },
 };
+use starknet_types_core::felt::Felt as StarkFelt;
 
 use crate::gen::{self, blocking::Rpc};
 
@@ -75,19 +77,22 @@ pub fn call(
     };
 
     let chain_info = ChainInfo {
-        chain_id: BlockifierChainId("00".to_owned()),
+        chain_id: BlockifierChainId::Mainnet,
         fee_token_addresses: FeeTokenAddresses {
             strk_fee_token_address: ContractAddress::default(),
             eth_fee_token_address: ContractAddress::default(),
         },
     };
 
-    let versioned_constants = VersionedConstants::latest_constants();
+    let versioned_constants = VersionedConstants::latest_constants().to_owned();
 
-    let block_context = BlockContext::new_unchecked(
-        &block_info,
-        &chain_info,
+    let bouncer_config = BouncerConfig::default();
+
+    let block_context = BlockContext::new(
+        block_info,
+        chain_info,
         versioned_constants,
+        bouncer_config,
     );
 
     let tx_info = TransactionInfo::Deprecated(DeprecatedTransactionInfo {
@@ -148,7 +153,7 @@ struct StateProxy {
 
 impl StateReader for StateProxy {
     fn get_storage_at(
-        &mut self,
+        &self,
         contract_address: ContractAddress,
         key: StarknetStorageKey,
     ) -> StateResult<StarkFelt> {
@@ -199,7 +204,7 @@ impl StateReader for StateProxy {
     }
 
     fn get_nonce_at(
-        &mut self,
+        &self,
         contract_address: ContractAddress,
     ) -> StateResult<Nonce> {
         tracing::info!(?contract_address, "get_nonce_at");
@@ -218,7 +223,7 @@ impl StateReader for StateProxy {
     }
 
     fn get_class_hash_at(
-        &mut self,
+        &self,
         contract_address: ContractAddress,
     ) -> StateResult<ClassHash> {
         tracing::info!(?contract_address, "get_class_hash_at");
@@ -237,7 +242,7 @@ impl StateReader for StateProxy {
     }
 
     fn get_compiled_contract_class(
-        &mut self,
+        &self,
         class_hash: ClassHash,
     ) -> StateResult<ContractClass> {
         tracing::info!(?class_hash, "get_compiled_contract_class");
@@ -255,7 +260,7 @@ impl StateReader for StateProxy {
     }
 
     fn get_compiled_class_hash(
-        &mut self,
+        &self,
         class_hash: ClassHash,
     ) -> StateResult<CompiledClassHash> {
         tracing::info!(?class_hash, "get_compiled_class_hash");
@@ -328,11 +333,6 @@ impl BlockifierState for StateProxy {
             .entry(class_hash)
             .or_default() = compiled_class_hash;
         Ok(())
-    }
-
-    fn to_state_diff(&mut self) -> CommitmentStateDiff {
-        tracing::info!("to_state_diff");
-        self.diff.clone()
     }
 
     fn add_visited_pcs(&mut self, class_hash: ClassHash, pcs: &HashSet<usize>) {
