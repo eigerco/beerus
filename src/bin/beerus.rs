@@ -1,8 +1,9 @@
 use std::{sync::Arc, time::Duration};
 
-use beerus::config::Config;
+use beerus::config::{check_data_dir, Config};
 use clap::Parser;
 use tokio::sync::RwLock;
+use validator::Validate;
 
 const RPC_SPEC_VERSION: &str = "0.6.0";
 
@@ -10,8 +11,8 @@ const RPC_SPEC_VERSION: &str = "0.6.0";
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let config = get_config(Args::parse())?;
-    config.check().await?;
+    let args = Args::parse();
+    let config = get_config(&args).await?;
 
     let beerus = beerus::client::Client::new(&config).await?;
     beerus.start().await?;
@@ -61,12 +62,22 @@ async fn main() -> eyre::Result<()> {
 struct Args {
     #[clap(short = 'c', long)]
     config: Option<String>,
+    #[clap(short, long, default_value_t = false)]
+    skip_chain_id_validation: bool,
 }
 
-fn get_config(args: Args) -> eyre::Result<Config> {
-    Ok(if let Some(path) = args.config.as_ref() {
+async fn get_config(args: &Args) -> eyre::Result<Config> {
+    let config = if let Some(path) = args.config.as_ref() {
         Config::from_file(path)?
     } else {
         Config::from_env()
-    })
+    };
+    config.validate()?;
+    if args.skip_chain_id_validation {
+        tracing::warn!("Skipping chain id validation");
+    } else {
+        config.validate_chain_id().await?;
+    }
+    check_data_dir(&config.data_dir)?;
+    Ok(config)
 }
