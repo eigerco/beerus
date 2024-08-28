@@ -1,5 +1,7 @@
 use iamgroot::jsonrpc;
-use starknet_crypto::{pedersen_hash, poseidon_hash_many, FieldElement};
+use starknet_crypto::{
+    pedersen_hash, poseidon_hash_many, Felt as FieldElement,
+};
 
 use crate::gen::{
     Address, BinaryNode, BinaryNodeBinary, ContractData, EdgeNode,
@@ -134,14 +136,14 @@ impl GetProofResult {
         // The contract state hash is defined as H(H(H(hash, root), nonce), CONTRACT_STATE_HASH_VERSION)
         const CONTRACT_STATE_HASH_VERSION: FieldElement = FieldElement::ZERO;
         let hash = pedersen_hash(
-            &FieldElement::from_hex_be(contract_data.class_hash.as_ref())
+            &FieldElement::from_hex(contract_data.class_hash.as_ref())
                 .map_err(|_| {
                     jsonrpc::Error::new(
                         -32701,
                         "Failed to create Field Element".to_string(),
                     )
                 })?,
-            &FieldElement::from_hex_be(contract_data.root.as_ref()).map_err(
+            &FieldElement::from_hex(contract_data.root.as_ref()).map_err(
                 |_| {
                     jsonrpc::Error::new(
                         -32701,
@@ -152,7 +154,7 @@ impl GetProofResult {
         );
         let hash = pedersen_hash(
             &hash,
-            &FieldElement::from_hex_be(contract_data.nonce.as_ref()).map_err(
+            &FieldElement::from_hex(contract_data.nonce.as_ref()).map_err(
                 |_| {
                     jsonrpc::Error::new(
                         -32701,
@@ -174,18 +176,11 @@ impl GetProofResult {
         class_commitment: &Felt,
         storage_commitment: Felt,
     ) -> Result<Felt, jsonrpc::Error> {
-        let global_state_ver = FieldElement::from_byte_slice_be(
-            b"STARKNET_STATE_V0",
-        )
-        .map_err(|_| {
-            jsonrpc::Error::new(
-                -32701,
-                "Failed to create Field Element".to_string(),
-            )
-        })?;
+        let global_state_ver =
+            FieldElement::from_bytes_be_slice(b"STARKNET_STATE_V0");
         let hash = poseidon_hash_many(&[
             global_state_ver,
-            FieldElement::from_hex_be(storage_commitment.as_ref()).map_err(
+            FieldElement::from_hex(storage_commitment.as_ref()).map_err(
                 |_| {
                     jsonrpc::Error::new(
                         -32701,
@@ -193,7 +188,7 @@ impl GetProofResult {
                     )
                 },
             )?,
-            FieldElement::from_hex_be(class_commitment.as_ref()).map_err(
+            FieldElement::from_hex(class_commitment.as_ref()).map_err(
                 |_| {
                     jsonrpc::Error::new(
                         -32701,
@@ -215,24 +210,22 @@ impl GetProofResult {
         value: Felt,
         proof: &[Node],
     ) -> Result<Option<Felt>, jsonrpc::Error> {
-        let key = felt_to_bits(
-            FieldElement::from_hex_be(&key.into()).map_err(|_| {
-                jsonrpc::Error::new(
-                    -32701,
-                    "Failed to create Field Element".to_string(),
-                )
-            })?,
-        );
+        let key = FieldElement::from_hex(&key.into()).map_err(|_| {
+            jsonrpc::Error::new(
+                -32701,
+                "Failed to create Field Element".to_string(),
+            )
+        })?;
+        let key = felt_to_bits(&key.to_bytes_be());
         if key.len() != 251 {
             return Ok(None);
         }
-        let value =
-            FieldElement::from_hex_be(value.as_ref()).map_err(|_| {
-                jsonrpc::Error::new(
-                    -32701,
-                    "Failed to create Field Element".to_string(),
-                )
-            })?;
+        let value = FieldElement::from_hex(value.as_ref()).map_err(|_| {
+            jsonrpc::Error::new(
+                -32701,
+                "Failed to create Field Element".to_string(),
+            )
+        })?;
         // initialized to the value so if the last node
         // in the proof is a binary node we can still verify
         let (mut hold, mut path_len) = (value, 0);
@@ -243,22 +236,22 @@ impl GetProofResult {
                     edge: EdgeNodeEdge { child, path },
                 }) => {
                     // calculate edge hash given by provider
-                    let child_felt = FieldElement::from_hex_be(child.as_ref())
+                    let child_felt = FieldElement::from_hex(child.as_ref())
                         .map_err(|_| {
                             jsonrpc::Error::new(
                                 -32701,
                                 "Failed to create Field Element".to_string(),
                             )
                         })?;
-                    let path_value =
-                        FieldElement::from_hex_be(path.value.as_ref())
-                            .map_err(|_| {
-                                jsonrpc::Error::new(
-                                    -32701,
-                                    "Failed to create Field Element"
-                                        .to_string(),
-                                )
-                            })?;
+                    let path_value = FieldElement::from_hex(
+                        path.value.as_ref(),
+                    )
+                    .map_err(|_| {
+                        jsonrpc::Error::new(
+                            -32701,
+                            "Failed to create Field Element".to_string(),
+                        )
+                    })?;
                     let provided_hash = pedersen_hash(&child_felt, &path_value)
                         + FieldElement::from(path.len as u64);
                     if i == 0 {
@@ -287,14 +280,15 @@ impl GetProofResult {
                     binary: BinaryNodeBinary { left, right },
                 }) => {
                     path_len += 1;
-                    let left = FieldElement::from_hex_be(left.as_ref())
-                        .map_err(|_| {
+                    let left = FieldElement::from_hex(left.as_ref()).map_err(
+                        |_| {
                             jsonrpc::Error::new(
                                 -32701,
                                 "Failed to create Field Element".to_string(),
                             )
-                        })?;
-                    let right = FieldElement::from_hex_be(right.as_ref())
+                        },
+                    )?;
+                    let right = FieldElement::from_hex(right.as_ref())
                         .map_err(|_| {
                             jsonrpc::Error::new(
                                 -32701,

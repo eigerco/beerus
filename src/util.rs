@@ -1,15 +1,10 @@
 use bitvec::prelude::{BitSlice, BitVec, Msb0};
 use bitvec::view::BitView;
-use ethers::types::{Address, Bytes};
 use eyre::{eyre, Result};
-use helios::types::CallOpts;
-use starknet::core::types::FieldElement;
-use starknet::core::utils::get_storage_var_address;
+use starknet_crypto::Felt as FieldElement;
 
-const ERC20_BALANCES_BASE: &str = "ERC20_balances";
-
-pub fn felt_to_bits(felt: FieldElement) -> BitVec<u8, Msb0> {
-    felt.to_bytes_be().view_bits::<Msb0>()[5..].to_bitvec()
+pub fn felt_to_bits(felt: &[u8; 32]) -> BitVec<u8, Msb0> {
+    felt.view_bits::<Msb0>()[5..].to_bitvec()
 }
 
 pub fn felt_from_bits(
@@ -33,30 +28,15 @@ pub fn felt_from_bits(
     let mut bytes = [0u8; 32];
     bytes.view_bits_mut::<Msb0>()[5 + mask..].copy_from_bitslice(&bits[mask..]);
 
-    FieldElement::from_bytes_be(&bytes).map_err(|e| eyre!(format!("{e}")))
-}
-
-pub fn simple_call_opts(addr: Address, data: Bytes) -> CallOpts {
-    CallOpts {
-        from: None,
-        to: Some(addr),
-        gas: None,
-        gas_price: None,
-        value: None,
-        data: Some(data),
-    }
-}
-
-pub fn get_balance_key(addr: FieldElement) -> FieldElement {
-    get_storage_var_address(ERC20_BALANCES_BASE, &[addr]).unwrap()
+    Ok(FieldElement::from_bytes_be(&bytes))
 }
 
 #[cfg(test)]
 mod tests {
     use bitvec::{order::Msb0, slice::BitSlice};
-    use starknet_crypto::FieldElement;
+    use starknet_crypto::Felt as FieldElement;
 
-    use super::{felt_from_bits, felt_to_bits, get_balance_key};
+    use super::{felt_from_bits, felt_to_bits};
 
     #[test]
     fn test_felt_to_bits_three() {
@@ -65,7 +45,7 @@ mod tests {
         let bit_slice = BitSlice::<u8, Msb0>::from_slice_mut(&mut slice);
         bit_slice.set(249, true);
         bit_slice.set(250, true);
-        assert_eq!(felt_to_bits(val), &bit_slice[..251]);
+        assert_eq!(felt_to_bits(&val.to_bytes_be()), &bit_slice[..251]);
     }
 
     #[test]
@@ -76,7 +56,7 @@ mod tests {
         bit_slice.set(247, true);
         bit_slice.set(248, true);
         bit_slice.set(249, true);
-        assert_eq!(felt_to_bits(val), &bit_slice[..251]);
+        assert_eq!(felt_to_bits(&val.to_bytes_be()), &bit_slice[..251]);
     }
 
     #[test]
@@ -127,16 +107,5 @@ mod tests {
         let mut slice = [0u8; 32];
         let bit_slice = BitSlice::<u8, Msb0>::from_slice_mut(&mut slice);
         assert!(felt_from_bits(&bit_slice[..251], Some(252)).is_err());
-    }
-
-    #[test]
-    fn test_get_balance_key() {
-        assert_eq!(
-            get_balance_key(FieldElement::ONE),
-            FieldElement::from_dec_str(
-                "3488041066649332616440110253331181934927363442882040970594983370166361489161"
-            )
-            .unwrap()
-        );
     }
 }

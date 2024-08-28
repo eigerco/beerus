@@ -10,7 +10,7 @@ impl TryFrom<gen::Felt> for StarkFelt {
     type Error = Error;
     fn try_from(felt: gen::Felt) -> Result<Self, Self::Error> {
         let felt = felt.as_ref().as_str();
-        let felt = StarkFelt::try_from(felt)?;
+        let felt = StarkFelt::from_hex_unchecked(felt);
         Ok(felt)
     }
 }
@@ -18,7 +18,7 @@ impl TryFrom<gen::Felt> for StarkFelt {
 impl TryFrom<&StarkFelt> for gen::Felt {
     type Error = Error;
     fn try_from(felt: &StarkFelt) -> Result<Self, Self::Error> {
-        let hex = hex::encode(felt.bytes());
+        let hex = hex::encode(felt.to_bytes_be());
         let hex = {
             // drop leading zeroes in order to match the regex
             let hex = hex.trim_start_matches('0');
