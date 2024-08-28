@@ -3,7 +3,6 @@
   <div align="center">
 
   [![check-job-status](https://github.com/eigerco/beerus/actions/workflows/check.yml/badge.svg)](https://github.com/eigerco/beerus/actions/workflows/check.yml)
-  [![jsonrpc-spec-v0.6.0](https://img.shields.io/badge/JSON--RPC-v0.6.0-2ea44f?labelColor=282d33&logo=ethereum)](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
 
   </div>
   <h1>Beerus</h1>
@@ -14,6 +13,7 @@
 
 ## News
 
+* 2024-AUG-28: Migrate to the [Starknet v0.7.1 OpenRpc spec](https://github.com/starkware-libs/starknet-specs/tree/v0.7.1).
 * 2024-JUN-18: "Beerus Reborn": brand new Beerus with RPC Codegen, Stateless Execution, State Proof Verification, release [v0.5.0](https://github.com/eigerco/beerus/releases/tag/v0.5.0)
 * 2024-FEB-29: Migrate to the [Starknet v0.6.0 OpenRPC spec](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0)
 * 2024-JAN-17: [Eiger is taking over Beerus!](https://www.eiger.co/blog/eiger-taking-over-ownership-for-beerus-working-on-starknet-light-clients)
@@ -51,7 +51,7 @@ The successful result should look similar to the one below:
 | ----------- | ----------- | ----------- |
 | network | MAINNET or SEPOLIA| network to query |
 | eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}| untrusted l2 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}| untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state, min = 1 and max = 3600 |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
@@ -61,12 +61,12 @@ When you select a network, check that `eth_execution_rpc` and `starknet_rpc` url
 MAINNET
 ```
 eth_execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}"
-starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}"
+starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
 ```
 SEPOLIA
 ```
 eth_execution_rpc = "https://eth-sepolia.g.alchemy.com/v2/{YOUR_API_KEY}"
-starknet_rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}"
+starknet_rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
 ```
 
 #### RPC providers
@@ -74,14 +74,14 @@ Beerus relies on TWO untrusted RPC endpoints, one for L1 (Ethereum), and one for
 As these are untrusted they will typically not be nodes run on your local host or your local network.
 
 ##### Starknet RPC endpoint
-Beerus requires the [v0.6.0 of the Starknet OpenRPC specs](https://github.com/starkware-libs/starknet-specs/tree/v0.6.0).
+Beerus expects serving the [v0.7.1 of the Starknet OpenRPC specs](https://github.com/starkware-libs/starknet-specs/tree/v0.7.1).
 
 Starknet RPC provider must also support the [Pathfinder's extension API](https://github.com/eqlabs/pathfinder#pathfinder-extension-api) `pathfinder_getProof` endpoint. 
 
 You can check if the provider is compatible by running this command:
 ```bash
 # This is an example RPC url. Use your RPC provider url to check if the node is compatible.
-STARKNET_RPC_URL="https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/{YOUR_API_KEY}"
+STARKNET_RPC_URL="https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
 curl --request POST \
      --url $STARKNET_RPC_URL \
      --header 'content-type: application/json' \
@@ -142,7 +142,7 @@ cargo build --release
 cargo test
 
 ## Run integration tests against live endpoint
-export BEERUS_TEST_STARKNET_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/${ALCHEMY_API_KEY}
+export BEERUS_TEST_STARKNET_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
 BEERUS_TEST_RUN=1 cargo test --features skip-zero-root-validation
 ```
 
