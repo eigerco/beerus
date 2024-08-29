@@ -27,3 +27,8 @@ target/
 node_modules
 
 tmp/
+
+pkg/
+dist/
+node_modules/
+.parcel-cache/
