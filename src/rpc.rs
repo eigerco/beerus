@@ -10,7 +10,7 @@ use tokio::{
     task::JoinHandle,
 };
 
-use crate::client::State as ClientState;
+use crate::client::{AsyncHttp, State as ClientState, SyncHttp};
 
 use crate::exe::err::Error;
 
@@ -61,7 +61,7 @@ fn serve_on(
 
     let ctx = Context {
         url: url.to_owned(),
-        client: Arc::new(gen::client::Client::with_client(url, client)),
+        client: Arc::new(gen::client::Client::new(url, AsyncHttp(client))),
         state,
     };
 
@@ -111,7 +111,7 @@ impl IntoResponse for RpcError {
 #[derive(Clone)]
 struct Context {
     url: String,
-    client: Arc<gen::client::Client>,
+    client: Arc<gen::client::Client<AsyncHttp>>,
     state: Arc<RwLock<ClientState>>,
 }
 
@@ -286,7 +286,7 @@ impl gen::Rpc for Context {
         request: FunctionCall,
         block_id: BlockId,
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
-        let client = gen::client::blocking::Client::new(&self.url);
+        let client = gen::client::blocking::Client::new(&self.url, SyncHttp);
         let state = self.state.read().await.clone();
 
         // TODO: address that effectively only the 'latest' block is supported
@@ -540,7 +540,7 @@ mod tests {
         matchers::any, Mock, MockGuard, MockServer, ResponseTemplate,
     };
 
-    use crate::rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt};
+    use crate::{client::AsyncHttp, rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt}};
 
     use super::{client::Client, ClientState, Context};
 
@@ -557,9 +557,10 @@ mod tests {
         url_client: &str,
         state: ClientState,
     ) -> Context {
+        let client = reqwest::Client::new();
         Context {
             url: url_local.to_string(),
-            client: Arc::new(Client::new(url_client)),
+            client: Arc::new(Client::new(url_client, AsyncHttp(client))),
             state: Arc::new(RwLock::new(state)),
         }
     }

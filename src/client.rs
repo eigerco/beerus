@@ -5,7 +5,7 @@ use tokio::sync::RwLock;
 
 use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
-use crate::gen::{BlockId, Felt, Rpc};
+use crate::gen::{gen, BlockId, Felt, Rpc};
 use crate::{config::Config, gen::FunctionCall};
 
 #[derive(Debug, Clone)]
@@ -15,14 +15,57 @@ pub struct State {
     pub root: Felt,
 }
 
+#[derive(Clone)]
+pub struct AsyncHttp(pub reqwest::Client);
+
+#[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]    
+impl gen::client::HttpClient for AsyncHttp {
+    async fn post(&self, url: &str, request: &iamgroot::jsonrpc::Request) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
+        let response = self.0.post(url)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?
+            .json()
+            .await
+            .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?;
+        Ok(response)
+    }
+}
+
+#[derive(Clone)]
+pub struct SyncHttp;
+
+impl gen::client::blocking::HttpClient for SyncHttp {
+    fn post(&self, url: &str, request: &iamgroot::jsonrpc::Request) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let response = ureq::post(url)
+                .send_json(&request)
+                .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?
+                .into_json()
+                .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?;
+            Ok(response)
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            unimplemented!("TODO: FIXME: use wasm-friendly blocking http client")
+        }
+
+    }
+}
+
 pub struct Client {
-    starknet: StarknetClient,
+    starknet: StarknetClient<AsyncHttp>,
     ethereum: EthereumClient,
 }
 
 impl Client {
     pub async fn new(config: &Config) -> Result<Self> {
-        let starknet = StarknetClient::new(&config.starknet_rpc);
+        let http = AsyncHttp(reqwest::Client::new());
+        let starknet = StarknetClient::new(&config.starknet_rpc, http);
         let ethereum = EthereumClient::new(config).await?;
         Ok(Self { starknet, ethereum })
     }
@@ -35,7 +78,7 @@ impl Client {
         self.ethereum.helios()
     }
 
-    pub fn starknet(&self) -> &StarknetClient {
+    pub fn starknet(&self) -> &StarknetClient<AsyncHttp> {
         &self.starknet
     }
 
