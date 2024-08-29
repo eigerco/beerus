@@ -131,8 +131,11 @@ pub fn call(
 
     let mut proxy = StateProxy { client: client.to_owned(), state };
 
-    let call_info =
-        call_entry_point.execute(&mut proxy, &mut Default::default(), &mut context)?;
+    let call_info = call_entry_point.execute(
+        &mut proxy,
+        &mut Default::default(),
+        &mut context,
+    )?;
 
     tracing::debug!(?call_info, "call completed");
     Ok(call_info)
