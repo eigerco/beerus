@@ -1,0 +1,16 @@
+{
+    "name": "beerus-web",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "start": "parcel",
+        "build": "parcel build"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "TBD",
+    "dependencies": {
+        "beerus": "file:beerus-web/pkg",
+        "beerus-web": "file:beerus-web/pkg"
+    }
+}
