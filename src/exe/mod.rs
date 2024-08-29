@@ -19,7 +19,6 @@ use blockifier::{
     },
     versioned_constants::VersionedConstants,
 };
-use cairo_vm::vm::runners::cairo_runner::ExecutionResources;
 use starknet_api::{
     block::{BlockNumber as StarknetBlockNumber, BlockTimestamp},
     core::{
@@ -60,8 +59,6 @@ pub fn call(
     let contract_address: StarkFelt = contract_address.0.try_into()?;
 
     let entry_point_selector: StarkFelt = entry_point_selector.try_into()?;
-
-    let mut resources = ExecutionResources::default();
 
     let one = NonZeroU128::new(1)
         .ok_or_else(|| Error::Custom("NonZeroU128 is zero"))?;
@@ -135,7 +132,7 @@ pub fn call(
     let mut proxy = StateProxy { client: client.to_owned(), state };
 
     let call_info =
-        call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
+        call_entry_point.execute(&mut proxy, &mut Default::default(), &mut context)?;
 
     tracing::debug!(?call_info, "call completed");
     Ok(call_info)

@@ -23,10 +23,10 @@ pub enum Error {
     Transaction(
         #[from] blockifier::transaction::errors::TransactionExecutionError,
     ),
-    #[error("program error: {0:?}")]
-    Program(#[from] cairo_vm::types::errors::program_errors::ProgramError),
     #[error("sierra compilation error: {0:?}")]
     SierraCompilation(#[from] StarknetSierraCompilationError),
+    #[error("program error: {0}")]
+    Program(String),
     #[error("{0}")]
     Custom(&'static str),
 }

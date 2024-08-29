@@ -57,7 +57,8 @@ impl TryFrom<gen::GetClassResult> for ContractClass {
                         /*add_pythonic_hints=*/ false,
                         /*max_bytecode_size=*/ u16::MAX as usize,
                     )?;
-                let class = casm_contract_class.try_into()?;
+                let class = casm_contract_class.try_into()
+                    .map_err(|e| Error::Program(format!("{e}")))?;
 
                 ContractClass::V1(class)
             }
@@ -78,7 +79,8 @@ fn build_contract_class(
     class["program"] = serde_json::from_str(&program)?;
     let json = serde_json::to_string(&class)?;
 
-    let class = ContractClassV0::try_from_json_string(&json)?;
+    let class = ContractClassV0::try_from_json_string(&json)
+        .map_err(|e| Error::Program(format!("{e}")))?;
     Ok(class)
 }
 
