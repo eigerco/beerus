@@ -62,7 +62,8 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
         root: state.root.as_ref().to_owned(),
     };
 
-    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc);
+    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc, beerus::client::SyncHttp);
+    web_sys::console::log_1(&"beerus: rpc client ready".into());
     let json = serde_json::json!({
         "calldata": [],
         "contract_address": "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
@@ -70,10 +71,12 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
       });
     let function_call: beerus::gen::FunctionCall = serde_json::from_value(json)
         .map_err(|_| JsValue::from_str("invalid function call"))?;
+    web_sys::console::log_1(&format!("beerus: rpc function call: {function_call:?}").into());
     let state_root = beerus::gen::Felt::try_new(&state.root)
         .map_err(|_| JsValue::from_str(&format!("invalid state root: {}", state.root)))?;
+    web_sys::console::log_1(&format!("beerus: rpc state root: {state_root:?}").into());
     let result = beerus::exe::call(&client, function_call, state_root);
-    web_sys::console::log_1(&format!("beerus: call result: {result:?}").into());
+    web_sys::console::log_1(&format!("beerus: rpc call result: {result:?}").into());
 
     let ret = serde_json::to_string(&state).map_err(|e| {
         JsValue::from_str(&format!("failed to return response: {e:?}"))

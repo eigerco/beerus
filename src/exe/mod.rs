@@ -36,7 +36,7 @@ use starknet_api::{
 use starknet_types_core::felt::Felt as StarkFelt;
 
 use crate::{
-    client::State,
+    client::{State, SyncHttp},
     gen::{self, blocking::Rpc},
 };
 
@@ -46,7 +46,7 @@ pub mod map;
 use err::Error;
 
 pub fn call(
-    client: &gen::client::blocking::Client,
+    client: &gen::client::blocking::Client<SyncHttp>,
     function_call: gen::FunctionCall,
     state: State,
 ) -> Result<CallInfo, Error> {
@@ -142,7 +142,7 @@ pub fn call(
 }
 
 struct StateProxy {
-    client: gen::client::blocking::Client,
+    client: gen::client::blocking::Client<SyncHttp>,
     state: State,
 }
 
