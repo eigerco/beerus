@@ -540,7 +540,10 @@ mod tests {
         matchers::any, Mock, MockGuard, MockServer, ResponseTemplate,
     };
 
-    use crate::{client::AsyncHttp, rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt}};
+    use crate::{
+        client::AsyncHttp,
+        rpc::{BlockHash, BlockId, BlockNumber, BlockTag, Felt},
+    };
 
     use super::{client::Client, ClientState, Context};
 
