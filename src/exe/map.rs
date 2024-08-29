@@ -57,7 +57,8 @@ impl TryFrom<gen::GetClassResult> for ContractClass {
                         /*add_pythonic_hints=*/ false,
                         /*max_bytecode_size=*/ u16::MAX as usize,
                     )?;
-                let class = casm_contract_class.try_into()
+                let class = casm_contract_class
+                    .try_into()
                     .map_err(|e| Error::Program(format!("{e}")))?;
 
                 ContractClass::V1(class)
