@@ -1,0 +1,18 @@
+{
+    "name": "proxy",
+    "version": "1.0.0",
+    "description": "",
+    "main": "proxy.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "body-parser": "^1.20.2",
+      "cors-anywhere": "^0.4.4",
+      "express": "^4.19.2",
+      "request": "^2.88.2"
+    }
+}
