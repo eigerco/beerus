@@ -47,9 +47,8 @@ starknet-crypto = "0.7.1"
 blockifier = "=0.8.0-rc.2"
 starknet_api = "0.13.0-rc.1"
 cairo-vm = "=1.0.1"
-starknet-types-core = "0.1.5"
 cairo-lang-starknet-classes = "2.6.4"
-
+starknet-types-core = "0.1.5"
 base64 = "0.22.0"
 flate2 = "1.0.28"
 ureq = { version = "2.10.0", features = ["json"] }
@@ -61,4 +60,15 @@ toml = "0.8.19"
 clap = { version = "4.5.13", features = ["derive"] }
 
 [dev-dependencies]
+anyhow = "1.0.86"
+alloy-primitives = { version = "0.7.6", default-features = false }
+katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 wiremock = "0.6.1"
+
+[patch.crates-io]
+starknet-core = { git = "https://github.com/kariy/starknet-rs", branch = "dojo-patch" }
