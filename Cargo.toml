@@ -43,7 +43,6 @@ starknet-crypto = "0.7.1"
 
 base64 = "0.22.0"
 flate2 = "1.0.28"
-ureq = { version = "2.10.0", features = ["json"], default-features = false }
 hex = "0.4.3"
 bitvec = "1.0.1"
 validator = { version = "0.18.1", features = ["derive"] }
@@ -57,6 +56,7 @@ reqwest = { version = "0.12.3", default-features = false, features = [
     "json",
     "blocking",
 ] }
+ureq = { version = "2.10.1", features = ["json"], default-features = false }
 wasm-timer = "0.2.5"
 web-sys = "0.3.69"
 wasm-bindgen = "0.2.92"
@@ -69,6 +69,7 @@ reqwest = { version = "0.12.3", default-features = false, features = [
     "blocking",
     "rustls-tls",
 ] }
+ureq = { version = "2.10.1", features = ["json"] }
 
 [dev-dependencies]
 anyhow = "1.0.89"
