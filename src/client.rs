@@ -19,17 +19,30 @@ pub struct State {
 pub struct AsyncHttp(pub reqwest::Client);
 
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
-#[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]    
+#[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 impl gen::client::HttpClient for AsyncHttp {
-    async fn post(&self, url: &str, request: &iamgroot::jsonrpc::Request) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
-        let response = self.0.post(url)
+    async fn post(
+        &self,
+        url: &str,
+        request: &iamgroot::jsonrpc::Request,
+    ) -> std::result::Result<
+        iamgroot::jsonrpc::Response,
+        iamgroot::jsonrpc::Error,
+    > {
+        let response = self
+            .0
+            .post(url)
             .json(&request)
             .send()
             .await
-            .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+            })?
             .json()
             .await
-            .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?;
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+            })?;
         Ok(response)
     }
 }
@@ -38,22 +51,34 @@ impl gen::client::HttpClient for AsyncHttp {
 pub struct SyncHttp;
 
 impl gen::client::blocking::HttpClient for SyncHttp {
-    fn post(&self, url: &str, request: &iamgroot::jsonrpc::Request) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
+    fn post(
+        &self,
+        url: &str,
+        request: &iamgroot::jsonrpc::Request,
+    ) -> std::result::Result<
+        iamgroot::jsonrpc::Response,
+        iamgroot::jsonrpc::Error,
+    > {
         #[cfg(not(target_arch = "wasm32"))]
         {
             let response = ureq::post(url)
                 .send_json(&request)
-                .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?
+                .map_err(|e| {
+                    iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+                })?
                 .into_json()
-                .map_err(|e| iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}")))?;
+                .map_err(|e| {
+                    iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+                })?;
             Ok(response)
         }
 
         #[cfg(target_arch = "wasm32")]
         {
-            unimplemented!("TODO: FIXME: use wasm-friendly blocking http client")
+            unimplemented!(
+                "TODO: FIXME: use wasm-friendly blocking http client"
+            )
         }
-
     }
 }
 

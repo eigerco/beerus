@@ -1,5 +1,5 @@
 use beerus::{
-    client::{SyncHttp, State},
+    client::{State, SyncHttp},
     exe::call,
     gen::{self, blocking::Rpc, client::blocking::Client, FunctionCall},
 };

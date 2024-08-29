@@ -5433,9 +5433,13 @@ pub mod gen {
         use super::*;
 
         #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
-        #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]    
+        #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
         pub trait HttpClient: Sync + Send {
-            async fn post(&self, url: &str, request: &jsonrpc::Request) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
+            async fn post(
+                &self,
+                url: &str,
+                request: &jsonrpc::Request,
+            ) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
         }
 
         #[derive(Clone)]
@@ -5476,9 +5480,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5528,9 +5531,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5569,9 +5571,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5621,9 +5622,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5675,9 +5675,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5727,9 +5726,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5769,9 +5767,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5810,9 +5807,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5860,9 +5856,8 @@ pub mod gen {
                         .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5901,9 +5896,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -5955,9 +5949,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6007,9 +6000,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6061,9 +6053,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6113,9 +6104,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6165,9 +6155,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6217,9 +6206,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6270,9 +6258,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6323,9 +6310,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6375,9 +6361,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6426,9 +6411,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6478,9 +6462,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6530,9 +6513,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6583,9 +6565,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6638,9 +6619,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6690,9 +6670,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6742,9 +6721,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6794,9 +6772,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6848,9 +6825,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6889,9 +6865,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6931,9 +6906,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -6983,9 +6957,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -7035,9 +7008,8 @@ pub mod gen {
                 .with_id(jsonrpc::Id::Number(1));
 
                 tracing::debug!(request=?req, "processing");
-
-                let mut res: jsonrpc::Response = self.http.post(&self.url, &req).await?;
-
+                let mut res: jsonrpc::Response =
+                    self.http.post(&self.url, &req).await?;
                 tracing::debug!(response=?res, "processing");
 
                 if let Some(err) = res.error.take() {
@@ -7070,8 +7042,12 @@ pub mod gen {
         pub mod blocking {
             use super::*;
 
-            pub trait HttpClient {
-                fn post(&self, url: &str, request: &jsonrpc::Request) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
+            pub trait HttpClient: Sync + Send {
+                fn post(
+                    &self,
+                    url: &str,
+                    request: &jsonrpc::Request,
+                ) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
             }
 
             #[derive(Clone)]
@@ -7110,8 +7086,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7161,9 +7137,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7203,9 +7178,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7257,9 +7231,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7311,9 +7284,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7365,9 +7337,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7407,9 +7378,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7449,9 +7419,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7502,9 +7471,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7544,9 +7512,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7598,9 +7565,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7651,9 +7617,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7705,9 +7670,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7759,9 +7723,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7813,9 +7776,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7865,9 +7827,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7918,9 +7879,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -7971,9 +7931,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8023,9 +7982,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8075,9 +8033,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8127,9 +8084,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8179,9 +8135,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8232,9 +8187,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8287,9 +8241,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8341,9 +8294,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8393,9 +8345,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8447,9 +8398,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8503,9 +8453,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8545,9 +8494,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8587,9 +8535,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8641,9 +8588,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
@@ -8693,9 +8639,8 @@ pub mod gen {
                     .with_id(jsonrpc::Id::Number(1));
 
                     tracing::debug!(request=?req, "processing");
-
-                    let mut res: jsonrpc::Response = self.http.post(&self.url, &req)?;
-
+                    let mut res: jsonrpc::Response =
+                        self.http.post(&self.url, &req)?;
                     tracing::debug!(response=?res, "processing");
 
                     if let Some(err) = res.error.take() {
