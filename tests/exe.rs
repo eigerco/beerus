@@ -1,5 +1,5 @@
 use beerus::{
-    client::{State, SyncHttp},
+    client::{Http, State},
     exe::call,
     gen::{self, blocking::Rpc, client::blocking::Client, FunctionCall},
 };
@@ -64,7 +64,7 @@ fn test_call_regular_contract_class() -> Result<(), Error> {
     Ok(())
 }
 
-fn get_state(client: &Client<SyncHttp>, block_id: gen::BlockId) -> State {
+fn get_state(client: &Client<Http>, block_id: gen::BlockId) -> State {
     let block = client.getBlockWithTxHashes(block_id).unwrap();
     let gen::GetBlockWithTxHashesResult::BlockWithTxHashes(block) = block
     else {
@@ -77,7 +77,7 @@ fn get_state(client: &Client<SyncHttp>, block_id: gen::BlockId) -> State {
     }
 }
 
-fn get_latest_state(client: &Client<SyncHttp>) -> State {
+fn get_latest_state(client: &Client<Http>) -> State {
     let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
     get_state(client, block_id)
 }

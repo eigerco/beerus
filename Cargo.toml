@@ -52,10 +52,7 @@ clap = { version = "4.5.17", features = ["derive"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 helios = { git = "https://github.com/sergey-melnychuk/helios", branch = "beerus-wasm", default-features = false, features = ["beerus-wasm"] }
-reqwest = { version = "0.12.3", default-features = false, features = [
-    "json",
-    "blocking",
-] }
+reqwest = { version = "0.12.3", default-features = false, features = ["json", "blocking"] }
 wasm-timer = "0.2.5"
 web-sys = "0.3.69"
 wasm-bindgen = "0.2.92"
@@ -63,11 +60,7 @@ wasm-bindgen-futures = "0.4.37"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 helios = { git = "https://github.com/sergey-melnychuk/helios", branch = "beerus-wasm" }
-reqwest = { version = "0.12.3", default-features = false, features = [
-    "json",
-    "blocking",
-    "rustls-tls",
-] }
+reqwest = { version = "0.12.3", default-features = false, features = ["json", "blocking", "rustls-tls"] }
 ureq = { version = "2.10.1", features = ["json"] }
 
 [dev-dependencies]
