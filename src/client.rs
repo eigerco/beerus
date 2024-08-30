@@ -91,28 +91,42 @@ impl gen::client::blocking::HttpClient for Http {
 
         #[cfg(target_arch = "wasm32")]
         {
-            use tokio::sync::oneshot::channel;
-            let (tx, rx) = channel();
+            // TODO: FIXME: PROBLEM!
+            // non-async IO is natively impossible in JS/WASM,
+            // as JS/WASM runtime is single-threaded (browser),
+            // and has callback-based approach for everything!
+            unreachable!()
+            /*
+            use std::sync::Mutex;
 
             let client = self.0.clone();
             let url = url.to_owned();
             let request = request.clone();
+
+            let ret = Arc::new(Mutex::new(None));
+            let arc = Arc::clone(&ret);
             wasm_bindgen_futures::spawn_local(async move {
-                // TODO: FIXME: "Uncaught RuntimeError: unreachable executed"
-                web_sys::console::log_1(
-                    &format!("url: {url}, req: {request:?}").into(),
-                );
+                let mut guard = arc.lock().unwrap();
+                web_sys::console::log_1(&format!("(spawn) req: {request:?}").into());                
                 let ret = post(&client, &url, &request).await;
-                web_sys::console::log_1(&format!("ret: {ret:?}").into());
-                let _ = tx.send(ret);
+                web_sys::console::log_1(&format!("(spawn) ret: {ret:?}").into());
+                *guard = Some(ret);
             });
 
-            rx.blocking_recv().map_err(|e| {
-                iamgroot::jsonrpc::Error::new(
-                    32102,
-                    format!("invalid response: {e:?}"),
-                )
-            })?
+            let mut guard = ret.lock().unwrap();
+            match guard.take() {
+                Some(ret) => {
+                    web_sys::console::log_1(&format!("call ret: {ret:?}").into());
+                    ret
+                }
+                None => {
+                    Err(iamgroot::jsonrpc::Error::new(
+                        32103,
+                        "internal error".to_owned(),
+                    ))        
+                }
+            }
+            */
         }
     }
 }

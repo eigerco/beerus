@@ -54,7 +54,7 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
         .get_state()
         .await
         .map_err(|e| JsValue::from_str(&format!("get_state failed: {e:?}")))?;
-    web_sys::console::log_1(&"beerus: state ready".into());
+    web_sys::console::log_1(&format!("beerus: state {state:?}").into());
 
     let state = dto::State {
         block_number: state.block_number as i64,
@@ -82,6 +82,6 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
     let ret = serde_json::to_string(&state).map_err(|e| {
         JsValue::from_str(&format!("failed to return response: {e:?}"))
     })?;
-    web_sys::console::log_1(&"beerus: state done".into());
+    web_sys::console::log_1(&"beerus: call done".into());
     Ok(ret)
 }
