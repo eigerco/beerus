@@ -15,12 +15,39 @@ pub struct State {
     pub root: Felt,
 }
 
+async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
+    client: &reqwest::Client,
+    url: &str,
+    request: Q,
+) -> std::result::Result<R, iamgroot::jsonrpc::Error> {
+    let response = client
+        .post(url)
+        .json(&request)
+        .send()
+        .await
+        .map_err(|e| {
+            iamgroot::jsonrpc::Error::new(
+                32101,
+                format!("request failed: {e:?}"),
+            )
+        })?
+        .json()
+        .await
+        .map_err(|e| {
+            iamgroot::jsonrpc::Error::new(
+                32102,
+                format!("invalid response: {e:?}"),
+            )
+        })?;
+    Ok(response)
+}
+
 #[derive(Clone)]
-pub struct AsyncHttp(pub reqwest::Client);
+pub struct Http(pub reqwest::Client);
 
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
-impl gen::client::HttpClient for AsyncHttp {
+impl gen::client::HttpClient for Http {
     async fn post(
         &self,
         url: &str,
@@ -29,28 +56,11 @@ impl gen::client::HttpClient for AsyncHttp {
         iamgroot::jsonrpc::Response,
         iamgroot::jsonrpc::Error,
     > {
-        let response = self
-            .0
-            .post(url)
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| {
-                iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
-            })?
-            .json()
-            .await
-            .map_err(|e| {
-                iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
-            })?;
-        Ok(response)
+        post(&self.0, url, request).await
     }
 }
 
-#[derive(Clone)]
-pub struct SyncHttp;
-
-impl gen::client::blocking::HttpClient for SyncHttp {
+impl gen::client::blocking::HttpClient for Http {
     fn post(
         &self,
         url: &str,
@@ -62,34 +72,59 @@ impl gen::client::blocking::HttpClient for SyncHttp {
         #[cfg(not(target_arch = "wasm32"))]
         {
             let response = ureq::post(url)
-                .send_json(&request)
+                .send_json(request)
                 .map_err(|e| {
-                    iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+                    iamgroot::jsonrpc::Error::new(
+                        32101,
+                        format!("request failed: {e:?}"),
+                    )
                 })?
                 .into_json()
                 .map_err(|e| {
-                    iamgroot::jsonrpc::Error::new(0, format!("LOL: {e:?}"))
+                    iamgroot::jsonrpc::Error::new(
+                        32102,
+                        format!("invalid response: {e:?}"),
+                    )
                 })?;
             Ok(response)
         }
 
         #[cfg(target_arch = "wasm32")]
         {
-            unimplemented!(
-                "TODO: FIXME: use wasm-friendly blocking http client"
-            )
+            use tokio::sync::oneshot::channel;
+            let (tx, rx) = channel();
+
+            let client = self.0.clone();
+            let url = url.to_owned();
+            let request = request.clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                // TODO: FIXME: "Uncaught RuntimeError: unreachable executed"
+                web_sys::console::log_1(
+                    &format!("url: {url}, req: {request:?}").into(),
+                );
+                let ret = post(&client, &url, &request).await;
+                web_sys::console::log_1(&format!("ret: {ret:?}").into());
+                let _ = tx.send(ret);
+            });
+
+            rx.blocking_recv().map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32102,
+                    format!("invalid response: {e:?}"),
+                )
+            })?
         }
     }
 }
 
 pub struct Client {
-    starknet: StarknetClient<AsyncHttp>,
+    starknet: StarknetClient<Http>,
     ethereum: EthereumClient,
 }
 
 impl Client {
     pub async fn new(config: &Config) -> Result<Self> {
-        let http = AsyncHttp(reqwest::Client::new());
+        let http = Http(reqwest::Client::new());
         let starknet = StarknetClient::new(&config.starknet_rpc, http);
         let ethereum = EthereumClient::new(config).await?;
         Ok(Self { starknet, ethereum })
@@ -103,7 +138,7 @@ impl Client {
         self.ethereum.helios()
     }
 
-    pub fn starknet(&self) -> &StarknetClient<AsyncHttp> {
+    pub fn starknet(&self) -> &StarknetClient<Http> {
         &self.starknet
     }
 

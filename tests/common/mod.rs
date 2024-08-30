@@ -5,7 +5,7 @@ pub mod node;
 
 use std::sync::Arc;
 
-use beerus::client::{AsyncHttp, State};
+use beerus::client::{Http, State};
 use beerus::gen::Felt;
 use beerus::{
     gen::client::Client,
@@ -16,7 +16,7 @@ use tokio::sync::RwLock;
 
 #[allow(dead_code)] // used in macros
 pub struct Context {
-    pub client: Client<AsyncHttp>,
+    pub client: Client<Http>,
     pub server: Server,
 }
 
@@ -36,7 +36,7 @@ pub async fn ctx() -> Option<Context> {
     tracing::info!(port = server.port(), "test server is up");
 
     let url = format!("http://localhost:{}/rpc", server.port());
-    let client = Client::new(&url, AsyncHttp(reqwest::Client::new()));
+    let client = Client::new(&url, Http(reqwest::Client::new()));
     Some(Context { server, client })
 }
 
@@ -69,7 +69,7 @@ macro_rules! client {
             return Ok(());
         }
         if let Ok(url) = std::env::var("BEERUS_TEST_STARKNET_URL") {
-            Client::new(&url, beerus::client::SyncHttp)
+            Client::new(&url, beerus::client::Http(reqwest::Client::new()))
         } else {
             panic!("Invalid test setup");
         }

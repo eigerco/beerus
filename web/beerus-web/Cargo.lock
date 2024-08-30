@@ -498,6 +498,7 @@ dependencies = [
  "beerus",
  "ethers",
  "helios",
+ "reqwest 0.12.7",
  "serde",
  "serde_json",
  "wasm-bindgen",
