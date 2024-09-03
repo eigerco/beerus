@@ -288,7 +288,7 @@ impl gen::Rpc for Context {
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
         let client = gen::client::blocking::Client::new(
             &self.url,
-            Http(reqwest::Client::new()),
+            Http::new(),
         );
         let state = self.state.read().await.clone();
 
