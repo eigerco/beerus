@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use eyre::{Context, Result};
+use tokio::runtime::Handle;
 use tokio::sync::RwLock;
 
 use crate::eth::{EthereumClient, Helios};
@@ -45,6 +46,12 @@ async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
 #[derive(Clone)]
 pub struct Http(pub reqwest::Client);
 
+impl Http {
+    pub fn new() -> Self {
+        Self(reqwest::Client::new())
+    }
+}
+
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 impl gen::client::HttpClient for Http {
@@ -69,65 +76,9 @@ impl gen::client::blocking::HttpClient for Http {
         iamgroot::jsonrpc::Response,
         iamgroot::jsonrpc::Error,
     > {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let response = ureq::post(url)
-                .send_json(request)
-                .map_err(|e| {
-                    iamgroot::jsonrpc::Error::new(
-                        32101,
-                        format!("request failed: {e:?}"),
-                    )
-                })?
-                .into_json()
-                .map_err(|e| {
-                    iamgroot::jsonrpc::Error::new(
-                        32102,
-                        format!("invalid response: {e:?}"),
-                    )
-                })?;
-            Ok(response)
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            // TODO: FIXME: PROBLEM!
-            // non-async IO is natively impossible in JS/WASM,
-            // as JS/WASM runtime is single-threaded (browser),
-            // and has callback-based approach for everything!
-            unreachable!()
-            /*
-            use std::sync::Mutex;
-
-            let client = self.0.clone();
-            let url = url.to_owned();
-            let request = request.clone();
-
-            let ret = Arc::new(Mutex::new(None));
-            let arc = Arc::clone(&ret);
-            wasm_bindgen_futures::spawn_local(async move {
-                let mut guard = arc.lock().unwrap();
-                web_sys::console::log_1(&format!("(spawn) req: {request:?}").into());                
-                let ret = post(&client, &url, &request).await;
-                web_sys::console::log_1(&format!("(spawn) ret: {ret:?}").into());
-                *guard = Some(ret);
-            });
-
-            let mut guard = ret.lock().unwrap();
-            match guard.take() {
-                Some(ret) => {
-                    web_sys::console::log_1(&format!("call ret: {ret:?}").into());
-                    ret
-                }
-                None => {
-                    Err(iamgroot::jsonrpc::Error::new(
-                        32103,
-                        "internal error".to_owned(),
-                    ))        
-                }
-            }
-            */
-        }
+        Handle::current().block_on(async {    
+            post(&self.0, url, request).await
+        })
     }
 }
 
@@ -138,7 +89,7 @@ pub struct Client {
 
 impl Client {
     pub async fn new(config: &Config) -> Result<Self> {
-        let http = Http(reqwest::Client::new());
+        let http = Http::new();
         let starknet = StarknetClient::new(&config.starknet_rpc, http);
         let ethereum = EthereumClient::new(config).await?;
         Ok(Self { starknet, ethereum })
