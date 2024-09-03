@@ -3,7 +3,6 @@ cd web/beerus-web
 wasm-pack build --target web
 
 cd .. # go back to 'web'
-npm i ./beerus-web/pkg
 npx parcel build index.html
 http-server dist/
 
@@ -14,3 +13,4 @@ node proxy.js &
 ## Now open localhost:8080 in a browser
 ```
 
+cd beerus-web && wasm-pack build --target web && cd .. && npx parcel build index.html && http-server dist/

@@ -62,7 +62,7 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
         root: state.root.as_ref().to_owned(),
     };
 
-    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc, beerus::client::Http(reqwest::Client::new()));
+    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc, beerus::client::Http::new());
     web_sys::console::log_1(&"beerus: rpc client ready".into());
     let json = serde_json::json!({
         "calldata": [],
