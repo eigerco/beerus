@@ -6,7 +6,7 @@ use beerus::{
 
 mod common;
 
-use common::Error;
+use common::error::Error;
 
 #[test]
 fn test_call_deprecated_contract_class() -> Result<(), Error> {
