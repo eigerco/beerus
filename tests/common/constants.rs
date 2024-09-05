@@ -1,7 +1,8 @@
 use beerus::gen::{
-    Address, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV2Type,
-    BroadcastedDeclareTxnV2Version, ContractClass,
-    ContractClassEntryPointsByType, Felt, SierraEntryPoint,
+    Address, BroadcastedDeclareTxnV3, BroadcastedDeclareTxnV3Type,
+    BroadcastedDeclareTxnV3Version, ContractClass,
+    ContractClassEntryPointsByType, DaMode, Felt, ResourceBounds,
+    ResourceBoundsMapping, SierraEntryPoint, U128, U64,
 };
 
 #[allow(dead_code)]
@@ -11,8 +12,9 @@ pub const COMPILED_ACCOUNT_CONTRACT: &str =
 pub const DECLARE_ACCOUNT: &str = include_str!("../clob/declare_account.txt");
 
 #[allow(dead_code)]
-pub fn declare_transaction_v2() -> BroadcastedDeclareTxnV2 {
-    BroadcastedDeclareTxnV2 {
+pub fn dummy_transaction_v3() -> BroadcastedDeclareTxnV3 {
+    BroadcastedDeclareTxnV3 {
+        account_deployment_data: vec![Felt::try_new("0x0").unwrap()],
         compiled_class_hash: Felt::try_new("0x0").unwrap(),
         contract_class: ContractClass {
             sierra_program: vec![Felt::try_new("0x1").unwrap()],
@@ -36,11 +38,25 @@ pub fn declare_transaction_v2() -> BroadcastedDeclareTxnV2 {
             },
             abi: Some("some_abi".to_string()),
         },
-        max_fee: Felt::try_new("0x0").unwrap(),
+        fee_data_availability_mode: DaMode::L1,
         nonce: Felt::try_new("0x0").unwrap(),
-        r#type: BroadcastedDeclareTxnV2Type::Declare,
+        r#type: BroadcastedDeclareTxnV3Type::Declare,
         signature: vec![Felt::try_new("0x5").unwrap()],
         sender_address: Address(Felt::try_new("0x6").unwrap()),
-        version: BroadcastedDeclareTxnV2Version::V0x2,
+        version:
+            BroadcastedDeclareTxnV3Version::V0x100000000000000000000000000000003,
+        nonce_data_availability_mode: DaMode::L1,
+        paymaster_data: vec![Felt::try_new("0x7").unwrap()],
+        resource_bounds: ResourceBoundsMapping {
+            l1_gas: ResourceBounds {
+                max_amount: U64::try_new("0x0").unwrap(),
+                max_price_per_unit: U128::try_new("0x0").unwrap(),
+            },
+            l2_gas: ResourceBounds {
+                max_amount: U64::try_new("0x0").unwrap(),
+                max_price_per_unit: U128::try_new("0x0").unwrap(),
+            },
+        },
+        tip: U64::try_new("0x0").unwrap(),
     }
 }

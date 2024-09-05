@@ -1,11 +1,13 @@
 use std::{thread, time};
 
 use beerus::gen::{
-    client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn, BroadcastedTxn, Felt, Rpc,
-    SimulationFlagForEstimateFee,
+    client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
+    BroadcastedTxn, Felt, Rpc, SimulationFlagForEstimateFee,
 };
 use common::{
-    constants::{COMPILED_ACCOUNT_CONTRACT, DECLARE_ACCOUNT, declare_transaction_v2},
+    constants::{
+        dummy_transaction_v3, COMPILED_ACCOUNT_CONTRACT, DECLARE_ACCOUNT,
+    },
     katana::Katana,
     matchers::StarknetMatcher::{
         AddDeclareTransaction, AddDeclareTransactionMalicious, ChainId,
@@ -137,7 +139,7 @@ async fn get_class_success() {
 
 #[tokio::test]
 async fn spec_version_estimate_fee() {
-    let declare_transaction = declare_transaction_v2();
+    let declare_transaction = dummy_transaction_v3();
     let (client, _starknet_node) =
         setup_client_with_mock_starknet_node(vec![SpecVersion, EstimateFee])
             .await;
@@ -145,7 +147,7 @@ async fn spec_version_estimate_fee() {
     let res = client
         .estimateFee(
             vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
                     declare_transaction,
                 ),
             )],
@@ -158,11 +160,11 @@ async fn spec_version_estimate_fee() {
 
 #[tokio::test]
 async fn add_declare_transaction() {
-    let declare_transaction = declare_transaction_v2();
+    let declare_transaction = dummy_transaction_v3();
     let (client, _starknet_node) =
         setup_client_with_mock_starknet_node(vec![AddDeclareTransaction]).await;
     assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
             declare_transaction
         ))
         .await
@@ -184,7 +186,7 @@ async fn declare_account_mock() {
     let block_id = BlockId::BlockTag(BlockTag::Latest);
     let class_hash = Felt::try_new("0x0").unwrap();
     let contract_address = Address(class_hash.clone());
-    let declare_transaction = declare_transaction_v2();
+    let declare_transaction = dummy_transaction_v3();
 
     assert!(client.chainId().await.is_ok());
     assert!(client.getClass(block_id.clone(), class_hash).await.is_err());
@@ -194,7 +196,7 @@ async fn declare_account_mock() {
     assert!(client
         .estimateFee(
             vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
                     declare_transaction.clone(),
                 ),
             )],
@@ -204,7 +206,7 @@ async fn declare_account_mock() {
         .await
         .is_ok());
     assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
             declare_transaction
         ))
         .await
@@ -225,10 +227,10 @@ async fn malicious_data_results_in_err() {
     let block_id = BlockId::BlockTag(BlockTag::Latest);
     let class_hash = Felt::try_new("0x0").unwrap();
     let contract_address = Address(class_hash.clone());
-    let declare_transaction = declare_transaction_v2();
+    let declare_transaction = dummy_transaction_v3();
 
     assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
             declare_transaction.clone()
         ))
         .await
@@ -237,7 +239,7 @@ async fn malicious_data_results_in_err() {
     assert!(client
         .estimateFee(
             vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV2(
+                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
                     declare_transaction.clone(),
                 ),
             )],
