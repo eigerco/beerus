@@ -19,7 +19,7 @@ use common::{
 mod common;
 
 #[tokio::test]
-async fn declare_account() {
+async fn declare_account_katana() {
     let url = "http://127.0.0.1:5050";
     let katana = Katana::init(url).await.unwrap();
     let client = Client::new(url);
@@ -170,7 +170,7 @@ async fn add_declare_transaction() {
 }
 
 #[tokio::test]
-async fn starkli_declare_workflow() {
+async fn declare_account_mock() {
     let (client, _starknet_node) = setup_client_with_mock_starknet_node(vec![
         ChainId,
         ClassError,
