@@ -40,7 +40,7 @@ async fn main() -> eyre::Result<()> {
                         tracing::info!(?state, "updated");
                     }
                     Err(e) => {
-                        tracing::error!(error=?e, "state update failed");
+                        tracing::error!(error=%e, "state update failed");
                     }
                 }
             }
