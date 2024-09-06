@@ -7,6 +7,8 @@ use wiremock::{Match, Request};
 pub enum StarknetMatcher {
     AddDeclareTransaction,
     AddDeclareTransactionMalicious,
+    AddDeployAccountTransaction,
+    AddInvokeTransaction,
     ChainId,
     ChainIdMalicious,
     ClassError,
@@ -14,6 +16,7 @@ pub enum StarknetMatcher {
     ClassMalicious,
     EstimateFee,
     EstimateFeeMalicious,
+    GetTransactionReceipt,
     Nonce,
     NonceMalicious,
     SpecVersion,
@@ -315,6 +318,140 @@ impl Match for AddDeclareTransactionMatcher {
 }
 
 impl Response for AddDeclareTransactionMatcher {
+    fn response(&self) -> Value {
+        self.response.clone()
+    }
+}
+
+pub struct AddInvokeTransactionMatcher {
+    pub response: Value,
+}
+
+impl Default for AddInvokeTransactionMatcher {
+    fn default() -> Self {
+        Self {
+            response: serde_json::json!(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "transaction_hash": "0x0",
+                }
+            }),
+        }
+    }
+}
+
+impl Match for AddInvokeTransactionMatcher {
+    fn matches(&self, request: &Request) -> bool {
+        let request = request.body_json::<jsonrpc::Request>().unwrap();
+        matches!(request.method.as_str(), "starknet_addInvokeTransaction")
+    }
+}
+
+impl Response for AddInvokeTransactionMatcher {
+    fn response(&self) -> Value {
+        self.response.clone()
+    }
+}
+
+pub struct AddDeployAccountTransactionMatcher {
+    pub response: Value,
+}
+
+impl Default for AddDeployAccountTransactionMatcher {
+    fn default() -> Self {
+        Self {
+            response: serde_json::json!(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "contract_address": "0x0",
+                    "transaction_hash": "0x0",
+                }
+            }),
+        }
+    }
+}
+
+impl Match for AddDeployAccountTransactionMatcher {
+    fn matches(&self, request: &Request) -> bool {
+        let request = request.body_json::<jsonrpc::Request>().unwrap();
+        matches!(
+            request.method.as_str(),
+            "starknet_addDeployAccountTransaction"
+        )
+    }
+}
+
+impl Response for AddDeployAccountTransactionMatcher {
+    fn response(&self) -> Value {
+        self.response.clone()
+    }
+}
+
+pub struct GetTransactionReceiptMatcher {
+    pub response: Value,
+}
+
+impl Default for GetTransactionReceiptMatcher {
+    fn default() -> Self {
+        Self {
+            response: serde_json::json!(
+            {
+                "jsonrpc":"2.0",
+                "result": {
+                    "transaction_hash":"0x1",
+                    "actual_fee": {
+                        "amount":"0x2",
+                        "unit":"WEI"
+                    },
+                    "finality_status":"ACCEPTED_ON_L2",
+                    "messages_sent":[],
+                    "events":[{
+                        "from_address":"0x3",
+                        "keys":[
+                            "0x4"
+                        ],
+                        "data":[
+                            "0x5",
+                            "0x6",
+                            "0x7",
+                            "0x8"
+                        ]
+                    }],
+                    "execution_resources": {
+                        "steps": 1,
+                        "memory_holes": 2,
+                        "range_check_builtin_applications": 3,
+                        "pedersen_builtin_applications": 4,
+                        "ec_op_builtin_applications": 5,
+                        "data_availability": {
+                            "l1_gas": 6,
+                            "l1_data_gas": 7
+                        }
+                    },
+                    "execution_status":"SUCCEEDED",
+                    "type":"DEPLOY_ACCOUNT",
+                    "contract_address":"0x9",
+                    "block_hash":"0x10",
+                    "block_number":8
+                },
+                "id":1
+            }),
+        }
+    }
+}
+
+impl Match for GetTransactionReceiptMatcher {
+    fn matches(&self, request: &Request) -> bool {
+        let request = request.body_json::<jsonrpc::Request>().unwrap();
+        matches!(request.method.as_str(), "starknet_getTransactionReceipt")
+    }
+}
+
+impl Response for GetTransactionReceiptMatcher {
     fn response(&self) -> Value {
         self.response.clone()
     }
