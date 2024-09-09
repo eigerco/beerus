@@ -622,7 +622,7 @@ dependencies = [
  "katana-core",
  "katana-executor",
  "katana-node",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.11",
  "katana-rpc",
  "katana-rpc-api",
  "once_cell",
@@ -793,7 +793,7 @@ dependencies = [
 [[package]]
 name = "blockifier"
 version = "0.8.0-dev.2"
-source = "git+https://github.com/dojoengine/blockifier?branch=cairo-2.7-newer#08ac6f38519f1ca87684665d084a7a62448009cc"
+source = "git+https://github.com/dojoengine/blockifier?branch=cairo-2.7-newer#835c026db06e989fad9235bc95615b6606356952"
 dependencies = [
  "anyhow",
  "ark-ec",
@@ -4203,6 +4203,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "katana-cairo"
+version = "1.0.0-alpha.11"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.11#fbff45b249e2b931f5007edf2d526beef7dc553f"
+dependencies = [
+ "cairo-lang-casm",
+ "cairo-lang-runner",
+ "cairo-lang-sierra",
+ "cairo-lang-sierra-to-casm",
+ "cairo-lang-starknet",
+ "cairo-lang-starknet-classes",
+ "cairo-lang-utils",
+ "cairo-vm",
+ "starknet_api",
+]
+
+[[package]]
 name = "katana-core"
 version = "1.0.0-alpha.9"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a59d75c5b08e87a81de12cfdc27a55"
@@ -4215,7 +4231,7 @@ dependencies = [
  "katana-db",
  "katana-executor",
  "katana-pool",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "katana-tasks",
  "lazy_static",
@@ -4236,7 +4252,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "anyhow",
  "dojo-metrics",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "metrics",
  "page_size",
  "parking_lot 0.12.3",
@@ -4256,8 +4272,8 @@ version = "1.0.0-alpha.9"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a59d75c5b08e87a81de12cfdc27a55"
 dependencies = [
  "blockifier 0.8.0-dev.2",
- "katana-cairo",
- "katana-primitives",
+ "katana-cairo 1.0.0-alpha.9",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "parking_lot 0.12.3",
  "starknet",
@@ -4278,7 +4294,7 @@ dependencies = [
  "katana-db",
  "katana-executor",
  "katana-pool",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "katana-rpc",
  "katana-rpc-api",
@@ -4298,7 +4314,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "futures",
  "katana-executor",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "parking_lot 0.12.3",
  "thiserror",
@@ -4315,7 +4331,28 @@ dependencies = [
  "base64 0.21.7",
  "derive_more",
  "flate2",
- "katana-cairo",
+ "katana-cairo 1.0.0-alpha.9",
+ "lazy_static",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "starknet",
+ "starknet-crypto 0.7.1",
+ "strum_macros 0.25.3",
+ "thiserror",
+]
+
+[[package]]
+name = "katana-primitives"
+version = "1.0.0-alpha.11"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.11#fbff45b249e2b931f5007edf2d526beef7dc553f"
+dependencies = [
+ "alloy-primitives 0.7.7",
+ "anyhow",
+ "base64 0.21.7",
+ "derive_more",
+ "katana-cairo 1.0.0-alpha.11",
  "lazy_static",
  "rand 0.8.5",
  "serde",
@@ -4336,7 +4373,7 @@ dependencies = [
  "auto_impl",
  "futures",
  "katana-db",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "parking_lot 0.12.3",
  "starknet",
  "thiserror",
@@ -4356,7 +4393,7 @@ dependencies = [
  "katana-core",
  "katana-executor",
  "katana-pool",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "katana-rpc-api",
  "katana-rpc-types",
@@ -4374,7 +4411,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "jsonrpsee 0.16.3",
  "katana-core",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-rpc-types",
  "starknet",
 ]
@@ -4389,11 +4426,11 @@ dependencies = [
  "derive_more",
  "futures",
  "jsonrpsee 0.16.3",
- "katana-cairo",
+ "katana-cairo 1.0.0-alpha.9",
  "katana-core",
  "katana-executor",
  "katana-pool",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "num-traits 0.2.19",
  "serde",
@@ -4410,7 +4447,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "anyhow",
  "katana-executor",
- "katana-primitives",
+ "katana-primitives 1.0.0-alpha.9",
  "katana-provider",
  "katana-rpc-types",
  "starknet",
