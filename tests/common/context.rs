@@ -21,8 +21,14 @@ pub async fn ctx() -> Option<Context> {
     // https://starkscan.co/block/652076
     let state = State {
         block_number: 652076,
-        block_hash: Felt::try_new("0x189fbe3beb92b93c74f3cdeeca9445ce0c889242ca8eb0be4eeaaa42a3b215a").unwrap(),
-        root: Felt::try_new("0x73be19f53a5f6daed7ac4f5111d75ed28f3b6ebbc51f058d3df3b47e51ffab9").unwrap(),
+        block_hash: Felt::try_new(
+            "0x189fbe3beb92b93c74f3cdeeca9445ce0c889242ca8eb0be4eeaaa42a3b215a",
+        )
+        .unwrap(),
+        root: Felt::try_new(
+            "0x73be19f53a5f6daed7ac4f5111d75ed28f3b6ebbc51f058d3df3b47e51ffab9",
+        )
+        .unwrap(),
     };
     let state = Arc::new(RwLock::new(state));
     let server = serve(&url, "127.0.0.1:0", state.clone()).await.ok()?;
