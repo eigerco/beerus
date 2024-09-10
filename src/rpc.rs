@@ -135,13 +135,6 @@ impl Context {
         })
     }
 
-    async fn get_latest_state(
-        &self,
-    ) -> std::result::Result<ClientState, jsonrpc::Error> {
-        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
-        self.get_state(block_id).await
-    }
-
     async fn resolve_block_id(
         &self,
         block_id: BlockId,
@@ -291,14 +284,16 @@ impl gen::Rpc for Context {
     async fn call(
         &self,
         request: FunctionCall,
-        _block_id: BlockId,
+        block_id: BlockId,
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
         let client = gen::client::blocking::Client::new(&self.url);
+        let state = self.state.read().await.clone();
 
         // TODO: address that effectively only the 'latest' block is supported
-        let state_root = self.get_latest_state().await?.root;
+        tracing::warn!(requested_block=?block_id, current_state=?state, "call");
+
         let call_info = tokio::task::spawn_blocking(move || {
-            crate::exe::call(&client, request, state_root)
+            crate::exe::call(&client, request, state)
         })
         .await
         .map_err(|e| {

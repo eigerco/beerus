@@ -37,7 +37,10 @@ use starknet_api::{
 };
 use starknet_types_core::felt::Felt as StarkFelt;
 
-use crate::gen::{self, blocking::Rpc};
+use crate::{
+    client::State,
+    gen::{self, blocking::Rpc},
+};
 
 pub mod err;
 pub mod map;
@@ -47,7 +50,7 @@ use err::Error;
 pub fn call(
     client: &gen::client::blocking::Client,
     function_call: gen::FunctionCall,
-    state_root: gen::Felt,
+    state: State,
 ) -> Result<CallInfo, Error> {
     let gen::FunctionCall { calldata, contract_address, entry_point_selector } =
         function_call;
@@ -136,7 +139,7 @@ pub fn call(
         address_to_class_hash: Default::default(),
         class_hash_to_compiled_class_hash: Default::default(),
     };
-    let mut proxy = StateProxy { client: client.to_owned(), diff, state_root };
+    let mut proxy = StateProxy { client: client.to_owned(), diff, state };
 
     let call_info =
         call_entry_point.execute(&mut proxy, &mut resources, &mut context)?;
@@ -148,7 +151,7 @@ pub fn call(
 struct StateProxy {
     client: gen::client::blocking::Client,
     diff: CommitmentStateDiff,
-    state_root: gen::Felt,
+    state: State,
 }
 
 impl StateReader for StateProxy {
@@ -165,7 +168,9 @@ impl StateReader for StateProxy {
         let key = gen::StorageKey::try_new(&key.0.to_string())
             .map_err(Into::<Error>::into)?;
 
-        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+        let block_id = gen::BlockId::BlockHash {
+            block_hash: gen::BlockHash(self.state.block_hash.clone()),
+        };
 
         let ret = self
             .client
@@ -178,25 +183,25 @@ impl StateReader for StateProxy {
 
         let proof = self
             .client
-            .getProof(
-                block_id.clone(),
-                contract_address.clone(),
-                vec![key.clone()],
-            )
+            .getProof(block_id, contract_address.clone(), vec![key.clone()])
             .map_err(Into::<Error>::into)?;
         tracing::info!(?proof, "get_storage_at: proof received");
 
         // TODO: find more elegant way for this
         // workaround to skip proof validation for testing
         #[cfg(feature = "skip-zero-root-validation")]
-        if self.state_root.as_ref() == "0x0" {
+        if self.state.root.as_ref() == "0x0" {
             return Ok(ret.try_into()?);
         }
 
-        let global_root = self.state_root.clone();
+        let global_root = self.state.root.clone();
         let value = ret.clone();
         proof.verify(global_root, contract_address, key, value).map_err(
-            |_| StateError::StateReadError("Invalid merkle proof".to_owned()),
+            |e| {
+                StateError::StateReadError(format!(
+                    "Failed to verify merkle proof: {e:?}"
+                ))
+            },
         )?;
         tracing::info!("get_storage_at: proof verified");
 

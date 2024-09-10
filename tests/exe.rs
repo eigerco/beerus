@@ -33,8 +33,9 @@ fn test_call_deprecated_contract_class() -> Result<(), Error> {
     });
     let function_call: FunctionCall = serde_json::from_value(json)?;
 
-    let state_root = Felt::try_new("0x0")?;
-    let call_info = call(&client, function_call, state_root)?;
+    let mut state = get_latest_state(&client);
+    state.root = Felt::try_new("0x0")?; // disable merkle proof validation
+    let call_info = call(&client, function_call, state)?;
 
     assert!(call_info.execution.retdata.0.is_empty());
 
@@ -52,8 +53,8 @@ fn test_call_regular_contract_class() -> Result<(), Error> {
     });
     let function_call: FunctionCall = serde_json::from_value(json)?;
 
-    let state_root = get_latest_state(&client).root;
-    let call_info = call(&client, function_call, state_root)?;
+    let state = get_latest_state(&client);
+    let call_info = call(&client, function_call, state)?;
 
     assert_eq!(call_info.execution.retdata.0.len(), 1);
     assert_eq!(
