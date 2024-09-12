@@ -1,7 +1,7 @@
 use beerus::{
     client::State,
     exe::call,
-    gen::{self, blocking::Rpc, client::blocking::Client, Felt, FunctionCall},
+    gen::{self, blocking::Rpc, client::blocking::Client, FunctionCall},
 };
 
 mod common;
@@ -33,8 +33,7 @@ fn test_call_deprecated_contract_class() -> Result<(), Error> {
     });
     let function_call: FunctionCall = serde_json::from_value(json)?;
 
-    let mut state = get_latest_state(&client);
-    state.root = Felt::try_new("0x0")?; // disable merkle proof validation
+    let state = get_latest_state(&client);
     let call_info = call(&client, function_call, state)?;
 
     assert!(call_info.execution.retdata.0.is_empty());
