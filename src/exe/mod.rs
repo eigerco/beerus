@@ -172,19 +172,18 @@ impl StateReader for StateProxy {
                 block_id.clone(),
             )
             .map_err(Into::<Error>::into)?;
+        tracing::info!(?contract_address, ?key, value=?ret, "get_storage_at");
+
+        if ret.as_ref() == "0x0" {
+            tracing::info!("get_storage_at: skipping proof for zero value");
+            return Ok(ret.try_into()?);
+        }
 
         let proof = self
             .client
             .getProof(block_id, contract_address.clone(), vec![key.clone()])
             .map_err(Into::<Error>::into)?;
-        tracing::info!(?proof, "get_storage_at: proof received");
-
-        // TODO: find more elegant way for this
-        // workaround to skip proof validation for testing
-        #[cfg(feature = "skip-zero-root-validation")]
-        if self.state.root.as_ref() == "0x0" {
-            return Ok(ret.try_into()?);
-        }
+        tracing::info!("get_storage_at: proof received");
 
         let global_root = self.state.root.clone();
         let value = ret.clone();
