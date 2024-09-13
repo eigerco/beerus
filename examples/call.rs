@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use beerus::client::{Client, Http};
 use beerus::config::Config;
 use beerus::gen::{Address, Felt, FunctionCall};
@@ -13,14 +11,13 @@ async fn main() -> Result<()> {
         .context("ALCHEMY_API_KEY is missing")?;
 
     let config = Config {
-        network: helios::config::networks::Network::MAINNET,
-        eth_execution_rpc: format!(
+        ethereum_rpc: format!(
             "https://eth-mainnet.g.alchemy.com/v2/{api_key}"
         ),
         starknet_rpc: format!(
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{api_key}"
         ),
-        data_dir: PathBuf::from("tmp"),
+        data_dir: "tmp".to_owned(),
     };
 
     let http = Http::new();

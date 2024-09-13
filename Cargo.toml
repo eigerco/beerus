@@ -39,7 +39,6 @@ bitvec = "1.0.1"
 validator = { version = "0.18.1", features = ["derive"] }
 url = "2.5.1"
 toml = "0.8.19"
-clap = { version = "4.5.17", features = ["derive"] }
 
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

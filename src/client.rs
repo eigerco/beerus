@@ -1,6 +1,6 @@
 use eyre::{Context, Result};
 
-use crate::config::Config;
+use crate::config::{check_chain_id, Config};
 use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
 use crate::gen::{gen, Felt, FunctionCall, Rpc};
@@ -111,7 +111,9 @@ impl<
 {
     pub async fn new(config: &Config, http: T) -> Result<Self> {
         let starknet = StarknetClient::new(&config.starknet_rpc, http.clone());
-        let ethereum = EthereumClient::new(config).await?;
+        let network =
+            check_chain_id(&config.ethereum_rpc, &config.starknet_rpc).await?;
+        let ethereum = EthereumClient::new(config, network).await?;
         Ok(Self { starknet, ethereum, http })
     }
 
