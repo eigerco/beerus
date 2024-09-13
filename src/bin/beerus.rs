@@ -58,7 +58,7 @@ async fn get_config() -> eyre::Result<ServerConfig> {
     let config = if let Some(path) = path {
         ServerConfig::from_file(&path)?
     } else {
-        ServerConfig::from_env()
+        ServerConfig::from_env()?
     };
     config.validate()?;
     check_data_dir(&config.client.data_dir)?;
