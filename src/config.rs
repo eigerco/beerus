@@ -17,6 +17,9 @@ const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
 const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
 
+#[cfg(feature = "testing")]
+const KATANA_STARKNET_CHAINID: &str = "0x4b4154414e41";
+
 #[derive(Clone, Deserialize, Debug, Validate)]
 pub struct ServerConfig {
     #[serde(flatten)]
@@ -102,7 +105,18 @@ pub async fn check_chain_id(
         return Ok(Network::SEPOLIA);
     }
 
-    // TODO: add explicit support for Katana chain behind 'testing' feature flag
+    #[cfg(feature = "testing")]
+    if starknet_chain_id == KATANA_STARKNET_CHAINID {
+        return match ethereum_chain_id.as_str() {
+            MAINNET_ETHEREUM_CHAINID => Ok(Network::MAINNET),
+            SEPOLIA_ETHEREUM_CHAINID => Ok(Network::SEPOLIA),
+            _ => {
+                eyre::bail!(
+                    "Unexpected Ethereum chain_id: {ethereum_chain_id}"
+                );
+            }
+        };
+    }
 
     eyre::bail!("chain_id mismatch: ethereum={ethereum_chain_id}, starknet={starknet_chain_id}")
 }

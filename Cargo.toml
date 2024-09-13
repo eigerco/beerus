@@ -9,6 +9,7 @@ license = "MIT"
 [features]
 default = ["rpc"]
 rpc = ["dep:axum"]
+testing = []
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
