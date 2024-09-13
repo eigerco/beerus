@@ -4,8 +4,6 @@ use beerus::{client::Http, config::{check_data_dir, ServerConfig}};
 use tokio::sync::RwLock;
 use validator::Validate;
 
-const RPC_SPEC_VERSION: &str = "0.7.1";
-
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
@@ -15,11 +13,6 @@ async fn main() -> eyre::Result<()> {
 
     let http = Http::new();
     let beerus = beerus::client::Client::new(&config.client, http).await?;
-
-    let rpc_spec_version = beerus.spec_version().await?;
-    if rpc_spec_version != RPC_SPEC_VERSION {
-        eyre::bail!("RPC spec version mismatch: expected {RPC_SPEC_VERSION} but got {rpc_spec_version}");
-    }
 
     let state = beerus.get_state().await?;
     tracing::info!(?state, "initialized");
