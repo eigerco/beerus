@@ -5,6 +5,8 @@ use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
 use crate::gen::{gen, Felt, FunctionCall, Rpc};
 
+const RPC_SPEC_VERSION: &str = "0.7.1";
+
 #[derive(Debug, Clone)]
 pub struct State {
     pub block_number: u64,
@@ -111,6 +113,10 @@ impl<
 {
     pub async fn new(config: &Config, http: T) -> Result<Self> {
         let starknet = StarknetClient::new(&config.starknet_rpc, http.clone());
+        let rpc_spec_version = starknet.specVersion().await?;
+        if rpc_spec_version != RPC_SPEC_VERSION {
+            eyre::bail!("RPC spec version mismatch: expected {RPC_SPEC_VERSION} but got {rpc_spec_version}");
+        }
         let network =
             check_chain_id(&config.ethereum_rpc, &config.starknet_rpc).await?;
         let ethereum = EthereumClient::new(config, network).await?;
@@ -156,11 +162,6 @@ impl<
             block_hash: as_felt(block_hash.as_bytes())?,
             root: as_felt(state_root.as_bytes())?,
         })
-    }
-
-    pub async fn spec_version(&self) -> Result<String> {
-        let version = self.starknet.specVersion().await?;
-        Ok(version)
     }
 }
 

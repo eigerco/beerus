@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
             "https://eth-mainnet.g.alchemy.com/v2/{api_key}"
         ),
         starknet_rpc: format!(
-            "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{api_key}"
+            "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{api_key}"
         ),
         data_dir: "tmp".to_owned(),
     };
