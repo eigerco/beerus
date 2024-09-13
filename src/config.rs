@@ -1,7 +1,6 @@
 use std::fs;
 use std::net::SocketAddr;
 use std::path::Path;
-use std::str::FromStr;
 
 use eyre::{eyre, Context, Result};
 
@@ -52,22 +51,29 @@ fn default_rpc_addr() -> SocketAddr {
 }
 
 impl ServerConfig {
-    pub fn from_env() -> Self {
-        Self {
+    pub fn from_env() -> Result<Self> {
+        let poll_secs = if let Ok(poll_secs) = std::env::var("POLL_SECS") {
+            poll_secs.parse()?
+        } else {
+            DEFAULT_POLL_SECS
+        };
+        let rpc_addr = if let Ok(rpc_addr) = std::env::var("RPC_ADDR") {
+            rpc_addr.parse()?
+        } else {
+            default_rpc_addr()
+        };
+        Ok(Self {
             client: Config {
-                ethereum_rpc: std::env::var("ETHEREUM_RPC").unwrap_or_default(),
-                starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
-                data_dir: std::env::var("DATA_DIR").unwrap_or_default(),
+                ethereum_rpc: std::env::var("ETHEREUM_RPC")
+                    .context("ETHEREUM_RPC env var missing")?,
+                starknet_rpc: std::env::var("STARKNET_RPC")
+                    .context("STARKNET_RPC env var missing")?,
+                data_dir: std::env::var("DATA_DIR")
+                    .unwrap_or_else(|_| default_data_dir()),
             },
-            poll_secs: u64::from_str(
-                &std::env::var("POLL_SECS").unwrap_or_default(),
-            )
-            .unwrap_or(DEFAULT_POLL_SECS),
-            rpc_addr: std::env::var("RPC_ADDR")
-                .ok()
-                .and_then(|rpc_addr| rpc_addr.parse::<SocketAddr>().ok())
-                .unwrap_or_else(default_rpc_addr),
-        }
+            poll_secs,
+            rpc_addr,
+        })
     }
 
     pub fn from_file(path: &str) -> Result<Self> {
