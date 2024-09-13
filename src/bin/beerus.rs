@@ -8,15 +8,13 @@ use validator::Validate;
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let path = std::env::args().nth(1);
-    let config = get_config(path).await?;
+    let config = get_config().await?;
 
     let http = Http::new();
     let beerus = beerus::client::Client::new(&config.client, http).await?;
 
     let state = beerus.get_state().await?;
     tracing::info!(?state, "initialized");
-
     let state = Arc::new(RwLock::new(state));
 
     {
@@ -24,13 +22,16 @@ async fn main() -> eyre::Result<()> {
         let period = Duration::from_secs(config.poll_secs);
         tokio::spawn(async move {
             let mut tick = tokio::time::interval(period);
+            let mut current = state.read().await.clone();
             loop {
                 tick.tick().await;
                 match beerus.get_state().await {
-                    Ok(update) => {
-                        *state.write().await = update;
-                        tracing::info!(?state, "updated");
+                    Ok(update) if update != current => {
+                        *state.write().await = update.clone();
+                        current = update;
+                        tracing::info!(state=?current, "updated");
                     }
+                    Ok(_) => (),
                     Err(e) => {
                         tracing::error!(error=%e, "state update failed");
                     }
@@ -52,7 +53,8 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-async fn get_config(path: Option<String>) -> eyre::Result<ServerConfig> {
+async fn get_config() -> eyre::Result<ServerConfig> {
+    let path = std::env::args().nth(1);
     let config = if let Some(path) = path {
         ServerConfig::from_file(&path)?
     } else {

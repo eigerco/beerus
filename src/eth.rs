@@ -104,7 +104,7 @@ impl EthereumClient {
         let root: H256 =
             self.call(&data, tag).await.context("helios: state root")?;
 
-        tracing::info!(block_number, ?block_hash, ?root, "starknet state");
+        tracing::debug!(block_number, ?block_hash, ?root, "starknet state");
 
         Ok((block_number, block_hash, root))
     }
