@@ -41,6 +41,14 @@ async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
     Ok(response)
 }
 
+impl PartialEq<State> for State {
+    fn eq(&self, other: &State) -> bool {
+        self.block_number == other.block_number
+            && self.root.as_ref() == other.root.as_ref()
+            && self.block_hash.as_ref() == other.block_hash.as_ref()
+    }
+}
+
 #[derive(Clone)]
 pub struct Http(pub reqwest::Client);
 
