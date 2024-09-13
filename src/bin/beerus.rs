@@ -1,10 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use beerus::{
-    client::Http,
-    config::{check_data_dir, ServerConfig},
-};
-use clap::Parser;
+use beerus::{client::Http, config::{check_data_dir, ServerConfig}};
 use tokio::sync::RwLock;
 use validator::Validate;
 
@@ -14,8 +10,8 @@ const RPC_SPEC_VERSION: &str = "0.7.1";
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let args = Args::parse();
-    let config = get_config(&args).await?;
+    let path = std::env::args().nth(1);
+    let config = get_config(path).await?;
 
     let http = Http::new();
     let beerus = beerus::client::Client::new(&config.client, http).await?;
@@ -63,27 +59,13 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-#[derive(Parser, Debug)]
-#[command(version)]
-struct Args {
-    #[clap(short = 'c', long)]
-    config: Option<String>,
-    #[clap(short, long, default_value_t = false)]
-    skip_chain_id_validation: bool,
-}
-
-async fn get_config(args: &Args) -> eyre::Result<ServerConfig> {
-    let config = if let Some(path) = args.config.as_ref() {
-        ServerConfig::from_file(path)?
+async fn get_config(path: Option<String>) -> eyre::Result<ServerConfig> {
+    let config = if let Some(path) = path {
+        ServerConfig::from_file(&path)?
     } else {
         ServerConfig::from_env()
     };
     config.validate()?;
-    if args.skip_chain_id_validation {
-        tracing::warn!("Skipping chain id validation");
-    } else {
-        config.validate_chain_id().await?;
-    }
     check_data_dir(&config.client.data_dir)?;
     Ok(config)
 }

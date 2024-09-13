@@ -55,23 +55,22 @@ The successful result should look similar to the one below:
 
 | field   | example | description |
 | ----------- | ----------- | ----------- |
-| network | MAINNET or SEPOLIA| network to query |
-| eth_execution_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
+| ethereum_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
 | starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}| untrusted l2 node provider url |
 | data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state, min = 1 and max = 3600 |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 
-When you select a network, check that `eth_execution_rpc` and `starknet_rpc` urls also point to their corresponding networks. For example:
+When you select a network, check that `ethereum_rpc` and `starknet_rpc` urls also point to their corresponding networks. For example:
 
 MAINNET
 ```
-eth_execution_rpc = "https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}"
+ethereum_rpc = "https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}"
 starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
 ```
 SEPOLIA
 ```
-eth_execution_rpc = "https://eth-sepolia.g.alchemy.com/v2/{YOUR_API_KEY}"
+ethereum_rpc = "https://eth-sepolia.g.alchemy.com/v2/{YOUR_API_KEY}"
 starknet_rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
 ```
 
@@ -159,7 +158,7 @@ docker build . -t beerus
 ```
 
 ```bash
-docker run -e NETWORK=<arg> -e ETH_EXECUTION_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
+docker run -e ETHEREUM_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
 ```
 
 #### Examples

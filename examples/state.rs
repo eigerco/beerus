@@ -1,5 +1,3 @@
-use std::{env, path::PathBuf};
-
 use beerus::client::{Client, Http};
 use beerus::config::Config;
 use eyre::{Context, Result};
@@ -8,18 +6,17 @@ use eyre::{Context, Result};
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
-    let api_key =
-        env::var("ALCHEMY_API_KEY").context("ALCHEMY_API_KEY is missing")?;
+    let api_key = std::env::var("ALCHEMY_API_KEY")
+        .context("ALCHEMY_API_KEY is missing")?;
 
     let config = Config {
-        network: helios::config::networks::Network::MAINNET,
-        eth_execution_rpc: format!(
+        ethereum_rpc: format!(
             "https://eth-mainnet.g.alchemy.com/v2/{api_key}"
         ),
         starknet_rpc: format!(
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{api_key}"
         ),
-        data_dir: PathBuf::from("tmp"),
+        data_dir: "tmp".to_owned(),
     };
 
     let http = Http::new();

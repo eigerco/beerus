@@ -51,8 +51,9 @@ pub struct EthereumClient {
 }
 
 impl EthereumClient {
-    pub async fn new(config: &Config) -> Result<Self> {
-        let mut helios = get_client(config).await?;
+    pub async fn new(config: &Config, network: Network) -> Result<Self> {
+        let mut helios =
+            get_client(&config.ethereum_rpc, network, &config.data_dir).await?;
         helios.start().await.context("helios start")?;
         while let SyncingStatus::IsSyncing(sync) =
             helios.syncing().await.context("helios sync")?
@@ -63,8 +64,8 @@ impl EthereumClient {
 
         Ok(Self {
             helios,
-            starknet_core_contract_address: get_core_contract_address(config)?,
-        })
+            starknet_core_contract_address: get_core_contract_address(&network)?,
+        })    
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {
@@ -132,58 +133,62 @@ impl EthereumClient {
     }
 }
 
-async fn get_client(config: &Config) -> Result<Client<DB>> {
+async fn get_client(
+    rpc: &str,
+    network: Network,
+    data_dir: &str,
+) -> Result<Client<DB>> {
     let consensus_rpc =
-        get_consensus_rpc(config).context("consensus rpc url")?;
+        get_consensus_rpc(&network).context("consensus rpc url")?;
     let fallback_rpc =
-        get_fallback_address(config).context("fallback rpc url")?;
-    let checkpoint = get_checkpoint(config).await.context("checkpoint")?;
+        get_fallback_address(&network).context("fallback rpc url")?;
+    let checkpoint = get_checkpoint(&network).await.context("checkpoint")?;
 
     let builder = ClientBuilder::new()
-        .network(config.network)
+        .network(network)
         .consensus_rpc(consensus_rpc)
-        .execution_rpc(&config.eth_execution_rpc)
+        .execution_rpc(rpc)
         .checkpoint(&checkpoint)
         .load_external_fallback()
         .fallback(fallback_rpc);
 
     #[cfg(not(target_arch = "wasm32"))]
-    let builder = builder.data_dir(config.data_dir.clone());
+    let builder = builder.data_dir(data_dir.into());
 
     builder.build()
 }
 
-fn get_core_contract_address(config: &Config) -> Result<Address> {
-    match config.network {
+fn get_core_contract_address(network: &Network) -> Result<Address> {
+    match network {
         Network::MAINNET => Ok(Address::from_str(MAINNET_CC_ADDRESS)?),
         Network::SEPOLIA => Ok(Address::from_str(SEPOLIA_CC_ADDRESS)?),
         network => eyre::bail!("unsupported network: {network:?}"),
     }
 }
 
-fn get_consensus_rpc(config: &Config) -> Result<&str> {
-    match config.network {
+fn get_consensus_rpc(network: &Network) -> Result<&str> {
+    match network {
         Network::MAINNET => Ok(MAINNET_CONSENSUS_RPC),
         Network::SEPOLIA => Ok(SEPOLIA_CONSENSUS_RPC),
         network => eyre::bail!("unsupported network: {network:?}"),
     }
 }
 
-fn get_fallback_address(config: &Config) -> Result<&str> {
-    match config.network {
+fn get_fallback_address(network: &Network) -> Result<&str> {
+    match network {
         Network::MAINNET => Ok(MAINNET_FALLBACK_RPC),
         Network::SEPOLIA => Ok(SEPOLIA_FALLBACK_RPC),
         network => eyre::bail!("unsupported network: {network:?}"),
     }
 }
 
-async fn get_checkpoint(config: &Config) -> Result<String> {
-    if !matches!(config.network, Network::MAINNET | Network::SEPOLIA) {
-        eyre::bail!("unsupported network: {:?}", config.network);
+async fn get_checkpoint(network: &Network) -> Result<String> {
+    if !matches!(network, Network::MAINNET | Network::SEPOLIA) {
+        eyre::bail!("unsupported network: {:?}", network);
     }
 
     let cf = checkpoints::CheckpointFallback::new().build().await?;
-    let checkpoint = cf.fetch_latest_checkpoint(&config.network).await?;
+    let checkpoint = cf.fetch_latest_checkpoint(network).await?;
     Ok(format!("{checkpoint:x}"))
 }
 
