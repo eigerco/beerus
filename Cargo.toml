@@ -57,7 +57,7 @@ toml = "0.8.19"
 clap = { version = "4.5.17", features = ["derive"] }
 
 [dev-dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.89"
 alloy-primitives = { version = "0.7.6", default-features = false }
 katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
