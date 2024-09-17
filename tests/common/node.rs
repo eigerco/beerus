@@ -4,9 +4,10 @@ use beerus::gen::client::Client;
 use wiremock::{Match, Mock, MockGuard, MockServer, ResponseTemplate};
 
 use super::matchers::{
-    AddDeclareTransactionMatcher, ChainIdMatcher, ClassMatcher,
-    EstimateFeeMatcher, NonceMatcher, Response, SpecVersionMatcher,
-    StarknetMatcher,
+    AddDeclareTransactionMatcher, AddDeployAccountTransactionMatcher,
+    AddInvokeTransactionMatcher, ChainIdMatcher, ClassMatcher,
+    EstimateFeeMatcher, GetTransactionReceiptMatcher, NonceMatcher, Response,
+    SpecVersionMatcher, StarknetMatcher,
 };
 
 #[allow(dead_code)]
@@ -55,6 +56,20 @@ impl StarknetNode {
                     )
                     .await
                 }
+                StarknetMatcher::AddDeployAccountTransaction => {
+                    self.create_mock_guard(
+                        AddDeployAccountTransactionMatcher::default(),
+                        num_request,
+                    )
+                    .await
+                }
+                StarknetMatcher::AddInvokeTransaction => {
+                    self.create_mock_guard(
+                        AddInvokeTransactionMatcher::default(),
+                        num_request,
+                    )
+                    .await
+                }
                 StarknetMatcher::ClassError => {
                     self.create_mock_guard(ClassMatcher::error(), num_request)
                         .await
@@ -94,6 +109,13 @@ impl StarknetNode {
                 StarknetMatcher::EstimateFeeMalicious => {
                     self.create_mock_guard(
                         EstimateFeeMatcher::malicious(),
+                        num_request,
+                    )
+                    .await
+                }
+                StarknetMatcher::GetTransactionReceipt => {
+                    self.create_mock_guard(
+                        GetTransactionReceiptMatcher::default(),
                         num_request,
                     )
                     .await

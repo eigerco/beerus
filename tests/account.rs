@@ -2,18 +2,20 @@ use std::{thread, time};
 
 use beerus::gen::{
     client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
-    BroadcastedTxn, Felt, Rpc, SimulationFlagForEstimateFee,
+    BroadcastedTxn, Felt, Rpc, SimulationFlagForEstimateFee, TxnHash,
 };
 use common::{
     constants::{
-        dummy_transaction_v3, COMPILED_ACCOUNT_CONTRACT, DECLARE_ACCOUNT,
+        declare_transaction, deploy_transaction, estimate_fee_transaction,
+        invoke_transaction, COMPILED_ACCOUNT_CONTRACT, DECLARE_ACCOUNT,
     },
     katana::Katana,
     matchers::StarknetMatcher::{
-        AddDeclareTransaction, AddDeclareTransactionMalicious, ChainId,
+        self, AddDeclareTransaction, AddDeclareTransactionMalicious,
+        AddDeployAccountTransaction, AddInvokeTransaction, ChainId,
         ChainIdMalicious, ClassError, ClassMalicious, ClassSuccess,
-        EstimateFee, EstimateFeeMalicious, Nonce, NonceMalicious, SpecVersion,
-        SpecVersionMalicious,
+        EstimateFee, EstimateFeeMalicious, GetTransactionReceipt, Nonce,
+        NonceMalicious, SpecVersion, SpecVersionMalicious,
     },
     node::setup_client_with_mock_starknet_node,
 };
@@ -139,36 +141,23 @@ async fn get_class_success() {
 
 #[tokio::test]
 async fn spec_version_estimate_fee() {
-    let declare_transaction = dummy_transaction_v3();
     let (client, _starknet_node) =
         setup_client_with_mock_starknet_node(vec![SpecVersion, EstimateFee])
             .await;
+    let tx = estimate_fee_transaction();
     assert!(client.specVersion().await.is_ok());
     let res = client
-        .estimateFee(
-            vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-                    declare_transaction,
-                ),
-            )],
-            vec![],
-            BlockId::BlockTag(BlockTag::Latest),
-        )
+        .estimateFee(vec![tx], vec![], BlockId::BlockTag(BlockTag::Latest))
         .await;
     assert!(res.is_ok());
 }
 
 #[tokio::test]
 async fn add_declare_transaction() {
-    let declare_transaction = dummy_transaction_v3();
+    let tx = declare_transaction();
     let (client, _starknet_node) =
         setup_client_with_mock_starknet_node(vec![AddDeclareTransaction]).await;
-    assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-            declare_transaction
-        ))
-        .await
-        .is_ok());
+    assert!(client.addDeclareTransaction(tx).await.is_ok());
 }
 
 #[tokio::test]
@@ -186,7 +175,8 @@ async fn declare_account_mock() {
     let block_id = BlockId::BlockTag(BlockTag::Latest);
     let class_hash = Felt::try_new("0x0").unwrap();
     let contract_address = Address(class_hash.clone());
-    let declare_transaction = dummy_transaction_v3();
+    let estimate_tx = estimate_fee_transaction();
+    let declare_tx = declare_transaction();
 
     assert!(client.chainId().await.is_ok());
     assert!(client.getClass(block_id.clone(), class_hash).await.is_err());
@@ -194,23 +184,10 @@ async fn declare_account_mock() {
     assert!(client.getNonce(block_id.clone(), contract_address).await.is_ok());
     assert!(client.specVersion().await.is_ok());
     assert!(client
-        .estimateFee(
-            vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-                    declare_transaction.clone(),
-                ),
-            )],
-            vec![],
-            block_id
-        )
+        .estimateFee(vec![estimate_tx], vec![], block_id)
         .await
         .is_ok());
-    assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-            declare_transaction
-        ))
-        .await
-        .is_ok());
+    assert!(client.addDeclareTransaction(declare_tx).await.is_ok());
 }
 
 #[tokio::test]
@@ -227,28 +204,70 @@ async fn malicious_data_results_in_err() {
     let block_id = BlockId::BlockTag(BlockTag::Latest);
     let class_hash = Felt::try_new("0x0").unwrap();
     let contract_address = Address(class_hash.clone());
-    let declare_transaction = dummy_transaction_v3();
+    let declare_tx = declare_transaction();
+    let estimate_tx = estimate_fee_transaction();
 
-    assert!(client
-        .addDeclareTransaction(BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-            declare_transaction.clone()
-        ))
-        .await
-        .is_err());
+    assert!(client.addDeclareTransaction(declare_tx).await.is_err());
     assert!(client.chainId().await.is_err());
     assert!(client
-        .estimateFee(
-            vec![BroadcastedTxn::BroadcastedDeclareTxn(
-                BroadcastedDeclareTxn::BroadcastedDeclareTxnV3(
-                    declare_transaction.clone(),
-                ),
-            )],
-            vec![],
-            block_id.clone()
-        )
+        .estimateFee(vec![estimate_tx], vec![], block_id.clone())
         .await
         .is_err());
     assert!(client.getClass(block_id.clone(), class_hash).await.is_err());
     assert!(client.getNonce(block_id, contract_address).await.is_err());
     assert!(client.specVersion().await.is_err());
+}
+
+#[tokio::test]
+async fn deploy_account_mock() {
+    let mut account_deploy: Vec<StarknetMatcher> =
+        vec![ChainId, Nonce, SpecVersion, EstimateFee];
+    let mut invoke_eth_transfer: Vec<StarknetMatcher> = vec![
+        ChainId,
+        ChainId,
+        Nonce,
+        SpecVersion,
+        EstimateFee,
+        AddInvokeTransaction,
+    ];
+    let mut account_deploy_last: Vec<StarknetMatcher> =
+        vec![Nonce, AddDeployAccountTransaction, GetTransactionReceipt];
+    account_deploy.append(&mut invoke_eth_transfer);
+    account_deploy.append(&mut account_deploy_last);
+    let (client, _starknet_node) =
+        setup_client_with_mock_starknet_node(account_deploy).await;
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+    let class_hash = Felt::try_new("0x0").unwrap();
+    let contract_address = Address(class_hash.clone());
+    let estimate_tx = estimate_fee_transaction();
+    let invoke_tx = invoke_transaction();
+    let deploy_tx = deploy_transaction();
+    let tx_hash = TxnHash(class_hash);
+
+    assert!(client.chainId().await.is_ok());
+    assert!(client
+        .getNonce(block_id.clone(), contract_address.clone())
+        .await
+        .is_ok());
+    assert!(client.specVersion().await.is_ok());
+    assert!(client
+        .estimateFee(vec![estimate_tx.clone()], vec![], block_id.clone())
+        .await
+        .is_ok());
+
+    assert!(client.chainId().await.is_ok());
+    assert!(client.chainId().await.is_ok());
+    assert!(client
+        .getNonce(block_id.clone(), contract_address.clone())
+        .await
+        .is_ok());
+    assert!(client.specVersion().await.is_ok());
+    assert!(client
+        .estimateFee(vec![estimate_tx], vec![], block_id.clone())
+        .await
+        .is_ok());
+    assert!(client.addInvokeTransaction(invoke_tx).await.is_ok());
+    assert!(client.getNonce(block_id, contract_address).await.is_ok());
+    assert!(client.addDeployAccountTransaction(deploy_tx).await.is_ok());
+    assert!(client.getTransactionReceipt(tx_hash).await.is_ok());
 }
