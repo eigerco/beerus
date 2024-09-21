@@ -5435,7 +5435,8 @@ pub mod gen {
 
         #[cfg(not(target_arch = "wasm32"))]
         #[async_trait::async_trait]
-        pub trait HttpClient: Sync + Send { // TODO: HERE
+        pub trait HttpClient: Sync + Send {
+            // TODO: HERE
             async fn post(
                 &self,
                 url: &str,
@@ -7054,7 +7055,8 @@ pub mod gen {
             use super::*;
 
             #[cfg(not(target_arch = "wasm32"))]
-            pub trait HttpClient: Sync + Send { // TODO: HERE
+            pub trait HttpClient: Sync + Send {
+                // TODO: HERE
                 fn post(
                     &self,
                     url: &str,
