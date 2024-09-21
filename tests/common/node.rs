@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use beerus::gen::client::Client;
+use beerus::{client::Http, gen::client::Client};
 use wiremock::{Match, Mock, MockGuard, MockServer, ResponseTemplate};
 
 use super::matchers::{
@@ -13,14 +13,14 @@ use super::matchers::{
 #[allow(dead_code)]
 pub async fn setup_client_with_mock_starknet_node(
     methods: Vec<StarknetMatcher>,
-) -> (Client, StarknetNode) {
+) -> (Client<Http>, StarknetNode) {
     let mut starknet_node = StarknetNode::new().await;
     let mut map_methods = HashMap::new();
     for method in methods {
         *map_methods.entry(method).or_insert(0) += 1;
     }
     starknet_node.add_methods(map_methods).await;
-    let client = Client::new(&starknet_node.server.uri());
+    let client = Client::new(&starknet_node.server.uri(), Http::new());
     (client, starknet_node)
 }
 
