@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use beerus::client::Http;
 use beerus::config::Config;
 use beerus::gen::{Address, BlockNumber, Felt, FunctionCall};
 use beerus::{client::Client, gen::BlockId};
@@ -25,7 +26,8 @@ async fn main() -> Result<()> {
         rpc_addr: ([127, 0, 0, 1], 3030).into(),
     };
 
-    let beerus = Client::new(&config).await?;
+    let http = Http::new();
+    let beerus = Client::new(&config, http).await?;
     beerus.start().await?;
 
     let block_id =
