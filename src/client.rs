@@ -46,6 +46,7 @@ async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
 pub struct Http(pub reqwest::Client);
 
 impl Http {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(reqwest::Client::new())
     }
@@ -83,7 +84,7 @@ impl gen::client::blocking::HttpClient for Http {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-            Ok(ureq::post(url)
+            ureq::post(url)
                 .send_json(request)
                 .map_err(|e| {
                     iamgroot::jsonrpc::Error::new(33101, e.to_string())
@@ -91,7 +92,7 @@ impl gen::client::blocking::HttpClient for Http {
                 .into_json()
                 .map_err(|e| {
                     iamgroot::jsonrpc::Error::new(33102, e.to_string())
-                })?)
+                })
         }
     }
 }
