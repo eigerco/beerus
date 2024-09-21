@@ -52,6 +52,16 @@ impl TryFrom<gen::GetClassResult> for ContractClass {
                 let contract_class: CairoContractClass =
                     serde_json::from_value(json)?;
                 let casm_contract_class =
+
+                    // TODO: HERE error caused by usize being 32-bit long on wasm32
+
+                    // [cairo-lang-starknet-classes / felt252_serde.rs]
+                    // CasmContractClass::from_contract_class
+                    // CasmContractClass::from_contract_class_with_debug_info
+                    // sierra_from_felt252s
+                    // Program::deserialize
+                    // Felt252Serde::deserialize for usize
+
                     CasmContractClass::from_contract_class(
                         contract_class,
                         /*add_pythonic_hints=*/ false,
