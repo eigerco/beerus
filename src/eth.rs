@@ -214,5 +214,8 @@ async fn sleep(delay: std::time::Duration) {
     tokio::time::sleep(delay).await;
 
     #[cfg(target_arch = "wasm32")]
-    let _ = wasm_timer::Delay::new(delay).await;
+    {
+        let millis = delay.as_millis() as u32;
+        gloo_timers::future::TimeoutFuture::new(millis).await;
+    }
 }
