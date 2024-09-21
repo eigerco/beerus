@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use eyre::{Context, Result};
-use tokio::runtime::Handle;
 use tokio::sync::RwLock;
 
 use crate::eth::{EthereumClient, Helios};
@@ -76,20 +75,32 @@ impl gen::client::blocking::HttpClient for Http {
         iamgroot::jsonrpc::Response,
         iamgroot::jsonrpc::Error,
     > {
-        Handle::current().block_on(async {    
-            post(&self.0, url, request).await
-        })
+        #[cfg(target_arch = "wasm32")]
+        {
+            tokio::runtime::Handle::current()
+                .block_on(async {
+                    post(&self.0, url, request).await
+                })
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            Ok(ureq::post(url)
+                .send_json(request)
+                .map_err(|e| iamgroot::jsonrpc::Error::new(33101, e.to_string()))?
+                .into_json()
+                .map_err(|e| iamgroot::jsonrpc::Error::new(33102, e.to_string()))?)
+        }
     }
 }
 
-pub struct Client {
-    starknet: StarknetClient<Http>,
+pub struct Client<T: gen::client::HttpClient + gen::client::blocking::HttpClient> {
+    starknet: StarknetClient<T>,
     ethereum: EthereumClient,
 }
 
-impl Client {
-    pub async fn new(config: &Config) -> Result<Self> {
-        let http = Http::new();
+impl<T: gen::client::HttpClient + gen::client::blocking::HttpClient> Client<T> {
+    pub async fn new(config: &Config, http: T) -> Result<Self> {
         let starknet = StarknetClient::new(&config.starknet_rpc, http);
         let ethereum = EthereumClient::new(config).await?;
         Ok(Self { starknet, ethereum })
@@ -103,7 +114,7 @@ impl Client {
         self.ethereum.helios()
     }
 
-    pub fn starknet(&self) -> &StarknetClient<Http> {
+    pub fn starknet(&self) -> &StarknetClient<T> {
         &self.starknet
     }
 

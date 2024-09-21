@@ -296,7 +296,7 @@ impl gen::Rpc for Context {
         tracing::warn!(requested_block=?block_id, current_state=?state, "call");
 
         let call_info = tokio::task::spawn_blocking(move || {
-            crate::exe::call(&client, request, state)
+            crate::exe::call(client.clone(), request, state)
         })
         .await
         .map_err(|e| {

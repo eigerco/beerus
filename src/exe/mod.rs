@@ -36,7 +36,7 @@ use starknet_api::{
 use starknet_types_core::felt::Felt as StarkFelt;
 
 use crate::{
-    client::{Http, State},
+    client::State,
     gen::{self, blocking::Rpc},
 };
 
@@ -45,8 +45,8 @@ pub mod map;
 
 use err::Error;
 
-pub fn call(
-    client: &gen::client::blocking::Client<Http>,
+pub fn call<T: gen::client::blocking::HttpClient>(
+    client: gen::client::blocking::Client<T>,
     function_call: gen::FunctionCall,
     state: State,
 ) -> Result<CallInfo, Error> {
@@ -129,7 +129,7 @@ pub fn call(
         initial_gas: u64::MAX,
     };
 
-    let mut proxy = StateProxy { client: client.to_owned(), state };
+    let mut proxy: StateProxy<T> = StateProxy { client, state };
 
     let call_info = call_entry_point.execute(
         &mut proxy,
@@ -141,12 +141,12 @@ pub fn call(
     Ok(call_info)
 }
 
-struct StateProxy {
-    client: gen::client::blocking::Client<Http>,
+struct StateProxy<T: gen::client::blocking::HttpClient> {
+    client: gen::client::blocking::Client<T>,
     state: State,
 }
 
-impl StateReader for StateProxy {
+impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
     fn get_storage_at(
         &self,
         contract_address: ContractAddress,
@@ -264,7 +264,7 @@ impl StateReader for StateProxy {
     }
 }
 
-impl BlockifierState for StateProxy {
+impl<T: gen::client::blocking::HttpClient> BlockifierState for StateProxy<T> {
     fn set_storage_at(
         &mut self,
         contract_address: ContractAddress,
