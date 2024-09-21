@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use beerus::config::{check_data_dir, Config};
+use beerus::{client::Http, config::{check_data_dir, Config}};
 use clap::Parser;
 use tokio::sync::RwLock;
 use validator::Validate;
@@ -14,7 +14,8 @@ async fn main() -> eyre::Result<()> {
     let args = Args::parse();
     let config = get_config(&args).await?;
 
-    let beerus = beerus::client::Client::new(&config).await?;
+    let http = Http::new();
+    let beerus = beerus::client::Client::new(&config, http).await?;
     beerus.start().await?;
 
     let rpc_spec_version = beerus.spec_version().await?;
