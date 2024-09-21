@@ -286,10 +286,7 @@ impl gen::Rpc for Context {
         request: FunctionCall,
         block_id: BlockId,
     ) -> std::result::Result<Vec<Felt>, jsonrpc::Error> {
-        let client = gen::client::blocking::Client::new(
-            &self.url,
-            Http::new(),
-        );
+        let client = gen::client::blocking::Client::new(&self.url, Http::new());
         let state = self.state.read().await.clone();
 
         // TODO: address that effectively only the 'latest' block is supported

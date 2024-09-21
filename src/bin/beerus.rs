@@ -1,6 +1,9 @@
 use std::{sync::Arc, time::Duration};
 
-use beerus::{client::Http, config::{check_data_dir, Config}};
+use beerus::{
+    client::Http,
+    config::{check_data_dir, Config},
+};
 use clap::Parser;
 use tokio::sync::RwLock;
 use validator::Validate;
