@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
@@ -19,8 +20,111 @@ pub mod dto {
     }
 }
 
+#[derive(Clone)]
+pub struct Http(Rc<js_sys::Function>);
+
+impl beerus::gen::client::blocking::HttpClient for Http {
+    fn post(
+        &self,
+        url: &str,
+        request: &iamgroot::jsonrpc::Request,
+    ) -> std::result::Result<
+        iamgroot::jsonrpc::Response,
+        iamgroot::jsonrpc::Error,
+    > {
+        let json = serde_json::to_string(&request)
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32101,
+                    format!("request failed: {e:?}"),
+                )
+            })?;
+        let result = self.0.as_ref()
+            .call2(
+                &JsValue::null(), 
+                &JsValue::from_str(url), 
+                &JsValue::from_str(&json), 
+            )
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32101,
+                    format!("request failed: {e:?}"),
+                )
+            })?;
+        let result = result.as_string()
+            .ok_or_else(|| {
+                iamgroot::jsonrpc::Error::new(
+                    32101,
+                    format!("request failed: ¯\\_(ツ)_/¯"),
+                )
+            })?;
+        let response = serde_json::from_str(&result)
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32101,
+                    format!("request failed: {e:?}"),
+                )
+            })?;
+        Ok(response)
+    }
+}
+
+#[async_trait::async_trait(?Send)]
+impl beerus::gen::client::HttpClient for Http {
+    async fn post(
+        &self,
+        url: &str,
+        request: &iamgroot::jsonrpc::Request,
+    ) -> std::result::Result<
+        iamgroot::jsonrpc::Response,
+        iamgroot::jsonrpc::Error,
+    > {
+        let client = reqwest::Client::new();
+        let response = client
+            .post(url)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32101,
+                    format!("request failed: {e:?}"),
+                )
+            })?
+            .json()
+            .await
+            .map_err(|e| {
+                iamgroot::jsonrpc::Error::new(
+                    32102,
+                    format!("invalid response: {e:?}"),
+                )
+            })?;
+        Ok(response)
+    }
+}
+
 #[wasm_bindgen]
-pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
+pub async fn get_state(config_json: &str, f: js_sys::Function) -> Result<String, JsValue> {
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+
+    {
+        use num_traits::cast::ToPrimitive;
+        web_sys::console::log_1(&format!("size_of::<u64> = {}", std::mem::size_of::<u64>()).into());
+        web_sys::console::log_1(&format!("size_of::<usize> = {}", std::mem::size_of::<usize>()).into());
+
+        let x = num_bigint::BigUint::from(42u32);
+        let y = x.to_u64().unwrap_or_default();
+        web_sys::console::log_1(&format!("bigint: {x:?}, u64: {y:?}").into());
+
+        let x = num_bigint::BigUint::from(18446744073709551615u64);
+        let y = x.to_u64().unwrap_or_default();
+        let z = x.to_usize().unwrap_or_default();
+        web_sys::console::log_1(&format!("bigint: {x:?}, u64: {y:?}, usize: {z:?}").into());
+    }
+
+    (&f).call2(&JsValue::null(), &JsValue::from_str("http://localhost:3000/example"), &JsValue::from_str("{}"))?;
+    let post = Rc::new(f);
+
     let config: dto::Config =
         serde_json::from_str(config_json).map_err(|e| {
             JsValue::from_str(&format!("failed to parse config: {e:?}"))
@@ -39,7 +143,8 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
         rpc_addr: ([0, 0, 0, 0], 0).into(),
     };
 
-    let beerus = beerus::client::Client::new(&config)
+    let http = Http(post.clone());
+    let beerus = beerus::client::Client::new(&config, http)
         .await
         .map_err(|e| JsValue::from_str(&format!("client failed: {e:?}")))?;
     web_sys::console::log_1(&"beerus: client created".into());
@@ -56,7 +161,8 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
         .map_err(|e| JsValue::from_str(&format!("get_state failed: {e:?}")))?;
     web_sys::console::log_1(&format!("beerus: state {state:?}").into());
 
-    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc, beerus::client::Http::new());
+    let http = Http(post.clone());
+    let client = beerus::gen::client::blocking::Client::new(&config.starknet_rpc, http);
     web_sys::console::log_1(&"beerus: rpc client ready".into());
     let json = serde_json::json!({
         "calldata": [],
@@ -66,7 +172,7 @@ pub async fn get_state(config_json: &str) -> Result<String, JsValue> {
     let function_call: beerus::gen::FunctionCall = serde_json::from_value(json)
         .map_err(|_| JsValue::from_str("invalid function call"))?;
     web_sys::console::log_1(&format!("beerus: rpc function call: {function_call:?}").into());
-    let result = beerus::exe::call(&client, function_call, state.clone())
+    let result = beerus::exe::call(client, function_call, state.clone())
         .map_err(|e| JsValue::from_str(&format!("function call failed: {e:?}")))?;
     web_sys::console::log_1(&format!("beerus: rpc call result: {result:?}").into());
 

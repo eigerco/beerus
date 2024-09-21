@@ -1,5 +1,11 @@
-import init, { get_state } from './beerus-web/pkg/beerus_web.js';
+const worker = new Worker(new URL('./wrk.js', import.meta.url), { type: 'module' });
+worker.onmessage = event => {
+    console.log('main event: ', event.data);
+};
+worker.postMessage(42);
 
+// dump(div, "State: " + state);
+// dump(div, "Error: " + err, 'error');
 function dump(div, text, style) {
     let p = document.createElement('p');
     if (style != undefined) {
@@ -13,21 +19,3 @@ function dump(div, text, style) {
     p.innerText = text;
     div.appendChild(p);
 }
-
-(async function () {
-    await init();
-    const div = document.getElementById('log');
-
-    const config = JSON.stringify({
-        network: 'mainnet',
-        ethereum_url: 'http://127.0.0.1:3000/eth-mainnet.g.alchemy.com/v2/nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1',
-        starknet_url: 'http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/v2/nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1'
-    });
-    console.log("Config: " + config);
-    try {
-        const state = await get_state(config);
-        dump(div, "State: " + state);
-    } catch (err) {
-        dump(div, "Error: " + err, 'error');
-    }
-})();
