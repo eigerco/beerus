@@ -10,7 +10,7 @@ use beerus::gen::{
 
 mod common;
 
-use common::error::Error;
+use common::Error;
 
 #[tokio::test]
 #[allow(non_snake_case)]
