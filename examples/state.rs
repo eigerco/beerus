@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use beerus::client::Client;
+use beerus::client::{Client, Http};
 use beerus::config::Config;
 use eyre::{Context, Result};
 
@@ -24,7 +24,8 @@ async fn main() -> Result<()> {
         rpc_addr: ([127, 0, 0, 1], 3030).into(),
     };
 
-    let beerus = Client::new(&config).await?;
+    let http = Http::new();
+    let beerus = Client::new(&config, http).await?;
     beerus.start().await?;
 
     let state = beerus.get_state().await?;
