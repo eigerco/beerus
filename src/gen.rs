@@ -2258,6 +2258,7 @@ pub mod gen {
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
     #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
     pub trait Rpc {
@@ -5432,9 +5433,19 @@ pub mod gen {
     pub mod client {
         use super::*;
 
-        #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
-        #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
-        pub trait HttpClient: Sync + Send {
+        #[cfg(not(target_arch = "wasm32"))]
+        #[async_trait::async_trait]
+        pub trait HttpClient: Sync + Send { // TODO: HERE
+            async fn post(
+                &self,
+                url: &str,
+                request: &jsonrpc::Request,
+            ) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        #[async_trait::async_trait(?Send)]
+        pub trait HttpClient {
             async fn post(
                 &self,
                 url: &str,
@@ -5444,13 +5455,13 @@ pub mod gen {
 
         #[derive(Clone)]
         pub struct Client<HTTP: HttpClient> {
-            http: HTTP,
+            http: std::sync::Arc<HTTP>,
             url: String,
         }
 
         impl<HTTP: HttpClient> Client<HTTP> {
             pub fn new(url: &str, http: HTTP) -> Self {
-                Self { url: url.to_string(), http }
+                Self { url: url.to_string(), http: std::sync::Arc::new(http) }
             }
         }
 
@@ -7042,7 +7053,17 @@ pub mod gen {
         pub mod blocking {
             use super::*;
 
-            pub trait HttpClient: Sync + Send {
+            #[cfg(not(target_arch = "wasm32"))]
+            pub trait HttpClient: Sync + Send { // TODO: HERE
+                fn post(
+                    &self,
+                    url: &str,
+                    request: &jsonrpc::Request,
+                ) -> std::result::Result<jsonrpc::Response, jsonrpc::Error>;
+            }
+
+            #[cfg(target_arch = "wasm32")]
+            pub trait HttpClient {
                 fn post(
                     &self,
                     url: &str,
