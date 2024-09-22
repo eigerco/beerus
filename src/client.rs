@@ -3,10 +3,10 @@ use std::sync::Arc;
 use eyre::{Context, Result};
 use tokio::sync::RwLock;
 
+use crate::config::Config;
 use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
-use crate::gen::{gen, BlockId, Felt, Rpc};
-use crate::{config::Config, gen::FunctionCall};
+use crate::gen::{gen, BlockId, Felt, FunctionCall, Rpc};
 
 #[derive(Debug, Clone)]
 pub struct State {

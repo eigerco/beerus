@@ -20,6 +20,17 @@ const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
 
 #[derive(Clone, Deserialize, Debug, Validate)]
+pub struct ServerConfig {
+    #[serde(flatten)]
+    pub client: Config,
+    #[serde(default = "default_poll_secs")]
+    #[validate(range(min = 1, max = 3600))]
+    pub poll_secs: u64,
+    #[serde(default = "default_rpc_addr")]
+    pub rpc_addr: SocketAddr,
+}
+
+#[derive(Clone, Deserialize, Debug, Validate)]
 pub struct Config {
     pub network: Network,
     #[validate(url)]
@@ -28,11 +39,6 @@ pub struct Config {
     pub starknet_rpc: String,
     #[serde(default = "default_data_dir")]
     pub data_dir: PathBuf,
-    #[serde(default = "default_poll_secs")]
-    #[validate(range(min = 1, max = 3600))]
-    pub poll_secs: u64,
-    #[serde(default = "default_rpc_addr")]
-    pub rpc_addr: SocketAddr,
 }
 
 fn default_data_dir() -> PathBuf {
@@ -47,19 +53,21 @@ fn default_rpc_addr() -> SocketAddr {
     SocketAddr::from(([0, 0, 0, 0], 3030))
 }
 
-impl Config {
+impl ServerConfig {
     pub fn from_env() -> Self {
         Self {
-            network: Network::from_str(
-                &std::env::var("NETWORK").unwrap_or_default(),
-            )
-            .unwrap_or(Network::MAINNET),
-            eth_execution_rpc: std::env::var("ETH_EXECUTION_RPC")
-                .unwrap_or_default(),
-            starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
-            data_dir: PathBuf::from(
-                std::env::var("DATA_DIR").unwrap_or_default(),
-            ),
+            client: Config {
+                network: Network::from_str(
+                    &std::env::var("NETWORK").unwrap_or_default(),
+                )
+                .unwrap_or(Network::MAINNET),
+                eth_execution_rpc: std::env::var("ETH_EXECUTION_RPC")
+                    .unwrap_or_default(),
+                starknet_rpc: std::env::var("STARKNET_RPC").unwrap_or_default(),
+                data_dir: PathBuf::from(
+                    std::env::var("DATA_DIR").unwrap_or_default(),
+                ),
+            },
             poll_secs: u64::from_str(
                 &std::env::var("POLL_SECS").unwrap_or_default(),
             )
@@ -87,7 +95,7 @@ impl Config {
     }
 
     pub async fn validate_chain_id(&self) -> Result<()> {
-        let expected_chain_id = match self.network {
+        let expected_chain_id = match self.client.network {
             Network::MAINNET => MAINNET_ETHEREUM_CHAINID,
             Network::SEPOLIA => SEPOLIA_ETHEREUM_CHAINID,
             _ => {
@@ -98,12 +106,12 @@ impl Config {
         };
         check_chain_id(
             expected_chain_id,
-            &self.eth_execution_rpc,
+            &self.client.eth_execution_rpc,
             "eth_chainId",
         )
         .await?;
 
-        let expected_chain_id = match self.network {
+        let expected_chain_id = match self.client.network {
             Network::MAINNET => MAINNET_STARKNET_CHAINID,
             Network::SEPOLIA => SEPOLIA_STARKNET_CHAINID,
             _ => {
@@ -114,7 +122,7 @@ impl Config {
         };
         check_chain_id(
             expected_chain_id,
-            &self.starknet_rpc,
+            &self.client.starknet_rpc,
             "starknet_chainId",
         )
         .await
@@ -188,11 +196,13 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_urls() {
-        let config = Config {
-            network: Network::MAINNET,
-            eth_execution_rpc: "foo".to_string(),
-            starknet_rpc: "bar".to_string(),
-            data_dir: Default::default(),
+        let config = ServerConfig {
+            client: Config {
+                network: Network::MAINNET,
+                eth_execution_rpc: "foo".to_string(),
+                starknet_rpc: "bar".to_string(),
+                data_dir: Default::default(),
+            },
             poll_secs: 300,
             rpc_addr: SocketAddr::from(([0, 0, 0, 0], 3030)),
         };
@@ -301,11 +311,13 @@ mod tests {
 
     #[tokio::test]
     async fn wrong_poll_secs() {
-        let config = Config {
-            network: Network::MAINNET,
-            eth_execution_rpc: "foo".to_string(),
-            starknet_rpc: "bar".to_string(),
-            data_dir: Default::default(),
+        let config = ServerConfig {
+            client: Config {
+                network: Network::MAINNET,
+                eth_execution_rpc: "foo".to_string(),
+                starknet_rpc: "bar".to_string(),
+                data_dir: Default::default(),
+            },
             poll_secs: 9999,
             rpc_addr: SocketAddr::from(([127, 0, 0, 1], 3030)),
         };

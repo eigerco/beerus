@@ -20,8 +20,6 @@ async fn main() -> Result<()> {
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{api_key}"
         ),
         data_dir: PathBuf::from("tmp"),
-        poll_secs: 300,
-        rpc_addr: ([127, 0, 0, 1], 3030).into(),
     };
 
     let http = Http::new();

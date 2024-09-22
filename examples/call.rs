@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
-use beerus::client::Http;
+use beerus::client::{Client, Http};
 use beerus::config::Config;
-use beerus::gen::{Address, BlockNumber, Felt, FunctionCall};
-use beerus::{client::Client, gen::BlockId};
+use beerus::gen::{Address, BlockId, BlockNumber, Felt, FunctionCall};
 use eyre::{Context, Result};
 
 #[tokio::main]
@@ -22,8 +21,6 @@ async fn main() -> Result<()> {
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/{api_key}"
         ),
         data_dir: PathBuf::from("tmp"),
-        poll_secs: 300,
-        rpc_addr: ([127, 0, 0, 1], 3030).into(),
     };
 
     let http = Http::new();
