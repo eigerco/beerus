@@ -136,14 +136,13 @@ impl<
             self.http.clone(),
         );
         let call_info = crate::exe::call(client, request, state)?;
-        let ret: Result<Vec<Felt>> = call_info
+        call_info
             .execution
             .retdata
             .0
             .into_iter()
             .map(|felt| as_felt(&felt.to_bytes_be()))
-            .collect();
-        Ok(ret?)
+            .collect()
     }
 
     pub async fn get_state(&self) -> Result<State> {
