@@ -123,8 +123,6 @@ pub async fn get_state(config_json: &str, f: js_sys::Function) -> Result<String,
         eth_execution_rpc: config.ethereum_url,
         starknet_rpc: config.starknet_url,
         data_dir: Default::default(),
-        poll_secs: Default::default(),
-        rpc_addr: ([0, 0, 0, 0], 0).into(),
     };
 
     let http = Http(post.clone());
