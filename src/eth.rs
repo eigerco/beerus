@@ -1,5 +1,4 @@
 use std::str::FromStr;
-use std::sync::Arc;
 
 use ethers::types::{Address, Bytes, SyncingStatus, H256};
 use eyre::{Context, Result};
@@ -12,7 +11,6 @@ use helios::prelude::ConfigDB as DB;
 #[cfg(not(target_arch = "wasm32"))]
 use helios::prelude::FileDB as DB;
 use helios::types::{BlockTag, CallOpts};
-use tokio::sync::RwLock;
 
 use crate::config::Config;
 
@@ -48,27 +46,14 @@ use setup::*;
 pub type Helios = Client<DB>;
 
 pub struct EthereumClient {
-    helios: Arc<RwLock<Client<DB>>>,
+    pub helios: Client<DB>,
     starknet_core_contract_address: Address,
 }
 
 impl EthereumClient {
     pub async fn new(config: &Config) -> Result<Self> {
-        let helios = get_client(config).await?;
-        Ok(Self {
-            helios: Arc::new(RwLock::new(helios)),
-            starknet_core_contract_address: get_core_contract_address(config)?,
-        })
-    }
-
-    pub fn helios(&self) -> Arc<RwLock<Helios>> {
-        self.helios.clone()
-    }
-
-    pub async fn start(&self) -> Result<()> {
-        let mut helios = self.helios.write().await;
+        let mut helios = get_client(config).await?;
         helios.start().await.context("helios start")?;
-
         while let SyncingStatus::IsSyncing(sync) =
             helios.syncing().await.context("helios sync")?
         {
@@ -76,22 +61,21 @@ impl EthereumClient {
             sleep(std::time::Duration::from_secs(1)).await;
         }
 
-        Ok(())
+        Ok(Self {
+            helios,
+            starknet_core_contract_address: get_core_contract_address(config)?,
+        })
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {
         let block_number = self
             .helios
-            .read()
-            .await
             .get_block_number()
             .await
             .context("helios:get_block_number")?
             .as_u64();
         let ret = self
             .helios
-            .read()
-            .await
             .get_block_by_number(BlockTag::Number(block_number), false)
             .await?
             .map(|block| (block_number, block.hash))
@@ -138,13 +122,7 @@ impl EthereumClient {
             data: Some(Bytes::from(data.to_vec())),
         };
 
-        let ret = self
-            .helios
-            .read()
-            .await
-            .call(&opts, tag)
-            .await
-            .context("helios: call")?;
+        let ret = self.helios.call(&opts, tag).await.context("helios: call")?;
 
         if ret.len() != N {
             eyre::bail!("Expected {} bytes but got {}!", N, ret.len());

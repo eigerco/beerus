@@ -19,7 +19,6 @@ async fn main() -> eyre::Result<()> {
 
     let http = Http::new();
     let beerus = beerus::client::Client::new(&config.client, http).await?;
-    beerus.start().await?;
 
     let rpc_spec_version = beerus.spec_version().await?;
     if rpc_spec_version != RPC_SPEC_VERSION {

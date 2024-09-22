@@ -25,7 +25,6 @@ async fn main() -> Result<()> {
 
     let http = Http::new();
     let beerus = Client::new(&config, http).await?;
-    beerus.start().await?;
 
     let block_id =
         BlockId::BlockNumber { block_number: BlockNumber::try_new(33482)? };
@@ -39,7 +38,7 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let res = beerus.call_starknet(calldata, block_id).await?;
+    let res = beerus.execute(calldata, block_id).await?;
     println!("{:#?}", res);
 
     Ok(())

@@ -1,7 +1,4 @@
-use std::sync::Arc;
-
 use eyre::{Context, Result};
-use tokio::sync::RwLock;
 
 use crate::config::Config;
 use crate::eth::{EthereumClient, Helios};
@@ -111,23 +108,20 @@ impl<T: gen::client::HttpClient + gen::client::blocking::HttpClient> Client<T> {
         Ok(Self { starknet, ethereum })
     }
 
-    pub async fn start(&self) -> Result<()> {
-        self.ethereum.start().await
-    }
-
-    pub fn ethereum(&self) -> Arc<RwLock<Helios>> {
-        self.ethereum.helios()
+    pub fn ethereum(&self) -> &Helios {
+        &self.ethereum.helios
     }
 
     pub fn starknet(&self) -> &StarknetClient<T> {
         &self.starknet
     }
 
-    pub async fn call_starknet(
+    pub async fn execute(
         &self,
         request: FunctionCall,
         block_id: BlockId,
     ) -> Result<Vec<Felt>> {
+        // TODO: make the execution stateless instead of just proxying
         let ret = self.starknet.call(request, block_id).await?;
         Ok(ret)
     }
