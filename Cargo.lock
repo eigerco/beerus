@@ -626,7 +626,7 @@ dependencies = [
  "serde_json",
  "starknet-crypto 0.7.2",
  "starknet-types-core",
- "starknet_api 0.13.0-rc.1 (git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-21)",
+ "starknet_api 0.13.0-rc.1 (git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-22)",
  "thiserror",
  "tokio",
  "toml",
@@ -827,7 +827,7 @@ dependencies = [
 [[package]]
 name = "blockifier"
 version = "0.8.0-rc.2"
-source = "git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-21#505d1286994dc8e84dbd14d2d1802973ba9f979a"
+source = "git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-22#52de8d635b25fd52346520b7feb18faeebe7a45e"
 dependencies = [
  "anyhow",
  "ark-ec",
@@ -839,7 +839,7 @@ dependencies = [
  "cairo-lang-runner 2.7.0",
  "cairo-lang-starknet-classes 2.7.0",
  "cairo-lang-utils 2.7.0",
- "cairo-vm 1.0.1 (git+https://github.com/sergey-melnychuk/cairo-vm.git?tag=beerus-wasm-2024-09-21)",
+ "cairo-vm 1.0.1 (git+https://github.com/sergey-melnychuk/cairo-vm?tag=beerus-wasm-2024-09-21)",
  "derive_more",
  "hashbrown 0.14.5",
  "indexmap 2.5.0",
@@ -858,7 +858,7 @@ dependencies = [
  "sha2 0.10.8",
  "sha3",
  "starknet-types-core",
- "starknet_api 0.13.0-rc.1 (git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-21)",
+ "starknet_api 0.13.0-rc.1 (git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-22)",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "thiserror",
@@ -1031,7 +1031,7 @@ checksum = "ade8366b8bd5ba243f0a58f036cc0ca8a2f069cff1a2351ef1cac6b083e16fc0"
 [[package]]
 name = "cairo-lang-casm"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-utils 2.7.0",
  "indoc",
@@ -1058,7 +1058,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-compiler"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "anyhow",
  "cairo-lang-defs 2.7.0",
@@ -1107,7 +1107,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-debug"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-utils 2.7.0",
 ]
@@ -1124,7 +1124,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-defs"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-diagnostics 2.7.0",
@@ -1157,7 +1157,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-diagnostics"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-filesystem 2.7.0",
@@ -1180,7 +1180,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-eq-solver"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-utils 2.7.0",
  "good_lp",
@@ -1199,7 +1199,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-filesystem"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-utils 2.7.0",
@@ -1227,7 +1227,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-formatter"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "anyhow",
  "cairo-lang-diagnostics 2.7.0",
@@ -1268,7 +1268,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-lowering"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-defs 2.7.0",
@@ -1316,7 +1316,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-parser"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-diagnostics 2.7.0",
  "cairo-lang-filesystem 2.7.0",
@@ -1355,7 +1355,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-plugins"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-defs 2.7.0",
  "cairo-lang-diagnostics 2.7.0",
@@ -1392,7 +1392,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-proc-macros"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "quote",
@@ -1413,7 +1413,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-project"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-filesystem 2.7.0",
  "cairo-lang-utils 2.7.0",
@@ -1440,7 +1440,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-runner"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "ark-ff",
  "ark-secp256k1",
@@ -1454,7 +1454,7 @@ dependencies = [
  "cairo-lang-sierra-type-size 2.7.0",
  "cairo-lang-starknet 2.7.0",
  "cairo-lang-utils 2.7.0",
- "cairo-vm 1.0.1 (git+https://github.com/sergey-melnychuk/cairo-vm.git?tag=beerus-wasm-2024-09-21)",
+ "cairo-vm 1.0.1 (git+https://github.com/sergey-melnychuk/cairo-vm?tag=beerus-wasm-2024-09-21)",
  "hashbrown 0.14.5",
  "itertools 0.12.1",
  "keccak",
@@ -1502,7 +1502,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-semantic"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-defs 2.7.0",
@@ -1554,7 +1554,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "anyhow",
  "cairo-lang-utils 2.7.0",
@@ -1608,7 +1608,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra-ap-change"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-eq-solver 2.7.0",
  "cairo-lang-sierra 2.7.0",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra-gas"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-eq-solver 2.7.0",
  "cairo-lang-sierra 2.7.0",
@@ -1670,7 +1670,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra-generator"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-defs 2.7.0",
@@ -1718,7 +1718,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra-to-casm"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "assert_matches",
  "cairo-lang-casm 2.7.0",
@@ -1759,7 +1759,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-sierra-type-size"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-sierra 2.7.0",
  "cairo-lang-utils 2.7.0",
@@ -1778,7 +1778,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-starknet"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "anyhow",
  "cairo-lang-compiler 2.7.0",
@@ -1838,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-starknet-classes"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-casm 2.7.0",
  "cairo-lang-sierra 2.7.0",
@@ -1856,7 +1856,6 @@ dependencies = [
  "smol_str",
  "starknet-types-core",
  "thiserror",
- "web-sys",
 ]
 
 [[package]]
@@ -1885,7 +1884,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-syntax"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-debug 2.7.0",
  "cairo-lang-filesystem 2.7.0",
@@ -1916,7 +1915,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-syntax-codegen"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "genco",
  "xshell",
@@ -1935,7 +1934,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-test-utils"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "cairo-lang-formatter 2.7.0",
  "cairo-lang-utils 2.7.0",
@@ -1960,7 +1959,7 @@ dependencies = [
 [[package]]
 name = "cairo-lang-utils"
 version = "2.7.0"
-source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-21#56d2a51c9626d6d47f99c10bddce036ea449a0c3"
+source = "git+https://github.com/sergey-melnychuk/cairo.git?tag=beerus-wasm-2024-09-22#d9e8dc959a3bbbd473cb872574b6e0945fd98b00"
 dependencies = [
  "hashbrown 0.14.5",
  "indexmap 2.5.0",
@@ -2022,7 +2021,7 @@ dependencies = [
 [[package]]
 name = "cairo-vm"
 version = "1.0.1"
-source = "git+https://github.com/sergey-melnychuk/cairo-vm.git?tag=beerus-wasm-2024-09-21#6568bda381f6127d9342c2f7448a54089f8f7f38"
+source = "git+https://github.com/sergey-melnychuk/cairo-vm?tag=beerus-wasm-2024-09-21#6568bda381f6127d9342c2f7448a54089f8f7f38"
 dependencies = [
  "anyhow",
  "bincode",
@@ -7892,7 +7891,7 @@ dependencies = [
 [[package]]
 name = "starknet_api"
 version = "0.13.0-rc.1"
-source = "git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-21#505d1286994dc8e84dbd14d2d1802973ba9f979a"
+source = "git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-22#52de8d635b25fd52346520b7feb18faeebe7a45e"
 dependencies = [
  "bitvec 1.0.1",
  "cairo-lang-starknet-classes 2.8.2",

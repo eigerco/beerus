@@ -43,9 +43,9 @@ clap = { version = "4.5.17", features = ["derive"] }
 
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-blockifier = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-21", version = "=0.8.0-rc.2", features = ["cairo-vm-std"] }
-starknet_api = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-21", version = "0.13.0-rc.1", features = ["cairo-vm-std"] }
-cairo-lang-starknet-classes = { git = "https://github.com/sergey-melnychuk/cairo.git", tag = "beerus-wasm-2024-09-21" }
+blockifier = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-22", version = "=0.8.0-rc.2", features = ["cairo-vm-std"] }
+starknet_api = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-22", version = "0.13.0-rc.1", features = ["cairo-vm-std"] }
+cairo-lang-starknet-classes = { git = "https://github.com/sergey-melnychuk/cairo.git", tag = "beerus-wasm-2024-09-22" }
 
 #blockifier = { path = "../../misc/sequencer/crates/blockifier", version = "=0.8.0-rc.2", features = ["cairo-vm-std"] }
 #starknet_api = { path = "../../misc/sequencer/crates/starknet_api", version = "0.13.0-rc.1", features = ["cairo-vm-std"] }
@@ -57,9 +57,9 @@ ureq = { version = "2.10.1", features = ["json"] }
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-blockifier = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-21", version = "=0.8.0-rc.2" }
-starknet_api = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-21", version = "0.13.0-rc.1" }
-cairo-lang-starknet-classes = { git = "https://github.com/sergey-melnychuk/cairo.git", tag = "beerus-wasm-2024-09-21" }
+blockifier = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-22", version = "=0.8.0-rc.2" }
+starknet_api = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-22", version = "0.13.0-rc.1" }
+cairo-lang-starknet-classes = { git = "https://github.com/sergey-melnychuk/cairo.git", tag = "beerus-wasm-2024-09-22" }
 
 #blockifier = { path = "../../misc/sequencer/crates/blockifier", version = "=0.8.0-rc.2" }
 #starknet_api = { path = "../../misc/sequencer/crates/starknet_api", version = "0.13.0-rc.1" }
