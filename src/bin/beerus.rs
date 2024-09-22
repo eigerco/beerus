@@ -2,7 +2,7 @@ use std::{sync::Arc, time::Duration};
 
 use beerus::{
     client::Http,
-    config::{check_data_dir, Config},
+    config::{check_data_dir, ServerConfig},
 };
 use clap::Parser;
 use tokio::sync::RwLock;
@@ -18,7 +18,7 @@ async fn main() -> eyre::Result<()> {
     let config = get_config(&args).await?;
 
     let http = Http::new();
-    let beerus = beerus::client::Client::new(&config, http).await?;
+    let beerus = beerus::client::Client::new(&config.client, http).await?;
     beerus.start().await?;
 
     let rpc_spec_version = beerus.spec_version().await?;
@@ -51,9 +51,12 @@ async fn main() -> eyre::Result<()> {
         });
     }
 
-    let server =
-        beerus::rpc::serve(&config.starknet_rpc, &config.rpc_addr, state)
-            .await?;
+    let server = beerus::rpc::serve(
+        &config.client.starknet_rpc,
+        &config.rpc_addr,
+        state,
+    )
+    .await?;
 
     tracing::info!(port = server.port(), "rpc server started");
     server.done().await;
@@ -70,11 +73,11 @@ struct Args {
     skip_chain_id_validation: bool,
 }
 
-async fn get_config(args: &Args) -> eyre::Result<Config> {
+async fn get_config(args: &Args) -> eyre::Result<ServerConfig> {
     let config = if let Some(path) = args.config.as_ref() {
-        Config::from_file(path)?
+        ServerConfig::from_file(path)?
     } else {
-        Config::from_env()
+        ServerConfig::from_env()
     };
     config.validate()?;
     if args.skip_chain_id_validation {
@@ -82,6 +85,6 @@ async fn get_config(args: &Args) -> eyre::Result<Config> {
     } else {
         config.validate_chain_id().await?;
     }
-    check_data_dir(&config.data_dir)?;
+    check_data_dir(&config.client.data_dir)?;
     Ok(config)
 }
