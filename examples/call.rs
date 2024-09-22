@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use beerus::client::{Client, Http};
 use beerus::config::Config;
-use beerus::gen::{Address, BlockId, BlockNumber, Felt, FunctionCall};
+use beerus::gen::{Address, Felt, FunctionCall};
 use eyre::{Context, Result};
 
 #[tokio::main]
@@ -26,8 +26,6 @@ async fn main() -> Result<()> {
     let http = Http::new();
     let beerus = Client::new(&config, http).await?;
 
-    let block_id =
-        BlockId::BlockNumber { block_number: BlockNumber::try_new(33482)? };
     let calldata = FunctionCall {
         contract_address: Address(Felt::try_new(
             "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
@@ -38,7 +36,8 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let res = beerus.execute(calldata, block_id).await?;
+    let state = beerus.get_state().await?;
+    let res = beerus.execute(calldata, state)?;
     println!("{:#?}", res);
 
     Ok(())
