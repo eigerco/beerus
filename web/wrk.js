@@ -30,15 +30,15 @@ async function exe() {
 }
 
 function post(url, body) {
-    console.log("post: ", url, body);
+    // console.log("post: ", url, body);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(body);
     if (xhr.status != 200) {
-        console.log("post error: ", xhr.statusText);
+        // console.log("post error: ", xhr.statusText);
         throw new Error(xhr.statusText);
     }
-    console.log("post done: ", xhr.responseText);
+    // console.log("post done: ", xhr.responseText);
     return xhr.responseText;
 }
