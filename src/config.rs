@@ -206,7 +206,7 @@ mod tests {
             poll_secs: 300,
             rpc_addr: SocketAddr::from(([0, 0, 0, 0], 3030)),
         };
-        let response = config.validate();
+        let response = config.client.validate();
 
         assert!(response.is_err());
         assert!(response

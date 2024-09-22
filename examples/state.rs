@@ -24,7 +24,6 @@ async fn main() -> Result<()> {
 
     let http = Http::new();
     let beerus = Client::new(&config, http).await?;
-    beerus.start().await?;
 
     let state = beerus.get_state().await?;
     tracing::info!("{state:#?}");

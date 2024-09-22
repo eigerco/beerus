@@ -5457,7 +5457,7 @@ pub mod gen {
         #[derive(Clone)]
         pub struct Client<HTTP: HttpClient> {
             http: std::sync::Arc<HTTP>,
-            url: String,
+            pub url: String,
         }
 
         impl<HTTP: HttpClient> Client<HTTP> {
@@ -7076,7 +7076,7 @@ pub mod gen {
             #[derive(Clone)]
             pub struct Client<HTTP: HttpClient> {
                 http: HTTP,
-                url: String,
+                pub url: String,
             }
 
             impl<HTTP: HttpClient> Client<HTTP> {
