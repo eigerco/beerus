@@ -107,22 +107,6 @@ impl beerus::gen::client::HttpClient for Http {
 pub async fn get_state(config_json: &str, f: js_sys::Function) -> Result<String, JsValue> {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    {
-        use num_traits::cast::ToPrimitive;
-        web_sys::console::log_1(&format!("size_of::<u64> = {}", std::mem::size_of::<u64>()).into());
-        web_sys::console::log_1(&format!("size_of::<usize> = {}", std::mem::size_of::<usize>()).into());
-
-        let x = num_bigint::BigUint::from(42u32);
-        let y = x.to_u64().unwrap_or_default();
-        web_sys::console::log_1(&format!("bigint: {x:?}, u64: {y:?}").into());
-
-        let x = num_bigint::BigUint::from(18446744073709551615u64);
-        let y = x.to_u64().unwrap_or_default();
-        let z = x.to_usize().unwrap_or_default();
-        web_sys::console::log_1(&format!("bigint: {x:?}, u64: {y:?}, usize: {z:?}").into());
-    }
-
-    (&f).call2(&JsValue::null(), &JsValue::from_str("http://localhost:3000/example"), &JsValue::from_str("{}"))?;
     let post = Rc::new(f);
 
     let config: dto::Config =
@@ -184,6 +168,6 @@ pub async fn get_state(config_json: &str, f: js_sys::Function) -> Result<String,
     let ret = serde_json::to_string(&state).map_err(|e| {
         JsValue::from_str(&format!("failed to return response: {e:?}"))
     })?;
-    web_sys::console::log_1(&"beerus: call done".into());
+    web_sys::console::log_1(&format!("beerus: call result: {:?}", result.execution.retdata).into());
     Ok(ret)
 }
