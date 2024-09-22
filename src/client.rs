@@ -3,7 +3,7 @@ use eyre::{Context, Result};
 use crate::config::Config;
 use crate::eth::{EthereumClient, Helios};
 use crate::gen::client::Client as StarknetClient;
-use crate::gen::{gen, BlockId, Felt, FunctionCall, Rpc};
+use crate::gen::{gen, Felt, FunctionCall, Rpc};
 
 #[derive(Debug, Clone)]
 pub struct State {
@@ -95,17 +95,27 @@ impl gen::client::blocking::HttpClient for Http {
 }
 
 pub struct Client<
-    T: gen::client::HttpClient + gen::client::blocking::HttpClient,
+    T: gen::client::HttpClient
+        + gen::client::blocking::HttpClient
+        + Clone
+        + 'static,
 > {
     starknet: StarknetClient<T>,
     ethereum: EthereumClient,
+    http: T,
 }
 
-impl<T: gen::client::HttpClient + gen::client::blocking::HttpClient> Client<T> {
+impl<
+        T: gen::client::HttpClient
+            + gen::client::blocking::HttpClient
+            + Clone
+            + 'static,
+    > Client<T>
+{
     pub async fn new(config: &Config, http: T) -> Result<Self> {
-        let starknet = StarknetClient::new(&config.starknet_rpc, http);
+        let starknet = StarknetClient::new(&config.starknet_rpc, http.clone());
         let ethereum = EthereumClient::new(config).await?;
-        Ok(Self { starknet, ethereum })
+        Ok(Self { starknet, ethereum, http })
     }
 
     pub fn ethereum(&self) -> &Helios {
@@ -116,14 +126,24 @@ impl<T: gen::client::HttpClient + gen::client::blocking::HttpClient> Client<T> {
         &self.starknet
     }
 
-    pub async fn execute(
+    pub fn execute(
         &self,
         request: FunctionCall,
-        block_id: BlockId,
+        state: State,
     ) -> Result<Vec<Felt>> {
-        // TODO: make the execution stateless instead of just proxying
-        let ret = self.starknet.call(request, block_id).await?;
-        Ok(ret)
+        let client = gen::client::blocking::Client::new(
+            &self.starknet.url,
+            self.http.clone(),
+        );
+        let call_info = crate::exe::call(client, request, state)?;
+        let ret: Result<Vec<Felt>> = call_info
+            .execution
+            .retdata
+            .0
+            .into_iter()
+            .map(|felt| as_felt(&felt.to_bytes_be()))
+            .collect();
+        Ok(ret?)
     }
 
     pub async fn get_state(&self) -> Result<State> {
