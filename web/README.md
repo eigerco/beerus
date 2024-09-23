@@ -7,11 +7,11 @@ cd ..
 npx parcel build index.html
 http-server dist/
 
-## Run the CORS proxy locally
+## Keep CORS proxy running
 cd etc/proxy
 node proxy.js &
 
-## Now open localhost:8080 in a browser
+## Now open localhost:8080
 ```
 
 One-liner for full build & serve:
