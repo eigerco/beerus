@@ -40,7 +40,7 @@ ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fd
 helios = { git = "https://github.com/a16z/helios", rev = "1572a24" }
 
 starknet-crypto = "0.7.1"
-blockifier = "=0.8.0-rc.2"
+blockifier = "=0.8.0-rc.3"
 starknet_api = "0.13.0-rc.1"
 cairo-vm = "=1.0.1"
 starknet-types-core = "0.1.5"

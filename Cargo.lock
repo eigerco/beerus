@@ -609,7 +609,7 @@ dependencies = [
  "axum",
  "base64 0.22.1",
  "bitvec 1.0.1",
- "blockifier 0.8.0-rc.2",
+ "blockifier 0.8.0-rc.3",
  "cairo-lang-starknet-classes",
  "cairo-vm",
  "clap",
@@ -832,9 +832,9 @@ dependencies = [
 
 [[package]]
 name = "blockifier"
-version = "0.8.0-rc.2"
+version = "0.8.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ee25790785713833ed52ecbf39032abfc59fbcc4440feb7062fcf33fb596423"
+checksum = "0fb99b6d20e12f5dff17a2b53e3e6cab54766357a638f90dafcb43c0ac933d4b"
 dependencies = [
  "anyhow",
  "ark-ec",
