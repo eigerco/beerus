@@ -104,58 +104,64 @@ impl beerus::gen::client::HttpClient for Http {
 }
 
 #[wasm_bindgen]
-pub async fn get_state(config_json: &str, f: js_sys::Function) -> Result<String, JsValue> {
+pub fn set_panic_hook() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+}
 
-    let post = Rc::new(f);
+#[wasm_bindgen]
+pub struct Beerus {
+    beerus: beerus::client::Client<Http>,
+}
 
-    let config: dto::Config =
-        serde_json::from_str(config_json).map_err(|e| {
-            JsValue::from_str(&format!("failed to parse config: {e:?}"))
-        })?;
-    // web_sys::console::log_1(&"beerus: config ready".into());
+#[wasm_bindgen]
+impl Beerus {
 
-    let config = beerus::config::Config {
-        network: helios::prelude::networks::Network::from_str(&config.network)
-            .map_err(|e| {
-                JsValue::from_str(&format!("unrecognized network: {e:?}"))
-            })?,
-        eth_execution_rpc: config.ethereum_url,
-        starknet_rpc: config.starknet_url,
-        data_dir: Default::default(),
-    };
+    #[wasm_bindgen(constructor)]
+    pub async fn new(config_json: &str, f: js_sys::Function) -> Result<Beerus, JsValue> {
+        let config: dto::Config = serde_json::from_str(config_json)
+            .map_err(|e| JsValue::from_str(&format!("failed to parse config: {e:?}")))?;
+        let config = beerus::config::Config {
+            network: helios::prelude::networks::Network::from_str(&config.network.to_ascii_lowercase())
+                .map_err(|e| JsValue::from_str(&format!("failed to parse network: {e:?}")))?,
+            eth_execution_rpc: config.ethereum_url,
+            starknet_rpc: config.starknet_url,
+            // TODO: `data_dir` is not used for wasm32 targets
+            data_dir: Default::default(),
+        };
+        web_sys::console::log_1(&"beerus: config ready".into());
 
-    let http = Http(post.clone());
-    let beerus = beerus::client::Client::new(&config, http)
-        .await
-        .map_err(|e| JsValue::from_str(&format!("client failed: {e:?}")))?;
-    web_sys::console::log_1(&"beerus: client ready".into());
+        let beerus = beerus::client::Client::new(&config, Http(Rc::new(f)))
+            .await
+            .map_err(|e| JsValue::from_str(&format!("failed to create client: {e:?}")))?;
+        web_sys::console::log_1(&"beerus: client ready".into());
+        Ok(Self { beerus })
+    }
 
-    let state = beerus
-        .get_state()
-        .await
-        .map_err(|e| JsValue::from_str(&format!("get_state failed: {e:?}")))?;
-    web_sys::console::log_1(&format!("beerus: state {state:?}").into());
-    let ret = serde_json::to_string(&dto::State {
-        block_number: state.block_number as i64,
-        block_hash: state.block_hash.as_ref().to_owned(),
-        root: state.root.as_ref().to_owned(),
-    }).map_err(|e| {
-        JsValue::from_str(&format!("failed to return response: {e:?}"))
-    })?;
+    #[wasm_bindgen]
+    pub async fn get_state(&self) -> Result<JsValue, JsValue> {
+        let state = self.beerus.get_state().await
+            .map_err(|e| JsValue::from_str(&format!("failed to get state: {e:?}")))?;
+        let state = serde_json::to_string(&dto::State {
+            block_number: state.block_number as i64,
+            block_hash: state.block_hash.as_ref().to_owned(),
+            root: state.root.as_ref().to_owned(),
+        }).map_err(|e| JsValue::from_str(&format!("failed to serialize state: {e:?}")))?;
+        Ok(JsValue::from_str(&state))
+    }
 
-    let json = serde_json::json!({
-        "calldata": [],
-        "contract_address": "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-        "entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"
-      });
-    let request: beerus::gen::FunctionCall = serde_json::from_value(json)
-        .map_err(|_| JsValue::from_str("invalid function call"))?;
-    web_sys::console::log_1(&format!("beerus: execute: {request:?}").into());
-
-    let result = beerus.execute(request, state)
-        .map_err(|e| JsValue::from_str(&format!("function call failed: {e:?}")))?;
-    web_sys::console::log_1(&format!("beerus: execute: {result:?}").into());
-
-    Ok(ret)
+    #[wasm_bindgen]
+    pub async fn execute(&self, request: &str) -> Result<JsValue, JsValue> {
+        let state = self.beerus.get_state().await
+            .map_err(|e| JsValue::from_str(&format!("failed to get state: {e:?}")))?;
+        web_sys::console::log_1(&"beerus: execute: state ready".into());
+        let request: beerus::gen::FunctionCall = serde_json::from_str(request)
+            .map_err(|e| JsValue::from_str(&format!("failed to parse request: {e:?}")))?;
+        web_sys::console::log_1(&"beerus: execute: request ready".into());
+        let result = self.beerus.execute(request, state)
+            .map_err(|e| JsValue::from_str(&format!("failed to execute call: {e:?}")))?;
+        web_sys::console::log_1(&format!("beerus: execute: {result:?}").into());
+        let result = serde_json::to_string(&result)
+            .map_err(|e| JsValue::from_str(&format!("failed to serialize call result: {e:?}")))?;
+        Ok(JsValue::from_str(&result))
+    }
 }
