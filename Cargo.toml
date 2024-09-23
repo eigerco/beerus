@@ -43,7 +43,7 @@ starknet-crypto = "0.7.1"
 blockifier = "=0.8.0-rc.2"
 starknet_api = "0.13.0-rc.1"
 cairo-vm = "=1.0.1"
-starknet-types-core = "0.1.5"
+starknet-types-core = "0.1.6"
 cairo-lang-starknet-classes = "2.6.4"
 
 base64 = "0.22.0"
