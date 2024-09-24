@@ -2,6 +2,12 @@ use std::rc::Rc;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
+const MAINNET_ETHEREUM_CHAINID: &str = "0x1";
+const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
+
+const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
+const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
+
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
@@ -80,27 +86,75 @@ impl beerus::gen::client::HttpClient for Http {
         iamgroot::jsonrpc::Error,
     > {
         let client = reqwest::Client::new();
-        let response = client
-            .post(url)
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| {
-                iamgroot::jsonrpc::Error::new(
-                    32101,
-                    format!("request failed: {e:?}"),
-                )
-            })?
-            .json()
-            .await
-            .map_err(|e| {
-                iamgroot::jsonrpc::Error::new(
-                    32102,
-                    format!("invalid response: {e:?}"),
-                )
-            })?;
+        let response = post(&client, url, &request).await?;
         Ok(response)
     }
+}
+
+async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
+    client: &reqwest::Client,
+    url: &str,
+    request: Q,
+) -> std::result::Result<R, iamgroot::jsonrpc::Error> {
+    let response = client
+        .post(url)
+        .json(&request)
+        .send()
+        .await
+        .map_err(|e| {
+            iamgroot::jsonrpc::Error::new(
+                32101,
+                format!("request failed: {e:?}"),
+            )
+        })?
+        .json()
+        .await
+        .map_err(|e| {
+            iamgroot::jsonrpc::Error::new(
+                32102,
+                format!("invalid response: {e:?}"),
+            )
+        })?;
+    Ok(response)
+}
+
+async fn call(client: &reqwest::Client, url: &str, method: &str) -> Result<String, JsValue> {
+    let request = serde_json::json!({
+        "jsonrpc": "2.0",
+        "method": method,
+        "params": [],
+        "id": 0
+    });
+    let response: serde_json::Value = post(&client, url, &request).await
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    response["result"]
+        .as_str()
+        .map(|result| result.to_owned())
+        .ok_or_else(|| JsValue::from_str(&format!("Result missing for '{method}'.")))
+}
+
+async fn check(config: &dto::Config) -> Result<(), JsValue> {
+    let client = reqwest::Client::new();
+    let ethereum_chain = call(&client, &config.ethereum_url, "eth_chainId").await?;
+    let starknet_chain = call(&client, &config.starknet_url, "starknet_chainId").await?;
+    if &config.network == "mainnet" {
+        if &ethereum_chain != MAINNET_ETHEREUM_CHAINID {
+            return Err(JsValue::from_str(&format!("Invalid ethereum mainnet chain_id: {ethereum_chain}")));
+        }
+        if &starknet_chain != MAINNET_STARKNET_CHAINID {
+            return Err(JsValue::from_str(&format!("Invalid starknet mainnet chain_id: {starknet_chain}")));
+        }
+    } else if &config.network == "testnet" {
+        if &ethereum_chain != SEPOLIA_ETHEREUM_CHAINID {
+            return Err(JsValue::from_str(&format!("Invalid ethereum mainnet chain_id: {ethereum_chain}")));
+        }
+        if &starknet_chain != SEPOLIA_STARKNET_CHAINID {
+            return Err(JsValue::from_str(&format!("Invalid starknet mainnet chain_id: {starknet_chain}")));
+        }
+    } else {
+        return Err(JsValue::from_str(&format!("Invalid network: {}", config.network)));
+    }
+    Ok(())
 }
 
 #[wasm_bindgen]
@@ -120,6 +174,10 @@ impl Beerus {
     pub async fn new(config_json: &str, f: js_sys::Function) -> Result<Beerus, JsValue> {
         let config: dto::Config = serde_json::from_str(config_json)
             .map_err(|e| JsValue::from_str(&format!("failed to parse config: {e:?}")))?;
+
+        check(&config).await?;
+        web_sys::console::log_1(&"beerus: config valid".into());
+
         let config = beerus::config::Config {
             network: helios::prelude::networks::Network::from_str(&config.network.to_ascii_lowercase())
                 .map_err(|e| JsValue::from_str(&format!("failed to parse network: {e:?}")))?,
