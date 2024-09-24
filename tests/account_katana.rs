@@ -1,12 +1,12 @@
 use std::{thread, time};
 
-use beerus::gen::{
+use beerus::{client::Http, gen::{
     client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
     BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn,
     DeployAccountTxn, DeployAccountTxnV1, DeployAccountTxnV1Type,
     DeployAccountTxnV1Version, Felt, InvokeTxn, InvokeTxnV1, InvokeTxnV1Type,
     InvokeTxnV1Version, Rpc, SimulationFlagForEstimateFee, TxnHash,
-};
+}};
 use common::katana::Katana;
 
 mod common;
@@ -27,31 +27,30 @@ pub const CONTRACT_ADDRESS: &str =
 pub const SENDER_ADDRESS: &str =
     "0x6162896d1d7ab204c7ccac6dd5f8e9e7c25ecd5ae4fcb4ad32e57786bb46e03";
 
+async fn setup() -> (Katana, Client<Http>) {
+    let katana = Katana::init("http://127.0.0.1:0").await.unwrap();
+    let url = format!("http://127.0.0.1:{}", katana.port());
+    let client = Client::new(&url, Http::new());
+    (katana, client)
+}
+
 #[tokio::test]
 async fn declare_account_v3() {
-    let url = "http://127.0.0.1:1111";
-    let katana = Katana::init(url).await.unwrap();
-    let client = Client::new(url);
+    let (_katana, client) = setup().await;
     declare(&client, COMPILED_ACCOUNT_CONTRACT_V3, DECLARE_ACCOUNT_V3).await;
-    katana.stop().unwrap();
 }
 
 #[tokio::test]
 async fn declare_deploy_account_v2() {
-    let url = "http://127.0.0.1:2222";
-    let katana = Katana::init(url).await.unwrap();
-    let client = Client::new(url);
-
+    let (_katana, client) = setup().await;
     declare(&client, COMPILED_ACCOUNT_CONTRACT_V2, DECLARE_ACCOUNT_V2).await;
     estimate_deploy(&client).await;
     transfer_eth(&client).await;
     deploy(client).await;
-
-    katana.stop().unwrap();
 }
 
 async fn declare(
-    client: &Client,
+    client: &Client<Http>,
     compiled_contract: &str,
     declare_account: &str,
 ) {
@@ -95,7 +94,7 @@ async fn declare(
     assert!(res_class.is_ok());
 }
 
-async fn estimate_deploy(client: &Client) {
+async fn estimate_deploy(client: &Client<Http>) {
     let block_id = BlockId::BlockTag(BlockTag::Pending);
     let contract_address = Address(Felt::try_new(CONTRACT_ADDRESS).unwrap());
 
@@ -133,7 +132,7 @@ async fn estimate_deploy(client: &Client) {
     assert!(res_estimate_fee.is_ok());
 }
 
-async fn transfer_eth(client: &Client) {
+async fn transfer_eth(client: &Client<Http>) {
     let block_id = BlockId::BlockTag(BlockTag::Pending);
     let sender_address = Address(Felt::try_new(SENDER_ADDRESS).unwrap());
 
@@ -202,7 +201,7 @@ async fn transfer_eth(client: &Client) {
     assert!(res_invoke_tx.is_ok());
 }
 
-async fn deploy(client: Client) {
+async fn deploy(client: Client<Http>) {
     let block_id = BlockId::BlockTag(BlockTag::Pending);
     let contract_address = Address(Felt::try_new(CONTRACT_ADDRESS).unwrap());
 
