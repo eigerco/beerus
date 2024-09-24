@@ -26,15 +26,27 @@ self.onmessage = async event => {
     }
     let request = JSON.parse(event.data);
     if (request.hasOwnProperty('state')) {
-        let state = await client.get_state();
-        self.postMessage(state);
+        try {
+            let state = await client.get_state();
+            self.postMessage(`{"id":${request.id},"result":${state}}`);    
+        } catch (e) {
+            console.error(e);
+            let error = sanitize(e.toString());
+            self.postMessage(`{"id":${request.id},"error":"${error}"}`);
+        }
     } else if (request.hasOwnProperty('execute')) {
         let req = JSON.stringify(request['execute']);
-        let result = await client.execute(req);
-        self.postMessage(result);
+        try {
+            let result = await client.execute(req);
+            self.postMessage(`{"id":${request.id},"result":${result}}`);    
+        } catch (e) {
+            console.error(e);
+            let error = sanitize(e.toString());
+            self.postMessage(`{"id":${request.id},"error":"${error}"}`);
+        }
     } else {
         console.error('worker: unknown request: ', event.data);
-        self.postMessage('{"error": "unknown request"}');
+        self.postMessage(`{"id":${request.id},"error": "unknown request"}`);
     }
 }
 
@@ -50,4 +62,10 @@ function post(url, body) {
     }
     // console.log("post done: ", xhr.responseText);
     return xhr.responseText;
+}
+
+function sanitize(s) {
+    return s.split(/\r?\n/)[0]
+        .replaceAll('\"', '\'')
+        .replaceAll('\\\'', '\'');
 }
