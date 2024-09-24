@@ -1,12 +1,16 @@
 use std::{thread, time};
 
-use beerus::{client::Http, gen::{
-    client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
-    BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn,
-    DeployAccountTxn, DeployAccountTxnV1, DeployAccountTxnV1Type,
-    DeployAccountTxnV1Version, Felt, InvokeTxn, InvokeTxnV1, InvokeTxnV1Type,
-    InvokeTxnV1Version, Rpc, SimulationFlagForEstimateFee, TxnHash,
-}};
+use beerus::{
+    client::Http,
+    gen::{
+        client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
+        BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn,
+        DeployAccountTxn, DeployAccountTxnV1, DeployAccountTxnV1Type,
+        DeployAccountTxnV1Version, Felt, InvokeTxn, InvokeTxnV1,
+        InvokeTxnV1Type, InvokeTxnV1Version, Rpc, SimulationFlagForEstimateFee,
+        TxnHash,
+    },
+};
 use common::katana::Katana;
 
 mod common;
