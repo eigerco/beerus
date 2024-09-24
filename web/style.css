@@ -1,7 +1,22 @@
-p {
+#log {
     font-family: monospace;
 }
 
 .error {
     color: red;
+}
+
+.status-ready {
+    color: green;
+    font-weight: bold;
+}
+
+.status-wait {
+    color: orange;
+    font-weight: bold;
+}
+
+.status-error {
+    color: red;
+    font-weight: bold;
 }
