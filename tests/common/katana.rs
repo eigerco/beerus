@@ -34,9 +34,20 @@ impl Katana {
     }
 
     #[allow(dead_code)]
+    pub fn port(&self) -> u16 {
+        self.rpc_handle.addr.port()
+    }
+
+    #[allow(dead_code)]
     pub fn stop(&self) -> Result<()> {
         self.rpc_handle.handle.stop()?;
         Ok(())
+    }
+}
+
+impl Drop for Katana {
+    fn drop(&mut self) {
+        let _ = self.rpc_handle.handle.stop();
     }
 }
 
