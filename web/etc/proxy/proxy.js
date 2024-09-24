@@ -49,15 +49,15 @@ app.all('*', function (req, res, next) {
     request({ 
             url: target, 
             method: req.method, 
-            json: req.body, 
+            json: req.body,
             headers: {} 
         },
-        function (error, _, body) {
+        function (error, response, _) {
             if (error) {
                 console.error('error: ' + error);
                 return;
             }
-            console.log('<<< ' + target + ': ' + body.length + ' bytes');
+            console.log('<<< ' + target + ': ' + response.statusCode);
         })
         .pipe(res);
 });
