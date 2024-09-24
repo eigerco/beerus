@@ -1,9 +1,8 @@
 const worker = new Worker(new URL('./wrk.js', import.meta.url), { type: 'module' });
 worker.onmessage = event => {
-    dump('log', event.data);
     if (!ready) {
         if (event.data === 'OK') {
-            console.log("Worker ready");
+            dump('log', 'Worker ready');
             ready = true;
 
             setTimeout(() => {
@@ -12,9 +11,13 @@ worker.onmessage = event => {
             
             setTimeout(() => {
                 post(`{"execute": ${request}}`);
-            }, 10000);            
+            }, 10000);
+        } else {
+            dump('log', event.data, 'error');
         }
+        return;
     }
+    dump('log', event.data);
 };
 worker.onerror = error => {
     dump('log', error, 'error');
@@ -39,6 +42,7 @@ function post(message) {
     if (!ready) {
         throw new Error('worker not ready');
     }
+    dump('log', message);
     worker.postMessage(message);
 }
 
