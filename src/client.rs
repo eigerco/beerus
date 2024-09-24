@@ -74,10 +74,7 @@ impl gen::client::blocking::HttpClient for Http {
         iamgroot::jsonrpc::Error,
     > {
         #[cfg(target_arch = "wasm32")]
-        {
-            tokio::runtime::Handle::current()
-                .block_on(async { post(&self.0, url, request).await })
-        }
+        unreachable!("Generic blocking http client unavailable on wasm32");
 
         #[cfg(not(target_arch = "wasm32"))]
         {
