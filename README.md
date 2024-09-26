@@ -55,9 +55,9 @@ The successful result should look similar to the one below:
 
 | field   | example | description |
 | ----------- | ----------- | ----------- |
-| ethereum_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted l1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}| untrusted l2 node provider url |
-| data_dir | tmp | `OPTIONAL` location to store both l1 and l2 data |
+| ethereum_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted L1 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}| untrusted L2 node provider url |
+| data_dir | tmp | `OPTIONAL` location to store both L1 and L2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state, min = 1 and max = 3600 |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 
