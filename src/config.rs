@@ -8,6 +8,7 @@ use helios::config::networks::Network;
 use serde::Deserialize;
 use validator::Validate;
 
+#[cfg(not(target_arch = "wasm32"))]
 const DEFAULT_DATA_DIR: &str = "tmp";
 const DEFAULT_POLL_SECS: u64 = 5;
 
@@ -37,10 +38,12 @@ pub struct Config {
     pub ethereum_rpc: String,
     #[validate(url)]
     pub starknet_rpc: String,
+    #[cfg(not(target_arch = "wasm32"))]
     #[serde(default = "default_data_dir")]
     pub data_dir: String,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn default_data_dir() -> String {
     DEFAULT_DATA_DIR.to_owned()
 }
@@ -71,6 +74,7 @@ impl ServerConfig {
                     .context("ETHEREUM_RPC env var missing")?,
                 starknet_rpc: std::env::var("STARKNET_RPC")
                     .context("STARKNET_RPC env var missing")?,
+                #[cfg(not(target_arch = "wasm32"))]
                 data_dir: std::env::var("DATA_DIR")
                     .unwrap_or_else(|_| default_data_dir()),
             },

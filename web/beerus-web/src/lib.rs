@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
 const MAINNET_ETHEREUM_CHAINID: &str = "0x1";
@@ -179,12 +178,8 @@ impl Beerus {
         web_sys::console::log_1(&"beerus: config valid".into());
 
         let config = beerus::config::Config {
-            network: helios::prelude::networks::Network::from_str(&config.network.to_ascii_lowercase())
-                .map_err(|e| JsValue::from_str(&format!("failed to parse network: {e:?}")))?,
-            eth_execution_rpc: config.ethereum_url,
+            ethereum_rpc: config.ethereum_url,
             starknet_rpc: config.starknet_url,
-            // TODO: `data_dir` is not used for wasm32 targets
-            data_dir: Default::default(),
         };
         web_sys::console::log_1(&"beerus: config ready".into());
 
