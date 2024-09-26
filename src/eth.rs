@@ -52,8 +52,13 @@ pub struct EthereumClient {
 
 impl EthereumClient {
     pub async fn new(config: &Config, network: Network) -> Result<Self> {
+        #[cfg(not(target_arch = "wasm32"))]
         let mut helios =
             get_client(&config.ethereum_rpc, network, &config.data_dir).await?;
+
+        #[cfg(target_arch = "wasm32")]
+        let mut helios = get_client(&config.ethereum_rpc, network).await?;
+
         helios.start().await.context("helios start")?;
         while let SyncingStatus::IsSyncing(sync) =
             helios.syncing().await.context("helios sync")?
@@ -138,7 +143,7 @@ impl EthereumClient {
 async fn get_client(
     rpc: &str,
     network: Network,
-    data_dir: &str,
+    #[cfg(not(target_arch = "wasm32"))] data_dir: &str,
 ) -> Result<Client<DB>> {
     let consensus_rpc =
         get_consensus_rpc(&network).context("consensus rpc url")?;
