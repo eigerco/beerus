@@ -64,8 +64,10 @@ impl EthereumClient {
 
         Ok(Self {
             helios,
-            starknet_core_contract_address: get_core_contract_address(&network)?,
-        })    
+            starknet_core_contract_address: get_core_contract_address(
+                &network,
+            )?,
+        })
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {

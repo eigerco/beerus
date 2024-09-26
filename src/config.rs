@@ -171,7 +171,9 @@ mod tests {
         matchers::body_partial_json, Mock, MockServer, ResponseTemplate,
     };
 
-    async fn mock(patterns: &[(serde_json::Value, serde_json::Value)]) -> MockServer {
+    async fn mock(
+        patterns: &[(serde_json::Value, serde_json::Value)],
+    ) -> MockServer {
         let server = MockServer::start().await;
         for (request, response) in patterns {
             Mock::given(body_partial_json(&request))
@@ -207,24 +209,25 @@ mod tests {
             (
                 serde_json::json!({
                     "method": "eth_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
-                    "result": MAINNET_ETHEREUM_CHAINID    
-                })
+                    "result": MAINNET_ETHEREUM_CHAINID
+                }),
             ),
             (
                 serde_json::json!({
                     "method": "starknet_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
-                    "result": MAINNET_STARKNET_CHAINID    
-                })
+                    "result": MAINNET_STARKNET_CHAINID
+                }),
             ),
-        ]).await;
+        ])
+        .await;
 
         let rpc = format!("http://{}/", server.address());
         let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
@@ -237,24 +240,25 @@ mod tests {
             (
                 serde_json::json!({
                     "method": "eth_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
-                    "result": SEPOLIA_ETHEREUM_CHAINID    
-                })
+                    "result": SEPOLIA_ETHEREUM_CHAINID
+                }),
             ),
             (
                 serde_json::json!({
                     "method": "starknet_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
-                    "result": SEPOLIA_STARKNET_CHAINID    
-                })
+                    "result": SEPOLIA_STARKNET_CHAINID
+                }),
             ),
-        ]).await;
+        ])
+        .await;
 
         let rpc = format!("http://{}/", server.address());
         let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
@@ -267,24 +271,25 @@ mod tests {
             (
                 serde_json::json!({
                     "method": "eth_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
                     "result": "0xA"
-                })
+                }),
             ),
             (
                 serde_json::json!({
                     "method": "starknet_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
                     "result": "0xB"
-                })
+                }),
             ),
-        ]).await;
+        ])
+        .await;
 
         let rpc = format!("http://{}/", server.address());
         let result = check_chain_id(&rpc, &rpc).await;
@@ -300,24 +305,25 @@ mod tests {
             (
                 serde_json::json!({
                     "method": "eth_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
                     "result": "0xcafebabe"
-                })
+                }),
             ),
             (
                 serde_json::json!({
                     "method": "starknet_chainId"
-                }), 
+                }),
                 serde_json::json!({
                     "id": 0,
                     "jsonrpc": "2.0",
                     "error": "computer says no"
-                })
+                }),
             ),
-        ]).await;
+        ])
+        .await;
 
         let rpc = format!("http://{}/", server.address());
         let result = check_chain_id(&rpc, &rpc).await;
