@@ -1,132 +1,168 @@
-var ready;
-var id = 0;
+document.addEventListener("DOMContentLoaded", () => {
+    const chatLog = document.getElementById("chat-log");
+    const input = document.getElementById("json-input");
+    const sendBtn = document.getElementById("send-btn");
+    const templateBtns = document.querySelectorAll('.template-btn');
+    const alchemyKeyInput = document.getElementById("alchemy-key");
+    const initBtn = document.getElementById("init-btn");
+    const statusSpan = document.getElementById("status");
+    let messageId = 1;
 
-const worker = new Worker(new URL('./wrk.js', import.meta.url), { type: 'module' });
-worker.onmessage = event => {
-    if (!ready) {
-        if (event.data === 'OK') {
-            dump('log', 'worker ready');
-            ready = true;
-            set_status(event.data);
-        } else {
-            dump('log', event.data, 'error');
-            set_status(event.data);
-        }
-        return;
-    }
-
-    try {
-        let json = JSON.parse(event.data);
-        let pretty = JSON.stringify(json, null, 2);
-        if (json.hasOwnProperty('error')) {
-            dump('log', '<<< ' + pretty, 'error');
-        } else {
-            dump('log', '<<< ' + pretty);
-        }
-    } catch (e) {
-        console.error(e);
-        dump('log', '[invalid JSON] <<< ' + event.data, 'error');
-    }
-};
-worker.onerror = error => {
-    dump('log', error, 'error');
-}
-
-const request = {
-    "calldata": [],
-    "contract_address": "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-    "entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"
-};
-
-function post(message) {
-    message.id = id;
-    let payload = JSON.stringify(message, null, 2);
-    get('txt').value = payload;
-}
-
-function dump(id, text, style) {
-    let div = document.getElementById(id);
-    let p = document.createElement('pre');
-    if (style != undefined) {
-        p.className = style;
-    }
-    if (style === 'error') {
-        console.error(text);
-    } else {
-        console.log(text);
-    }
-    p.innerText = text;
-    div.appendChild(p);
-}
-
-function get(id) {
-    return document.getElementById(id);
-} 
-
-function run() {
-    var key = get('key');
-    var setup = get('setup');
-    setup.onclick = () => {
-        const config = JSON.stringify({
-            network: "mainnet",
-            ethereum_url: `http://127.0.0.1:3000/eth-mainnet.g.alchemy.com/v2/${key.value}`,
-            starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/v2/${key.value}`
-        });
-        worker.postMessage(config);
-        set_status('wait');
-    }
-
-    var state = get('get');
-    state.onclick = () => {
-        post({"state": {}});
+    const statusIcons = {
+        unknown: '❓',
+        pending: '⏳',
+        ready: '✅',
+        error: '❌'
     };
 
-    var exe = get('exe');
-    exe.onclick = () => {
-        post({"execute": request});
-    };
-
-    get('clear').onclick = () => {
-        let log = get('log');
-        log.replaceChildren();
-    };
-
-    var run = get('run');
-    run.disabled = true;
-    run.onclick = () => {
-        let payload = get('txt').value;
+    var ready;
+    const worker = new Worker(new URL('./wrk.js', import.meta.url), { type: 'module' });
+    worker.onmessage = event => {
         if (!ready) {
-            throw new Error('worker not ready');
+            if (event.data === 'OK') {
+                ready = true;
+                statusSpan.innerText = statusIcons.ready;
+            } else {
+                console.error(event.data);
+                statusSpan.innerText = statusIcons.error;
+            }
             return;
         }
-        dump('log', '>>> ' + payload);
-        worker.postMessage(payload);
-        id += 1;
+
+        try {
+            let json = JSON.parse(event.data);
+            let responseContent = document.getElementById(json.id);
+            delete json.id;
+            let response = formatJSON(JSON.stringify(json));
+            responseContent.innerHTML = response;
+
+            if (json.hasOwnProperty('error')) {
+                console.error(json['error']);
+                responseContent.parentElement.setAttribute("style", "border-left-color:#FF0000");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    worker.onerror = error => {
+        console.error(error);
     }
 
-    get('txt').value = '';
-}
+    function sendMessage(userMessage) {
+        if (!ready || userMessage.trim() === "") return;
 
-function set_status(message) {
-    var status = get('status');
-    if (message === 'OK') {
-        status.innerText = 'READY';
-        status.classList.remove('status-wait');
-        status.classList.add('status-ready');
-        get('setup').disabled = true;
-        get('run').disabled = false;
-    } else if (message === 'wait') {
-        status.innerText = 'WAIT';
-        status.classList.add('status-wait');
-        get('setup').disabled = true;
-        get('run').disabled = true;
-    } else {
-        status.innerText = 'ERROR';
-        status.classList.remove('status-wait');
-        status.classList.add('status-error');
-        get('setup').disabled = false;
-        get('run').disabled = true;
+        addMessagePair(userMessage, messageId);
+
+        let message = appendId(userMessage, messageId);
+        worker.postMessage(message);
+
+        messageId++;
+        input.value = '';
     }
-}
 
-run();
+    function appendId(message, id) {
+        let object = JSON.parse(message);
+        object.id = id;
+        return JSON.stringify(object);
+    }
+
+    function addMessagePair(userMessage, id) {
+        const messagePairDiv = document.createElement("div");
+        messagePairDiv.classList.add("message-pair");
+
+        const requestMessage = createMessageDiv(formatJSON(userMessage), id, "request");
+        const responseMessage = createMessageDiv(statusIcons.pending, id, "response");
+        messagePairDiv.appendChild(requestMessage);
+        messagePairDiv.appendChild(responseMessage);
+        chatLog.prepend(messagePairDiv);
+    }
+
+    function createMessageDiv(messageContent, id, type) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", type);
+
+        const content = document.createElement("div");
+        if (type === "response") {
+            content.id = id;
+        }
+        content.classList.add("content");
+        content.innerHTML = messageContent;
+
+        const messageIdDiv = document.createElement("div");
+        messageIdDiv.classList.add("id");
+        messageIdDiv.textContent = `#${id}`;
+
+        messageDiv.appendChild(content);
+        messageDiv.appendChild(messageIdDiv);
+
+        return messageDiv;
+    }
+
+    sendBtn.addEventListener("click", () => sendMessage(input.value));
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && e.shiftKey) {
+            sendMessage(input.value);
+            e.preventDefault(); // Prevents default Enter behavior (add new line)
+        }
+    });
+
+    templateBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            input.value = JSON.stringify(JSON.parse(btn.dataset.template), null, 2);
+        });
+    });
+
+    function formatJSON(jsonString) {
+        try {
+            const obj = JSON.parse(jsonString);
+            return syntaxHighlight(JSON.stringify(obj, null, 2));
+        } catch (e) {
+            return jsonString; // Return input string if not a valid JSON
+        }
+    }
+
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|\d+)/g, function (match) {
+            let cls = 'json-value';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            }
+            return `<span class="${cls}">${match}</span>`;
+        });
+    }
+
+    input.addEventListener('input', function () {
+        try {
+            const formattedJSON = JSON.stringify(JSON.parse(input.value), null, 2);
+            input.value = formattedJSON;
+        } catch (e) {
+            // ignore if the input is not a valid JSON yet
+        }
+    });
+
+    initBtn.addEventListener("click", () => {
+        if (ready) {
+            return;
+        }
+        const alchemyKey = alchemyKeyInput.value;
+        if (!alchemyKey) {
+            console.log("Alchemy key is empty");
+            return;
+        }
+        const config = JSON.stringify({
+            network: "mainnet",
+            ethereum_url: `http://127.0.0.1:3000/eth-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+            starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/v2/${alchemyKey}`
+        });
+        worker.postMessage(config);
+        statusSpan.innerText = statusIcons.pending;
+    });
+});

@@ -2,30 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Beerus WebAssembly demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css" />
-    <script type="module" src="app.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Beerus</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Beerus WebAssembly</h2>
-    <div>
-        <span>Alchemy key: </span>
-        <input id="key" type="password" value="nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1" />
-        <button id="setup">Setup</button>
-        <span>Status: </span><span id="status">none</span>
+    <div class="container">
+        <div class="alchemy-section">
+            <div><h2>Beerus</h2></div>
+            <div class="alchemy-wrapper">
+                <input type="password" id="alchemy-key" placeholder="Enter Alchemy key" value="nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1">
+                <button id="init-btn">Init</button>
+                <button class="template-btn">Status: <span id="status">❓</span></button>
+                <button class="template-btn">&#9432;</button>
+            </div>
+        </div>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="input-section">
+            <div class="input-wrapper">
+                <textarea id="json-input" placeholder="Type JSON request here..." rows="5"></textarea>
+            </div>
+            <div class="send-container">
+                <button id="send-btn">Send</button>
+                <div class="template-buttons">
+                    <button class="template-btn" data-template='{"execute": {"calldata":[],"contract_address":"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7","entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"}}'>Make Call</button>
+                    <button class="template-btn" data-template='{"state": {}}'>Get State</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <hr />
-    <div>
-        <button id="get">Get State</button>
-        <button id="exe">Make Call</button>
-    </div>
-    <div>
-        <textarea id="txt" rows="9" cols="100"></textarea>
-        <button id="run">Run</button>
-    </div>
-    <hr />
-    <button id="clear">Clear</button>
-    <div id="log"></div>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
