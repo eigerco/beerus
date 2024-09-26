@@ -176,7 +176,7 @@ mod tests {
     ) -> MockServer {
         let server = MockServer::start().await;
         for (request, response) in patterns {
-            Mock::given(body_partial_json(&request))
+            Mock::given(body_partial_json(request))
                 .respond_with(
                     ResponseTemplate::new(200).set_body_json(response),
                 )
