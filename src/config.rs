@@ -171,6 +171,19 @@ mod tests {
         matchers::body_partial_json, Mock, MockServer, ResponseTemplate,
     };
 
+    async fn mock(patterns: &[(serde_json::Value, serde_json::Value)]) -> MockServer {
+        let server = MockServer::start().await;
+        for (request, response) in patterns {
+            Mock::given(body_partial_json(&request))
+                .respond_with(
+                    ResponseTemplate::new(200).set_body_json(response),
+                )
+                .mount(&server)
+                .await;
+        }
+        server
+    }
+
     #[tokio::test]
     async fn wrong_urls() {
         let config = ServerConfig {
@@ -190,41 +203,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_mainnet_detected() {
-        let server = MockServer::start().await;
-
-        {
-            let request = serde_json::json!({
-                "method": "eth_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": MAINNET_ETHEREUM_CHAINID
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
-
-        {
-            let request = serde_json::json!({
-                "method": "starknet_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": MAINNET_STARKNET_CHAINID
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
+        let server = mock(&[
+            (
+                serde_json::json!({
+                    "method": "eth_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": MAINNET_ETHEREUM_CHAINID    
+                })
+            ),
+            (
+                serde_json::json!({
+                    "method": "starknet_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": MAINNET_STARKNET_CHAINID    
+                })
+            ),
+        ]).await;
 
         let rpc = format!("http://{}/", server.address());
         let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
@@ -233,41 +233,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_testnet_detected() {
-        let server = MockServer::start().await;
-
-        {
-            let request = serde_json::json!({
-                "method": "eth_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": SEPOLIA_ETHEREUM_CHAINID
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
-
-        {
-            let request = serde_json::json!({
-                "method": "starknet_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": SEPOLIA_STARKNET_CHAINID
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
+        let server = mock(&[
+            (
+                serde_json::json!({
+                    "method": "eth_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": SEPOLIA_ETHEREUM_CHAINID    
+                })
+            ),
+            (
+                serde_json::json!({
+                    "method": "starknet_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": SEPOLIA_STARKNET_CHAINID    
+                })
+            ),
+        ]).await;
 
         let rpc = format!("http://{}/", server.address());
         let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
@@ -276,41 +263,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_chain_mismatch() {
-        let server = MockServer::start().await;
-
-        {
-            let request = serde_json::json!({
-                "method": "eth_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": "0xA"
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
-
-        {
-            let request = serde_json::json!({
-                "method": "starknet_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": "0xB"
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
+        let server = mock(&[
+            (
+                serde_json::json!({
+                    "method": "eth_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": "0xA"
+                })
+            ),
+            (
+                serde_json::json!({
+                    "method": "starknet_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": "0xB"
+                })
+            ),
+        ]).await;
 
         let rpc = format!("http://{}/", server.address());
         let result = check_chain_id(&rpc, &rpc).await;
@@ -322,41 +296,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_chain_error() {
-        let server = MockServer::start().await;
-
-        {
-            let request = serde_json::json!({
-                "method": "eth_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": "0xcafebabe"
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
-
-        {
-            let request = serde_json::json!({
-                "method": "starknet_chainId"
-            });
-            let response = serde_json::json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "error": "computer says no"
-            });
-            Mock::given(body_partial_json(&request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
+        let server = mock(&[
+            (
+                serde_json::json!({
+                    "method": "eth_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": "0xcafebabe"
+                })
+            ),
+            (
+                serde_json::json!({
+                    "method": "starknet_chainId"
+                }), 
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "error": "computer says no"
+                })
+            ),
+        ]).await;
 
         let rpc = format!("http://{}/", server.address());
         let result = check_chain_id(&rpc, &rpc).await;
