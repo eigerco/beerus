@@ -1,22 +1,219 @@
-#log {
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f0f2f5;
+    display: flex;
+    /* justify-content: center; */
+    /* align-items: center; */
+    height: 100vh;
+    overflow: hidden; /* Prevents page scroll */
+}
+
+.container {
+    width: 100%;
+    /* max-width: 800px; */
+    /* height: 90vh; */
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Alchemy Section */
+.alchemy-section {
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.alchemy-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.alchemy-section label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+#alchemy-key {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    flex-grow: 1;
+}
+
+#init-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#init-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Chat Log Styles */
+.chat-log {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    background-color: #fafafa;
+}
+
+.chat-log .message-pair {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.chat-log .message {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    flex: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: flex-start;
+    border-left: 4px solid #007bff;
+    transition: background 0.2s;
+}
+
+.chat-log .message:hover {
+    background-color: #f0f2f7;
+}
+
+.chat-log .message .content {
+    flex-grow: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
     font-family: monospace;
 }
 
-.error {
-    color: red;
+.chat-log .message .id {
+    font-size: 0.9rem;
+    color: #888888;
+    margin-left: 15px;
 }
 
-.status-ready {
-    color: green;
-    font-weight: bold;
+/* JSON Highlighting */
+.json-key {
+    color: #a71d5d;
 }
 
-.status-wait {
-    color: orange;
-    font-weight: bold;
+.json-value {
+    color: #0086b3;
 }
 
-.status-error {
-    color: red;
-    font-weight: bold;
+.json-string {
+    color: #63a35c;
+}
+
+/* Input Section */
+.input-section {
+    padding: 15px;
+    background-color: #ffffff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+    flex-grow: 1;
+}
+
+#json-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: none; /* Prevents resizing */
+    font-family: monospace;
+    white-space: pre;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    background-color: #f0f2f5;
+    outline: none;
+}
+
+/* Send Button and Template Buttons */
+.send-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#send-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#send-btn:hover {
+    background-color: #0056b3;
+}
+
+.template-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.template-btn {
+    background-color: #f0f2f5;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.template-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Responsive Design */
+@media only screen and (max-width: 768px) {
+    .chat-log .message-pair {
+        flex-direction: column;
+    }
+
+    #json-input {
+        font-size: 0.9rem;
+    }
+
+    #send-btn {
+        font-size: 0.9rem;
+    }
+
+    .chat-log .message {
+        padding: 10px;
+    }
 }
