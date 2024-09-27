@@ -28,7 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BEERUS_TEST_RUN: 1
-      BEERUS_TEST_STARKNET_URL: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
+      STARKNET_MAINNET_URL: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
+      STARKNET_SEPOLIA_URL: https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable

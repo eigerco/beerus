@@ -14,9 +14,9 @@ pub struct Context {
     pub server: Server,
 }
 
-#[allow(dead_code)] // used in macros
-pub async fn ctx() -> Option<Context> {
-    let url = std::env::var("BEERUS_TEST_STARKNET_URL").ok()?;
+#[allow(dead_code)]
+pub async fn ctx_mainnet() -> Option<Context> {
+    let url = std::env::var("STARKNET_MAINNET_URL").ok()?;
 
     let state = State {
         block_number: 652076,
@@ -29,6 +29,29 @@ pub async fn ctx() -> Option<Context> {
         )
         .unwrap(),
     };
+    ctx(url, state).await
+}
+
+#[allow(dead_code)]
+pub async fn ctx_sepolia() -> Option<Context> {
+    let url = std::env::var("STARKNET_SEPOLIA_URL").ok()?;
+
+    let state = State {
+        block_number: 209582,
+        block_hash: Felt::try_new(
+            "0x45fb3ae1436743e74a81eac88e1beee6e8fb34aecb7b2e43e0577406f390f5f",
+        )
+        .unwrap(),
+        root: Felt::try_new(
+            "0x11dccdce33557ca6e14871d4235a8b65e9bd512722ac9e2cb96ff49bfb9af30",
+        )
+        .unwrap(),
+    };
+    ctx(url, state).await
+}
+
+#[allow(dead_code)] // used in macros
+async fn ctx(url: String, state: State) -> Option<Context> {
     let state = Arc::new(RwLock::new(state));
     let server = serve(&url, "127.0.0.1:0", state.clone()).await.ok()?;
     tracing::info!(port = server.port(), "test server is up");
@@ -40,7 +63,10 @@ pub async fn ctx() -> Option<Context> {
 
 #[macro_export]
 macro_rules! setup {
-    () => {{
+    () => {
+        setup!("mainnet")
+    };
+    ($e:expr) => {{
         let run: bool = std::env::var("BEERUS_TEST_RUN")
             .ok()
             .map(|value| &value == "1")
@@ -48,7 +74,11 @@ macro_rules! setup {
         if !run {
             return Ok(());
         }
-        if let Some(ctx) = common::ctx::ctx().await {
+        let context = match $e {
+            "sepolia" => common::ctx::ctx_sepolia().await,
+            _ => common::ctx::ctx_mainnet().await,
+        };
+        if let Some(ctx) = context {
             ctx
         } else {
             panic!("Invalid test setup");
@@ -66,7 +96,7 @@ macro_rules! client {
         if !run {
             return Ok(());
         }
-        if let Ok(url) = std::env::var("BEERUS_TEST_STARKNET_URL") {
+        if let Ok(url) = std::env::var("STARKNET_MAINNET_URL") {
             Client::new(&url, beerus::client::Http::new())
         } else {
             panic!("Invalid test setup");

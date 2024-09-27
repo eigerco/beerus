@@ -15,8 +15,8 @@ const DEFAULT_POLL_SECS: u64 = 5;
 const MAINNET_ETHEREUM_CHAINID: &str = "0x1";
 const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
 
-const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
-const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
+pub const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
+pub const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
 
 #[cfg(feature = "testing")]
 const KATANA_STARKNET_CHAINID: &str = "0x4b4154414e41";

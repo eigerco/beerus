@@ -1,7 +1,7 @@
 use beerus::gen::{Address, BlockId, BlockTag, Felt, Rpc, TxnHash};
 
 use common::{
-    constants::{
+    dummies::{
         declare_transaction, deploy_transaction, estimate_fee_transaction,
         invoke_transaction,
     },

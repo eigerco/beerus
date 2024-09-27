@@ -1,16 +1,24 @@
-use beerus::gen::{
-    Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-    GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1,
-    InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn,
-    TxnExecutionStatus, TxnHash, TxnReceipt, TxnReceiptWithBlockInfo,
-    TxnStatus,
+use beerus::{
+    config::{MAINNET_STARKNET_CHAINID, SEPOLIA_STARKNET_CHAINID},
+    gen::{
+        Address, BlockHash, BlockId, BlockNumber, BlockTag,
+        BroadcastedDeclareTxn, BroadcastedDeployAccountTxn,
+        BroadcastedInvokeTxn, BroadcastedTxn, DeployAccountTxn,
+        DeployAccountTxnV1, DeployAccountTxnV1Type, DeployAccountTxnV1Version,
+        Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult,
+        GetClassAtResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex,
+        InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt,
+        TxnReceiptWithBlockInfo, TxnStatus,
+    },
 };
 
 mod common;
 
-use common::err::Error;
+use common::{
+    constants::{CLASS_HASH, DECLARE_ACCOUNT_V3},
+    err::Error,
+};
 
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -28,7 +36,7 @@ async fn test_chainId() -> Result<(), Error> {
     let ctx = setup!();
 
     let ret = ctx.client.chainId().await?;
-    assert_eq!(ret.as_ref(), "0x534e5f4d41494e");
+    assert_eq!(ret.as_ref(), MAINNET_STARKNET_CHAINID);
     Ok(())
 }
 
@@ -434,5 +442,55 @@ async fn test_getClassHashAt() -> Result<(), Error> {
         ret.as_ref(),
         "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003"
     );
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_declare_deploy_account_already_existing() -> Result<(), Error> {
+    let ctx = setup!("sepolia");
+
+    let res_chain_id = ctx.client.chainId().await?;
+    assert_eq!(res_chain_id.as_ref(), SEPOLIA_STARKNET_CHAINID);
+
+    let res_spec_version = ctx.client.specVersion().await?;
+    assert_eq!(res_spec_version, "0.7.1");
+
+    let block_id = BlockId::BlockTag(BlockTag::Latest);
+    let class_hash = Felt::try_new(CLASS_HASH)?;
+    let res_class = ctx.client.getClass(block_id, class_hash.clone()).await;
+    assert!(res_class.is_ok());
+
+    let declare_account: BroadcastedDeclareTxn =
+        serde_json::from_str(DECLARE_ACCOUNT_V3)?;
+    let res_declare = ctx.client.addDeclareTransaction(declare_account).await;
+    assert!(res_declare.is_err());
+    assert!(res_declare
+        .unwrap_err()
+        .message
+        .contains("Account validation failed"));
+
+    let deploy_account = BroadcastedDeployAccountTxn(DeployAccountTxn::DeployAccountTxnV1(DeployAccountTxnV1{
+        class_hash,
+        constructor_calldata: vec![
+            Felt::try_new("0x7e48300f2857fb5f0d5b59b837eedbd8c82dba528546750cb5c5324e02d8744")?,
+        ],
+        contract_address_salt: Felt::try_new("0x70e3421d58127670aed1e27218b84aab8a2424345e30125df0cb29d04057bae")?,
+        max_fee: Felt::try_new("0x1c484e3020c00")?,
+        nonce: Felt::try_new("0x0")?,
+        r#type: DeployAccountTxnV1Type::DeployAccount,
+        signature: vec![
+            Felt::try_new("0x239f9a3dad69270f669a0796250c03afd5332aa0c07bd5f302169833f3459a3")?,
+            Felt::try_new("0x43c6d5ddc2bf6f0581dbe39d1dfb2335d1ae090173f1a0c9ff4f5210057e45d")?
+        ],
+        version: DeployAccountTxnV1Version::V0x1,
+    }));
+    let res_deploy =
+        ctx.client.addDeployAccountTransaction(deploy_account).await;
+    assert!(res_deploy.is_err());
+    assert!(res_deploy
+        .unwrap_err()
+        .message
+        .contains("Account validation failed"));
+
     Ok(())
 }
