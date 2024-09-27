@@ -253,13 +253,15 @@ async fn test_getStorageAt() -> Result<(), Error> {
         "0x0341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1",
     )?;
 
+    const EXPECTED: &str = "0x47616d65206f66204c69666520546f6b656e";
+
     let block_id_number =
         BlockId::BlockNumber { block_number: BlockNumber::try_new(600612)? };
     let ret = ctx
         .client
         .getStorageAt(contract_address.clone(), key.clone(), block_id_number)
         .await?;
-    assert_eq!(ret.as_ref(), "0x47616d65206f66204c69666520546f6b656e");
+    assert_eq!(ret.as_ref(), EXPECTED);
 
     let block_id_hash = BlockId::BlockHash {
         block_hash: BlockHash(Felt::try_new(
@@ -270,7 +272,14 @@ async fn test_getStorageAt() -> Result<(), Error> {
         .client
         .getStorageAt(contract_address.clone(), key.clone(), block_id_hash)
         .await?;
-    assert_eq!(ret.as_ref(), "0x47616d65206f66204c69666520546f6b656e");
+    assert_eq!(ret.as_ref(), EXPECTED);
+
+    let block_id_tag = BlockId::BlockTag(BlockTag::Latest);
+    let ret = ctx
+        .client
+        .getStorageAt(contract_address.clone(), key.clone(), block_id_tag)
+        .await?;
+    assert_eq!(ret.as_ref(), EXPECTED);
 
     let block_id_tag = BlockId::BlockTag(BlockTag::Pending);
     let ret =
