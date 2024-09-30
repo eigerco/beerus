@@ -90,7 +90,7 @@ dependencies = [
  "bytes",
  "cfg-if",
  "const-hex",
- "derive_more",
+ "derive_more 0.99.18",
  "hex-literal",
  "itoa",
  "ruint",
@@ -107,11 +107,28 @@ dependencies = [
  "bytes",
  "cfg-if",
  "const-hex",
- "derive_more",
+ "derive_more 0.99.18",
  "hex-literal",
  "itoa",
  "ruint",
  "serde",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
+name = "alloy-primitives"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "260d3ff3bff0bb84599f032a2f2c6828180b0ea0cd41fdaf44f39cef3ba41861"
+dependencies = [
+ "bytes",
+ "cfg-if",
+ "const-hex",
+ "derive_more 1.0.0",
+ "hex-literal",
+ "itoa",
+ "paste",
+ "ruint",
  "tiny-keccak 2.0.2",
 ]
 
@@ -548,7 +565,7 @@ dependencies = [
 name = "beerus"
 version = "0.5.1"
 dependencies = [
- "alloy-primitives 0.7.7",
+ "alloy-primitives 0.8.5",
  "anyhow",
  "async-trait",
  "axum",
@@ -750,7 +767,7 @@ dependencies = [
  "cairo-lang-starknet-classes 2.8.2",
  "cairo-lang-utils 2.8.2",
  "cairo-vm 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "derive_more",
+ "derive_more 0.99.18",
  "indexmap 2.5.0",
  "itertools 0.10.5",
  "keccak",
@@ -790,7 +807,7 @@ dependencies = [
  "cairo-lang-starknet-classes 2.7.0",
  "cairo-lang-utils 2.7.0",
  "cairo-vm 1.0.1 (git+https://github.com/sergey-melnychuk/cairo-vm?tag=beerus-wasm-2024-09-21)",
- "derive_more",
+ "derive_more 0.99.18",
  "hashbrown 0.14.5",
  "indexmap 2.5.0",
  "itertools 0.10.5",
@@ -2594,6 +2611,27 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn 2.0.77",
+]
+
+[[package]]
+name = "derive_more"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
+dependencies = [
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.77",
+ "unicode-xid",
 ]
 
 [[package]]
@@ -4609,7 +4647,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "alloy-primitives 0.7.7",
  "anyhow",
- "derive_more",
+ "derive_more 0.99.18",
  "dojo-metrics",
  "futures",
  "katana-db",
@@ -4713,7 +4751,7 @@ dependencies = [
  "alloy-primitives 0.7.7",
  "anyhow",
  "base64 0.21.7",
- "derive_more",
+ "derive_more 0.99.18",
  "flate2",
  "katana-cairo",
  "lazy_static",
@@ -4786,7 +4824,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.9#e42ce0c220a5
 dependencies = [
  "alloy-primitives 0.7.7",
  "anyhow",
- "derive_more",
+ "derive_more 0.99.18",
  "futures",
  "jsonrpsee 0.16.3",
  "katana-cairo",
@@ -6389,7 +6427,7 @@ source = "git+https://github.com/paradigmxyz/reth.git?rev=b34b0d3#b34b0d3c8de259
 dependencies = [
  "bitflags 2.6.0",
  "byteorder",
- "derive_more",
+ "derive_more 0.99.18",
  "indexmap 2.5.0",
  "libc",
  "parking_lot 0.12.3",
@@ -6893,7 +6931,7 @@ checksum = "eca070c12893629e2cc820a9761bedf6ce1dcddc9852984d1dc734b8bd9bd024"
 dependencies = [
  "bitvec 1.0.1",
  "cfg-if",
- "derive_more",
+ "derive_more 0.99.18",
  "parity-scale-codec 3.6.12",
  "scale-info-derive",
 ]
@@ -7770,7 +7808,7 @@ checksum = "1b505c9c076d9fce854304bd743c93ea540ebea6b16ec96819b07343a3aa2c7c"
 dependencies = [
  "bitvec 1.0.1",
  "cairo-lang-starknet-classes 2.8.2",
- "derive_more",
+ "derive_more 0.99.18",
  "hex",
  "indexmap 2.5.0",
  "itertools 0.12.1",
@@ -7793,7 +7831,7 @@ source = "git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-
 dependencies = [
  "bitvec 1.0.1",
  "cairo-lang-starknet-classes 2.8.2",
- "derive_more",
+ "derive_more 0.99.18",
  "hashbrown 0.14.5",
  "hex",
  "indexmap 2.5.0",
