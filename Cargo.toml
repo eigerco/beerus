@@ -66,7 +66,7 @@ gloo-timers = { version = "0.2", features = ["futures"] }
 [dev-dependencies]
 anyhow = "1.0.89"
 alloy-primitives = { version = "0.7.6", default-features = false }
-katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.13" }
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
