@@ -76,7 +76,8 @@ macro_rules! setup {
         }
         let context = match $e {
             "sepolia" => common::ctx::ctx_sepolia().await,
-            _ => common::ctx::ctx_mainnet().await,
+            "mainnet" => common::ctx::ctx_mainnet().await,
+            _ => panic!("Invalid network setup. Has to be mainnet or sepolia."),
         };
         if let Some(ctx) = context {
             ctx
