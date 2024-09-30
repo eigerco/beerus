@@ -70,7 +70,7 @@ katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
-katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.13" }
 katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 wiremock = "0.6.2"
 
