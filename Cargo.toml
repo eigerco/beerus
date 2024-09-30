@@ -71,7 +71,7 @@ katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-al
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
-katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.13" }
 wiremock = "0.6.2"
 
 [patch.crates-io]
