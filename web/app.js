@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const config = JSON.stringify({
             network: "mainnet",
             ethereum_url: `http://127.0.0.1:3000/eth-mainnet.g.alchemy.com/v2/${alchemyKey}`,
-            starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/v2/${alchemyKey}`
+            starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${alchemyKey}`
         });
         worker.postMessage(config);
         statusSpan.innerText = statusIcons.pending;
