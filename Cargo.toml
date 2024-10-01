@@ -48,7 +48,7 @@ starknet_api = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag 
 cairo-lang-starknet-classes = { git = "https://github.com/sergey-melnychuk/cairo.git", tag = "beerus-wasm-2024-09-22" }
 
 helios = { git = "https://github.com/sergey-melnychuk/helios", branch = "beerus-wasm" }
-reqwest = { version = "0.12.3", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12.8", default-features = false, features = ["json", "rustls-tls"] }
 ureq = { version = "2.10.1", features = ["json"] }
 
 
