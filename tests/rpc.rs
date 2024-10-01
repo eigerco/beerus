@@ -58,30 +58,6 @@ async fn test_blockNumber() -> Result<(), Error> {
 
 #[tokio::test]
 #[allow(non_snake_case)]
-async fn test_call() -> Result<(), Error> {
-    let ctx = setup!();
-
-    let request = FunctionCall {
-        calldata: Vec::default(),
-        contract_address: Address(Felt::try_new(
-            "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-        )?),
-        entry_point_selector: Felt::try_new(
-            "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
-        )?,
-    };
-
-    let block_id =
-        BlockId::BlockNumber { block_number: BlockNumber::try_new(33482)? };
-
-    let ret = ctx.client.call(request, block_id).await?;
-    assert_eq!(ret.len(), 1);
-    assert_eq!(ret[0].as_ref(), "0x4574686572");
-    Ok(())
-}
-
-#[tokio::test]
-#[allow(non_snake_case)]
 async fn test_estimateFee() -> Result<(), Error> {
     let ctx = setup!();
 
@@ -437,5 +413,56 @@ async fn test_getClassHashAt() -> Result<(), Error> {
         ret.as_ref(),
         "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003"
     );
+    Ok(())
+}
+
+#[tokio::test]
+async fn erc20_call() -> Result<(), Error> {
+    let ctx = setup!();
+    let block_id = BlockId::BlockTag(BlockTag::Pending);
+    let erc20_address = Address(Felt::try_new(
+        "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    )?);
+
+    let felt_name = Felt::try_new(
+        "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60",
+    )?;
+    let request_name = FunctionCall {
+        calldata: vec![],
+        contract_address: erc20_address.clone(),
+        entry_point_selector: felt_name,
+    };
+    let res_call_name = ctx.client.call(request_name, block_id.clone()).await?;
+    assert_eq!(res_call_name.len(), 1);
+    let ether = "0x4574686572";
+    assert_eq!(res_call_name[0].as_ref(), ether);
+
+    let felt_decimals = Felt::try_new(
+        "0x4c4fb1ab068f6039d5780c68dd0fa2f8742cceb3426d19667778ca7f3518a9",
+    )?;
+    let request_decimals = FunctionCall {
+        calldata: vec![],
+        contract_address: erc20_address.clone(),
+        entry_point_selector: felt_decimals,
+    };
+    let res_call_decimals =
+        ctx.client.call(request_decimals, block_id.clone()).await?;
+    assert_eq!(res_call_decimals.len(), 1);
+    let twelve = "0x12";
+    assert_eq!(res_call_decimals[0].as_ref(), twelve);
+
+    let felt_symbol = Felt::try_new(
+        "0x216b05c387bab9ac31918a3e61672f4618601f3c598a2f3f2710f37053e1ea4",
+    )?;
+    let request_symbol = FunctionCall {
+        calldata: vec![],
+        contract_address: erc20_address,
+        entry_point_selector: felt_symbol,
+    };
+    let res_call_symbol = ctx.client.call(request_symbol, block_id).await?;
+    assert_eq!(res_call_symbol.len(), 1);
+    let eth = "0x455448";
+    assert_eq!(res_call_symbol[0].as_ref(), eth);
+
     Ok(())
 }
