@@ -466,3 +466,69 @@ async fn erc20_call() -> Result<(), Error> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn account_call() -> Result<(), Error> {
+    let ctx = setup!("sepolia");
+    let block_id = BlockId::BlockTag(BlockTag::Pending);
+    let account_address = Address(Felt::try_new(
+        "0x61ce2b8e048c19ee48af79a95e984769366611bb3f46c45cf70460b82efff8e",
+    )?);
+
+    let felt_public_key = Felt::try_new(
+        "0x3b28019ccfdbd30ffc65951d94bb85c9e2b8434111a000b5afd533ce65f57a4",
+    )?;
+    let request_name = FunctionCall {
+        calldata: vec![],
+        contract_address: account_address.clone(),
+        entry_point_selector: felt_public_key,
+    };
+    let res_call_public_key =
+        ctx.client.call(request_name, block_id.clone()).await?;
+    assert_eq!(res_call_public_key.len(), 1);
+    let public_key =
+        "0x145b000feec4f33c8622e91311922950d813ff8514b6a6552fc662eeb61cdf9";
+    assert_eq!(res_call_public_key[0].as_ref(), public_key);
+
+    let interface = Felt::try_new(
+        "0x2ceccef7f994940b3962a6c67e0ba4fcd37df7d131417c604f91e03caecc1cd",
+    )?;
+    let felt_supports_interface = Felt::try_new(
+        "0xfe80f537b66d12a00b6d3c072b44afbb716e78dde5c3f0ef116ee93d3e3283",
+    )?;
+    let request_supports_interface = FunctionCall {
+        calldata: vec![interface],
+        contract_address: account_address.clone(),
+        entry_point_selector: felt_supports_interface,
+    };
+    let res_call_supports_interface =
+        ctx.client.call(request_supports_interface, block_id.clone()).await?;
+    assert_eq!(res_call_supports_interface.len(), 1);
+    assert_eq!(res_call_supports_interface[0].as_ref(), "0x1");
+
+    let hash = Felt::try_new(
+        "0x259cbf64e5b2beb31cfac3b444b8dd20650e841581b25be14d5e08947e81cf2",
+    )?;
+    let array_size = Felt::try_new("0x2")?;
+    let signature_r = Felt::try_new(
+        "0x58f1ad9bb6331bb460c80260eee0c65980b4c1a659a5d84e7e51418afdf7311",
+    )?;
+    let signature_s = Felt::try_new(
+        "0x74d9f54825e422fc5004533c33813ab2772057f87652e75a24e10ffac14726d",
+    )?;
+    let felt_is_valid_signature = Felt::try_new(
+        "0x28420862938116cb3bbdbedee07451ccc54d4e9412dbef71142ad1980a30941",
+    )?;
+    let request_is_valid_signature = FunctionCall {
+        calldata: vec![hash, array_size, signature_r, signature_s],
+        contract_address: account_address,
+        entry_point_selector: felt_is_valid_signature,
+    };
+    let res_call_is_valid_signature =
+        ctx.client.call(request_is_valid_signature, block_id).await?;
+    assert_eq!(res_call_is_valid_signature.len(), 1);
+    let valid = "0x56414c4944";
+    assert_eq!(res_call_is_valid_signature[0].as_ref(), valid);
+
+    Ok(())
+}
