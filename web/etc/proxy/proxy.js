@@ -25,6 +25,10 @@ app.all('*', function (req, res, next) {
     if (req.path === '/favicon.ico') {
         return;
     }
+    if (req.path === '/check') {
+        res.status(200).send('ready');
+        return;
+    }
 
     console.log(req.originalUrl);
     var target;
