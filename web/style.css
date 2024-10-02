@@ -9,16 +9,13 @@
 body {
     background-color: #f0f2f5;
     display: flex;
-    /* justify-content: center; */
-    /* align-items: center; */
     height: 100vh;
     overflow: hidden; /* Prevents page scroll */
 }
 
 .container {
     width: 100%;
-    /* max-width: 800px; */
-    /* height: 90vh; */
+    min-width: 680px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -27,7 +24,6 @@ body {
     overflow: hidden;
 }
 
-/* Alchemy Section */
 .alchemy-section {
     padding: 15px;
     background-color: #f7f7f7;
@@ -70,7 +66,6 @@ body {
     background-color: #0056b3;
 }
 
-/* Chat Log Styles */
 .chat-log {
     flex: 1;
     padding: 20px;
@@ -116,7 +111,6 @@ body {
     margin-left: 15px;
 }
 
-/* JSON Highlighting */
 .json-key {
     color: #a71d5d;
 }
@@ -129,7 +123,6 @@ body {
     color: #63a35c;
 }
 
-/* Input Section */
 .input-section {
     padding: 15px;
     background-color: #ffffff;
@@ -138,7 +131,6 @@ body {
     flex-direction: column;
 }
 
-/* Input Wrapper */
 .input-wrapper {
     flex-grow: 1;
 }
@@ -149,7 +141,7 @@ body {
     font-size: 1rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    resize: none; /* Prevents resizing */
+    resize: none;
     font-family: monospace;
     white-space: pre;
     overflow-wrap: break-word;
@@ -181,6 +173,15 @@ body {
     background-color: #0056b3;
 }
 
+.status-btn {
+    background-color: #f0f2f5;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
 .template-buttons {
     display: flex;
     gap: 10px;
@@ -199,7 +200,36 @@ body {
     background-color: #e0e0e0;
 }
 
-/* Responsive Design */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 40px;
+    border-radius: 8px;
+    width: 40%;
+    min-width: 300px;
+    max-width: fit-content;
+    position: relative;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+}
+
+.modal-content li {
+    margin-bottom: 5px;
+}
+
 @media only screen and (max-width: 768px) {
     .chat-log .message-pair {
         flex-direction: column;

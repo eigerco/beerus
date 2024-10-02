@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const alchemyKeyInput = document.getElementById("alchemy-key");
     const initBtn = document.getElementById("init-btn");
     const statusSpan = document.getElementById("status");
+    const proxySpan = document.getElementById("proxy");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const infoBtn = document.getElementById("info-btn");
+    const proxyBtn = document.getElementById("proxy-btn");
     let messageId = 1;
 
     const statusIcons = {
@@ -165,4 +169,61 @@ document.addEventListener("DOMContentLoaded", () => {
         worker.postMessage(config);
         statusSpan.innerText = statusIcons.pending;
     });
+
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.style.display = "none";
+        }
+    });
+
+    function timeout(ms, promise) {
+        return new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            reject(new Error('TIMEOUT'))
+          }, ms)
+      
+          promise
+            .then(value => {
+              clearTimeout(timer)
+              resolve(value)
+            })
+            .catch(reason => {
+              clearTimeout(timer)
+              reject(reason)
+            })
+        });
+    }
+
+    function checkProxy() {
+        proxySpan.innerText = statusIcons.pending;
+        timeout(1000, fetch('http://127.0.0.1:3000/check'))
+            .then(response => response.text())
+            .then(response => {
+                console.log('Proxy:', response);
+                if (response.trim() === 'ready') {
+                    proxySpan.innerText = statusIcons.ready;
+                } else {
+                    proxySpan.innerText = statusIcons.unknown;
+                }
+            })
+            .catch((e) => {
+                console.error('Proxy:', e);
+                proxySpan.innerText = statusIcons.error;
+            });
+    }
+
+    proxyBtn.addEventListener("click", checkProxy);
+
+    modalOverlay.style.display = "flex";
+    infoBtn.addEventListener("click", () => {
+        modalOverlay.style.display = "flex";
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            modalOverlay.style.display = "none";
+        }
+    });
+
+    checkProxy();
 });
