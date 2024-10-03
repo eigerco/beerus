@@ -1,13 +1,11 @@
 use beerus::{
-    config::{MAINNET_STARKNET_CHAINID, SEPOLIA_STARKNET_CHAINID},
+    config::MAINNET_STARKNET_CHAINID,
     gen::{
         Address, BlockHash, BlockId, BlockNumber, BlockTag,
-        BroadcastedDeclareTxn, BroadcastedDeployAccountTxn,
-        BroadcastedInvokeTxn, BroadcastedTxn, DeployAccountTxn,
-        DeployAccountTxnV1, DeployAccountTxnV1Type, DeployAccountTxnV1Version,
-        Felt, FunctionCall, GetBlockWithTxHashesResult, GetBlockWithTxsResult,
-        GetClassAtResult, GetClassResult, GetTransactionByBlockIdAndIndexIndex,
-        InvokeTxn, InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+        BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall,
+        GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult,
+        GetClassResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
+        InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
         SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt,
         TxnReceiptWithBlockInfo, TxnStatus,
     },
@@ -15,10 +13,7 @@ use beerus::{
 
 mod common;
 
-use common::{
-    constants::{CLASS_HASH, DECLARE_ACCOUNT_V3},
-    err::Error,
-};
+use common::err::Error;
 
 #[tokio::test]
 #[allow(non_snake_case)]
