@@ -2,7 +2,7 @@
 description = "Light client for Starknet"
 edition = "2021"
 name = "beerus"
-version = "0.5.1"
+version = "0.6.0"
 repository = "https://github.com/eigerco/beerus"
 license = "MIT"
 
