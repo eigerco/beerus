@@ -147,7 +147,8 @@ cargo build --release
 cargo test
 
 ## Run integration tests against live endpoint
-export BEERUS_TEST_STARKNET_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
+export STARKNET_MAINNET_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
+export STARKNET_SEPOLIA_URL=https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
 BEERUS_TEST_RUN=1 cargo test
 ```
 

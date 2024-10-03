@@ -1,11 +1,14 @@
-use beerus::gen::{
-    Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-    GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1,
-    InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn,
-    TxnExecutionStatus, TxnHash, TxnReceipt, TxnReceiptWithBlockInfo,
-    TxnStatus,
+use beerus::{
+    config::MAINNET_STARKNET_CHAINID,
+    gen::{
+        Address, BlockHash, BlockId, BlockNumber, BlockTag,
+        BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall,
+        GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult,
+        GetClassResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
+        InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt,
+        TxnReceiptWithBlockInfo, TxnStatus,
+    },
 };
 
 mod common;
@@ -28,7 +31,7 @@ async fn test_chainId() -> Result<(), Error> {
     let ctx = setup!();
 
     let ret = ctx.client.chainId().await?;
-    assert_eq!(ret.as_ref(), "0x534e5f4d41494e");
+    assert_eq!(ret.as_ref(), MAINNET_STARKNET_CHAINID);
     Ok(())
 }
 
