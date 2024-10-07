@@ -1,15 +1,15 @@
 #[allow(dead_code)]
 pub const COMPILED_ACCOUNT_CONTRACT_V2: &str =
-    include_str!("../clob/compiled_account_contract_v2.txt");
+    include_str!("./clob/compiled_account_contract_v2.txt");
 #[allow(dead_code)]
 pub const COMPILED_ACCOUNT_CONTRACT_V3: &str =
-    include_str!("../clob/compiled_account_contract_v3.txt");
+    include_str!("./clob/compiled_account_contract_v3.txt");
 #[allow(dead_code)]
 pub const DECLARE_ACCOUNT_V2: &str =
-    include_str!("../clob/declare_account_v2.txt");
+    include_str!("./clob/declare_account_v2.txt");
 #[allow(dead_code)]
 pub const DECLARE_ACCOUNT_V3: &str =
-    include_str!("../clob/declare_account_v3.txt");
+    include_str!("./clob/declare_account_v3.txt");
 
 #[allow(dead_code)]
 pub const CLASS_HASH: &str =
