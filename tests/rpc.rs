@@ -1,39 +1,18 @@
-use beerus::{
-    config::MAINNET_STARKNET_CHAINID,
-    gen::{
-        Address, BlockHash, BlockId, BlockNumber, BlockTag,
-        BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall,
-        GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult,
-        GetClassResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
-        InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
-        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt,
-        TxnReceiptWithBlockInfo, TxnStatus,
-    },
+use beerus::gen::{
+    Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
+    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
+    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
+    GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1,
+    InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn,
+    TxnExecutionStatus, TxnHash, TxnReceipt, TxnReceiptWithBlockInfo,
+    TxnStatus,
 };
 
 mod common;
+mod starknet;
 
 use common::err::Error;
-
-#[tokio::test]
-#[allow(non_snake_case)]
-async fn test_specVersion() -> Result<(), Error> {
-    let ctx = setup!();
-
-    let ret = ctx.client.specVersion().await?;
-    assert_eq!(ret, "0.7.1");
-    Ok(())
-}
-
-#[tokio::test]
-#[allow(non_snake_case)]
-async fn test_chainId() -> Result<(), Error> {
-    let ctx = setup!();
-
-    let ret = ctx.client.chainId().await?;
-    assert_eq!(ret.as_ref(), MAINNET_STARKNET_CHAINID);
-    Ok(())
-}
+use starknet::executor::Executor;
 
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -530,5 +509,19 @@ async fn account_call() -> Result<(), Error> {
     let valid = "0x56414c4944";
     assert_eq!(res_call_is_valid_signature[0].as_ref(), valid);
 
+    Ok(())
+}
+
+#[tokio::test]
+async fn deploy_new_account_on_sepolia() -> Result<(), Error> {
+    // TODO #807
+    // schedule test once each month in separate workflow
+    // with each test, template account id is incremented by 1
+    // commit from workflows to update latest state of id
+    let _ctx = setup!("sepolia");
+    let num_of_new_accounts = 1;
+    let _executor = Executor::new(num_of_new_accounts)?;
+    let _update_template = true;
+    // executor.deploy_accounts(update_template)?;
     Ok(())
 }

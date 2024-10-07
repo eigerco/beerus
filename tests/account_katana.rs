@@ -11,13 +11,19 @@ use beerus::{
         TxnHash,
     },
 };
-use common::constants::{
-    CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
-    CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3, SENDER_ADDRESS,
+use common::err::Error;
+use starknet::katana::Katana;
+use starknet::{
+    constants::{
+        CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
+        CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3,
+        SENDER_ADDRESS,
+    },
+    executor::Executor,
 };
-use common::katana::Katana;
 
 mod common;
+mod starknet;
 
 async fn setup() -> (Katana, Client<Http>) {
     let katana = Katana::init("http://127.0.0.1:0").await.unwrap();
@@ -39,6 +45,16 @@ async fn declare_deploy_account_v2() {
     estimate_deploy(&client).await;
     transfer_eth(&client).await;
     deploy(client).await;
+}
+
+#[tokio::test]
+async fn deploy_multiple_accounts_on_katana() -> Result<(), Error> {
+    let _katana = Katana::init("http://127.0.0.1:0").await?;
+    let num_of_new_accounts = 3;
+    let mut executor = Executor::new(num_of_new_accounts)?;
+    let update_template = false;
+    executor.deploy_accounts(update_template)?;
+    Ok(())
 }
 
 async fn declare(
