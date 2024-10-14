@@ -563,7 +563,7 @@ dependencies = [
 
 [[package]]
 name = "beerus"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "alloy-primitives 0.8.5",
  "anyhow",
