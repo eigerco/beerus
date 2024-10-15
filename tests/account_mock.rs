@@ -1,6 +1,6 @@
 use beerus::gen::{Address, BlockId, BlockTag, Felt, Rpc, TxnHash};
 
-use common::{
+use mock::{
     dummies::{
         declare_transaction, deploy_transaction, estimate_fee_transaction,
         invoke_transaction,
@@ -15,7 +15,7 @@ use common::{
     node::setup_client_with_mock_starknet_node,
 };
 
-mod common;
+mod mock;
 
 #[tokio::test]
 async fn chain_id_test() {
