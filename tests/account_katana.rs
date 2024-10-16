@@ -54,7 +54,7 @@ async fn deploy_multiple_accounts_on_katana() -> Result<(), Error> {
     let num_of_new_accounts = 3;
     let mut executor = Executor::new(num_of_new_accounts)?;
     let update_template = false;
-    executor.deploy_accounts(update_template)?;
+    executor.deploy_accounts(update_template).await?;
     assert_eq!(BUILTIN_ACCOUNTS.len(), 10);
     Ok(())
 }

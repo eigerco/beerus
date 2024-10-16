@@ -1,8 +1,18 @@
-use std::{fs, thread};
+use std::{fs, io::Write, thread};
 
 use anyhow::{anyhow, Error};
 use regex::Regex;
-use starknet::signers::SigningKey;
+use starkli::{
+    account::{
+        AccountConfig, AccountVariant, DeploymentStatus, OzAccountConfig,
+        UndeployedStatus,
+    },
+    signer::AnySigner,
+};
+use starknet::{
+    macros::felt,
+    signers::{LocalWallet, Signer, SigningKey},
+};
 
 use super::scarb::Compiler;
 
@@ -20,7 +30,7 @@ impl Executor {
         Ok(Self { accounts })
     }
 
-    pub fn deploy_accounts(
+    pub async fn deploy_accounts(
         &mut self,
         update_template: bool,
     ) -> Result<(), Error> {
@@ -32,10 +42,29 @@ impl Executor {
         // TODO
         // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
         let key = SigningKey::from_random();
-        let file = "account.json";
+        let file = "key.json";
         let password = "password";
         let _ = key.save_as_keystore(file, password);
         // #804 starkli account oz init account.json - Storing somewhere or deleting?
+        let signer = AnySigner::LocalWallet(LocalWallet::from_signing_key(key));
+        let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
+        let salt = SigningKey::from_random().secret_scalar();
+        let account_config = AccountConfig {
+            version: 1,
+            variant: AccountVariant::OpenZeppelin(OzAccountConfig {
+                version: 1,
+                public_key: signer.get_public_key().await.unwrap().scalar(),
+                legacy: false,
+            }),
+            deployment: DeploymentStatus::Undeployed(UndeployedStatus {
+                class_hash: oz_account_class_hash,
+                salt,
+                context: None,
+            }),
+        };
+        let mut file = std::fs::File::create("account.json")?;
+        serde_json::to_writer_pretty(&mut file, &account_config)?;
+        file.write_all(b"\n")?;
         // #804 declare accounts
         // #804 #805 fund accounts from pre-funded account
         // #804 deploy accounts
@@ -129,7 +158,10 @@ impl Drop for Executor {
                 fs::remove_dir_all(dir).expect("Failed to remove account dir");
             }
         }
-        if fs::exists("account.json").is_ok() {
+        if fs::exists("key.json").expect("Failed to check key.json") {
+            fs::remove_file("key.json").expect("Failed to remove key.json");
+        }
+        if fs::exists("account.json").expect("Failed to check account.json") {
             fs::remove_file("account.json")
                 .expect("Failed to remove account.json");
         }
