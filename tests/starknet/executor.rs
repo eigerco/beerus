@@ -2,6 +2,7 @@ use std::{fs, thread};
 
 use anyhow::{anyhow, Error};
 use regex::Regex;
+use starknet::signers::SigningKey;
 
 use super::scarb::Compiler;
 
@@ -30,6 +31,10 @@ impl Executor {
         self.compile()?;
         // TODO
         // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
+        let key = SigningKey::from_random();
+        let file = "account.json";
+        let password = "password";
+        let _ = key.save_as_keystore(file, password);
         // #804 starkli account oz init account.json - Storing somewhere or deleting?
         // #804 declare accounts
         // #804 #805 fund accounts from pre-funded account
@@ -123,6 +128,10 @@ impl Drop for Executor {
             if fs::exists(dir.clone()).expect("Failed to check account dir") {
                 fs::remove_dir_all(dir).expect("Failed to remove account dir");
             }
+        }
+        if fs::exists("account.json").is_ok() {
+            fs::remove_file("account.json")
+                .expect("Failed to remove account.json");
         }
     }
 }
