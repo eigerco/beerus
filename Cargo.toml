@@ -77,6 +77,7 @@ katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9
 katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 scarb = { git = "https://github.com/software-mansion/scarb/", tag = "v2.8.3" }
 semver = { version = "1", features = ["serde"] }
+starkli = { path = "../starkli/" }
 wiremock = "0.6.2"
 
 [patch.crates-io]

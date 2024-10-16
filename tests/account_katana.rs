@@ -12,6 +12,7 @@ use beerus::{
     },
 };
 use common::err::Error;
+use starkli::account::BUILTIN_ACCOUNTS;
 use starknet::katana::Katana;
 use starknet::{
     constants::{
@@ -54,6 +55,7 @@ async fn deploy_multiple_accounts_on_katana() -> Result<(), Error> {
     let mut executor = Executor::new(num_of_new_accounts)?;
     let update_template = false;
     executor.deploy_accounts(update_template)?;
+    assert_eq!(BUILTIN_ACCOUNTS.len(), 10);
     Ok(())
 }
 
