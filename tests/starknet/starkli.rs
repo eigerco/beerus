@@ -45,7 +45,7 @@ pub fn extract_class_hash(paths: &Vec<String>) -> Result<Vec<Felt>, Error> {
 pub async fn create_account(
     keys: Vec<SigningKey>,
     class_hash: Vec<Felt>,
-    path: &Vec<String>,
+    path: &[String],
     file: &str,
 ) -> Result<(), Error> {
     for (index, key) in keys.into_iter().enumerate() {
