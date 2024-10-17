@@ -2,7 +2,6 @@ use std::{fs, thread};
 
 use anyhow::{anyhow, Error};
 use regex::Regex;
-use starknet::macros::felt;
 
 use super::scarb::Compiler;
 use super::starkli::*;
@@ -88,10 +87,9 @@ impl Executor {
     }
 
     async fn prepare_account_environment(&self) -> Result<(), Error> {
-        let key = create_keystore("key.json", "password")?;
-        extract_class_hash()?;
-        let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
-        create_account(key, oz_account_class_hash, "account.json").await?;
+        let key = create_keystore("key.json", "password", &self.accounts)?;
+        let class_hash = extract_class_hash(&self.accounts)?;
+        create_account(key, class_hash, &self.accounts, "account.json").await?;
         Ok(())
     }
 }
@@ -100,24 +98,27 @@ impl Drop for Executor {
     fn drop(&mut self) {
         let dir = self.accounts[0].clone() + "/target";
         let scarb = self.accounts[0].clone() + "/Scarb.lock";
+        let key = self.accounts[0].clone() + "/key.json";
+        let account = self.accounts[0].clone() + "/account.json";
         if fs::exists(dir.clone()).expect("Failed to check template target") {
             fs::remove_dir_all(dir).expect("Failed to remove template target");
         };
         if fs::exists(scarb.clone()).expect("Failed to check template Scarb") {
             fs::remove_file(scarb).expect("Failed to remove template Scarb");
         }
-        for i in 1..self.accounts.len() {
-            let dir = self.accounts[i].clone();
-            if fs::exists(dir.clone()).expect("Failed to check account dir") {
-                fs::remove_dir_all(dir).expect("Failed to remove account dir");
+        if fs::exists(key.clone()).expect("Failed to check key.json") {
+            fs::remove_file(key).expect("Failed to remove key.json");
+        }
+        if fs::exists(account.clone()).expect("Failed to check account.json") {
+            fs::remove_file(account).expect("Failed to remove account.json");
+            for i in 1..self.accounts.len() {
+                let dir = self.accounts[i].clone();
+                if fs::exists(dir.clone()).expect("Failed to check account dir")
+                {
+                    fs::remove_dir_all(dir)
+                        .expect("Failed to remove account dir");
+                }
             }
-        }
-        if fs::exists("key.json").expect("Failed to check key.json") {
-            fs::remove_file("key.json").expect("Failed to remove key.json");
-        }
-        if fs::exists("account.json").expect("Failed to check account.json") {
-            fs::remove_file("account.json")
-                .expect("Failed to remove account.json");
         }
     }
 }
