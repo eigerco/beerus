@@ -13,6 +13,7 @@ use starknet::{
     macros::felt,
     signers::{LocalWallet, Signer, SigningKey},
 };
+use starknet_crypto::Felt;
 
 use super::scarb::Compiler;
 
@@ -41,30 +42,10 @@ impl Executor {
         self.compile()?;
         // TODO
         // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
-        let key = SigningKey::from_random();
-        let file = "key.json";
-        let password = "password";
-        let _ = key.save_as_keystore(file, password);
+        let key = create_keystore("key.json", "password")?;
         // #804 starkli account oz init account.json - Storing somewhere or deleting?
-        let signer = AnySigner::LocalWallet(LocalWallet::from_signing_key(key));
         let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
-        let salt = SigningKey::from_random().secret_scalar();
-        let account_config = AccountConfig {
-            version: 1,
-            variant: AccountVariant::OpenZeppelin(OzAccountConfig {
-                version: 1,
-                public_key: signer.get_public_key().await.unwrap().scalar(),
-                legacy: false,
-            }),
-            deployment: DeploymentStatus::Undeployed(UndeployedStatus {
-                class_hash: oz_account_class_hash,
-                salt,
-                context: None,
-            }),
-        };
-        let mut file = std::fs::File::create("account.json")?;
-        serde_json::to_writer_pretty(&mut file, &account_config)?;
-        file.write_all(b"\n")?;
+        create_account(key, oz_account_class_hash, "account.json").await?;
         // #804 declare accounts
         // #804 #805 fund accounts from pre-funded account
         // #804 deploy accounts
@@ -166,4 +147,37 @@ impl Drop for Executor {
                 .expect("Failed to remove account.json");
         }
     }
+}
+
+fn create_keystore(file: &str, password: &str) -> Result<SigningKey, Error> {
+    let key = SigningKey::from_random();
+    key.save_as_keystore(file, password)?;
+    Ok(key)
+}
+
+async fn create_account(
+    key: SigningKey,
+    class_hash: Felt,
+    file: &str,
+) -> Result<(), Error> {
+    let signer = AnySigner::LocalWallet(LocalWallet::from_signing_key(key));
+    let salt = SigningKey::from_random().secret_scalar();
+    let account_config = AccountConfig {
+        version: 1,
+        variant: AccountVariant::OpenZeppelin(OzAccountConfig {
+            version: 1,
+            public_key: signer.get_public_key().await.unwrap().scalar(),
+            legacy: false,
+        }),
+        deployment: DeploymentStatus::Undeployed(UndeployedStatus {
+            class_hash,
+            salt,
+            context: None,
+        }),
+    };
+    let mut file = std::fs::File::create(file)?;
+    serde_json::to_writer_pretty(&mut file, &account_config)?;
+    file.write_all(b"\n")?;
+
+    Ok(())
 }
