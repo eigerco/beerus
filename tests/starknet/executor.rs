@@ -10,6 +10,7 @@ use starkli::{
     signer::AnySigner,
 };
 use starknet::{
+    core::types::contract::SierraClass,
     macros::felt,
     signers::{LocalWallet, Signer, SigningKey},
 };
@@ -46,6 +47,7 @@ impl Executor {
         // #804 starkli account oz init account.json - Storing somewhere or deleting?
         let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
         create_account(key, oz_account_class_hash, "account.json").await?;
+        extract_class_hash()?;
         // #804 declare accounts
         // #804 #805 fund accounts from pre-funded account
         // #804 deploy accounts
@@ -179,5 +181,15 @@ async fn create_account(
     serde_json::to_writer_pretty(&mut file, &account_config)?;
     file.write_all(b"\n")?;
 
+    Ok(())
+}
+
+fn extract_class_hash() -> Result<(), Error> {
+    let class = serde_json::from_reader::<_, SierraClass>(std::fs::File::open("./tests/starknet/contract/account/target/dev/account_Account.contract_class.json")?)?;
+    let class1 = serde_json::from_reader::<_, SierraClass>(std::fs::File::open("./tests/starknet/contract/account1/target/dev/account_Account.contract_class.json")?)?;
+    let class2 = serde_json::from_reader::<_, SierraClass>(std::fs::File::open("./tests/starknet/contract/account2/target/dev/account_Account.contract_class.json")?)?;
+    println!("Class hash: {:#?}", class.class_hash()?);
+    println!("Class hash 1: {:#?}", class1.class_hash()?);
+    println!("Class hash 2: {:#?}", class2.class_hash()?);
     Ok(())
 }
