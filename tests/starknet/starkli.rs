@@ -14,6 +14,15 @@ use starknet::{
 };
 use starknet_crypto::Felt;
 
+pub fn create_keystore(
+    file: &str,
+    password: &str,
+) -> Result<SigningKey, Error> {
+    let key = SigningKey::from_random();
+    key.save_as_keystore(file, password)?;
+    Ok(key)
+}
+
 pub fn extract_class_hash() -> Result<(), Error> {
     let class = serde_json::from_reader::<_, SierraClass>(std::fs::File::open("./tests/starknet/contract/account/target/dev/account_Account.contract_class.json")?)?;
     let class1 = serde_json::from_reader::<_, SierraClass>(std::fs::File::open("./tests/starknet/contract/account1/target/dev/account_Account.contract_class.json")?)?;
@@ -22,15 +31,6 @@ pub fn extract_class_hash() -> Result<(), Error> {
     println!("Class hash 1: {:#?}", class1.class_hash()?);
     println!("Class hash 2: {:#?}", class2.class_hash()?);
     Ok(())
-}
-
-pub fn create_keystore(
-    file: &str,
-    password: &str,
-) -> Result<SigningKey, Error> {
-    let key = SigningKey::from_random();
-    key.save_as_keystore(file, password)?;
-    Ok(key)
 }
 
 pub async fn create_account(

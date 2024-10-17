@@ -26,41 +26,15 @@ impl Executor {
         update_template: bool,
     ) -> Result<(), Error> {
         if update_template {
-            self.update_account(&self.accounts[0])?;
+            update_account(&self.accounts[0])?;
         }
         self.prepare_contracts_environment()?;
         self.compile()?;
-        // TODO
-        // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
-        let key = create_keystore("key.json", "password")?;
-        // #804 starkli account oz init account.json - Storing somewhere or deleting?
-        let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
-        create_account(key, oz_account_class_hash, "account.json").await?;
-        extract_class_hash()?;
+        self.prepare_account_environment().await?;
         // #804 declare accounts
         // #804 #805 fund accounts from pre-funded account
         // #804 deploy accounts
         // #806 iterate through class hashes and call getClass to see if they are verified
-        Ok(())
-    }
-
-    fn update_account(&self, path: &str) -> Result<(), Error> {
-        let lib_path = path.to_owned() + "/src/lib.cairo";
-        let account_old = fs::read_to_string(lib_path.clone())?;
-        let re = Regex::new(r"self.id.write\((?<number>\d+)\);")?;
-
-        let Some(val) = re.captures(&account_old) else {
-            return Err(anyhow!("Could not find pattern in lib.cairo."));
-        };
-        let num_old =
-            &val["number"].parse::<u64>().expect("Failed to read number");
-        let num_new = num_old + 1;
-        let account_new = account_old.replace(
-            &format!("self.id.write({num_old})"),
-            &format!("self.id.write({num_new})"),
-        );
-        fs::write(lib_path, account_new)?;
-
         Ok(())
     }
 
@@ -82,7 +56,7 @@ impl Executor {
                 template.clone() + toml_path,
                 account.clone() + toml_path,
             )?;
-            self.update_account(&account)?;
+            update_account(&account)?;
             self.accounts.push(account);
         }
 
@@ -112,6 +86,14 @@ impl Executor {
 
         Ok(())
     }
+
+    async fn prepare_account_environment(&self) -> Result<(), Error> {
+        let key = create_keystore("key.json", "password")?;
+        extract_class_hash()?;
+        let oz_account_class_hash = felt!("0x00e2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6");
+        create_account(key, oz_account_class_hash, "account.json").await?;
+        Ok(())
+    }
 }
 
 impl Drop for Executor {
@@ -138,4 +120,23 @@ impl Drop for Executor {
                 .expect("Failed to remove account.json");
         }
     }
+}
+
+fn update_account(path: &str) -> Result<(), Error> {
+    let lib_path = path.to_owned() + "/src/lib.cairo";
+    let account_old = fs::read_to_string(lib_path.clone())?;
+    let re = Regex::new(r"self.id.write\((?<number>\d+)\);")?;
+
+    let Some(val) = re.captures(&account_old) else {
+        return Err(anyhow!("Could not find pattern in lib.cairo."));
+    };
+    let num_old = &val["number"].parse::<u64>().expect("Failed to read number");
+    let num_new = num_old + 1;
+    let account_new = account_old.replace(
+        &format!("self.id.write({num_old})"),
+        &format!("self.id.write({num_new})"),
+    );
+    fs::write(lib_path, account_new)?;
+
+    Ok(())
 }
