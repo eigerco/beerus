@@ -1,7 +1,9 @@
 use std::{fs, thread};
 
 use anyhow::{anyhow, Error};
+use clap::Parser;
 use regex::Regex;
+use starkli::utils::{Cli, Subcommands};
 
 use super::scarb::Compiler;
 use super::starkli::*;
@@ -31,6 +33,15 @@ impl Executor {
         self.compile()?;
         self.prepare_account_environment().await?;
         // #804 declare accounts
+        let input = vec!["starkli", "class-hash", "~/Development/cairo_projects/standard_account/target/dev/standard_account_Account.contract_class.json"];
+        let cli = Cli::parse_from(input);
+        let _ = match cli.command {
+            Some(command) => match command {
+                Subcommands::ClassHash(cmd) => cmd.run(),
+                _ => Ok(()),
+            },
+            None => Ok(()),
+        };
         // #804 #805 fund accounts from pre-funded account
         // #804 deploy accounts
         // #806 iterate through class hashes and call getClass to see if they are verified
