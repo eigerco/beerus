@@ -40,9 +40,9 @@ use crate::{
     gen::{self, blocking::Rpc},
 };
 
+pub mod cache;
 pub mod err;
 pub mod map;
-pub mod cache;
 
 use err::Error;
 
@@ -143,13 +143,16 @@ pub fn call<T: gen::client::blocking::HttpClient>(
     Ok(call_info)
 }
 
-struct StateProxy<T: gen::client::blocking::HttpClient, C: cache::StorageCache> {
+struct StateProxy<T: gen::client::blocking::HttpClient, C: cache::StorageCache>
+{
     client: gen::client::blocking::Client<T>,
     state: State,
     cache: C,
 }
 
-impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader for StateProxy<T, C> {
+impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
+    for StateProxy<T, C>
+{
     fn get_storage_at(
         &self,
         contract_address: ContractAddress,
@@ -157,7 +160,11 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader f
     ) -> StateResult<StarkFelt> {
         tracing::info!(?contract_address, ?storage_key, "get_storage_at");
 
-        if let Some(ret) = self.cache.lookup(&self.state.block_hash, &contract_address, &storage_key) {
+        if let Some(ret) = self.cache.lookup(
+            &self.state.block_hash,
+            &contract_address,
+            &storage_key,
+        ) {
             return Ok(ret);
         }
 
@@ -173,16 +180,17 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader f
 
         let ret = self
             .client
-            .getStorageAt(
-                address.clone(),
-                key.clone(),
-                block_id.clone(),
-            )
+            .getStorageAt(address.clone(), key.clone(), block_id.clone())
             .map_err(Into::<Error>::into)?;
         tracing::info!(?address, ?key, value=?ret, "get_storage_at");
 
         if ret.as_ref() == "0x0" {
-            self.cache.insert(&self.state.block_hash, &contract_address, &storage_key, &gen::Felt::try_new("0x0").unwrap());
+            self.cache.insert(
+                &self.state.block_hash,
+                &contract_address,
+                &storage_key,
+                &gen::Felt::try_new("0x0").unwrap(),
+            );
             tracing::info!("get_storage_at: skipping proof for zero value");
             return Ok(ret.try_into()?);
         }
@@ -195,16 +203,19 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader f
 
         let global_root = self.state.root.clone();
         let value = ret.clone();
-        proof.verify(global_root, address, key, value).map_err(
-            |e| {
-                StateError::StateReadError(format!(
-                    "Failed to verify merkle proof: {e:?}"
-                ))
-            },
-        )?;
+        proof.verify(global_root, address, key, value).map_err(|e| {
+            StateError::StateReadError(format!(
+                "Failed to verify merkle proof: {e:?}"
+            ))
+        })?;
         tracing::info!("get_storage_at: proof verified");
 
-        self.cache.insert(&self.state.block_hash, &contract_address, &storage_key, &ret);
+        self.cache.insert(
+            &self.state.block_hash,
+            &contract_address,
+            &storage_key,
+            &ret,
+        );
         Ok(ret.try_into()?)
     }
 
@@ -273,7 +284,9 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader f
     }
 }
 
-impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> BlockifierState for StateProxy<T, C> {
+impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache>
+    BlockifierState for StateProxy<T, C>
+{
     fn set_storage_at(
         &mut self,
         contract_address: ContractAddress,
