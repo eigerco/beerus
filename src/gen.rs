@@ -4,6 +4,7 @@ pub use gen::*;
 #[allow(clippy::module_inception)]
 #[allow(non_snake_case)]
 #[allow(clippy::enum_variant_names)]
+#[allow(clippy::large_enum_variant)]
 pub mod gen {
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
