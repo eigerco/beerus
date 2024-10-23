@@ -52,6 +52,28 @@ pub trait StorageCache {
     );
 }
 
+pub struct EmptyCache;
+
+impl StorageCache for EmptyCache {
+    fn lookup(
+        &self,
+        _block_hash: &gen::Felt,
+        _contract_address: &ContractAddress,
+        _storage_key: &StorageKey,
+    ) -> Option<StarkFelt> {
+        None
+    }
+
+    fn insert(
+        &self,
+        _block_hash: &gen::Felt,
+        _contract_address: &ContractAddress,
+        _storage_key: &StorageKey,
+        _val: &gen::Felt,
+    ) {
+    }
+}
+
 pub struct NaiveUnboundedCache;
 
 impl StorageCache for NaiveUnboundedCache {
