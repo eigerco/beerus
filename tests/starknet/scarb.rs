@@ -1,4 +1,4 @@
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use scarb::{
     core::{Config, PackageId, PackageName, SourceId, TargetKind},
     ops::{self, CompileOpts, FeaturesOpts, FeaturesSelector},
@@ -35,7 +35,21 @@ impl Compiler {
         Ok(Compiler { toml: toml_absolute, opts, packages })
     }
 
-    pub fn compile(self) -> Result<(), Error> {
+    pub async fn compile(self) -> Result<(), Error> {
+        let compilation =
+            tokio::task::spawn_blocking(move || -> Result<(), Error> {
+                self.run_compilation()
+            });
+        match compilation.await {
+            Ok(val) => Ok(val?),
+            Err(e) => Err(anyhow!(
+                "Error during thread execution. Original error message: {:#?}",
+                e,
+            )),
+        }
+    }
+
+    fn run_compilation(self) -> Result<(), Error> {
         let config = Config::builder(self.toml.to_str().unwrap()).build()?;
         let ws = ops::read_workspace(config.manifest_path(), &config)?;
         scarb::ops::compile(self.packages, self.opts, &ws)

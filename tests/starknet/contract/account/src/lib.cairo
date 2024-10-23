@@ -35,7 +35,7 @@ mod Account {
   #[constructor]
   fn constructor(ref self: ContractState, public_key: felt252) {
     self.public_key.write(public_key);
-    self.id.write(0);
+    self.id.write(<ID>);
   }
 
   #[abi(embed_v0)]

@@ -12,7 +12,6 @@ mod common;
 mod starknet;
 
 use common::err::Error;
-use starknet::executor::Executor;
 
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -518,10 +517,19 @@ async fn deploy_new_account_on_sepolia() -> Result<(), Error> {
     // schedule test once each month in separate workflow
     // with each test, template account id is incremented by 1
     // commit from workflows to update latest state of id
+
     let _ctx = setup!("sepolia");
-    let num_of_new_accounts = 1;
-    let _executor = Executor::new(num_of_new_accounts)?;
-    let _update_template = true;
-    // executor.deploy_accounts(update_template)?;
+    // let coordinator = Coordinator::new(TestMode::Sepolia);
+    // coordinator.copy_template_to_target()?;
+    // coordinator.update_account()?;
+    // let compiler = Compiler::new(&coordinator.target_scarb())?;
+    // compiler.compile().await?;
+
+    // TODO
+    // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
+    // #804 starkli account oz init account.json - Storing somewhere or deleting?
+    // #804 declare account
+    // #804 #805 fund account from pre-funded account
+    // #804 deploy account
     Ok(())
 }

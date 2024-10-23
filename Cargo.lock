@@ -629,6 +629,7 @@ dependencies = [
  "bitvec 1.0.1",
  "blockifier 0.8.0-rc.2",
  "cairo-lang-starknet-classes 2.7.0",
+ "chrono",
  "ethers",
  "eyre",
  "flate2",

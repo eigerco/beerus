@@ -1,4 +1,4 @@
 pub mod constants;
-pub mod executor;
+pub mod coordinator;
 pub mod katana;
 pub mod scarb;
