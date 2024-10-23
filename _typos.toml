@@ -1,2 +1,7 @@
 [default.extend-words]
 wrk = "wrk"
+
+[files]
+extend-exclude = [
+    "coverage.html",
+]
