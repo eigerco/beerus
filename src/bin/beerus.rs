@@ -7,6 +7,7 @@ use beerus::{
 use tokio::sync::RwLock;
 use validator::Validate;
 
+#[cfg(not(tarpaulin_include))] // exclude from code-coverage report
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt::init();
@@ -56,6 +57,7 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
+#[cfg(not(tarpaulin_include))] // exclude from code-coverage report
 async fn get_config() -> eyre::Result<ServerConfig> {
     let path = std::env::args().nth(1);
     let config = if let Some(path) = path {
