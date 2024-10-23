@@ -79,6 +79,3 @@ wiremock = "0.6.2"
 
 [patch.crates-io]
 starknet-core = { git = "https://github.com/kariy/starknet-rs", branch = "dojo-patch" }
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)'] }

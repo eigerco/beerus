@@ -90,24 +90,24 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BEERUS_TEST_RUN: 1
-      BEERUS_TEST_STARKNET_URL: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
+      STARKNET_MAINNET_URL: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
+      STARKNET_SEPOLIA_URL: https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: rm -rf /opt/hostedtoolcache
-      - name: Install Tarpaulin for code coverage
-        run: cargo install cargo-tarpaulin
-      # Exclude 'web' directory from coverage
-      - run: rm -rf ./web
-      - name: Run tests with coverage
-        run: cargo tarpaulin --out html
-      - name: View context attributes
-        uses: actions/github-script@v7
-        with:
-          script: console.log(context)
+      # - name: (Free disk space)
+      #   run: rm -rf /opt/hostedtoolcache
+      - uses: taiki-e/install-action@cargo-llvm-cov 
+      - name: Generate coverage report
+        run: cargo llvm-cov --json --output-path coverage.json
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./tarpaulin-report.html
+          files: ./coverage.json
           #token: ${{ secrets.CODECOV_TOKEN }}
+
+      # - name: View context attributes
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: console.log(context)

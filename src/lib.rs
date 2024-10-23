@@ -3,7 +3,6 @@ pub mod config;
 pub mod eth;
 pub mod exe;
 
-#[cfg(not(tarpaulin_include))] // exclude from coverage report
 pub mod gen;
 
 pub mod proof;
