@@ -68,13 +68,20 @@ Blockifier->>Blockifier: Create Starknet client
 Blockifier->>Blockifier: Create State reader & write
 loop Stateless Execution
 Blockifier->>State Reader: State Request
-State Reader->>(Starknet RPC): Query State
-(Starknet RPC)->>State Reader: State Result
-State Reader->>(Starknet RPC): Query State Proof
-(Starknet RPC)->>State Reader: State Proof
-State Reader->>State Reader: Verify State Proof
+State Reader->>(Starknet RPC): starknet_getStorageAt
+(Starknet RPC)->>State Reader: storage result
+State Reader->>(Starknet RPC): pathfinder_getProof
+(Starknet RPC)->>State Reader: merkle proof
+State Reader->>State Reader: verify merkle proof
 State Reader->>Blockifier: State Result
 end
+
+(RPC Server)->>Beerus: starknet_getStorageAt
+Beerus->>(Starknet RPC): pathfinder_getProof
+(Starknet RPC)->>Beerus: merkle proof
+Beerus->>Beerus: verify merkle proof
+Beerus->>(RPC Server): storage result
+
 Note right of (RPC Server): Other methods are proxied
 (RPC Server)->>Beerus: starknet_*
 Beerus->>(Starknet RPC): (proxy the request)
