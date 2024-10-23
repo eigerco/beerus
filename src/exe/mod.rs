@@ -42,6 +42,7 @@ use crate::{
 
 pub mod err;
 pub mod map;
+pub mod cache;
 
 use err::Error;
 
@@ -129,7 +130,8 @@ pub fn call<T: gen::client::blocking::HttpClient>(
         initial_gas: u64::MAX,
     };
 
-    let mut proxy: StateProxy<T> = StateProxy { client, state };
+    let cache = cache::NaiveUnboundedCache;
+    let mut proxy: StateProxy<T, _> = StateProxy { client, state, cache };
 
     let call_info = call_entry_point.execute(
         &mut proxy,
@@ -141,23 +143,28 @@ pub fn call<T: gen::client::blocking::HttpClient>(
     Ok(call_info)
 }
 
-struct StateProxy<T: gen::client::blocking::HttpClient> {
+struct StateProxy<T: gen::client::blocking::HttpClient, C: cache::StorageCache> {
     client: gen::client::blocking::Client<T>,
     state: State,
+    cache: C,
 }
 
-impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
+impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader for StateProxy<T, C> {
     fn get_storage_at(
         &self,
         contract_address: ContractAddress,
-        key: StarknetStorageKey,
+        storage_key: StarknetStorageKey,
     ) -> StateResult<StarkFelt> {
-        tracing::info!(?contract_address, ?key, "get_storage_at");
+        tracing::info!(?contract_address, ?storage_key, "get_storage_at");
+
+        if let Some(ret) = self.cache.lookup(&self.state.block_hash, &contract_address, &storage_key) {
+            return Ok(ret);
+        }
 
         let felt: gen::Felt = contract_address.0.key().try_into()?;
-        let contract_address = gen::Address(felt);
+        let address = gen::Address(felt);
 
-        let key = gen::StorageKey::try_new(&key.0.to_string())
+        let key = gen::StorageKey::try_new(&storage_key.0.to_string())
             .map_err(Into::<Error>::into)?;
 
         let block_id = gen::BlockId::BlockHash {
@@ -167,27 +174,28 @@ impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
         let ret = self
             .client
             .getStorageAt(
-                contract_address.clone(),
+                address.clone(),
                 key.clone(),
                 block_id.clone(),
             )
             .map_err(Into::<Error>::into)?;
-        tracing::info!(?contract_address, ?key, value=?ret, "get_storage_at");
+        tracing::info!(?address, ?key, value=?ret, "get_storage_at");
 
         if ret.as_ref() == "0x0" {
+            self.cache.insert(&self.state.block_hash, &contract_address, &storage_key, &gen::Felt::try_new("0x0").unwrap());
             tracing::info!("get_storage_at: skipping proof for zero value");
             return Ok(ret.try_into()?);
         }
 
         let proof = self
             .client
-            .getProof(block_id, contract_address.clone(), vec![key.clone()])
+            .getProof(block_id, address.clone(), vec![key.clone()])
             .map_err(Into::<Error>::into)?;
         tracing::info!("get_storage_at: proof received");
 
         let global_root = self.state.root.clone();
         let value = ret.clone();
-        proof.verify(global_root, contract_address, key, value).map_err(
+        proof.verify(global_root, address, key, value).map_err(
             |e| {
                 StateError::StateReadError(format!(
                     "Failed to verify merkle proof: {e:?}"
@@ -196,6 +204,7 @@ impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
         )?;
         tracing::info!("get_storage_at: proof verified");
 
+        self.cache.insert(&self.state.block_hash, &contract_address, &storage_key, &ret);
         Ok(ret.try_into()?)
     }
 
@@ -264,7 +273,7 @@ impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
     }
 }
 
-impl<T: gen::client::blocking::HttpClient> BlockifierState for StateProxy<T> {
+impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> BlockifierState for StateProxy<T, C> {
     fn set_storage_at(
         &mut self,
         contract_address: ContractAddress,
