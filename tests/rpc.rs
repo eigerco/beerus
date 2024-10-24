@@ -1,17 +1,40 @@
-use beerus::gen::{
-    Address, BlockHash, BlockId, BlockNumber, BlockTag, BroadcastedInvokeTxn,
-    BroadcastedTxn, Felt, FunctionCall, GetBlockWithTxHashesResult,
-    GetBlockWithTxsResult, GetClassAtResult, GetClassResult,
-    GetTransactionByBlockIdAndIndexIndex, InvokeTxn, InvokeTxnV1,
-    InvokeTxnV1Version, PriceUnit, Rpc, StorageKey, SyncingResult, Txn,
-    TxnExecutionStatus, TxnHash, TxnReceipt, TxnReceiptWithBlockInfo,
-    TxnStatus,
+use beerus::{
+    config::MAINNET_STARKNET_CHAINID,
+    gen::{
+        Address, BlockHash, BlockId, BlockNumber, BlockTag,
+        BroadcastedInvokeTxn, BroadcastedTxn, Felt, FunctionCall,
+        GetBlockWithTxHashesResult, GetBlockWithTxsResult, GetClassAtResult,
+        GetClassResult, GetTransactionByBlockIdAndIndexIndex, InvokeTxn,
+        InvokeTxnV1, InvokeTxnV1Version, PriceUnit, Rpc, StorageKey,
+        SyncingResult, Txn, TxnExecutionStatus, TxnHash, TxnReceipt,
+        TxnReceiptWithBlockInfo, TxnStatus,
+    },
 };
 
 mod common;
 mod starknet;
 
 use common::err::Error;
+
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_specVersion() -> Result<(), Error> {
+    let ctx = setup!();
+
+    let ret = ctx.client.specVersion().await?;
+    assert_eq!(ret, "0.7.1");
+    Ok(())
+}
+
+#[tokio::test]
+#[allow(non_snake_case)]
+async fn test_chainId() -> Result<(), Error> {
+    let ctx = setup!();
+
+    let ret = ctx.client.chainId().await?;
+    assert_eq!(ret.as_ref(), MAINNET_STARKNET_CHAINID);
+    Ok(())
+}
 
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -508,28 +531,5 @@ async fn account_call() -> Result<(), Error> {
     let valid = "0x56414c4944";
     assert_eq!(res_call_is_valid_signature[0].as_ref(), valid);
 
-    Ok(())
-}
-
-#[tokio::test]
-async fn deploy_new_account_on_sepolia() -> Result<(), Error> {
-    // TODO #807
-    // schedule test once each month in separate workflow
-    // with each test, template account id is incremented by 1
-    // commit from workflows to update latest state of id
-
-    let _ctx = setup!("sepolia");
-    // let coordinator = Coordinator::new(TestMode::Sepolia);
-    // coordinator.copy_template_to_target()?;
-    // coordinator.update_account()?;
-    // let compiler = Compiler::new(&coordinator.target_scarb())?;
-    // compiler.compile().await?;
-
-    // TODO
-    // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
-    // #804 starkli account oz init account.json - Storing somewhere or deleting?
-    // #804 declare account
-    // #804 #805 fund account from pre-funded account
-    // #804 deploy account
     Ok(())
 }

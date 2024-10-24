@@ -11,17 +11,11 @@ use beerus::{
         TxnHash,
     },
 };
-use common::err::Error;
-use starknet::katana::Katana;
-use starknet::scarb::Compiler;
-use starknet::{
-    constants::{
-        CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
-        CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3,
-        SENDER_ADDRESS,
-    },
-    coordinator::{Coordinator, TestMode},
+use starknet::constants::{
+    CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
+    CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3, SENDER_ADDRESS,
 };
+use starknet::katana::Katana;
 
 mod common;
 mod starknet;
@@ -46,24 +40,6 @@ async fn declare_deploy_account_v2() {
     estimate_deploy(&client).await;
     transfer_eth(&client).await;
     deploy(client).await;
-}
-
-#[tokio::test]
-async fn deploy_new_account_on_katana() -> Result<(), Error> {
-    let _katana = Katana::init("http://127.0.0.1:0").await?;
-    let coordinator = Coordinator::new(TestMode::Katana);
-    coordinator.copy_template_to_target()?;
-    coordinator.update_account()?;
-    let compiler = Compiler::new(&coordinator.target_scarb())?;
-    compiler.compile().await?;
-    // TODO
-    // #804 starkli signer keystore new key.json - Storing somewhere or deleting?
-    // #804 starkli account oz init account.json - Storing somewhere or deleting?
-    // #804 declare accounts
-    // #804 #805 fund accounts from pre-funded account
-    // #804 deploy accounts
-    // #806 iterate through class hashes and call getClass to see if they are verified
-    Ok(())
 }
 
 async fn declare(
