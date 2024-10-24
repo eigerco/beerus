@@ -11,13 +11,14 @@ use beerus::{
         TxnHash,
     },
 };
-use common::constants::{
+use starknet::constants::{
     CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
     CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3, SENDER_ADDRESS,
 };
-use common::katana::Katana;
+use starknet::katana::Katana;
 
 mod common;
+mod starknet;
 
 async fn setup() -> (Katana, Client<Http>) {
     let katana = Katana::init("http://127.0.0.1:0").await.unwrap();

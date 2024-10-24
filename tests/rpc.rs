@@ -12,6 +12,7 @@ use beerus::{
 };
 
 mod common;
+mod starknet;
 
 use common::err::Error;
 
