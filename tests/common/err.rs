@@ -12,4 +12,8 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("starknet api error: {0:?}")]
     Api(#[from] starknet_api::StarknetApiError),
+    #[error("IO error: {0:?}")]
+    IO(#[from] std::io::Error),
+    #[error("Anyhow error: {0:?}")]
+    Anyhow(#[from] anyhow::Error),
 }
