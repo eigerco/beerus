@@ -135,7 +135,7 @@ async fn check(config: &dto::Config) -> Result<(), JsValue> {
     let client = reqwest::Client::new();
     let ethereum_chain = call(&client, &config.ethereum_url, "eth_chainId").await?;
     let starknet_chain = call(&client, &config.starknet_url, "starknet_chainId").await?;
-    match (&ethereum_chain, &starknet_chain) {
+    match (ethereum_chain.as_str(), starknet_chain.as_str()) {
         (MAINNET_ETHEREUM_CHAINID, MAINNET_STARKNET_CHAINID) => Ok(()),
         (SEPOLIA_ETHEREUM_CHAINID, SEPOLIA_STARKNET_CHAINID) => Ok(()),
         _ => {
