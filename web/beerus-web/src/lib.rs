@@ -19,7 +19,6 @@ pub mod dto {
 
     #[derive(Serialize, Deserialize)]
     pub struct Config {
-        pub network: String,
         pub ethereum_url: String,
         pub starknet_url: String,
     }
@@ -136,24 +135,13 @@ async fn check(config: &dto::Config) -> Result<(), JsValue> {
     let client = reqwest::Client::new();
     let ethereum_chain = call(&client, &config.ethereum_url, "eth_chainId").await?;
     let starknet_chain = call(&client, &config.starknet_url, "starknet_chainId").await?;
-    if &config.network == "mainnet" {
-        if &ethereum_chain != MAINNET_ETHEREUM_CHAINID {
-            return Err(JsValue::from_str(&format!("Invalid ethereum mainnet chain_id: {ethereum_chain}")));
+    match (&ethereum_chain, starknet_chain) {
+        (MAINNET_ETHEREUM_CHAINID, MAINNET_STARKNET_CHAINID) => Ok(()),
+        (SEPOLIA_ETHEREUM_CHAINID, SEPOLIA_STARKNET_CHAINID) => Ok(()),
+        _ => {
+            Err(JsValue::from_str(&format!("Chain ID mismatch ethereum={ethereum_chain} starknet={starknet_chain}")))
         }
-        if &starknet_chain != MAINNET_STARKNET_CHAINID {
-            return Err(JsValue::from_str(&format!("Invalid starknet mainnet chain_id: {starknet_chain}")));
-        }
-    } else if &config.network == "testnet" {
-        if &ethereum_chain != SEPOLIA_ETHEREUM_CHAINID {
-            return Err(JsValue::from_str(&format!("Invalid ethereum mainnet chain_id: {ethereum_chain}")));
-        }
-        if &starknet_chain != SEPOLIA_STARKNET_CHAINID {
-            return Err(JsValue::from_str(&format!("Invalid starknet mainnet chain_id: {starknet_chain}")));
-        }
-    } else {
-        return Err(JsValue::from_str(&format!("Invalid network: {}", config.network)));
     }
-    Ok(())
 }
 
 #[wasm_bindgen]
@@ -172,17 +160,14 @@ impl Beerus {
     #[wasm_bindgen(constructor)]
     pub async fn new(config_json: &str, f: js_sys::Function) -> Result<Beerus, JsValue> {
         let config: dto::Config = serde_json::from_str(config_json)
-            .map_err(|e| JsValue::from_str(&format!("failed to parse config: {e:?}")))?;
-
-        check(&config).await?;
-        web_sys::console::log_1(&"beerus: config valid".into());
-
+            .map_err(|e| JsValue::from_str(&format!("beerus: invalid config JSON: {e:?}")))?;
+        check(&config).await
+            .map_err(|e| JsValue::from_str(&format!("beerus: invalid RPC config: {e:?}")))?;
         let config = beerus::config::Config {
             ethereum_rpc: config.ethereum_url,
             starknet_rpc: config.starknet_url,
         };
         web_sys::console::log_1(&"beerus: config ready".into());
-
         let beerus = beerus::client::Client::new(&config, Http(Rc::new(f)))
             .await
             .map_err(|e| JsValue::from_str(&format!("failed to create client: {e:?}")))?;
