@@ -171,6 +171,7 @@ async fn call_method(url: &str, method: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
     use wiremock::{
         matchers::body_partial_json, Mock, MockServer, ResponseTemplate,
     };
@@ -335,6 +336,41 @@ mod tests {
             result.unwrap_err().to_string(),
             "rpc error: computer says no"
         );
+
+        drop(server);
+
+        let server = mock(&[
+            (
+                serde_json::json!({
+                    "method": "eth_chainId"
+                }),
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": "0xcafebabe"
+                }),
+            ),
+            (
+                serde_json::json!({
+                    "method": "starknet_chainId"
+                }),
+                serde_json::json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "error": serde_json::json!({
+                        "object": "error"
+                    })
+                }),
+            ),
+        ])
+        .await;
+
+        let rpc = format!("http://{}/", server.address());
+        let result = check_chain_id(&rpc, &rpc).await;
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "rpc error: {\"object\":\"error\"}"
+        );
     }
 
     #[tokio::test]
@@ -352,5 +388,122 @@ mod tests {
 
         assert!(response.is_err());
         assert!(response.unwrap_err().to_string().contains("poll_secs"));
+    }
+
+    #[tokio::test]
+    async fn test_default_poll_seconds_returns_default_value() {
+        assert_eq!(default_poll_secs(), DEFAULT_POLL_SECS);
+    }
+
+    #[tokio::test]
+    async fn test_default_rpc_addr() {
+        assert_eq!(
+            default_rpc_addr().to_string(),
+            String::from("0.0.0.0:3030")
+        );
+    }
+
+    #[tokio::test]
+    async fn test_default_data_dir() {
+        assert_eq!(default_data_dir(), String::from("tmp"));
+    }
+
+    #[tokio::test]
+    async fn test_server_config_from_env() {
+        // lets make a clean state for our test
+        std::env::remove_var("POLL_SECS");
+        std::env::remove_var("RPC_ADDR");
+        std::env::remove_var("ETHEREUM_RPC");
+        std::env::remove_var("STARKNET_RPC");
+        std::env::remove_var("DATA_DIR");
+
+        let config = ServerConfig::from_env();
+        assert!(config.is_err());
+        assert!(config.unwrap_err().to_string().contains("ETHEREUM_RPC env var missing"));
+
+        std::env::set_var("ETHEREUM_RPC", "ethereum_rpc");
+
+        let config = ServerConfig::from_env();
+        assert!(config.is_err());
+        assert!(config.unwrap_err().to_string().contains("STARKNET_RPC env var missing"));
+
+        std::env::set_var("STARKNET_RPC", "starknet_rpc");
+
+        let config = ServerConfig::from_env().unwrap();
+        assert_eq!(config.client.ethereum_rpc, "ethereum_rpc");
+        assert_eq!(config.client.starknet_rpc, "starknet_rpc");
+
+        // test default values
+        assert_eq!(config.client.data_dir, default_data_dir());
+        assert_eq!(config.poll_secs, DEFAULT_POLL_SECS);
+        assert_eq!(config.rpc_addr, default_rpc_addr());
+
+
+        std::env::set_var("DATA_DIR", "data_dir");
+        let config = ServerConfig::from_env().unwrap();
+        assert_eq!(config.client.data_dir, "data_dir");
+
+
+        std::env::set_var("POLL_SECS", "invalid_data");
+        assert!(ServerConfig::from_env().is_err());
+
+        std::env::set_var("POLL_SECS", "10");
+        let config = ServerConfig::from_env().unwrap();
+        assert_eq!(config.poll_secs, 10);
+
+
+        std::env::set_var("RPC_ADDR", "invalid_data");
+        assert!(ServerConfig::from_env().is_err());
+
+        std::env::set_var("RPC_ADDR", "0.0.0.0:3000");
+        let config = ServerConfig::from_env().unwrap();
+        assert_eq!(config.rpc_addr, "0.0.0.0:3000".parse().unwrap());
+    }
+
+
+    #[tokio::test]
+    async fn test_server_config_from_file_returns_error_for_non_exisiting_path() {
+        assert!(!std::path::Path::new("/beerus/does_not_exists").exists());
+        assert!(ServerConfig::from_file("/beerus/does_not_exists").is_err());
+    }
+
+    #[tokio::test]
+    async fn test_server_config_from_file() {
+        let mut ntmpfile = tempfile::NamedTempFile::new().unwrap();
+        write!(ntmpfile,r#"
+            ethereum_rpc = "ethereum_rpc"
+            starknet_rpc = "starknet_rpc"
+            data_dir = "tmp"
+            poll_secs = 5
+            rpc_addr = "127.0.0.1:3030"
+        "#).unwrap();
+
+        let config = ServerConfig::from_file(ntmpfile.path().to_str().unwrap()).unwrap();
+        assert_eq!(config.client.ethereum_rpc, "ethereum_rpc");
+        assert_eq!(config.client.starknet_rpc, "starknet_rpc");
+        assert_eq!(config.client.data_dir, "tmp");
+        assert_eq!(config.poll_secs, 5);
+        assert_eq!(config.rpc_addr, SocketAddr::from(([127, 0, 0, 1], 3030)));
+    }
+
+    #[tokio::test]
+    async fn test_check_data_dir() {
+        assert!(check_data_dir(&"does_not_exists").is_err());
+
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let tmp_path = tmp_dir.path().to_owned();
+        let mut perms = tmp_path.metadata().unwrap().permissions();
+        perms.set_readonly(true);
+        std::fs::set_permissions(&tmp_path, perms).unwrap();
+
+        let check = check_data_dir(&tmp_path);
+        assert!(check.is_err());
+        assert!(check.unwrap_err().to_string().contains("path is readonly"));
+
+        let mut perms = tmp_path.metadata().unwrap().permissions();
+        perms.set_readonly(false);
+        std::fs::set_permissions(&tmp_path, perms).unwrap();
+        let check = check_data_dir(&tmp_path);
+        assert!(check.is_ok());
     }
 }

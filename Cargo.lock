@@ -654,6 +654,7 @@ dependencies = [
  "starknet-crypto 0.7.2",
  "starknet-types-core",
  "starknet_api 0.13.0-rc.1 (git+https://github.com/sergey-melnychuk/sequencer.git?tag=beerus-wasm-2024-09-22)",
+ "tempfile",
  "thiserror",
  "tokio",
  "toml",
