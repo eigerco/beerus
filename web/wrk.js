@@ -61,10 +61,10 @@ function post(url, body) {
 
     let ms = performance.now() - now;
     if (xhr.status != 200) {
-        console.error('call to', call, 'completed in', ms, 'ms');
+        console.error(`call to ${call} completed in ${ms} ms`);
         throw new Error(xhr.statusText);
     }
-    console.debug('call to', call, 'completed in', ms, 'ms');
+    console.debug(`call to ${call} completed in ${ms} ms`);
     return xhr.responseText;
 }
 
