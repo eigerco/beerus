@@ -661,6 +661,7 @@ dependencies = [
  "ureq",
  "url",
  "validator",
+ "web-sys",
  "wiremock",
 ]
 

@@ -430,6 +430,7 @@ dependencies = [
  "ureq",
  "url",
  "validator",
+ "web-sys",
 ]
 
 [[package]]
