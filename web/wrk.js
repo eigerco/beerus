@@ -51,17 +51,30 @@ self.onmessage = async event => {
 }
 
 function post(url, body) {
-    // console.log("post: ", url, body);
+    let call = method(body);
+    let now = performance.now();
+
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(body);
+
+    let ms = performance.now() - now;
     if (xhr.status != 200) {
-        // console.log("post error: ", xhr.statusText);
+        console.error('call to', call, 'completed in', ms, 'ms');
         throw new Error(xhr.statusText);
     }
-    // console.log("post done: ", xhr.responseText);
+    console.debug('call to', call, 'completed in', ms, 'ms');
     return xhr.responseText;
+}
+
+function method(body) {
+    try {
+        let json = JSON.parse(body);
+        return json.method;
+    } catch (e) {
+        return "unknown";
+    }
 }
 
 function sanitize(s) {
