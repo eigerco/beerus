@@ -12,8 +12,8 @@ pub mod dto {
 
     #[derive(Serialize, Deserialize)]
     pub struct State {
-        pub block_number: i64,
-        pub block_hash: String,
+        pub len: i64,
+        pub hash: String,
         pub root: String,
     }
 
@@ -180,8 +180,8 @@ impl Beerus {
         let state = self.beerus.get_state().await
             .map_err(|e| JsValue::from_str(&format!("failed to get state: {e:?}")))?;
         let state = serde_json::to_string(&dto::State {
-            block_number: state.block_number as i64,
-            block_hash: state.block_hash.as_ref().to_owned(),
+            len: state.block_number as i64,
+            hash: state.block_hash.as_ref().to_owned(),
             root: state.root.as_ref().to_owned(),
         }).map_err(|e| JsValue::from_str(&format!("failed to serialize state: {e:?}")))?;
         Ok(JsValue::from_str(&state))
