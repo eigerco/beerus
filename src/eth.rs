@@ -1,6 +1,6 @@
 use std::str::FromStr;
 #[cfg(target_arch = "wasm32")]
-use std::time::Instant;
+use web_time::Instant;
 
 use ethers::types::{Address, Bytes, SyncingStatus, H256};
 use eyre::{Context, Result};
@@ -139,6 +139,7 @@ impl EthereumClient {
             web_sys::console::log_1(
                 &format!("call to stateBlockNumber completed in {ms} ms").into(),
             );
+            #[allow(unused_variables)]
             let now = Instant::now();
         }
 
@@ -152,6 +153,7 @@ impl EthereumClient {
             web_sys::console::log_1(
                 &format!("call to stateBlockHash completed in {ms} ms").into(),
             );
+            #[allow(unused_variables)]
             let now = Instant::now();
         }
 
