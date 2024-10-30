@@ -1,4 +1,6 @@
 use std::str::FromStr;
+#[cfg(target_arch = "wasm32")]
+use std::time::Instant;
 
 use ethers::types::{Address, Bytes, SyncingStatus, H256};
 use eyre::{Context, Result};
@@ -76,24 +78,52 @@ impl EthereumClient {
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {
+        #[cfg(target_arch = "wasm32")]
+        let now = Instant::now();
+
         let block_number = self
             .helios
             .get_block_number()
             .await
             .context("helios:get_block_number")?
             .as_u64();
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            let ms = now.elapsed().as_millis();
+            web_sys::console::log_1(
+                &format!("call to get_block_number completed in {ms} ms").into(),
+            );
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        let now = Instant::now();
+
         let ret = self
             .helios
             .get_block_by_number(BlockTag::Number(block_number), false)
             .await?
             .map(|block| (block_number, block.hash))
             .ok_or_else(|| eyre::eyre!("Failed to fetch latest block"))?;
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            let ms = now.elapsed().as_millis();
+            web_sys::console::log_1(
+                &format!("call to get_block_by_number completed in {ms} ms")
+                    .into(),
+            );
+        }
+
         Ok(ret)
     }
 
     pub async fn starknet_state(&self) -> Result<(u64, H256, H256)> {
         let (number, _) = self.latest().await?;
         let tag = BlockTag::Number(number);
+
+        #[cfg(target_arch = "wasm32")]
+        let now = Instant::now();
 
         let data = 0x35befa5du32.to_be_bytes(); // keccak("stateBlockNumber()")
         let block_number: [u8; 32] = self
@@ -103,13 +133,39 @@ impl EthereumClient {
         let block_number: [u8; 8] = block_number[24..].try_into().unwrap();
         let block_number = u64::from_be_bytes(block_number);
 
+        #[cfg(target_arch = "wasm32")]
+        {
+            let ms = now.elapsed().as_millis();
+            web_sys::console::log_1(
+                &format!("call to stateBlockNumber completed in {ms} ms").into(),
+            );
+            let now = Instant::now();
+        }
+
         let data = 0x382d83e3u32.to_be_bytes(); // keccak("stateBlockHash()")
         let block_hash: H256 =
             self.call(&data, tag).await.context("helios: state block hash")?;
 
+        #[cfg(target_arch = "wasm32")]
+        {
+            let ms = now.elapsed().as_millis();
+            web_sys::console::log_1(
+                &format!("call to stateBlockHash completed in {ms} ms").into(),
+            );
+            let now = Instant::now();
+        }
+
         let data = 0x9588eca2u32.to_be_bytes(); // keccak("stateRoot()")"
         let root: H256 =
             self.call(&data, tag).await.context("helios: state root")?;
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            let ms = now.elapsed().as_millis();
+            web_sys::console::log_1(
+                &format!("call to stateRoot completed in {ms} ms").into(),
+            );
+        }
 
         tracing::debug!(block_number, ?block_hash, ?root, "starknet state");
 
