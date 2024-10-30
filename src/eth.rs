@@ -92,7 +92,8 @@ impl EthereumClient {
         {
             let ms = now.elapsed().as_millis();
             web_sys::console::log_1(
-                &format!("call to get_block_number completed in {ms} ms").into(),
+                &format!("call to get_block_number completed in {ms} ms")
+                    .into(),
             );
         }
 
@@ -137,7 +138,8 @@ impl EthereumClient {
         {
             let ms = now.elapsed().as_millis();
             web_sys::console::log_1(
-                &format!("call to stateBlockNumber completed in {ms} ms").into(),
+                &format!("call to stateBlockNumber completed in {ms} ms")
+                    .into(),
             );
             #[allow(unused_variables)]
             let now = Instant::now();
