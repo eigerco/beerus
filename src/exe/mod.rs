@@ -130,12 +130,13 @@ pub fn call<T: gen::client::blocking::HttpClient>(
         initial_gas: u64::MAX,
     };
 
-    let cache = cache::LRU;
-    let mut proxy: StateProxy<T, _> = StateProxy { client, state, cache };
+    let state_proxy: StateProxy<T> = StateProxy { client, state };
+    let mut state_proxy = cache::CachedState::new(state_proxy);
 
+    let mut resources = Default::default();
     let call_info = call_entry_point.execute(
-        &mut proxy,
-        &mut Default::default(),
+        &mut state_proxy,
+        &mut resources,
         &mut context,
     )?;
 
@@ -143,30 +144,26 @@ pub fn call<T: gen::client::blocking::HttpClient>(
     Ok(call_info)
 }
 
-struct StateProxy<T: gen::client::blocking::HttpClient, C: cache::StorageCache>
-{
+struct StateProxy<T: gen::client::blocking::HttpClient> {
     client: gen::client::blocking::Client<T>,
     state: State,
-    cache: C,
 }
 
-impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
-    for StateProxy<T, C>
+impl<T: gen::client::blocking::HttpClient> cache::HasBlockHash
+    for StateProxy<T>
 {
+    fn get_block_hash(&self) -> &gen::Felt {
+        &self.state.block_hash
+    }
+}
+
+impl<T: gen::client::blocking::HttpClient> StateReader for StateProxy<T> {
     fn get_storage_at(
         &self,
         contract_address: ContractAddress,
         storage_key: StarknetStorageKey,
     ) -> StateResult<StarkFelt> {
         tracing::info!(?contract_address, ?storage_key, "get_storage_at");
-
-        if let Some(ret) = self.cache.lookup(
-            &self.state.block_hash,
-            &contract_address,
-            &storage_key,
-        ) {
-            return Ok(ret);
-        }
 
         let felt: gen::Felt = contract_address.0.key().try_into()?;
         let address = gen::Address(felt);
@@ -185,12 +182,6 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
         tracing::info!(?address, ?key, value=?ret, "get_storage_at");
 
         if ret.as_ref() == "0x0" {
-            self.cache.insert(
-                &self.state.block_hash,
-                &contract_address,
-                &storage_key,
-                &ret,
-            );
             tracing::info!("get_storage_at: skipping proof for zero value");
             return Ok(ret.try_into()?);
         }
@@ -210,12 +201,6 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
         })?;
         tracing::info!("get_storage_at: proof verified");
 
-        self.cache.insert(
-            &self.state.block_hash,
-            &contract_address,
-            &storage_key,
-            &ret,
-        );
         Ok(ret.try_into()?)
     }
 
@@ -225,7 +210,9 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
     ) -> StateResult<Nonce> {
         tracing::info!(?contract_address, "get_nonce_at");
 
-        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+        let block_id = gen::BlockId::BlockHash {
+            block_hash: gen::BlockHash(self.state.block_hash.clone()),
+        };
 
         let felt: gen::Felt = contract_address.0.key().try_into()?;
         let contract_address = gen::Address(felt);
@@ -244,7 +231,9 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
     ) -> StateResult<ClassHash> {
         tracing::info!(?contract_address, "get_class_hash_at");
 
-        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+        let block_id = gen::BlockId::BlockHash {
+            block_hash: gen::BlockHash(self.state.block_hash.clone()),
+        };
 
         let felt: gen::Felt = contract_address.0.key().try_into()?;
         let contract_address = gen::Address(felt);
@@ -263,7 +252,9 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
     ) -> StateResult<ContractClass> {
         tracing::info!(?class_hash, "get_compiled_contract_class");
 
-        let block_id = gen::BlockId::BlockTag(gen::BlockTag::Latest);
+        let block_id = gen::BlockId::BlockHash {
+            block_hash: gen::BlockHash(self.state.block_hash.clone()),
+        };
 
         let class_hash: gen::Felt = class_hash.0.try_into()?;
 
@@ -284,9 +275,7 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
     }
 }
 
-impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache>
-    BlockifierState for StateProxy<T, C>
-{
+impl<T: gen::client::blocking::HttpClient> BlockifierState for StateProxy<T> {
     fn set_storage_at(
         &mut self,
         contract_address: ContractAddress,
