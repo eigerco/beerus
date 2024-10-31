@@ -414,6 +414,7 @@ dependencies = [
  "helios",
  "hex",
  "iamgroot",
+ "lru",
  "once_cell",
  "regex",
  "reqwest 0.12.9",
