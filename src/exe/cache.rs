@@ -1,27 +1,29 @@
 use ethers::types::U256;
+use lru::LruCache;
 use starknet_api::{core::ContractAddress, state::StorageKey};
 use starknet_types_core::felt::Felt as StarkFelt;
-use std::{
-    collections::HashMap,
-    sync::{LazyLock, RwLock},
-};
+use std::num::NonZeroUsize;
+use std::sync::{LazyLock, Mutex};
 
 use crate::gen;
 
 type Key = (U256, U256, U256); // block hash + contract address + storage key
 type Value = U256;
 
-static CACHE: LazyLock<RwLock<HashMap<Key, Value>>> =
-    LazyLock::new(|| RwLock::new(HashMap::new()));
+const CACHE_SIZE: usize = 1024;
+
+static CACHE: LazyLock<Mutex<LruCache<Key, Value>>> = LazyLock::new(|| {
+    Mutex::new(LruCache::new(NonZeroUsize::new(CACHE_SIZE).unwrap()))
+});
 
 fn get(key: &Key) -> Option<Value> {
-    let guard = CACHE.read().expect("cache-rlock");
+    let mut guard = CACHE.lock().expect("cache-lock");
     guard.get(key).cloned()
 }
 
 fn set(key: Key, value: Value) -> Option<Value> {
-    let mut guard = CACHE.write().expect("cache-wlock");
-    guard.insert(key, value)
+    let mut guard = CACHE.lock().expect("cache-lock");
+    guard.put(key, value)
 }
 
 fn key(
@@ -52,9 +54,9 @@ pub trait StorageCache {
     );
 }
 
-pub struct EmptyCache;
+pub struct Empty;
 
-impl StorageCache for EmptyCache {
+impl StorageCache for Empty {
     fn lookup(
         &self,
         _block_hash: &gen::Felt,
@@ -74,9 +76,9 @@ impl StorageCache for EmptyCache {
     }
 }
 
-pub struct NaiveUnboundedCache;
+pub struct LRU;
 
-impl StorageCache for NaiveUnboundedCache {
+impl StorageCache for LRU {
     fn lookup(
         &self,
         block_hash: &gen::Felt,

@@ -130,7 +130,7 @@ pub fn call<T: gen::client::blocking::HttpClient>(
         initial_gas: u64::MAX,
     };
 
-    let cache = cache::EmptyCache;
+    let cache = cache::LRU;
     let mut proxy: StateProxy<T, _> = StateProxy { client, state, cache };
 
     let call_info = call_entry_point.execute(
