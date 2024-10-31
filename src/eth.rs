@@ -78,44 +78,19 @@ impl EthereumClient {
     }
 
     pub async fn latest(&self) -> Result<(u64, H256)> {
-        #[cfg(target_arch = "wasm32")]
-        let now = Instant::now();
-
         let block_number = self
             .helios
             .get_block_number()
             .await
             .context("helios:get_block_number")?
             .as_u64();
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            let ms = now.elapsed().as_millis();
-            web_sys::console::log_1(
-                &format!("call to get_block_number completed in {ms} ms")
-                    .into(),
-            );
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        let now = Instant::now();
-
         let ret = self
             .helios
             .get_block_by_number(BlockTag::Number(block_number), false)
-            .await?
+            .await
+            .context("helios:get_block_by_number")?
             .map(|block| (block_number, block.hash))
             .ok_or_else(|| eyre::eyre!("Failed to fetch latest block"))?;
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            let ms = now.elapsed().as_millis();
-            web_sys::console::log_1(
-                &format!("call to get_block_by_number completed in {ms} ms")
-                    .into(),
-            );
-        }
-
         Ok(ret)
     }
 
