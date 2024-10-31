@@ -111,11 +111,11 @@ pub fn call<T: gen::client::blocking::HttpClient>(
     });
 
     let tx_context = Arc::new(TransactionContext { block_context, tx_info });
-
+    let limit_steps_by_resources = false;
     let mut context = EntryPointExecutionContext::new(
         tx_context.clone(),
         ExecutionMode::Execute,
-        /*limit_steps_by_resources=*/ false,
+        limit_steps_by_resources,
     )?;
 
     let call_entry_point = CallEntryPoint {
