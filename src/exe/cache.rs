@@ -85,8 +85,11 @@ impl StorageCache for LRU {
         contract_address: &ContractAddress,
         storage_key: &StorageKey,
     ) -> Option<StarkFelt> {
-        get(&key(block_hash, contract_address, storage_key))
-            .map(|value| StarkFelt::from_raw(value.0))
+        get(&key(block_hash, contract_address, storage_key)).map(|value| {
+            let mut bytes = [0u8; 32];
+            value.to_big_endian(&mut bytes);
+            StarkFelt::from_bytes_be(&bytes)
+        })
     }
 
     fn insert(
