@@ -110,41 +110,27 @@ impl EthereumClient {
         let block_number = u64::from_be_bytes(block_number);
 
         #[cfg(target_arch = "wasm32")]
-        {
-            let ms = now.elapsed().as_millis();
-            web_sys::console::log_1(
-                &format!("call to stateBlockNumber completed in {ms} ms")
-                    .into(),
-            );
-            #[allow(unused_variables)]
-            let now = Instant::now();
-        }
+        log_latency("stateBlockNumber", &now);
+
+        #[cfg(target_arch = "wasm32")]
+        let now = Instant::now();
 
         let data = 0x382d83e3u32.to_be_bytes(); // keccak("stateBlockHash()")
         let block_hash: H256 =
             self.call(&data, tag).await.context("helios: state block hash")?;
 
         #[cfg(target_arch = "wasm32")]
-        {
-            let ms = now.elapsed().as_millis();
-            web_sys::console::log_1(
-                &format!("call to stateBlockHash completed in {ms} ms").into(),
-            );
-            #[allow(unused_variables)]
-            let now = Instant::now();
-        }
+        log_latency("stateBlockHash", &now);
+
+        #[cfg(target_arch = "wasm32")]
+        let now = Instant::now();
 
         let data = 0x9588eca2u32.to_be_bytes(); // keccak("stateRoot()")"
         let root: H256 =
             self.call(&data, tag).await.context("helios: state root")?;
 
         #[cfg(target_arch = "wasm32")]
-        {
-            let ms = now.elapsed().as_millis();
-            web_sys::console::log_1(
-                &format!("call to stateRoot completed in {ms} ms").into(),
-            );
-        }
+        log_latency("stateRoot", &now);
 
         tracing::debug!(block_number, ?block_hash, ?root, "starknet state");
 
@@ -173,6 +159,13 @@ impl EthereumClient {
         let sized: [u8; N] = ret.try_into().unwrap();
         Ok(sized.into())
     }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn log_latency(method: &str, instant: &Instant) {
+    let millis = instant.elapsed().as_millis();
+    let message = format!("call to {method} completed in {millis} ms");
+    web_sys::console::log_1(&message.into());
 }
 
 async fn get_client(
