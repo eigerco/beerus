@@ -189,7 +189,7 @@ impl<T: gen::client::blocking::HttpClient, C: cache::StorageCache> StateReader
                 &self.state.block_hash,
                 &contract_address,
                 &storage_key,
-                &gen::Felt::try_new("0x0").unwrap(),
+                &ret,
             );
             tracing::info!("get_storage_at: skipping proof for zero value");
             return Ok(ret.try_into()?);
