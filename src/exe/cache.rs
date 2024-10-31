@@ -1,105 +1,256 @@
+use blockifier::state::state_api::{State as BlockifierState, StateReader};
 use ethers::types::U256;
 use lru::LruCache;
 use starknet_api::{core::ContractAddress, state::StorageKey};
 use starknet_types_core::felt::Felt as StarkFelt;
+use std::marker::PhantomData;
 use std::num::NonZeroUsize;
 use std::sync::{LazyLock, Mutex};
 
 use crate::gen;
 
-type Key = (U256, U256, U256); // block hash + contract address + storage key
-type Value = U256;
+mod storage {
+    use super::*;
 
-const CACHE_SIZE: usize = 1024;
+    type Key = (U256, U256, U256); // block hash + contract address + storage key
+    type Value = StarkFelt;
 
-static CACHE: LazyLock<Mutex<LruCache<Key, Value>>> = LazyLock::new(|| {
-    Mutex::new(LruCache::new(NonZeroUsize::new(CACHE_SIZE).unwrap()))
-});
+    const SIZE: usize = 1024;
 
-fn get(key: &Key) -> Option<Value> {
-    let mut guard = CACHE.lock().expect("cache-lock");
-    guard.get(key).cloned()
-}
+    static CACHE: LazyLock<Mutex<LruCache<Key, Value>>> = LazyLock::new(|| {
+        Mutex::new(LruCache::new(NonZeroUsize::new(SIZE).unwrap()))
+    });
 
-fn set(key: Key, value: Value) -> Option<Value> {
-    let mut guard = CACHE.lock().expect("cache-lock");
-    guard.put(key, value)
-}
-
-fn key(
-    block_hash: &gen::Felt,
-    contract_address: &ContractAddress,
-    storage_key: &StorageKey,
-) -> Key {
-    (
-        block_hash.as_ref().parse().unwrap(),
-        contract_address.0.key().to_bytes_be().into(),
-        storage_key.0.key().to_bytes_be().into(),
-    )
-}
-
-pub trait StorageCache {
-    fn lookup(
-        &self,
-        block_hash: &gen::Felt,
-        contract_address: &ContractAddress,
-        storage_key: &StorageKey,
-    ) -> Option<StarkFelt>;
-    fn insert(
-        &self,
-        block_hash: &gen::Felt,
-        contract_address: &ContractAddress,
-        storage_key: &StorageKey,
-        val: &gen::Felt,
-    );
-}
-
-pub struct Empty;
-
-impl StorageCache for Empty {
-    fn lookup(
-        &self,
-        _block_hash: &gen::Felt,
-        _contract_address: &ContractAddress,
-        _storage_key: &StorageKey,
-    ) -> Option<StarkFelt> {
-        None
+    pub fn get(key: &Key) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("storage-cache-lock");
+        guard.get(key).cloned()
     }
 
-    fn insert(
+    pub fn set(key: Key, value: Value) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("storage-cache-lock");
+        guard.put(key, value)
+    }
+
+    pub fn key(
+        block_hash: &gen::Felt,
+        contract_address: &ContractAddress,
+        storage_key: &StorageKey,
+    ) -> Key {
+        (
+            block_hash.as_ref().parse().unwrap(),
+            contract_address.0.key().to_bytes_be().into(),
+            storage_key.0.key().to_bytes_be().into(),
+        )
+    }
+}
+
+mod class_hash {
+    use super::*;
+
+    type Key = (U256, U256); // block hash + contract address
+    type Value = starknet_api::core::ClassHash;
+
+    const SIZE: usize = 256;
+
+    static CACHE: LazyLock<Mutex<LruCache<Key, Value>>> = LazyLock::new(|| {
+        Mutex::new(LruCache::new(NonZeroUsize::new(SIZE).unwrap()))
+    });
+
+    pub fn get(key: &Key) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("classhash-cache-lock");
+        guard.get(key).cloned()
+    }
+
+    pub fn set(key: Key, value: Value) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("classhash-cache-lock");
+        guard.put(key, value)
+    }
+
+    pub fn key(
+        block_hash: &gen::Felt,
+        contract_address: &ContractAddress,
+    ) -> Key {
+        (
+            block_hash.as_ref().parse().unwrap(),
+            contract_address.0.key().to_bytes_be().into(),
+        )
+    }
+}
+
+mod contract_class {
+    use super::*;
+
+    type Key = (U256, U256); // block hash + class hash
+    type Value = blockifier::execution::contract_class::ContractClass;
+
+    const SIZE: usize = 256;
+
+    static CACHE: LazyLock<Mutex<LruCache<Key, Value>>> = LazyLock::new(|| {
+        Mutex::new(LruCache::new(NonZeroUsize::new(SIZE).unwrap()))
+    });
+
+    pub fn get(key: &Key) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("contractclass-cache-lock");
+        guard.get(key).cloned()
+    }
+
+    pub fn set(key: Key, value: Value) -> Option<Value> {
+        let mut guard = CACHE.lock().expect("contractclass-cache-lock");
+        guard.put(key, value)
+    }
+
+    pub fn key(
+        block_hash: &gen::Felt,
+        class_hash: &starknet_api::core::ClassHash,
+    ) -> Key {
+        (
+            block_hash.as_ref().parse().unwrap(),
+            class_hash.0.to_bytes_be().into(),
+        )
+    }
+}
+
+pub trait HasBlockHash {
+    fn get_block_hash(&self) -> &gen::Felt;
+}
+
+pub struct CachedState<T: StateReader + BlockifierState + HasBlockHash> {
+    inner: T,
+    _marker: PhantomData<T>,
+}
+
+impl<T: StateReader + BlockifierState + HasBlockHash> CachedState<T> {
+    pub fn new(inner: T) -> Self {
+        Self { inner, _marker: PhantomData }
+    }
+}
+
+impl<T: StateReader + BlockifierState + HasBlockHash> StateReader
+    for CachedState<T>
+{
+    fn get_storage_at(
         &self,
-        _block_hash: &gen::Felt,
-        _contract_address: &ContractAddress,
-        _storage_key: &StorageKey,
-        _val: &gen::Felt,
+        contract_address: ContractAddress,
+        storage_key: StorageKey,
+    ) -> blockifier::state::state_api::StateResult<StarkFelt> {
+        let block_hash = self.inner.get_block_hash();
+        if let Some(ret) = storage::get(&storage::key(
+            block_hash,
+            &contract_address,
+            &storage_key,
+        )) {
+            return Ok(ret);
+        }
+        let ret = self.inner.get_storage_at(contract_address, storage_key)?;
+        storage::set(
+            storage::key(block_hash, &contract_address, &storage_key),
+            ret,
+        );
+        Ok(ret)
+    }
+
+    fn get_nonce_at(
+        &self,
+        contract_address: ContractAddress,
+    ) -> blockifier::state::state_api::StateResult<starknet_api::core::Nonce>
+    {
+        self.inner.get_nonce_at(contract_address)
+    }
+
+    fn get_class_hash_at(
+        &self,
+        contract_address: ContractAddress,
+    ) -> blockifier::state::state_api::StateResult<starknet_api::core::ClassHash>
+    {
+        let block_hash = self.inner.get_block_hash();
+        if let Some(ret) =
+            class_hash::get(&class_hash::key(block_hash, &contract_address))
+        {
+            return Ok(ret);
+        }
+        let ret = self.inner.get_class_hash_at(contract_address)?;
+        class_hash::set(class_hash::key(block_hash, &contract_address), ret);
+        Ok(ret)
+    }
+
+    fn get_compiled_contract_class(
+        &self,
+        class_hash: starknet_api::core::ClassHash,
+    ) -> blockifier::state::state_api::StateResult<
+        blockifier::execution::contract_class::ContractClass,
+    > {
+        let block_hash = self.inner.get_block_hash();
+        if let Some(ret) =
+            contract_class::get(&contract_class::key(block_hash, &class_hash))
+        {
+            return Ok(ret);
+        }
+        let ret = self.inner.get_compiled_contract_class(class_hash)?;
+        contract_class::set(
+            contract_class::key(block_hash, &class_hash),
+            ret.clone(),
+        );
+        Ok(ret)
+    }
+
+    fn get_compiled_class_hash(
+        &self,
+        class_hash: starknet_api::core::ClassHash,
+    ) -> blockifier::state::state_api::StateResult<
+        starknet_api::core::CompiledClassHash,
+    > {
+        self.inner.get_compiled_class_hash(class_hash)
+    }
+}
+
+impl<T: StateReader + BlockifierState + HasBlockHash> BlockifierState
+    for CachedState<T>
+{
+    fn set_storage_at(
+        &mut self,
+        contract_address: ContractAddress,
+        storage_key: StorageKey,
+        value: StarkFelt,
+    ) -> blockifier::state::state_api::StateResult<()> {
+        self.inner.set_storage_at(contract_address, storage_key, value)
+    }
+
+    fn increment_nonce(
+        &mut self,
+        contract_address: ContractAddress,
+    ) -> blockifier::state::state_api::StateResult<()> {
+        self.inner.increment_nonce(contract_address)
+    }
+
+    fn set_class_hash_at(
+        &mut self,
+        contract_address: ContractAddress,
+        class_hash: starknet_api::core::ClassHash,
+    ) -> blockifier::state::state_api::StateResult<()> {
+        self.inner.set_class_hash_at(contract_address, class_hash)
+    }
+
+    fn set_contract_class(
+        &mut self,
+        class_hash: starknet_api::core::ClassHash,
+        contract_class: blockifier::execution::contract_class::ContractClass,
+    ) -> blockifier::state::state_api::StateResult<()> {
+        self.inner.set_contract_class(class_hash, contract_class)
+    }
+
+    fn set_compiled_class_hash(
+        &mut self,
+        class_hash: starknet_api::core::ClassHash,
+        compiled_class_hash: starknet_api::core::CompiledClassHash,
+    ) -> blockifier::state::state_api::StateResult<()> {
+        self.inner.set_compiled_class_hash(class_hash, compiled_class_hash)
+    }
+
+    fn add_visited_pcs(
+        &mut self,
+        class_hash: starknet_api::core::ClassHash,
+        pcs: &std::collections::HashSet<usize>,
     ) {
-    }
-}
-
-pub struct LRU;
-
-impl StorageCache for LRU {
-    fn lookup(
-        &self,
-        block_hash: &gen::Felt,
-        contract_address: &ContractAddress,
-        storage_key: &StorageKey,
-    ) -> Option<StarkFelt> {
-        get(&key(block_hash, contract_address, storage_key)).map(|value| {
-            let mut bytes = [0u8; 32];
-            value.to_big_endian(&mut bytes);
-            StarkFelt::from_bytes_be(&bytes)
-        })
-    }
-
-    fn insert(
-        &self,
-        block_hash: &gen::Felt,
-        contract_address: &ContractAddress,
-        storage_key: &StorageKey,
-        val: &gen::Felt,
-    ) {
-        let val = val.as_ref().parse().unwrap();
-        set(key(block_hash, contract_address, storage_key), val);
+        self.inner.add_visited_pcs(class_hash, pcs);
     }
 }
