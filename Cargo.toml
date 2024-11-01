@@ -76,7 +76,7 @@ katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
-katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-rc.0" }
 katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 scarb = { git = "https://github.com/software-mansion/scarb/", tag = "v2.8.3" }
 semver = { version = "1", features = ["serde"] }
