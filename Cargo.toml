@@ -33,7 +33,7 @@ once_cell = "1.16.0-pre.1"
 # to the exact version that Helios is using
 ethers = { git = "https://github.com/gakonst/ethers-rs", rev = "3bf1a9e0d698e9fdfc91d0353878901af5a5c5ef" }
 
-starknet-types-core = "0.1.5"
+starknet-types-core = "0.1.7"
 starknet-crypto = "0.7.1"
 
 base64 = "0.22.0"
