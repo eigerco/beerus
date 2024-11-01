@@ -64,7 +64,7 @@ helios = { git = "https://github.com/sergey-melnychuk/helios", branch = "beerus-
 reqwest = { version = "0.12.3", default-features = false, features = ["json"] }
 
 gloo-timers = { version = "0.3.0", features = ["futures"] }
-web-sys = "0.3.69"
+web-sys = "0.3.72"
 web-time = "1.1.0"
 
 
