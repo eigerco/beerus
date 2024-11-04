@@ -47,3 +47,34 @@ impl From<Error> for iamgroot::jsonrpc::Error {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_conversion_to_iamgroot_jsonrpc_error() {
+        let error = Error::Custom("test");
+        let iamgroot_jsonrpc_error: iamgroot::jsonrpc::Error = error.into();
+        assert_eq!(iamgroot_jsonrpc_error, iamgroot::jsonrpc::Error {code: 500, message: "test".to_string()});
+
+
+        let error = Error::IamGroot(iamgroot::jsonrpc::Error {code: 500, message: "test".to_string()});
+        let iamgroot_jsonrpc_error: iamgroot::jsonrpc::Error = error.into();
+
+        assert_eq!(
+            iamgroot::jsonrpc::Error {code: 500, message: "test".to_string()},
+            iamgroot_jsonrpc_error,
+        );
+   }
+   #[test]
+   fn test_conversion_to_blockifier_state_errors_state_error() {
+        let error = Error::Custom("test");
+        let blockifier_error: blockifier::state::errors::StateError = error.into();
+
+        assert_eq!(
+            blockifier_error.to_string(),
+            blockifier::state::errors::StateError::StateReadError("Custom(\"test\")".into()).to_string()
+        );
+   }
+}
