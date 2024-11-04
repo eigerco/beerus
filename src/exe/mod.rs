@@ -329,3 +329,53 @@ impl<T: gen::client::blocking::HttpClient> BlockifierState for StateProxy<T> {
         tracing::info!(?class_hash, pcs.len = pcs.len(), "add_visited_pcs");
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use blockifier::execution::contract_class::ContractClassV1;
+    use starknet_api::core::PatriciaKey;
+
+    use super::*;
+    struct MockHttpClient;
+
+    impl crate::gen::client::blocking::HttpClient for MockHttpClient {
+        fn post(
+            &self,
+            _url: &str,
+            _request: &iamgroot::jsonrpc::Request,
+        ) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
+            Err(iamgroot::jsonrpc::Error {code: 0, message: "0".into()})
+        }
+    }
+
+    #[test]
+    fn test_luke() {
+        let mock = MockHttpClient{};
+        let mut proxy = StateProxy {
+            client: gen::client::blocking::Client::new("test", mock),
+            state: State {
+                block_number: 0,
+                block_hash: gen::Felt::try_new("0x0").unwrap(),
+                root: gen::Felt::try_new("0x0").unwrap(),
+            }
+        };
+
+        proxy.set_storage_at(
+            ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+            StarknetStorageKey(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+            starknet_crypto::Felt::ZERO,
+        ).unwrap();
+        proxy.increment_nonce(
+            ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+        ).unwrap();
+        proxy.set_class_hash_at(
+            ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+            ClassHash(starknet_crypto::Felt::ZERO),
+        ).unwrap();
+        proxy.set_contract_class(ClassHash(starknet_crypto::Felt::ZERO), ContractClass::V1(ContractClassV1::empty_for_testing())).unwrap();
+        proxy.set_compiled_class_hash(ClassHash(starknet_crypto::Felt::ZERO), CompiledClassHash(starknet_crypto::Felt::ZERO)).unwrap();
+        proxy.add_visited_pcs(ClassHash(starknet_crypto::Felt::ZERO), &HashSet::new());
+
+    }
+}

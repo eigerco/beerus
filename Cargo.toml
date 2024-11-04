@@ -72,6 +72,7 @@ web-time = "1.1.0"
 [dev-dependencies]
 anyhow = "1.0.92"
 alloy-primitives = { version = "0.8.5", default-features = false }
+blockifier = { git = "https://github.com/sergey-melnychuk/sequencer.git", tag = "beerus-wasm-2024-09-22", version = "=0.8.0-rc.2", features = ["testing"] }
 chrono = "0.4.38"
 katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
