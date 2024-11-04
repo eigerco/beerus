@@ -3,7 +3,6 @@ use ethers::types::U256;
 use lru::LruCache;
 use starknet_api::{core::ContractAddress, state::StorageKey};
 use starknet_types_core::felt::Felt as StarkFelt;
-use std::marker::PhantomData;
 use std::num::NonZeroUsize;
 use std::sync::{LazyLock, Mutex};
 
@@ -116,12 +115,11 @@ pub trait HasBlockHash {
 
 pub struct CachedState<T: StateReader + BlockifierState + HasBlockHash> {
     inner: T,
-    _marker: PhantomData<T>,
 }
 
 impl<T: StateReader + BlockifierState + HasBlockHash> CachedState<T> {
     pub fn new(inner: T) -> Self {
-        Self { inner, _marker: PhantomData }
+        Self { inner }
     }
 }
 
