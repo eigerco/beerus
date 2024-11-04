@@ -337,29 +337,81 @@ mod tests {
     use starknet_api::core::PatriciaKey;
 
     use super::*;
-    struct MockHttpClient;
+    struct MockHttpClient {
+        response:  std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error>,
+    }
 
-    impl crate::gen::client::blocking::HttpClient for MockHttpClient {
+    impl MockHttpClient {
+        fn new(response: std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error>) -> Self {
+            Self {
+                response,
+            }
+        }
+    }
+
+    impl Default for MockHttpClient {
+        fn default() -> Self {
+            Self::new(Ok(iamgroot::jsonrpc::Response::result(serde_json::Value::default())))
+        }
+    }
+
+    impl gen::client::blocking::HttpClient for MockHttpClient {
         fn post(
             &self,
             _url: &str,
             _request: &iamgroot::jsonrpc::Request,
         ) -> std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error> {
-            Err(iamgroot::jsonrpc::Error {code: 0, message: "0".into()})
+            self.response.clone()
         }
     }
 
+    fn state_proxy_with_response (
+        response: std::result::Result<iamgroot::jsonrpc::Response, iamgroot::jsonrpc::Error>,
+        proxy: Option<StateProxy<MockHttpClient>>
+    ) -> StateProxy<MockHttpClient> {
+            let state = if let Some(test) = proxy {
+                test.state.clone()
+            } else {
+                State {
+                        block_number: 0,
+                        block_hash: gen::Felt::try_new("0x0").unwrap(),
+                        root: gen::Felt::try_new("0x0").unwrap(),
+                    }
+           };
+                StateProxy {
+                    state,
+                    client: gen::client::blocking::Client::new("test", MockHttpClient::new(response)),
+                }
+        }
+
     #[test]
-    fn test_luke() {
-        let mock = MockHttpClient{};
-        let mut proxy = StateProxy {
-            client: gen::client::blocking::Client::new("test", mock),
+    fn test_exe() {
+        let p = StateProxy {
+            client: gen::client::blocking::Client::new("test", MockHttpClient::default()),
             state: State {
                 block_number: 0,
                 block_hash: gen::Felt::try_new("0x0").unwrap(),
                 root: gen::Felt::try_new("0x0").unwrap(),
             }
         };
+
+        let mut proxy = state_proxy_with_response(
+            Ok(iamgroot::jsonrpc::Response::result(serde_json::Value::String("0x0".into()))),
+            Some(p)
+        );
+
+        let response = proxy.get_storage_at(
+            ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+            StarknetStorageKey(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+        );
+
+        let nonce = proxy.get_nonce_at(
+            ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
+        ).unwrap();
+
+        assert_eq!(nonce.0,
+            starknet_crypto::Felt::from_hex("0x0").unwrap(),
+        );
 
         proxy.set_storage_at(
             ContractAddress(PatriciaKey::try_from(starknet_crypto::Felt::ZERO).unwrap()),
