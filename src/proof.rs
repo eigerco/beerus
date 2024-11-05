@@ -55,7 +55,7 @@ impl GetProofResult {
         contract_address: Address,
         key: StorageKey,
         value: Felt,
-    ) -> Result<(), jsonrpc::Error> {
+    ) -> Result<(), ProofVerifyError> {
         let contract_data = self.contract_data.as_ref().ok_or(
             jsonrpc::Error::new(-32700, "No contract data found".to_string()),
         )?;
@@ -101,29 +101,29 @@ impl GetProofResult {
     ) -> Result<(), ProofVerifyError> {
         let state_hash = Self::calculate_contract_state_hash(contract_data)?;
 
+        let class_commitment = if let Some(felt) = &self.class_commitment {
+            Self::create_field_element_from_hex(felt.as_ref())?
+        } else {
+            return Err(ProofVerifyError::Other("No class commitment".to_string()));
+        };
+
+        let state_commitment = if let Some(felt) = &self.state_commitment {
+            Self::create_field_element_from_hex(felt.as_ref())?
+        } else {
+            return Err(ProofVerifyError::Other("No state commitment".to_string()));
+        };
+
         match Self::parse_proof(
             contract_address.0.as_ref(),
             state_hash,
             &self.contract_proof,
         )? {
             Some(storage_commitment) => {
-                let class_commitment = self.class_commitment.as_ref().ok_or(
-                    ProofVerifyError::Other("No class commitment".to_string())
-                )?;
                 let parsed_global_root = Self::calculate_global_root(
-                    &Self::create_field_element_from_hex(class_commitment.as_ref())?,
+                    &class_commitment,
                     &storage_commitment,
-                )
-                .map_err(|_| {
-                    jsonrpc::Error::new(
-                        -32700,
-                        "Failed to calculate global root".to_string(),
-                    )
-                })?;
-                let state_commitment = self.state_commitment.as_ref().ok_or(
-                    ProofVerifyError::Other("No state state".to_string())
-                )?;
-                let state_commitment= Self::create_field_element_from_hex(&state_commitment.as_ref())?;
+                );
+
                 if state_commitment == parsed_global_root && global_root == parsed_global_root
                 {
                     Ok(())
@@ -158,14 +158,12 @@ impl GetProofResult {
     fn calculate_global_root(
         class_commitment: &FieldElement,
         storage_commitment: &FieldElement,
-    ) -> Result<FieldElement, ProofVerifyError> {
-        let global_state_ver =
-            FieldElement::from_bytes_be_slice(b"STARKNET_STATE_V0");
-        Ok(poseidon_hash_many(&[
-            global_state_ver,
+    ) -> FieldElement {
+        poseidon_hash_many(&[
+            FieldElement::from_bytes_be_slice(b"STARKNET_STATE_V0"),
             storage_commitment.clone(),
             class_commitment.clone(),
-        ]))
+        ])
     }
 
     fn parse_proof(
@@ -515,7 +513,7 @@ mod tests {
             GetProofResult::calculate_global_root(
                 &FieldElement::from_hex("0xabc").unwrap(),
                 &FieldElement::from_hex("0def").unwrap(),
-            ).unwrap(),
+            ),
             FieldElement::from_hex(expected).unwrap(),
         );
     }
