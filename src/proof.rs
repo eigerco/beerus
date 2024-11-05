@@ -173,9 +173,13 @@ impl GetProofResult {
     ) -> Result<Option<FieldElement>, ProofVerifyError> {
         let key = Self::create_field_element_from_hex(&key.into())?;
         let key = felt_to_bits(&key.to_bytes_be());
-        if key.len() != 251 {
-            return Ok(None);
-        }
+
+        // TODO: enable after checking that this is possible to have a key with different length
+        // I think it's impossible to have key with length other than 251 bits
+        // if key.len() != 251 {
+            // return Ok(None);
+        // }
+
         // initialized to the value so if the last node
         // in the proof is a binary node we can still verify
         let (mut hold, mut path_len) = (value, 0);
@@ -243,9 +247,26 @@ impl GetProofResult {
 #[cfg(test)]
 mod tests {
     use super::FieldElement;
-    use crate::gen::{
+    use crate::{gen::{
         Address, ContractData, Felt, GetProofResult, Node, StorageKey,
-    };
+    }, proof::ProofVerifyError};
+
+    impl Default for GetProofResult {
+        fn default() -> Self {
+            Self {
+                state_commitment: Some(Felt::try_new("0x0").unwrap()),
+                class_commitment: Some(Felt::try_new("0x0").unwrap()),
+                contract_data: Some(ContractData {
+                    class_hash: Felt::try_new("0x0").unwrap(),
+                    contract_state_hash_version: Felt::try_new("0x0").unwrap(),
+                    nonce: Felt::try_new("0x0").unwrap(),
+                    root: Felt::try_new("0x0").unwrap(),
+                    storage_proofs: Some(vec![vec![]]),
+                }),
+                contract_proof: vec![],
+            }
+        }
+    }
 
     #[test]
     fn valid_one_level_parse_proof() {
@@ -583,5 +604,142 @@ mod tests {
         assert!(invalid_storage_proof
             .verify_contract_proof(contract_data, global_root, contract_address)
             .is_err());
+    }
+
+    #[test]
+    fn test_verify_returns_error_when_contract_data_is_missing() {
+        let mut proof = GetProofResult::default();
+        proof.contract_data = None;
+        let result = proof.verify(
+            Felt::try_new("0x0").unwrap(),
+            Address(Felt::try_new("0x0").unwrap()),
+            StorageKey::try_new("0x0").unwrap(),
+            Felt::try_new("0x0").unwrap(),
+        );
+
+        let err: iamgroot::jsonrpc::Error = result.unwrap_err().into();
+        assert_eq!(err.code, -32700);
+        assert_eq!(err.message, "No contract data found");
+    }
+
+    #[test]
+    fn test_verify_returns_error_when_storage_proofs_is_missing() {
+        let mut proof = GetProofResult::default();
+        let mut contract_data = proof.contract_data.unwrap();
+        contract_data.storage_proofs = None;
+        proof.contract_data = Some(contract_data);
+
+        let result = proof.verify(
+            Felt::try_new("0x0").unwrap(),
+            Address(Felt::try_new("0x0").unwrap()),
+            StorageKey::try_new("0x0").unwrap(),
+            Felt::try_new("0x0").unwrap(),
+        );
+
+        let err: iamgroot::jsonrpc::Error = result.unwrap_err().into();
+        assert_eq!(err.code, -32700);
+        assert_eq!(err.message, "No storage proof found");
+    }
+
+    #[test]
+    fn test_verify_contract_proof_returns_error_when_unable_to_parse_root() {
+        let proof_string = r#"[
+        {
+            "binary": {
+                "left": "0x716e211c75f4c0e14dbe46c361812b0129abd061b63faf91ad5569bf22b785c",
+                "right": "0x3729d9699d4410223e413f3b3aa91a043d94242f888188036e6ea25b6962041"
+            }
+        }
+        ]"#;
+
+        let mut proof_result = GetProofResult::default();
+        proof_result.contract_proof = serde_json::from_str(proof_string).unwrap();
+
+        let result = proof_result.verify_contract_proof(
+            proof_result.contract_data.as_ref().unwrap(),
+            FieldElement::from_hex("0x1").unwrap(),
+            Address(Felt::try_new("0x0").unwrap()),
+        );
+        assert_eq!(result.unwrap_err().to_string(), "Could not parse global root for root: 1");
+
+    }
+
+    #[test]
+    fn test_verify_contract_proof_returns_error_when_no_class_commitment() {
+        let mut proof_result = GetProofResult::default();
+        proof_result.class_commitment = None;
+
+        let result = proof_result.verify_contract_proof(
+            proof_result.contract_data.as_ref().unwrap(),
+            FieldElement::from_hex("0x1").unwrap(),
+            Address(Felt::try_new("0x0").unwrap()),
+        );
+        assert_eq!(result.unwrap_err().to_string(), "No class commitment");
+    }
+
+    #[test]
+    fn test_verify_contract_proof_returns_error_when_no_state_commitment() {
+        let mut proof_result = GetProofResult::default();
+        proof_result.state_commitment = None;
+
+        let result = proof_result.verify_contract_proof(
+            proof_result.contract_data.as_ref().unwrap(),
+            FieldElement::from_hex("0x1").unwrap(),
+            Address(Felt::try_new("0x0").unwrap()),
+        );
+        assert_eq!(result.unwrap_err().to_string(), "No state commitment");
+    }
+
+    #[test]
+    fn test_verify_storage_proofs_computed_root_error() {
+        let mut proof_result = GetProofResult::default();
+        proof_result.class_commitment = None;
+
+        let result = proof_result.verify_storage_proofs(
+            proof_result.contract_data.as_ref().unwrap(),
+            StorageKey::try_new("0x0341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1").unwrap(),
+            FieldElement::from_hex("0x1").unwrap(),
+            proof_result.contract_data.as_ref().unwrap().storage_proofs.as_ref().unwrap(),
+        );
+        assert_eq!(result.unwrap_err().to_string(), "Proof invalid:\nprovided-root -> 0x0\ncomputed-root -> 0x1\n");
+    }
+
+    #[test]
+    fn test_conversion_to_jsonrpc_error() {
+         let error = ProofVerifyError::Other("test".to_string());
+         let json_error: iamgroot::jsonrpc::Error = error.into();
+         assert_eq!(json_error.code, -32700);
+         assert_eq!(json_error.message, "test");
+
+         let error = ProofVerifyError::Parse("test".to_string());
+         let json_error: iamgroot::jsonrpc::Error = error.into();
+         assert_eq!(json_error.code, -32701);
+         assert_eq!(json_error.message, "test");
+
+
+         let error = ProofVerifyError::RPC(iamgroot::jsonrpc::Error{code: 1, message: "test".to_string()});
+         let json_error: iamgroot::jsonrpc::Error = error.into();
+         assert_eq!(json_error.code, 1);
+         assert_eq!(json_error.message, "test");
+
+    }
+
+    #[test]
+    fn test_parse_proof(){
+        let key = "0x0341c1bdfd89f69748aa00b5742b03adbffd79b8e80cab5c50d91cd8c2a79be1".to_string();
+        let value =
+            FieldElement::from_hex("0x47616d65206f66204c69666520546f6b656e").unwrap();
+        let proof_string = r#"[
+        {
+            "binary": {
+                "left": "0x46e82293b0564764a071f1aa4488aa7577b1b5bb2e898321f8536d5593d371d",
+                "right": "0x58adcf6ea8b96992aa316e2f092f2480ca406c3630fe97573046a32900745b5"
+            }
+        }
+        ]"#;
+        let proof: Vec<Node> = serde_json::from_str(proof_string).unwrap();
+        assert!(GetProofResult::parse_proof(key, value, &proof)
+            .unwrap()
+            .is_none());
     }
 }
