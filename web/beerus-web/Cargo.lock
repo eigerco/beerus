@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "beerus"
-version = "0.5.1"
+version = "0.6.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -416,7 +416,7 @@ dependencies = [
  "iamgroot",
  "once_cell",
  "regex",
- "reqwest 0.12.7",
+ "reqwest 0.12.8",
  "serde",
  "serde_json",
  "starknet-crypto 0.7.2",
@@ -445,7 +445,7 @@ dependencies = [
  "js-sys",
  "num-bigint",
  "num-traits 0.2.19",
- "reqwest 0.12.7",
+ "reqwest 0.12.8",
  "serde",
  "serde_json",
  "tokio",
@@ -5064,9 +5064,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.7"
+version = "0.12.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8f4955649ef5c38cc7f9e8aa41761d48fb9677197daea9984dc54f56aad5e63"
+checksum = "f713147fbe92361e52392c73b8c9e48c04c6625bce969ef54dc901e58e042a7b"
 dependencies = [
  "base64 0.22.1",
  "bytes",
