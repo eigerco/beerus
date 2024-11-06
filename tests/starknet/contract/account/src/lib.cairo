@@ -11,12 +11,20 @@ trait IAccount<T> {
   fn is_valid_signature(self: @T, hash: felt252, signature: Array<felt252>) -> felt252;
   fn supports_interface(self: @T, interface_id: felt252) -> bool;
   fn public_key(self: @T) -> felt252;
-  fn id(self: @T) -> u128;
+  fn id(self: @T) -> u256;
 }
 
-#[starknet::contract]
+#[starknet::interface]
+trait ProtocolTrait<T> {
+  fn __execute__(ref self: T, calls: Array<Call>) -> Array<Span<felt252>>;
+  fn __validate__(self: @T, calls: Array<Call>) -> felt252;
+  fn __validate_declare__(self: @T, class_hash: felt252) -> felt252;
+  fn __validate_deploy__(self: @T, class_hash: felt252, salt: felt252, public_key: felt252) -> felt252;
+}
+
+#[starknet::contract(account)]
 mod Account {
-  use super::{Call, IAccount, SUPPORTED_TX_VERSION};
+  use super::{Call, IAccount, ProtocolTrait, SUPPORTED_TX_VERSION};
   use starknet::{get_caller_address, call_contract_syscall, get_tx_info, VALIDATED};
   use zeroable::Zeroable;
   use array::{ArrayTrait, SpanTrait};
@@ -29,7 +37,7 @@ mod Account {
   #[storage]
   struct Storage {
     public_key: felt252,
-    id: u128
+    id: u256,
   }
 
   #[constructor]
@@ -53,14 +61,13 @@ mod Account {
       self.public_key.read()
     }
 
-    fn id(self: @ContractState) -> u128 {
+    fn id(self: @ContractState) -> u256 {
       self.id.read()
     }
   }
 
-  #[abi(per_item)]
-  #[generate_trait]
-  impl ProtocolImpl of ProtocolTrait {
+  #[abi(embed_v0)]
+  impl ProtocolImpl of ProtocolTrait<ContractState> {
     fn __execute__(ref self: ContractState, calls: Array<Call>) -> Array<Span<felt252>> {
       self.only_protocol();
       self.only_supported_tx_version(SUPPORTED_TX_VERSION::INVOKE);

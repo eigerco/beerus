@@ -1,7 +1,8 @@
-use std::{thread, time};
+use std::{sync::Arc, thread, time};
 
+use ::starknet::core::types::PriceUnit;
 use beerus::{
-    client::Http,
+    client::{Http, State},
     gen::{
         client::Client, Address, BlockId, BlockTag, BroadcastedDeclareTxn,
         BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn,
@@ -10,12 +11,20 @@ use beerus::{
         InvokeTxnV1Type, InvokeTxnV1Version, Rpc, SimulationFlagForEstimateFee,
         TxnHash,
     },
+    rpc::{serve, Server},
 };
-use starknet::constants::{
-    CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
-    CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3, SENDER_ADDRESS,
+use common::err::Error;
+use starknet::{
+    constants::{
+        CLASS_HASH, COMPILED_ACCOUNT_CONTRACT_V2, COMPILED_ACCOUNT_CONTRACT_V3,
+        CONTRACT_ADDRESS, DECLARE_ACCOUNT_V2, DECLARE_ACCOUNT_V3,
+        SENDER_ADDRESS,
+    },
+    starkli::{PreFundedAccount, Starkli},
+    utils,
 };
-use starknet::katana::Katana;
+use starknet::{katana::Katana, scarb};
+use tokio::sync::RwLock;
 
 mod common;
 mod starknet;
@@ -25,6 +34,22 @@ async fn setup() -> (Katana, Client<Http>) {
     let url = format!("http://127.0.0.1:{}", katana.port());
     let client = Client::new(&url, Http::new());
     (katana, client)
+}
+
+async fn setup_beerus_with_katana() -> Result<(Server, Katana), Error> {
+    let katana = Katana::init("http://127.0.0.1:0").await?;
+    let state = State {
+        block_number: 0,
+        block_hash: Felt::try_new("0x0")?,
+        root: Felt::try_new("0x0")?,
+    };
+    let beerus = serve(
+        &format!("http://127.0.0.1:{}", katana.port()),
+        "127.0.0.1:0",
+        Arc::new(RwLock::new(state)),
+    )
+    .await?;
+    Ok((beerus, katana))
 }
 
 #[tokio::test]
@@ -40,6 +65,44 @@ async fn declare_deploy_account_v2() {
     estimate_deploy(&client).await;
     transfer_eth(&client).await;
     deploy(client).await;
+}
+
+#[tokio::test]
+async fn deploy_account_on_katana() -> Result<(), Error> {
+    let (beerus, katana) = setup_beerus_with_katana().await?;
+
+    let (account_folder, toml, id) = utils::prepare_account()?;
+    scarb::compile_blocking(toml).await?;
+
+    let mut starkli = Starkli::new(
+        &format!("http://127.0.0.1:{}/rpc", beerus.port()),
+        &account_folder,
+        PreFundedAccount::Katana,
+    );
+    let key = starkli.create_keystore()?;
+    let class_hash = starkli.extract_class_hash()?;
+    let address = starkli.create_account(key.clone(), class_hash).await?;
+    starkli.declare_account().await?;
+    starkli
+        .invoke_eth_transfer(address, 5000000000000000000, PriceUnit::Wei)
+        .await?;
+    starkli.deploy_account().await?;
+
+    // Redirect starkli to katana in verification because katana does not support
+    // pathfinder methods which are being called in beerus stateless call execution
+    // TODO: Use beerus when test node with supported pathfinder methods is used
+    starkli.rpc = format!("http://127.0.0.1:{}", katana.port());
+
+    let res_id = starkli.call(address, "id").await?;
+    assert_eq!(res_id.len(), 2);
+    assert_eq!(res_id[0].to_string(), id);
+    assert_eq!(res_id[1], starknet_crypto::Felt::ZERO);
+
+    let res_public_key = starkli.call(address, "public_key").await?;
+    assert_eq!(res_public_key.len(), 1);
+    assert_eq!(res_public_key[0], key.verifying_key().scalar());
+
+    Ok(())
 }
 
 async fn declare(

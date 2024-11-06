@@ -73,6 +73,7 @@ web-time = "1.1.0"
 anyhow = "1.0.92"
 alloy-primitives = { version = "0.8.5", default-features = false }
 chrono = "0.4.38"
+clap = "4.5.20"
 katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
@@ -81,6 +82,8 @@ katana-rpc = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9
 katana-rpc-api = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 scarb = { git = "https://github.com/software-mansion/scarb/", tag = "v2.8.3" }
 semver = { version = "1", features = ["serde"] }
+starkli = { git = "https://github.com/ICavlek/starkli", branch = "ic/starkli_as_lib" }
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "db1fa598232f0698d942cc974f481b5d888ac080", features = ["ledger"] }
 wiremock = "0.6.2"
 
 [patch.crates-io]
