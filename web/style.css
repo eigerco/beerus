@@ -1,3 +1,9 @@
+:root {
+    --bc1: #e0e0e0;
+    --bc2: #ececec;
+    --bc3: #000000;
+}
+
 /* Global Styles */
 * {
     box-sizing: border-box;
@@ -6,11 +12,71 @@
     font-family: 'Arial', sans-serif;
 }
 
+html {
+    font-size: 62.5%;
+    /* 62.5% font-size makes 10px = 1rem */
+}
+
 body {
-    background-color: #f0f2f5;
+    background-color: #ffffff;
     display: flex;
     height: 100vh;
-    overflow: hidden; /* Prevents page scroll */
+    overflow: hidden;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 2.4rem;
+    border-bottom: 1px solid var(--bc1);
+
+    .logo {
+        /* Beerus */
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 29px;
+
+        color: #000000;
+    }
+
+    .info-btn {
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+
+        &.closed {
+            opacity: 0.24;
+        }
+
+        &:hover {
+            opacity: 0.6;
+        }
+    }
+}
+
+.tools {
+    display: flex;
+    gap: 36px;
+
+    .status,
+    .proxy {
+        display: flex;
+        flex-direction: row;
+        gap: 1.2rem;
+        align-items: center;
+
+        span {
+            font-size: 1.4rem;
+            color: #000000;
+            text-transform: uppercase;
+        }
+    }
 }
 
 .container {
@@ -41,29 +107,6 @@ body {
 .alchemy-section label {
     margin-right: 10px;
     font-weight: bold;
-}
-
-#alchemy-key {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    flex-grow: 1;
-}
-
-#init-btn {
-    background-color: #007bff;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: background-color 0.2s;
-}
-
-#init-btn:hover {
-    background-color: #0056b3;
 }
 
 .chat-log {
@@ -123,18 +166,6 @@ body {
     color: #63a35c;
 }
 
-.input-section {
-    padding: 15px;
-    background-color: #ffffff;
-    border-top: 1px solid #ddd;
-    display: flex;
-    flex-direction: column;
-}
-
-.input-wrapper {
-    flex-grow: 1;
-}
-
 #json-input {
     width: 100%;
     padding: 15px;
@@ -147,6 +178,14 @@ body {
     overflow-wrap: break-word;
     line-height: 1.5;
     background-color: #f0f2f5;
+    outline: none;
+}
+
+input {
+    font-size: 1.4rem;
+    padding: 1.2rem;
+    border: 2px solid var(--bc2);
+    border-radius: 3.6rem;
     outline: none;
 }
 
@@ -200,34 +239,173 @@ body {
     background-color: #e0e0e0;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
+.button {
+    display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0.9rem 2.4rem;
+    border-radius: 3.6rem;
+    background: var(--bc2);
+    border: none;
+    width: max-content;
+
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #000000;
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+        background: var(--bc3);
+        color: var(--bc1);
+    }
+}
+
+.modal-overlay {
+    position: relative;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+
+    padding: 2.4rem;
+}
+
+.modal-container {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 7.8rem);
+
+    background-color: #ffffff;
+    border: 1px solid var(--bc2);
+    padding-top: 2rem;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2rem;
+        background: url('images/lines.png') repeat-x;
+        background-color: var(--bc2);
+        background-size: contain;
+    }
 }
 
 .modal-content {
-    background-color: white;
-    padding: 40px;
-    border-radius: 8px;
-    width: 40%;
-    min-width: 300px;
-    max-width: fit-content;
     position: relative;
+    display: flex;
+    flex-direction: column;
+
+    padding: 2.4rem;
+    height: 100%;
+
+    overflow: hidden;
+    overflow-y: auto;
+
+    .button {
+        position: fixed;
+        z-index: 6;
+        bottom: 4.8rem;
+        right: 4.8rem;
+    }
 }
 
-.modal-content h2 {
-    margin-bottom: 20px;
+.modal-content h1 {
+    /* Beerus WebAssembly Demo */
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 80px;
+    line-height: 97px;
+    /* identical to box height */
+    text-align: center;
+
+    color: #000000;
 }
 
-.modal-content li {
-    margin-bottom: 5px;
+.modal-content ul {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 3.6rem;
+    align-items: center;
+    margin-top: 12rem;
+    margin-bottom: 24rem;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+
+        border-left: 1px dashed var(--bc3);
+        opacity: 0.24;
+        width: 1px;
+        height: 100%;
+    }
+
+    &:after {
+        content: '';
+        position: fixed;
+        bottom: 2.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 5rem);
+        z-index: 2;
+
+        height: 6rem;
+        pointer-events: none;
+
+        background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            #ffffff 100%
+        );
+    }
+
+    li {
+        position: relative;
+        list-style: none;
+        background-color: #ffffff;
+        border: 1px solid var(--bc2);
+        padding-top: 2rem;
+
+        filter: drop-shadow(0px 24px 24px rgba(0, 0, 0, 0.06));
+
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2rem;
+            background: url('images/lines.png') repeat-x;
+            background-color: var(--bc2);
+            background-size: contain;
+        }
+
+        div {
+            padding: 2.4rem;
+            font-size: 1.4rem;
+
+            a {
+                color: #000000;
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
 }
 
 @media only screen and (max-width: 768px) {
@@ -245,5 +423,59 @@ body {
 
     .chat-log .message {
         padding: 10px;
+    }
+}
+
+.window {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid var(--bc2);
+    padding-top: 2rem;
+
+    filter: drop-shadow(0px 24px 24px rgba(0, 0, 0, 0.06));
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2rem;
+        background: url('images/lines.png') repeat-x;
+        background-color: var(--bc2);
+        background-size: contain;
+    }
+
+    .window-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        padding: 2.4rem;
+    }
+}
+
+.alchemy-init {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    label {
+        font-size: 1.6rem;
+    }
+
+    input {
+        width: 24rem;
+        text-overflow: ellipsis;
+    }
+
+    .button {
+        background: #000000;
+        color: #ffffff;
+        width: 100%;
+
+        &:hover {
+            opacity: 0.6;
+        }
     }
 }
