@@ -7,6 +7,12 @@ use semver::Version;
 use std::{fs::canonicalize, path::PathBuf};
 
 #[allow(dead_code)]
+pub async fn compile_blocking(toml: String) -> Result<(), Error> {
+    tokio::task::spawn_blocking(move || -> Result<(), Error> { compile(toml) })
+        .await?
+}
+
+#[allow(dead_code)]
 pub fn compile(toml: String) -> Result<(), Error> {
     let toml_absolute = canonicalize(PathBuf::from(toml))?;
     let opts = CompileOpts {
