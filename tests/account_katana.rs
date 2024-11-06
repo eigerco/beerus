@@ -71,12 +71,12 @@ async fn declare_deploy_account_v2() {
 async fn deploy_account_on_katana() -> Result<(), Error> {
     let (beerus, katana) = setup_beerus_with_katana().await?;
 
-    let (account_folder, toml, id) = utils::prepare_account()?;
-    scarb::compile_blocking(toml).await?;
+    let account = utils::prepare_account()?;
+    scarb::compile_blocking(account.toml).await?;
 
     let mut starkli = Starkli::new(
         &format!("http://127.0.0.1:{}/rpc", beerus.port()),
-        &account_folder,
+        &account.folder,
         PreFundedAccount::Katana,
     );
     let key = starkli.create_keystore()?;
@@ -95,7 +95,7 @@ async fn deploy_account_on_katana() -> Result<(), Error> {
 
     let res_id = starkli.call(address, "id").await?;
     assert_eq!(res_id.len(), 2);
-    assert_eq!(res_id[0].to_string(), id);
+    assert_eq!(res_id[0].to_string(), account.id);
     assert_eq!(res_id[1], starknet_crypto::Felt::ZERO);
 
     let res_public_key = starkli.call(address, "public_key").await?;

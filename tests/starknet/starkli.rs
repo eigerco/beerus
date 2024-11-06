@@ -44,7 +44,7 @@ impl Starkli {
     ) -> Self {
         let prefunded_account = match prefunded_account {
             PreFundedAccount::Katana => "katana-0".to_string(),
-            PreFundedAccount::Sepolia => "TODO".to_string(),
+            PreFundedAccount::Sepolia => unimplemented!(),
         };
         Self {
             rpc: rpc.into(),
