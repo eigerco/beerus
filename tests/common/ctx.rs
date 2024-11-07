@@ -37,13 +37,13 @@ pub async fn ctx_sepolia() -> Option<Context> {
     let url = std::env::var("STARKNET_SEPOLIA_URL").ok()?;
 
     let state = State {
-        block_number: 209582,
+        block_number: 293268,
         block_hash: Felt::try_new(
-            "0x45fb3ae1436743e74a81eac88e1beee6e8fb34aecb7b2e43e0577406f390f5f",
+            "0x7799ec4953a1786e59e5ad02b4576cd59fa3b9efa059b7d56a9eb2b6ad6f2e",
         )
         .unwrap(),
         root: Felt::try_new(
-            "0x11dccdce33557ca6e14871d4235a8b65e9bd512722ac9e2cb96ff49bfb9af30",
+            "0x54882b0dcb575e5e18bfac4c22b00f0cadcd83885d8c35b0b9d6e0e125ce3be",
         )
         .unwrap(),
     };

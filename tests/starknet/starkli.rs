@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{fs, io::Write};
 
 use anyhow::{anyhow, Error};
 use clap::Parser;
@@ -11,7 +11,7 @@ use starkli::{
     utils::{Cli, Subcommands},
 };
 use starknet::{
-    core::types::{contract::SierraClass, PriceUnit},
+    core::types::contract::SierraClass,
     signers::{LocalWallet, Signer, SigningKey},
 };
 use starknet_crypto::Felt;
@@ -20,7 +20,7 @@ use starknet_crypto::Felt;
 pub struct Starkli {
     pub rpc: String,
     account_folder: String,
-    prefunded_account: String,
+    prefunded_account: PreFundedAccount,
     persist_logger: bool,
 }
 
@@ -42,10 +42,6 @@ impl Starkli {
         account_folder: &str,
         prefunded_account: PreFundedAccount,
     ) -> Self {
-        let prefunded_account = match prefunded_account {
-            PreFundedAccount::Katana => "katana-0".to_string(),
-            PreFundedAccount::Sepolia => unimplemented!(),
-        };
         Self {
             rpc: rpc.into(),
             account_folder: account_folder.into(),
@@ -101,18 +97,16 @@ impl Starkli {
     pub async fn declare_account(&mut self) -> Result<(), Error> {
         let compiled_contract = self.account_folder.clone() + COMPILED_ACCOUNT;
         let rpc = self.rpc.clone();
-        let account = self.prefunded_account.clone();
-        let input = vec![
-            "starkli",
-            "declare",
-            &compiled_contract,
-            "--compiler-version",
-            "2.8.2",
-            "--rpc",
-            &rpc,
-            "--account",
-            &account,
+        let mut input = vec![
+            "starkli".to_string(),
+            "declare".to_string(),
+            compiled_contract,
+            "--compiler-version".to_string(),
+            "2.8.2".to_string(),
+            "--rpc".to_string(),
+            rpc,
         ];
+        self.setup_prefunded_account(&mut input).await?;
         self.run_command(input).await
     }
 
@@ -120,29 +114,21 @@ impl Starkli {
         &mut self,
         to_address: Felt,
         amount: u64,
-        unit: PriceUnit,
     ) -> Result<(), Error> {
-        let address = &format!("{:#064x}", to_address);
-        let amount = &format!("u256:{amount}");
-        let unit = match unit {
-            PriceUnit::Wei => "--eth",
-            PriceUnit::Fri => "--strk",
-        };
+        let address = format!("{:#064x}", to_address);
+        let amount = format!("u256:{amount}");
         let rpc = self.rpc.clone();
-        let account = self.prefunded_account.clone();
-        let input = vec![
-            "starkli",
-            "invoke",
-            unit,
-            "eth",
-            "transfer",
+        let mut input = vec![
+            "starkli".to_string(),
+            "invoke".to_string(),
+            "eth".to_string(),
+            "transfer".to_string(),
             address,
             amount,
-            "--rpc",
-            &rpc,
-            "--account",
-            &account,
+            "--rpc".to_string(),
+            rpc,
         ];
+        self.setup_prefunded_account(&mut input).await?;
         self.run_command(input).await
     }
 
@@ -151,26 +137,74 @@ impl Starkli {
         let key = self.account_folder.clone() + "key.json";
         let rpc = self.rpc.clone();
         let input = vec![
-            "starkli",
-            "account",
-            "deploy",
-            &account,
-            "--rpc",
-            &rpc,
-            "--keystore",
-            &key,
-            "--keystore-password",
-            "password",
-            "--skip-manual-confirmation",
+            "starkli".to_string(),
+            "account".to_string(),
+            "deploy".to_string(),
+            account,
+            "--rpc".to_string(),
+            rpc,
+            "--keystore".to_string(),
+            key,
+            "--keystore-password".to_string(),
+            "password".to_string(),
+            "--skip-manual-confirmation".to_string(),
         ];
         self.run_command(input).await
     }
 
-    async fn run_command(&mut self, mut input: Vec<&str>) -> Result<(), Error> {
+    async fn setup_prefunded_account(
+        &mut self,
+        input: &mut Vec<String>,
+    ) -> Result<(), Error> {
+        match self.prefunded_account {
+            PreFundedAccount::Katana => {
+                input.append(&mut vec![
+                    "--account".to_string(),
+                    "katana-0".to_string(),
+                ]);
+            }
+            PreFundedAccount::Sepolia => {
+                let account = self.get_deployer_account().await?;
+                let private_key = std::env::var("DEPLOYER_PRIVATE_KEY")?;
+                input.append(&mut vec![
+                    "--account".to_string(),
+                    account,
+                    "--private-key".to_string(),
+                    private_key,
+                ]);
+            }
+        }
+        Ok(())
+    }
+
+    async fn get_deployer_account(&mut self) -> Result<String, Error> {
+        let account_address = std::env::var("DEPLOYER_ACCOUNT_ADDRESS")?;
+        let account = self.account_folder.clone() + "account_deployer.json";
+        if fs::exists(account.clone())? {
+            return Ok(account);
+        }
+        let input = vec![
+            "starkli".to_string(),
+            "account".to_string(),
+            "fetch".to_string(),
+            account_address,
+            "--output".to_string(),
+            account.clone(),
+            "--rpc".to_string(),
+            self.rpc.clone(),
+        ];
+        self.run_command(input).await?;
+        Ok(account)
+    }
+
+    async fn run_command(
+        &mut self,
+        mut input: Vec<String>,
+    ) -> Result<(), Error> {
         if !self.persist_logger {
             self.persist_logger = true;
         } else {
-            input.push("--persist-logger");
+            input.push("--persist-logger".to_string());
         }
         starkli::utils::run_command(Cli::parse_from(input)).await
     }

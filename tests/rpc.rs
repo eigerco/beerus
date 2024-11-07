@@ -1,3 +1,5 @@
+use std::{thread, time};
+
 use beerus::{
     config::MAINNET_STARKNET_CHAINID,
     gen::{
@@ -15,6 +17,11 @@ mod common;
 mod starknet;
 
 use common::err::Error;
+use starknet::{
+    scarb,
+    starkli::{PreFundedAccount, Starkli},
+    utils,
+};
 
 #[tokio::test]
 #[allow(non_snake_case)]
@@ -530,6 +537,50 @@ async fn account_call() -> Result<(), Error> {
     assert_eq!(res_call_is_valid_signature.len(), 1);
     let valid = "0x56414c4944";
     assert_eq!(res_call_is_valid_signature[0].as_ref(), valid);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn deploy_account_on_sepolia() -> Result<(), Error> {
+    let ctx = setup!("sepolia");
+
+    let account = utils::prepare_account()?;
+    scarb::compile_blocking(account.toml).await?;
+
+    let mut starkli = Starkli::new(
+        &format!("http://127.0.0.1:{}/rpc", ctx.server.port()),
+        &account.folder,
+        PreFundedAccount::Sepolia,
+    );
+    let key = starkli.create_keystore()?;
+    let class_hash = starkli.extract_class_hash()?;
+    let address = starkli.create_account(key.clone(), class_hash).await?;
+    starkli.declare_account().await?;
+
+    let time_for_transaction_validation = time::Duration::from_secs(60);
+    thread::sleep(time_for_transaction_validation);
+
+    // Usual account deployment fee is ~1e9
+    // Added additional eth just to be safe
+    let amount_to_transfer = 1e12 as u64;
+    starkli.invoke_eth_transfer(address, amount_to_transfer).await?;
+
+    thread::sleep(time_for_transaction_validation);
+    starkli.deploy_account().await?;
+
+    // Unable to verify via beerus due to hard coded L1 state
+    // and time for newly created account to arrive on L1
+    starkli.rpc = std::env::var("STARKNET_SEPOLIA_URL").ok().unwrap();
+
+    let res_id = starkli.call(address, "id").await?;
+    assert_eq!(res_id.len(), 2);
+    assert_eq!(res_id[0].to_string(), account.id);
+    assert_eq!(res_id[1], starknet_crypto::Felt::ZERO);
+
+    let res_public_key = starkli.call(address, "public_key").await?;
+    assert_eq!(res_public_key.len(), 1);
+    assert_eq!(res_public_key[0], key.verifying_key().scalar());
 
     Ok(())
 }
