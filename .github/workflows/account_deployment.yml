@@ -1,0 +1,28 @@
+name: account-deployment
+on:
+  schedule:
+      interval: "monthly"
+
+env:
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
+    runs-on: ubuntu-latest
+    env:
+      BEERUS_TEST_RUN: 1
+      STARKNET_SEPOLIA_URL: https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/${{ secrets.ALCHEMY_KEY }}
+      DEPLOYER_ACCOUNT_ADDRESS: ${{secrets.DEPLOYER_ACCOUNT_ADDRESS}}
+      DEPLOYER_PRIVATE_KEY: ${{secrets.DEPLOYER_PRIVATE_KEY}}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: rm -rf /opt/hostedtoolcache
+      - run: cargo test deploy_account_on_sepolia

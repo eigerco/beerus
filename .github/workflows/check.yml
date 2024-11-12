@@ -35,7 +35,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: rm -rf /opt/hostedtoolcache
-      - run: cargo test
+      - run: cargo test -- --skip deploy_account_on_sepolia
 
   wasm:
     runs-on: ubuntu-latest

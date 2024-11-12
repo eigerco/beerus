@@ -1,6 +1,5 @@
 use std::{sync::Arc, thread, time};
 
-use ::starknet::core::types::PriceUnit;
 use beerus::{
     client::{Http, State},
     gen::{
@@ -83,9 +82,7 @@ async fn deploy_account_on_katana() -> Result<(), Error> {
     let class_hash = starkli.extract_class_hash()?;
     let address = starkli.create_account(key.clone(), class_hash).await?;
     starkli.declare_account().await?;
-    starkli
-        .invoke_eth_transfer(address, 5000000000000000000, PriceUnit::Wei)
-        .await?;
+    starkli.invoke_eth_transfer(address, 5e18 as u64).await?;
     starkli.deploy_account().await?;
 
     // Redirect starkli to katana in verification because katana does not support
