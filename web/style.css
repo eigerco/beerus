@@ -158,22 +158,110 @@ header {
 }
 
 .chat-log .message-pair {
+    position: relative;
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
-    gap: 20px;
+    gap: 2.4rem;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 1.2rem; left: 50%;
+        transform: translateX(-50%);
+
+        width: 10rem;
+        border-top: 2px dashed var(--bc3);
+        opacity: .2;
+    }
 }
 
 .chat-log .message {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 15px;
     flex: 1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: flex-start;
-    border-left: 4px solid #007bff;
-    transition: background 0.2s;
+    transition: background 0.3s ease-in-out;
+
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid var(--bc2);
+    padding-top: 2rem;
+
+    filter: drop-shadow(0px 24px 24px rgba(0, 0, 0, 0.06));
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2rem;
+        z-index: 1;
+        background: url('images/lines.png') repeat-x;
+        background-size: contain;
+    }
+
+    &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2rem;
+        z-index: 0;
+        background-color: var(--bc2);
+    }
+
+    .content {
+        z-index: 2;
+        padding: 2.4rem;
+
+        font-size: 1.3rem;
+    }
+
+    .id {
+        position: absolute;
+        top: .3rem; left: 0;
+        z-index: 2;
+
+        font-size: 1.2rem;
+
+        display: flex;
+        flex-direction: row;
+        gap: 1.2rem;
+
+        &:before {
+            content: '';
+            position: relative;
+            top: .1rem;
+            left: .6rem;
+
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 1.2rem;
+            background: #3D87F5;
+        }
+    }
+}
+
+.chat-log .message.error {
+    &:after {
+        background-color: #F53D3D;
+    }
+
+    &:before { opacity: 0.2; }
+
+    .id {
+        color: #fff;
+
+        &:before {
+            background-color: transparent;
+            border: 2px solid #ffffff;
+
+            width: .9rem;
+            height: .9rem;
+        }
+    }
 }
 
 .chat-log .message:hover {
@@ -185,12 +273,6 @@ header {
     white-space: pre-wrap;
     word-break: break-word;
     font-family: monospace;
-}
-
-.chat-log .message .id {
-    font-size: 0.9rem;
-    color: #888888;
-    margin-left: 15px;
 }
 
 .json-key {

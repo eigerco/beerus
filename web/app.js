@@ -55,10 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			if (json.hasOwnProperty('error')) {
 				console.error(json['error']);
-				responseContent.parentElement.setAttribute(
-					'style',
-					'border-left-color:#FF0000'
-				);
+				// responseContent.parentElement.setAttribute(
+				// 	'style',
+				// 	'border-left-color:#FF0000'
+				// );
+				responseContent.parentElement.classList.add('error');
 			}
 		} catch (e) {
 			console.error(e);
