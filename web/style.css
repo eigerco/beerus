@@ -1,15 +1,37 @@
+/* FONTS */
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter-Medium.woff2') format('woff2'),
+        url('fonts/Inter-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter-Regular.woff2') format('woff2'),
+        url('fonts/Inter-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* VARIABLES */
 :root {
     --bc1: #e0e0e0;
     --bc2: #ececec;
     --bc3: #000000;
 }
 
-/* Global Styles */
+
+/* GLOBAL STYLES */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 html {
@@ -34,6 +56,7 @@ header {
     justify-content: space-between;
     padding: 2.4rem;
     border-bottom: 1px solid var(--bc1);
+    background: #fff;
 
     .logo {
         /* Beerus */
@@ -48,6 +71,8 @@ header {
 
     .info-btn {
         cursor: pointer;
+        width: 2.4rem;
+        height: 2.4rem;
         transition: all 0.3s ease-in-out;
 
         &.closed {
@@ -69,12 +94,15 @@ header {
         display: flex;
         flex-direction: row;
         gap: 1.2rem;
+        height: 2.4rem;
         align-items: center;
 
         span {
             font-size: 1.4rem;
             color: #000000;
             text-transform: uppercase;
+
+            &:last-child { height: 2.4rem; }
         }
     }
 }
@@ -111,11 +139,22 @@ header {
 
 .chat-log {
     flex: 1;
-    padding: 20px;
+    padding: 12rem 2.4rem 2.4rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column-reverse;
-    background-color: #fafafa;
+    background-color: #fff;
+
+    &:after {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        z-index: 2;
+        bottom: 0; left: 0; right: 0;
+        height: 24rem;
+
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 100%);
+    }
 }
 
 .chat-log .message-pair {
@@ -170,14 +209,14 @@ header {
     width: 100%;
     padding: 15px;
     font-size: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background-color: rgba(0, 0, 0, 0.04);
     border-radius: 8px;
     resize: none;
     font-family: monospace;
     white-space: pre;
     overflow-wrap: break-word;
     line-height: 1.5;
-    background-color: #f0f2f5;
     outline: none;
 }
 
@@ -189,27 +228,72 @@ input {
     outline: none;
 }
 
+.terminal {
+    position: static !important;
+    /* bottom: 2.4rem; left: 2.4rem; right: 2.4rem; */
+    margin: 0 2.4rem 2.4rem;
+    z-index: 2;
+    padding: 1.2rem 1.2rem;
+    padding-top: 3.2rem !important;
+
+    transition: all .3s cubic-bezier(0.8,0,0,1);
+
+    &.hidden { display: none; }
+
+    &.open {
+        padding: 3.6rem 2.4rem 2.4rem 2.4rem !important;
+        filter: drop-shadow(0px 24px 24px rgba(0, 0, 0, 0.12));
+    }
+}
+
+.terminal-head {
+    display: flex;
+    flex-direction: row;
+    gap: 2.4rem;
+    justify-content: space-between;
+    align-items: center;
+
+    cursor: pointer;
+
+    h4 {
+        font-size: 1.6rem;
+        font-weight: 400;
+    }
+
+    .button {
+        padding: .6rem 1.2rem;
+
+        svg {
+            stroke: #000000;
+            transition: all .3s ease-in-out;
+
+            &.hide { display: none; }
+        }
+
+        &:hover {
+            svg {
+                stroke: #ffffff;
+            }
+        }
+    }
+}
+
+.terminal-content {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.2rem;
+
+    &.hidden { display: none; }
+}
+
 /* Send Button and Template Buttons */
 .send-container {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-#send-btn {
-    background-color: #007bff;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: background-color 0.2s;
-}
-
-#send-btn:hover {
-    background-color: #0056b3;
+    justify-content: space-between;
+    gap: 2.4rem;
+    margin-top: 1rem;
 }
 
 .status-btn {
@@ -262,10 +346,19 @@ input {
         background: var(--bc3);
         color: var(--bc1);
     }
+
+    &.send {
+        background: #000000;
+        color: #ffffff;
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
 }
 
 .modal-overlay {
-    position: relative;
+    position: absolute;
     z-index: 6;
     width: 100%;
     height: 100%;
@@ -459,6 +552,10 @@ input {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+
+    &.remove {
+        display: none;
+    }
 
     label {
         font-size: 1.6rem;

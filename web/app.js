@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	const infoBtn = document.getElementById('info-btn');
 	const proxyBtn = document.getElementById('proxy-btn');
 	const closeBtn = document.getElementById('close-btn');
+	const alchemyWindow = document.getElementById('init');
+	const terminalWindow = document.getElementById('terminal');
+	const terminalWindowHead = document.getElementById('terminal-head');
+	const terminalWindowContent = document.getElementById('terminal-content');
+
+
 	let messageId = 1;
 
 	const statusIcons = {
@@ -31,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (event.data === 'OK') {
 				ready = true;
 				statusSpan.innerHTML = statusIcons.ready;
+				alchemyWindow.classList.add('remove');
+				terminalWindow.classList.remove('hidden');
 			} else {
 				console.error(event.data);
 				statusSpan.innerHTML = statusIcons.error;
@@ -120,7 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	if (sendBtn) {
-		sendBtn.addEventListener('click', () => sendMessage(input.value));
+		sendBtn.addEventListener('click', () => {
+			sendMessage(input.value);
+
+			// terminalWindow.classList.toggle('open');
+			// terminalWindowHead.querySelector('.plus').classList.toggle('hide');
+			// terminalWindowHead.querySelector('.minus').classList.toggle('hide');
+			// terminalWindowContent.classList.toggle('hidden');
+		});
+
 		input.addEventListener('keypress', (e) => {
 			if (e.key === 'Enter' && e.shiftKey) {
 				sendMessage(input.value);
@@ -202,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${alchemyKey}`,
 			});
 			worker.postMessage(config);
-			statusSpan.innerText = statusIcons.pending;
+			statusSpan.innerHTML = statusIcons.pending;
 		});
 	}
 
@@ -263,6 +279,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	closeBtn.addEventListener('click', () => {
 		modalOverlay.style.display = 'none';
 		infoBtn.classList.add('closed');
+	});
+
+	terminalWindowHead.addEventListener('click', () => {
+		terminalWindow.classList.toggle('open');
+		terminalWindowHead.querySelector('.plus').classList.toggle('hide');
+		terminalWindowHead.querySelector('.minus').classList.toggle('hide');
+		terminalWindowContent.classList.toggle('hidden');
 	});
 
 	checkProxy();

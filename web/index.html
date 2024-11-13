@@ -202,54 +202,50 @@
             </div>
         </section>
 
-        <!-- <div class="container">
-            <div class="alchemy-section">
-                <div><h2>Beerus</h2></div>
-                <div class="alchemy-wrapper">
-                    <input
-                        type="password"
-                        id="alchemy-key"
-                        placeholder="Enter Alchemy key"
-                        value="nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1"
-                    />
-                    <button id="init-btn">Init</button>
-                    <button id="status-btn" class="status-btn">
-                        Ready: <span id="status">❓</span>
-                    </button>
-                    <button id="proxy-btn" class="status-btn">
-                        Proxy: <span id="proxy">❓</span>
-                    </button>
-                    <button id="info-btn" class="status-btn">&#9432;</button>
-                </div>
-            </div>
+        <section class="container">
             <div class="chat-log" id="chat-log"></div>
-            <div class="input-section">
-                <div class="input-wrapper">
-                    <textarea
-                        id="json-input"
-                        placeholder="Type JSON request here..."
-                        rows="5"
-                    ></textarea>
+            <div id="terminal" class="terminal window hidden">
+                <div id="terminal-head" class="terminal-head">
+                    <h4>Terminal</h4>
+                    <span class="button">
+                        <svg class="plus" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7V17" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                            <path d="M17 12H7" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                        </svg>
+                        <svg class="minus hide" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 12H7" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                        </svg>
+                    </span>
                 </div>
-                <div class="send-container">
-                    <button id="send-btn">Send</button>
-                    <div class="template-buttons">
-                        <button
-                            class="template-btn"
-                            data-template='{"execute": {"calldata":[],"contract_address":"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7","entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"}}'
-                        >
-                            Make Call
-                        </button>
-                        <button
-                            class="template-btn"
-                            data-template='{"state": {}}'
-                        >
-                            Get State
-                        </button>
+                <div id="terminal-content" class="terminal-content hidden">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="json-input"
+                            placeholder="Type JSON request here..."
+                            rows="5"
+                        ></textarea>
+                    </div>
+                    <div class="send-container">
+                        <div class="template-buttons">
+                            <button
+                                class="template-btn button"
+                                data-template='{"execute": {"calldata":[],"contract_address":"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7","entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"}}'
+                            >
+                                Make Call
+                            </button>
+                            <button
+                                class="template-btn button"
+                                data-template='{"state": {}}'
+                            >
+                                Get State
+                            </button>
+                        </div>
+                        <button id="send-btn" class="button send">Send</button>
                     </div>
                 </div>
             </div>
-        </div> -->
+        </section>
+
         <script type="module" src="app.js"></script>
     </body>
 </html>
