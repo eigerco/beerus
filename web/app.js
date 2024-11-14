@@ -9,12 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	const proxySpan = document.getElementById('proxy');
 	const modalOverlay = document.getElementById('modal-overlay');
 	const infoBtn = document.getElementById('info-btn');
+	const helpBtn = document.getElementById('help-btn');
 	const proxyBtn = document.getElementById('proxy-btn');
 	const closeBtn = document.getElementById('close-btn');
 	const alchemyWindow = document.getElementById('init');
 	const terminalWindow = document.getElementById('terminal');
 	const terminalWindowHead = document.getElementById('terminal-head');
 	const terminalWindowContent = document.getElementById('terminal-content');
+	const helpWindow = document.getElementById('help');
 
 
 	let messageId = 1;
@@ -38,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				ready = true;
 				statusSpan.innerHTML = statusIcons.ready;
 				alchemyWindow.classList.add('remove');
+				helpWindow.classList.add('show');
 				terminalWindow.classList.remove('hidden');
 			} else {
 				console.error(event.data);
@@ -132,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		sendBtn.addEventListener('click', () => {
 			sendMessage(input.value);
 
+			helpWindow.classList.remove('show');
 			// terminalWindow.classList.toggle('open');
 			// terminalWindowHead.querySelector('.plus').classList.toggle('hide');
 			// terminalWindowHead.querySelector('.minus').classList.toggle('hide');
@@ -220,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 			worker.postMessage(config);
 			statusSpan.innerHTML = statusIcons.pending;
+
+			initBtn.innerHTML = statusIcons.pending;
 		});
 	}
 
@@ -269,11 +275,17 @@ document.addEventListener('DOMContentLoaded', () => {
 		modalOverlay.style.display = 'flex';
 		infoBtn.classList.remove('closed');
 	});
+	
+	helpBtn.addEventListener('click', () => {
+		modalOverlay.style.display = 'flex';
+		helpBtn.classList.remove('closed');
+	});
 
 	document.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape') {
 			modalOverlay.style.display = 'none';
 			infoBtn.classList.add('closed');
+			helpBtn.classList.add('closed');
 		}
 	});
 

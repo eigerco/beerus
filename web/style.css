@@ -137,6 +137,23 @@ header {
     font-weight: bold;
 }
 
+.help {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+
+    display: none;
+    flex-direction: column;
+    gap: 2.4rem;
+    align-items: center;
+
+    p {
+        font-size: 2rem;
+    }
+
+    &.show { display: flex; }
+}
+
 .chat-log {
     flex: 1;
     padding: 12rem 2.4rem 2.4rem;
@@ -427,6 +444,22 @@ input {
     &:hover {
         background: var(--bc3);
         color: var(--bc1);
+    }
+
+    &.init {
+        svg {
+            width: 1.8rem;
+            height: 1.8rem;
+            
+            g {
+                opacity: 1 !important;
+            }
+            
+            path {
+                stroke: white !important;
+                fill: white !important;
+            }
+        }
     }
 
     &.send {

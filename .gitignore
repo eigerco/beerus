@@ -32,3 +32,4 @@ pkg/
 dist/
 node_modules/
 .parcel-cache/
+wen/node_modules
