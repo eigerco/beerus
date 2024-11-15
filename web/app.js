@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	const terminalWindowContent = document.getElementById('terminal-content');
 	const helpWindow = document.getElementById('help');
 
-
 	let messageId = 1;
 
 	const statusIcons = {
@@ -58,10 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			if (json.hasOwnProperty('error')) {
 				console.error(json['error']);
-				// responseContent.parentElement.setAttribute(
-				// 	'style',
-				// 	'border-left-color:#FF0000'
-				// );
+
 				responseContent.parentElement.classList.add('error');
 			}
 		} catch (e) {
@@ -136,10 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			sendMessage(input.value);
 
 			helpWindow.classList.remove('show');
-			// terminalWindow.classList.toggle('open');
-			// terminalWindowHead.querySelector('.plus').classList.toggle('hide');
-			// terminalWindowHead.querySelector('.minus').classList.toggle('hide');
-			// terminalWindowContent.classList.toggle('hidden');
 		});
 
 		input.addEventListener('keypress', (e) => {
@@ -275,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		modalOverlay.style.display = 'flex';
 		infoBtn.classList.remove('closed');
 	});
-	
+
 	helpBtn.addEventListener('click', () => {
 		modalOverlay.style.display = 'flex';
 		helpBtn.classList.remove('closed');

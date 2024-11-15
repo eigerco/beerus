@@ -17,14 +17,12 @@
     font-display: swap;
 }
 
-
 /* VARIABLES */
 :root {
     --bc1: #e0e0e0;
     --bc2: #ececec;
     --bc3: #000000;
 }
-
 
 /* GLOBAL STYLES */
 * {
@@ -102,7 +100,9 @@ header {
             color: #000000;
             text-transform: uppercase;
 
-            &:last-child { height: 2.4rem; }
+            &:last-child {
+                height: 2.4rem;
+            }
         }
     }
 }
@@ -139,7 +139,8 @@ header {
 
 .help {
     position: absolute;
-    top: 50%; left: 50%;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
 
     display: none;
@@ -151,7 +152,9 @@ header {
         font-size: 2rem;
     }
 
-    &.show { display: flex; }
+    &.show {
+        display: flex;
+    }
 }
 
 .chat-log {
@@ -167,10 +170,16 @@ header {
         pointer-events: none;
         position: absolute;
         z-index: 2;
-        bottom: 0; left: 0; right: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         height: 24rem;
 
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 100%);
+        background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            #ffffff 100%
+        );
     }
 }
 
@@ -184,12 +193,13 @@ header {
     &:before {
         content: '';
         position: absolute;
-        top: 1.2rem; left: 50%;
+        top: 1.2rem;
+        left: 50%;
         transform: translateX(-50%);
 
         width: 10rem;
         border-top: 2px dashed var(--bc3);
-        opacity: .2;
+        opacity: 0.2;
     }
 }
 
@@ -238,7 +248,8 @@ header {
 
     .id {
         position: absolute;
-        top: .3rem; left: 0;
+        top: 0.3rem;
+        left: 0;
         z-index: 2;
 
         font-size: 1.2rem;
@@ -250,23 +261,25 @@ header {
         &:before {
             content: '';
             position: relative;
-            top: .1rem;
-            left: .6rem;
+            top: 0.1rem;
+            left: 0.6rem;
 
             width: 1.2rem;
             height: 1.2rem;
             border-radius: 1.2rem;
-            background: #3D87F5;
+            background: #3d87f5;
         }
     }
 }
 
 .chat-log .message.error {
     &:after {
-        background-color: #F53D3D;
+        background-color: #f53d3d;
     }
 
-    &:before { opacity: 0.2; }
+    &:before {
+        opacity: 0.2;
+    }
 
     .id {
         color: #fff;
@@ -275,8 +288,8 @@ header {
             background-color: transparent;
             border: 2px solid #ffffff;
 
-            width: .9rem;
-            height: .9rem;
+            width: 0.9rem;
+            height: 0.9rem;
         }
     }
 }
@@ -329,15 +342,16 @@ input {
 
 .terminal {
     position: static !important;
-    /* bottom: 2.4rem; left: 2.4rem; right: 2.4rem; */
     margin: 0 2.4rem 2.4rem;
     z-index: 2;
     padding: 1.2rem 1.2rem;
     padding-top: 3.2rem !important;
 
-    transition: all .3s cubic-bezier(0.8,0,0,1);
+    transition: all 0.3s cubic-bezier(0.8, 0, 0, 1);
 
-    &.hidden { display: none; }
+    &.hidden {
+        display: none;
+    }
 
     &.open {
         padding: 3.6rem 2.4rem 2.4rem 2.4rem !important;
@@ -360,13 +374,15 @@ input {
     }
 
     .button {
-        padding: .6rem 1.2rem;
+        padding: 0.6rem 1.2rem;
 
         svg {
             stroke: #000000;
-            transition: all .3s ease-in-out;
+            transition: all 0.3s ease-in-out;
 
-            &.hide { display: none; }
+            &.hide {
+                display: none;
+            }
         }
 
         &:hover {
@@ -382,7 +398,9 @@ input {
     flex-direction: column;
     margin-top: 1.2rem;
 
-    &.hidden { display: none; }
+    &.hidden {
+        display: none;
+    }
 }
 
 /* Send Button and Template Buttons */
@@ -450,11 +468,11 @@ input {
         svg {
             width: 1.8rem;
             height: 1.8rem;
-            
+
             g {
                 opacity: 1 !important;
             }
-            
+
             path {
                 stroke: white !important;
                 fill: white !important;
