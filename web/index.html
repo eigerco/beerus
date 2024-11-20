@@ -203,9 +203,37 @@
         </section>
 
         <section class="container">
-            <div id="help" class="help">
-                <p>Beerus WebAssembly Demo</p>
-                <button id="help-btn" class="button">Need Help?</button>
+            <div id="help" class="account">
+                <p>Choose account to deploy new one</p>
+                <div>
+                  <button id="account-btn1" class="button in-row">Account1</button>
+                  <button id="account-btn2" class="button in-row">Account2</button>
+                </div>
+                <p>Choose account contract</p>
+                <div>
+                  <button id="contract-btn1" class="button in-row">Standard Contract</button>
+                  <button id="contract-btn2" class="button in-row">Custom Contract</button>
+                </div>
+                <div>
+                  <button id="declare-btn" class="button in-row">Declare</button>
+                  <p id="value-declare" class="value in-row"></p>
+                </div>
+                <p>Estimate fee</p>
+                <div>
+                  <button id="estimate-btn" class="button in-row">Estimate</button>
+                  <p id="value-estimate" class="value in-row"></p>
+                </div>
+                <p>Enter amount to transfer from chosen account to new one</p>
+                <div>
+                  <input type="number" class="input-estimate in-row">
+                  <button id="transfer-btn" class="button in-row">Transfer</button>
+                  <p id="value-transfer" class="value in-row"></p>
+                </div>
+                <p>Deploy</p>
+                <div>
+                  <button id="deploy-btn" class="button in-row">Submit</button>
+                  <p id="value-deploy" class="value in-row"></p>
+                </div>
             </div>
             <div class="chat-log" id="chat-log"></div>
             <div id="terminal" class="terminal window hidden">

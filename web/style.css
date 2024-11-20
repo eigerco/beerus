@@ -137,7 +137,7 @@ header {
     font-weight: bold;
 }
 
-.help {
+.account {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -154,6 +154,24 @@ header {
 
     &.show {
         display: flex;
+    }
+
+    .input-estimate {
+      width: 10rem;
+      height: 3.5rem;
+    }
+
+    .in-row {
+      float: left;
+      margin-left: 2rem;
+      margin-right: 2rem;
+    }
+
+    .value {
+      border-style: solid;
+      border-width: 1px;
+      width: 45rem;
+      height: 3.5rem;
     }
 }
 
@@ -488,6 +506,11 @@ input {
             opacity: 0.7;
         }
     }
+}
+
+.active {
+  background: var(--bc3);
+  color: var(--bc1);
 }
 
 .modal-overlay {

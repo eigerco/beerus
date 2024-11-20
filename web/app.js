@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	const proxySpan = document.getElementById('proxy');
 	const modalOverlay = document.getElementById('modal-overlay');
 	const infoBtn = document.getElementById('info-btn');
-	const helpBtn = document.getElementById('help-btn');
 	const proxyBtn = document.getElementById('proxy-btn');
 	const closeBtn = document.getElementById('close-btn');
 	const alchemyWindow = document.getElementById('init');
@@ -17,6 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	const terminalWindowHead = document.getElementById('terminal-head');
 	const terminalWindowContent = document.getElementById('terminal-content');
 	const helpWindow = document.getElementById('help');
+  const declareBtn = document.getElementById('declare-btn');
+  const estimateBtn = document.getElementById('estimate-btn');
+  const transferBtn = document.getElementById('transfer-btn');
+  const deployBtn = document.getElementById('deploy-btn');
+  let accountBtn2 = document.getElementById('account-btn2');
+  let standardAccBtn = document.getElementById('contract-btn1');
 
 	let messageId = 1;
 
@@ -268,23 +273,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		infoBtn.classList.remove('closed');
 	});
 
-	helpBtn.addEventListener('click', () => {
-		modalOverlay.style.display = 'flex';
-		helpBtn.classList.remove('closed');
-	});
-
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape') {
-			modalOverlay.style.display = 'none';
-			infoBtn.classList.add('closed');
-			helpBtn.classList.add('closed');
-		}
-	});
-
 	closeBtn.addEventListener('click', () => {
 		modalOverlay.style.display = 'none';
 		infoBtn.classList.add('closed');
 	});
+
+  accountBtn2.addEventListener('click', () => {
+    accountBtn2.classList.add('active');
+  });
+
+  standardAccBtn.addEventListener('click', () => {
+    standardAccBtn.classList.add('active');
+  });
+
+	declareBtn.addEventListener('click', () => {
+	  document.getElementById('value-declare').innerHTML = "Calling Beerus... Successfully declared!";
+  });
+
+	estimateBtn.addEventListener('click', () => {
+	  document.getElementById('value-estimate').innerHTML = "Calling Beerus... Estimate fee is 10.";
+  });
+
+	transferBtn.addEventListener('click', () => {
+	  document.getElementById('value-transfer').innerHTML = "Calling Beerus... Successfully transfered 20!";
+  });
+	
+  deployBtn.addEventListener('click', () => {
+	  document.getElementById('value-deploy').innerHTML = "Calling Beerus... Successfully deployed!";
+  });
 
 	terminalWindowHead.addEventListener('click', () => {
 		terminalWindow.classList.toggle('open');
