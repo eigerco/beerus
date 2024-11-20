@@ -1,57 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Beerus</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="alchemy-section">
-            <div><h2>Beerus</h2></div>
-            <div class="alchemy-wrapper">
-                <input type="password" id="alchemy-key" placeholder="Enter Alchemy key" value="nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1">
-                <button id="init-btn">Init</button>
-                <button id="status-btn" class="status-btn">Ready: <span id="status">❓</span></button>
-                <button id="proxy-btn" class="status-btn">Proxy: <span id="proxy">❓</span></button>
-                <button id="info-btn" class="status-btn">&#9432;</button>
-            </div>
-        </div>
-        <div class="chat-log" id="chat-log"></div>
-        <div class="input-section">
-            <div class="input-wrapper">
-                <textarea id="json-input" placeholder="Type JSON request here..." rows="5"></textarea>
-            </div>
-            <div class="send-container">
-                <button id="send-btn">Send</button>
-                <div class="template-buttons">
-                    <button class="template-btn" data-template='{"execute": {"calldata":[],"contract_address":"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7","entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"}}'>Make Call</button>
-                    <button class="template-btn" data-template='{"state": {}}'>Get State</button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Beerus</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header>
+            <span class="logo">Beerus</span>
+            <div class="tools">
+                <div class="status">
+                    <span id="status-btn">Status</span>
+                    <span id="status">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <g opacity="0.24" clip-path="url(#clip0_7_15)">
+                                <path
+                                    d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                    stroke="black"
+                                    stroke-width="2"
+                                    stroke-miterlimit="10"
+                                    stroke-linecap="square"
+                                />
+                                <path
+                                    d="M22 2L2 22"
+                                    stroke="black"
+                                    stroke-width="2"
+                                    stroke-miterlimit="10"
+                                    stroke-linecap="square"
+                                />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_7_15">
+                                    <rect width="24" height="24" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </span>
+                </div>
+                <div class="proxy">
+                    <span id="proxy-btn">Proxy</span>
+                    <span id="proxy">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <g opacity="0.24" clip-path="url(#clip0_7_15)">
+                                <path
+                                    d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                    stroke="black"
+                                    stroke-width="2"
+                                    stroke-miterlimit="10"
+                                    stroke-linecap="square"
+                                />
+                                <path
+                                    d="M22 2L2 22"
+                                    stroke="black"
+                                    stroke-width="2"
+                                    stroke-miterlimit="10"
+                                    stroke-linecap="square"
+                                />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_7_15">
+                                    <rect width="24" height="24" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </span>
+                </div>
+                <div id="info-btn" class="info-btn">
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <g clip-path="url(#clip0_8_96414)">
+                            <path
+                                d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23Z"
+                                stroke="black"
+                                stroke-width="2"
+                                stroke-miterlimit="10"
+                                stroke-linecap="square"
+                            />
+                            <path
+                                d="M12 11V17"
+                                stroke="black"
+                                stroke-width="2"
+                                stroke-miterlimit="10"
+                                stroke-linecap="square"
+                            />
+                            <path
+                                d="M12 8C12.5523 8 13 7.55228 13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7C11 7.55228 11.4477 8 12 8Z"
+                                fill="black"
+                            />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_8_96414">
+                                <rect width="24" height="24" fill="white" />
+                            </clipPath>
+                        </defs>
+                    </svg>
                 </div>
             </div>
-        </div>
-    </div>
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Beerus WebAssembly Demo</h2>
-            <ul>
-                <li><a href="https://github.com/eigerco/beerus" target="_blank">Beerus</a> is a light client for <a href="https://www.starknet.io/" target="_blank">Starknet</a></li>
-                <li>Press ESC or click outside this message to hide it</li>
-                <li>Click "Info" button to show this message again</li>
-                <li>Make sure <a href="https://github.com/eigerco/beerus/blob/main/web/etc/proxy/proxy.js" target="_blank">the proxy</a> is listening at localhost:3000</li>
-                <li>Paste the Alchemy API key</li>
-                <li>Click "Init" and wait for ✅</li>
-                <li>Check logs in case of ❌</li>
-                <li>Click "Make Call" for the function call request template</li>
-                <li>Click "Get State" for the get L1 state request template</li>
-                <li>Update the request JSON manually if you want</li>
-                <li>Click "Send" to submit a request</li>
-                <li>The response will apper when ready</li>
-            </ul>
-        </div>
-    </div>
-    <script type="module" src="app.js"></script>
-</body>
+        </header>
+
+        <section id="modal-overlay" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-content">
+                    <h1>Beerus WebAssembly Demo</h1>
+                    <button id="close-btn" class="button">Close</button>
+                    <ul>
+                        <li>
+                            <div>
+                                <a
+                                    href="https://github.com/eigerco/beerus"
+                                    target="_blank"
+                                    >Beerus</a
+                                >
+                                is a light client for
+                                <a
+                                    href="https://www.starknet.io/"
+                                    target="_blank"
+                                    >Starknet</a
+                                >
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                Press ESC or click outside this message to hide
+                                it
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                Click "Info" button to show this message again
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                Make sure
+                                <a
+                                    href="https://github.com/eigerco/beerus/blob/main/web/etc/proxy/proxy.js"
+                                    target="_blank"
+                                    >the proxy</a
+                                >
+                                is listening at localhost:3000
+                            </div>
+                        </li>
+                        <li><div>Paste the Alchemy API key</div></li>
+                        <li><div>Click "Init" and wait for ✅</div></li>
+                        <li><div>Check logs in case of ❌</div></li>
+                        <li>
+                            <div>
+                                Click "Make Call" for the function call request
+                                template
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                Click "Get State" for the get L1 state request
+                                template
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                Update the request JSON manually if you want
+                            </div>
+                        </li>
+                        <li><div>Click "Send" to submit a request</div></li>
+                        <li><div>The response will apper when ready</div></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="init" class="alchemy-init">
+            <div class="window">
+                <div class="window-content">
+                    <label>Alchemy Key</label>
+                    <input
+                        type="text"
+                        id="alchemy-key"
+                        placeholder="Enter Alchemy key"
+                        value="nLWc0kd1-CBFNJ57gvB_lVcQpSYCGZS1"
+                    />
+                    <button id="init-btn" class="button init">Init</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div id="help" class="help">
+                <p>Beerus WebAssembly Demo</p>
+                <button id="help-btn" class="button">Need Help?</button>
+            </div>
+            <div class="chat-log" id="chat-log"></div>
+            <div id="terminal" class="terminal window hidden">
+                <div id="terminal-head" class="terminal-head">
+                    <h4>Terminal</h4>
+                    <span class="button">
+                        <svg class="plus" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7V17" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                            <path d="M17 12H7" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                        </svg>
+                        <svg class="minus hide" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 12H7" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
+                        </svg>
+                    </span>
+                </div>
+                <div id="terminal-content" class="terminal-content hidden">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="json-input"
+                            placeholder="Type JSON request here..."
+                            rows="5"
+                        ></textarea>
+                    </div>
+                    <div class="send-container">
+                        <div class="template-buttons">
+                            <button
+                                class="template-btn button"
+                                data-template='{"execute": {"calldata":[],"contract_address":"0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7","entry_point_selector": "0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60"}}'
+                            >
+                                Make Call
+                            </button>
+                            <button
+                                class="template-btn button"
+                                data-template='{"state": {}}'
+                            >
+                                Get State
+                            </button>
+                        </div>
+                        <button id="send-btn" class="button send">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <script type="module" src="app.js"></script>
+    </body>
 </html>
