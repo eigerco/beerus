@@ -1,7 +1,7 @@
 name: account-deployment
 on:
   schedule:
-      interval: "monthly"
+    - cron: 0 10 1 * *
 
 env:
   RUSTFLAGS: -D warnings
