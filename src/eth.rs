@@ -237,3 +237,118 @@ async fn sleep(delay: std::time::Duration) {
         gloo_timers::future::TimeoutFuture::new(millis).await;
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+    #[test]
+    fn test_get_core_contract_address() {
+        assert_eq!(
+            get_core_contract_address(&Network::MAINNET).unwrap(),
+            Address::from_str(MAINNET_CC_ADDRESS).unwrap(),
+        );
+
+        assert_eq!(
+            get_core_contract_address(&Network::SEPOLIA).unwrap(),
+            Address::from_str(SEPOLIA_CC_ADDRESS).unwrap(),
+        );
+
+        assert_eq!(
+            get_core_contract_address(&Network::GOERLI).unwrap_err().to_string(),
+            "unsupported network: GOERLI".to_string(),
+        );
+
+        assert_eq!(
+            get_core_contract_address(&Network::HOLESKY).unwrap_err().to_string(),
+            "unsupported network: HOLESKY".to_string(),
+        );
+    }
+
+    #[test]
+    fn test_get_consensus_rpc() {
+        assert_eq!(
+            get_consensus_rpc(&Network::MAINNET).unwrap(),
+            MAINNET_CONSENSUS_RPC,
+        );
+
+        assert_eq!(
+            get_consensus_rpc(&Network::SEPOLIA).unwrap(),
+            SEPOLIA_CONSENSUS_RPC,
+        );
+
+        assert_eq!(
+            get_consensus_rpc(&Network::GOERLI).unwrap_err().to_string(),
+            "unsupported network: GOERLI".to_string(),
+        );
+
+        assert_eq!(
+            get_consensus_rpc(&Network::HOLESKY).unwrap_err().to_string(),
+            "unsupported network: HOLESKY".to_string(),
+        );
+    }
+
+    #[test]
+    fn test_get_fallback_address() {
+        assert_eq!(
+            get_fallback_address(&Network::MAINNET).unwrap(),
+            MAINNET_FALLBACK_RPC,
+        );
+
+        assert_eq!(
+            get_fallback_address(&Network::SEPOLIA).unwrap(),
+            SEPOLIA_FALLBACK_RPC,
+        );
+
+        assert_eq!(
+            get_fallback_address(&Network::GOERLI).unwrap_err().to_string(),
+            "unsupported network: GOERLI".to_string(),
+        );
+
+        assert_eq!(
+            get_fallback_address(&Network::HOLESKY).unwrap_err().to_string(),
+            "unsupported network: HOLESKY".to_string(),
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_checkpoint() {
+        assert_eq!(
+            get_checkpoint(&Network::GOERLI).await.unwrap_err().to_string(),
+            "unsupported network: GOERLI".to_string(),
+        );
+
+        assert_eq!(
+            get_checkpoint(&Network::HOLESKY).await.unwrap_err().to_string(),
+            "unsupported network: HOLESKY".to_string(),
+        );
+
+        // TODO: it could utilise mock server
+        get_checkpoint(&Network::MAINNET).await.unwrap();
+        get_checkpoint(&Network::SEPOLIA).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_sleep() {
+        let start = std::time::Instant::now();
+        sleep(Duration::from_millis(200)).await;
+        assert!(start.elapsed().as_millis() >= 200);
+    }
+
+    #[tokio::test]
+    async fn test_get_client() {
+        let rpc = "https://rpc/v2";
+        let data_dir = "tmp";
+
+        assert_eq!(
+            get_client(&rpc, Network::GOERLI, data_dir).await.err().unwrap().to_string(),
+            "consensus rpc url",
+        );
+
+        // sucesfully build client
+        get_client(&rpc, Network::SEPOLIA, data_dir).await.unwrap();
+
+    }
+}

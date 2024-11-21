@@ -181,3 +181,79 @@ fn as_felt(bytes: &[u8]) -> Result<Felt> {
     let felt = Felt::try_new(&hex)?;
     Ok(felt)
 }
+
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_as_felt() {
+        let result = as_felt(&[]);
+        assert!(result.is_err());
+        assert!(
+            as_felt(&[
+                0x0,
+                0x0,
+            ]).is_err()
+        );
+        assert_eq!(
+            as_felt(&[
+                0x1,
+            ]).unwrap().as_ref(),
+            Felt::try_new("0x1").unwrap().as_ref(),
+        );
+    }
+
+    #[test]
+    fn test_equality_for_state() {
+        let s1 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        let s2 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+
+        assert!(s1 == s2);
+
+        let s1 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        let s2 = State {
+            block_number: 2,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        assert!(s1 != s2);
+
+        let s1 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x1").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        let s2 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        assert!(s1 != s2);
+
+        let s1 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x0").unwrap(),
+        };
+        let s2 = State {
+            block_number: 1,
+            block_hash: Felt::try_new("0x0").unwrap(),
+            root: Felt::try_new("0x1").unwrap(),
+        };
+        assert!(s1 != s2);
+    }
+
+}
