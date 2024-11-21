@@ -24,8 +24,17 @@ self.onmessage = async event => {
             return;
         }
     }
-    let request = JSON.parse(event.data);
-    if (request.hasOwnProperty('state')) {
+    if(event.data == 'declare') {
+      self.postMessage("declare: Calling Beerus... Successfully declared!");
+    } else if(event.data == 'estimate') {
+      self.postMessage("estimate: Calling Beerus... Estimate fee is 10.");
+    } else if (event.data == 'transfer') {
+      self.postMessage("transfer: Calling Beerus... Successfully transfered 20!");
+    } else if (event.data == 'deploy') {
+      self.postMessage("deploy: Calling Beerus... Successfully deployed!");
+    } else {
+      let request = JSON.parse(event.data);
+      if (request.hasOwnProperty('state')) {
         try {
             let state = await client.get_state();
             self.postMessage(`{"id":${request.id},"result":${state}}`);    
@@ -34,7 +43,7 @@ self.onmessage = async event => {
             let error = sanitize(e.toString());
             self.postMessage(`{"id":${request.id},"error":"${error}"}`);
         }
-    } else if (request.hasOwnProperty('execute')) {
+      } else if (request.hasOwnProperty('execute')) {
         let req = JSON.stringify(request['execute']);
         try {
             let result = await client.execute(req);
@@ -44,9 +53,10 @@ self.onmessage = async event => {
             let error = sanitize(e.toString());
             self.postMessage(`{"id":${request.id},"error":"${error}"}`);
         }
-    } else {
-        console.error('worker: unknown request: ', event.data);
-        self.postMessage(`{"id":${request.id},"error": "unknown request"}`);
+      } else {
+          console.error('worker: unknown request: ', event.data);
+          self.postMessage(`{"id":${request.id},"error": "unknown request"}`);
+      }
     }
 }
 

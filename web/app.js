@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		type: 'module',
 	});
 	worker.onmessage = (event) => {
-		if (!ready) {
+    console.log(event.data);
+    if (!ready) {
 			if (event.data === 'OK') {
 				ready = true;
 				statusSpan.innerHTML = statusIcons.ready;
@@ -53,21 +54,34 @@ document.addEventListener('DOMContentLoaded', () => {
 			return;
 		}
 
-		try {
-			let json = JSON.parse(event.data);
-			let responseContent = document.getElementById(json.id);
-			delete json.id;
-			let response = formatJSON(JSON.stringify(json));
-			responseContent.innerHTML = response;
+    if(event.data.includes("declare:")) {
+      let data = event.data.replace("declare: ", "");
+	    document.getElementById('value-declare').innerHTML = data;
+    } else if(event.data.includes("estimate: ")) {
+      let data = event.data.replace("estimate: ", "");
+	    document.getElementById('value-estimate').innerHTML = data;
+    } else if(event.data.includes("transfer: ")) {
+      let data = event.data.replace("transfer: ", "");
+	    document.getElementById('value-transfer').innerHTML = data;
+    } else if(event.data.includes("deploy: ")) {
+      let data = event.data.replace("deploy: ", "");
+	    document.getElementById('value-deploy').innerHTML = data;
+    } else {
+		  try {
+			  let json = JSON.parse(event.data);
+			  let responseContent = document.getElementById(json.id);
+			  delete json.id;
+			  let response = formatJSON(JSON.stringify(json));
+			  responseContent.innerHTML = response;
 
-			if (json.hasOwnProperty('error')) {
-				console.error(json['error']);
-
-				responseContent.parentElement.classList.add('error');
-			}
-		} catch (e) {
-			console.error(e);
-		}
+			  if (json.hasOwnProperty('error')) {
+				  console.error(json['error']);
+				  responseContent.parentElement.classList.add('error');
+			  }
+		  } catch (e) {
+			  console.error(e);
+		  }
+    }
 	};
 
 	worker.onerror = (error) => {
@@ -287,19 +301,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 	declareBtn.addEventListener('click', () => {
-	  document.getElementById('value-declare').innerHTML = "Calling Beerus... Successfully declared!";
+    worker.postMessage('declare');
   });
 
 	estimateBtn.addEventListener('click', () => {
-	  document.getElementById('value-estimate').innerHTML = "Calling Beerus... Estimate fee is 10.";
+    worker.postMessage('estimate');
   });
 
 	transferBtn.addEventListener('click', () => {
-	  document.getElementById('value-transfer').innerHTML = "Calling Beerus... Successfully transfered 20!";
+    worker.postMessage('transfer');
   });
 	
   deployBtn.addEventListener('click', () => {
-	  document.getElementById('value-deploy').innerHTML = "Calling Beerus... Successfully deployed!";
+    worker.postMessage('deploy');
   });
 
 	terminalWindowHead.addEventListener('click', () => {
