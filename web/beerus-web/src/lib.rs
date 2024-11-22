@@ -26,21 +26,73 @@ pub mod dto {
 
 #[wasm_bindgen]
 pub fn declare() -> JsValue {
+    // Pre-declare preparation in JavaScript or separate
+    // Read template account from default location
+    // Copy it to another
+    // Updating it's timestamp constant to make it different from others
+    // Compile it by using scarb - NOT WASM COMPILABLE, calling
+    // separate rpc?
+    // -----------------
+    // Declare API Args:
+    // -----------------
+    // COMPILED_CONTRACT.json
+    // PREFUNDED_ACCOUNT.json
+    // PREFUNDED_KEY.json
+    //
+    // Usage of starkli - NOT WASM COMPILABLE, calling separate rpc?
+    // Starkli create keystore key.json - prompt password
+    // Extract class hash from compiled contract
+    // Starkli create account.json that needs key.json and class hash
+    // -> Where to store it? Or just return it?
+    // Starkli declare needs COMPILED_CONTRACT, PREFUNDED_ACCOUNT and
+    // PREFUNDED_KEY - Prompt for PASSWORD will be necessary
+    //
+    // Return DEPLOYMENT_ADDRESS, ACCOUNT.json and KEY.json
     JsValue::from_str("Successfully declared!")
 }
 
 #[wasm_bindgen]
 pub fn estimate() -> JsValue {
+    // Estimate API Args:
+    // ------------------
+    // ACCOUNT.json
+    // KEY.json
+    //
+    // Starkli estimate fee on Beerus, because estimation is also
+    // running on deployment and deployment is called with these args
+    // Therefore, these args should be enough
+    //
+    // Return ESTIMATE_AMOUNT
     JsValue::from_str("Estimate fee is 10.")
 }
 
 #[wasm_bindgen]
 pub fn transfer() -> JsValue {
+    // Transfer API Args:
+    // ------------------
+    // DEPLOYMENT_ADDRESS
+    // AMOUNT
+    // PREFUNDED_ACCOUNT.json
+    // PREFUNDED_KEY.json
+    //
+    // Starkli invoke eth transfer
+    // Necessary to prompt password for PREFUNDED_KEY.json
+    //
+    // Return TRANSACTION_HASH
     JsValue::from_str("Successfully transfered 20!")
 }
 
 #[wasm_bindgen]
 pub fn deploy() -> JsValue {
+    // Deploy API Args:
+    // ------------------
+    // ACCOUNT.json
+    // KEY.json
+    //
+    // Starkli deploy
+    // Necessary to prompt password for KEY.json
+    //
+    // Return TRANSACTION_HASH
     JsValue::from_str("Successfully deployed!")
 }
 
