@@ -1,4 +1,4 @@
-import init, { set_panic_hook, Beerus } from './beerus-web/pkg/beerus_web.js';
+import init, { declare, estimate, transfer, deploy, set_panic_hook, Beerus } from './beerus-web/pkg/beerus_web.js';
 
 var initialized = false;
 var configured = false;
@@ -25,13 +25,17 @@ self.onmessage = async event => {
         }
     }
     if(event.data == 'declare') {
-      self.postMessage("declare: Calling Beerus... Successfully declared!");
+      let message = "declare: Calling Beerus... ";
+      self.postMessage(message.concat(declare()));
     } else if(event.data == 'estimate') {
-      self.postMessage("estimate: Calling Beerus... Estimate fee is 10.");
+      let message = "estimate: Calling Beerus... ";
+      self.postMessage(message.concat(estimate()));
     } else if (event.data == 'transfer') {
-      self.postMessage("transfer: Calling Beerus... Successfully transfered 20!");
+      let message = "transfer: Calling Beerus... ";
+      self.postMessage(message.concat(transfer()));
     } else if (event.data == 'deploy') {
-      self.postMessage("deploy: Calling Beerus... Successfully deployed!");
+      let message = "deploy: Calling Beerus... ";
+      self.postMessage(message.concat(deploy()));
     } else {
       let request = JSON.parse(event.data);
       if (request.hasOwnProperty('state')) {
