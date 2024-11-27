@@ -31,3 +31,6 @@ console_error_panic_hook = "0.1.7"
 
 num-traits = "0.2.19"
 num-bigint = "0.4.6"
+cairo-lang-compiler = "2.8.5"
+cairo-lang-starknet = "2.8.5"
+cairo-lang-starknet-classes = "2.8.5"

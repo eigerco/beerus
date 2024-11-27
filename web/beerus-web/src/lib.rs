@@ -1,3 +1,9 @@
+use cairo_lang_compiler::db::RootDatabase;
+use cairo_lang_compiler::project::ProjectConfig;
+use cairo_lang_compiler::CompilerConfig;
+use cairo_lang_starknet::compile::compile_prepared_db;
+use cairo_lang_starknet::contract::ContractDeclaration;
+use cairo_lang_starknet_classes::contract_class::ContractClass;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
@@ -25,7 +31,7 @@ pub mod dto {
 }
 
 #[wasm_bindgen]
-pub fn declare() -> JsValue {
+pub fn declare() -> Result<JsValue, JsValue> {
     // Pre-declare preparation in JavaScript or separate
     // Read template account from default location
     // Copy it to another
@@ -48,8 +54,18 @@ pub fn declare() -> JsValue {
     // PREFUNDED_KEY - Prompt for PASSWORD will be necessary
     //
     // Return DEPLOYMENT_ADDRESS, ACCOUNT.json and KEY.json
-    JsValue::from_str("Successfully declared!")
+    let _db = generate_database()?;
+    Ok(JsValue::from_str("Successfully declared!"))
 }
+
+fn generate_database() -> Result<RootDatabase, JsValue> {
+    let mut builder = RootDatabase::builder();
+    builder.build().map_err(|e| {
+        JsValue::from_str(&format!("Error while building database: {e}"))
+    })
+}
+
+fn build_project_config() {}
 
 #[wasm_bindgen]
 pub fn estimate() -> JsValue {
