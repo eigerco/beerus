@@ -1,9 +1,15 @@
 use cairo_lang_compiler::db::RootDatabase;
 use cairo_lang_compiler::project::ProjectConfig;
 use cairo_lang_compiler::CompilerConfig;
+use cairo_lang_filesystem::cfg::{Cfg, CfgSet};
+use cairo_lang_filesystem::db::{
+    CrateSettings, DependencySettings, Edition, ExperimentalFeaturesConfig,
+};
 use cairo_lang_starknet::compile::compile_prepared_db;
 use cairo_lang_starknet::contract::ContractDeclaration;
 use cairo_lang_starknet_classes::contract_class::ContractClass;
+use semver::{BuildMetadata, Prerelease, Version};
+use std::collections::BTreeMap;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
@@ -65,7 +71,68 @@ fn generate_database() -> Result<RootDatabase, JsValue> {
     })
 }
 
-fn build_project_config() {}
+fn build_project_config() {
+    // Differences from scarb binary
+    // -----
+    // in compiler/db.rs builder.with_plugin_suite() is called
+    // but in fact, it has something empty
+    let mut cfg = CfgSet::new();
+    cfg.insert(Cfg {
+        key: "target".into(),
+        value: Some("starknet-contract".into()),
+    });
+    let mut deps_account = BTreeMap::new();
+    deps_account.insert(
+        "account".to_string(),
+        DependencySettings {
+            version: Some(Version {
+                major: 0,
+                minor: 1,
+                patch: 0,
+                pre: Prerelease::EMPTY,
+                build: BuildMetadata::EMPTY,
+            }),
+        },
+    );
+    deps_account
+        .insert("core".to_string(), DependencySettings { version: None });
+    let account = CrateSettings {
+        edition: Edition::V2023_01,
+        cfg_set: Some(cfg),
+        version: Some(Version {
+            major: 0,
+            minor: 1,
+            patch: 0,
+            pre: Prerelease::EMPTY,
+            build: BuildMetadata::EMPTY,
+        }),
+        experimental_features: ExperimentalFeaturesConfig {
+            negative_impls: false,
+            coupons: false,
+        },
+        dependencies: deps_account,
+    };
+
+    let mut deps_core = BTreeMap::new();
+    deps_core.insert("core", DependencySettings { version: None });
+
+    let core = CrateSettings {
+        edition: Edition::V2024_07,
+        cfg_set: None,
+        version: Some(Version {
+            major: 2,
+            minor: 8,
+            patch: 2,
+            pre: Prerelease::EMPTY,
+            build: BuildMetadata::EMPTY,
+        }),
+        experimental_features: ExperimentalFeaturesConfig {
+            negative_impls: true,
+            coupons: true,
+        },
+        dependencies: deps_core,
+    };
+}
 
 #[wasm_bindgen]
 pub fn estimate() -> JsValue {
