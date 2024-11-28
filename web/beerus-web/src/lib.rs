@@ -8,6 +8,7 @@ use cairo_lang_filesystem::db::{
     CrateSettings, DependencySettings, Edition, ExperimentalFeaturesConfig,
 };
 use cairo_lang_filesystem::ids::Directory;
+use cairo_lang_lowering::utils::InliningStrategy;
 use cairo_lang_starknet::compile::compile_prepared_db;
 use cairo_lang_starknet::contract::ContractDeclaration;
 use cairo_lang_starknet_classes::contract_class::ContractClass;
@@ -71,18 +72,26 @@ pub fn declare() -> Result<JsValue, JsValue> {
 }
 
 fn generate_database() -> Result<RootDatabase, JsValue> {
+    // Differences from scarb binary
+    // -----
+    // in compiler/db.rs builder.with_plugin_suite() is called
+    // but in fact, these plugins are empty
     let mut builder = RootDatabase::builder();
     builder.with_project_config(build_project_config());
+
+    let mut cfg_set = CfgSet::new();
+    cfg_set.insert(Cfg {
+        key: "target".into(),
+        value: Some("starknet-contract".into()),
+    });
+    builder.with_cfg(cfg_set);
+    builder.with_inlining_strategy(InliningStrategy::Default);
     builder.build().map_err(|e| {
         JsValue::from_str(&format!("Error while building database: {e}"))
     })
 }
 
 fn build_project_config() -> ProjectConfig {
-    // Differences from scarb binary
-    // -----
-    // in compiler/db.rs builder.with_plugin_suite() is called
-    // but in fact, it has something empty
     let mut cfg = CfgSet::new();
     cfg.insert(Cfg {
         key: "target".into(),

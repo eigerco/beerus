@@ -35,6 +35,7 @@ cairo-lang-compiler = { git = "https://github.com/starkware-libs/cairo", rev = "
 cairo-lang-filesystem = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-starknet = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-starknet-classes = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
+cairo-lang-lowering = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-utils = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 semver = { version = "1", features = ["serde"] }
 smol_str = { version = "0.2", features = ["serde"] }
