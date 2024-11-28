@@ -32,7 +32,9 @@ console_error_panic_hook = "0.1.7"
 num-traits = "0.2.19"
 num-bigint = "0.4.6"
 cairo-lang-compiler = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
+cairo-lang-defs = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-filesystem = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
+cairo-lang-semantic = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-starknet = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-starknet-classes = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }
 cairo-lang-lowering = { git = "https://github.com/starkware-libs/cairo", rev = "323ea7e281f8bda571e678a0aaa928247b6e618d" }

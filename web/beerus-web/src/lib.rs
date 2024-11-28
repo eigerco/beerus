@@ -7,13 +7,13 @@ use cairo_lang_filesystem::cfg::{Cfg, CfgSet};
 use cairo_lang_filesystem::db::{
     CrateSettings, DependencySettings, Edition, ExperimentalFeaturesConfig,
 };
-use cairo_lang_filesystem::ids::Directory;
+use cairo_lang_filesystem::ids::{CrateLongId, Directory};
 use cairo_lang_lowering::utils::InliningStrategy;
+use cairo_lang_semantic::db::SemanticGroup;
 use cairo_lang_starknet::compile::compile_prepared_db;
-use cairo_lang_starknet::contract::ContractDeclaration;
-use cairo_lang_starknet_classes::contract_class::ContractClass;
+use cairo_lang_starknet::contract::{find_contracts, ContractDeclaration};
 use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
-use semver::{BuildMetadata, Prerelease, Version};
+use semver::Version;
 use smol_str::SmolStr;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -67,7 +67,25 @@ pub fn declare() -> Result<JsValue, JsValue> {
     // PREFUNDED_KEY - Prompt for PASSWORD will be necessary
     //
     // Return DEPLOYMENT_ADDRESS, ACCOUNT.json and KEY.json
-    let _db = generate_database()?;
+    let db = generate_database()?;
+    let contracts = generate_contract_declaration(&db);
+    let compiler_config = CompilerConfig {
+        // diagnostics_reporter: set to callback of print or print json in
+        // scarb/src/compiler/helpers.rs
+        // For simplicty, set to default
+        replace_ids: true,
+        inlining_strategy: InliningStrategy::Default,
+        add_statements_functions: false,
+        add_statements_code_locations: false,
+        ..CompilerConfig::default()
+    };
+
+    let _classes = compile_prepared_db(
+        &db,
+        &contracts.iter().collect::<Vec<_>>(),
+        compiler_config,
+    )
+    .unwrap();
     Ok(JsValue::from_str("Successfully declared!"))
 }
 
@@ -92,6 +110,17 @@ fn generate_database() -> Result<RootDatabase, JsValue> {
     })
 }
 
+fn generate_contract_declaration(
+    db: &dyn SemanticGroup,
+) -> Vec<ContractDeclaration> {
+    let name = "account";
+    let crate_ids = vec![db.intern_crate(CrateLongId::Real {
+        name: name.into(),
+        version: Some(Version::new(0, 1, 0)),
+    })];
+    find_contracts(db, &crate_ids)
+}
+
 fn build_project_config() -> ProjectConfig {
     let mut cfg = CfgSet::new();
     cfg.insert(Cfg {
@@ -101,28 +130,14 @@ fn build_project_config() -> ProjectConfig {
     let mut deps_account = BTreeMap::new();
     deps_account.insert(
         "account".to_string(),
-        DependencySettings {
-            version: Some(Version {
-                major: 0,
-                minor: 1,
-                patch: 0,
-                pre: Prerelease::EMPTY,
-                build: BuildMetadata::EMPTY,
-            }),
-        },
+        DependencySettings { version: Some(Version::new(0, 1, 0)) },
     );
     deps_account
         .insert("core".to_string(), DependencySettings { version: None });
     let account = CrateSettings {
         edition: Edition::V2023_01,
         cfg_set: Some(cfg),
-        version: Some(Version {
-            major: 0,
-            minor: 1,
-            patch: 0,
-            pre: Prerelease::EMPTY,
-            build: BuildMetadata::EMPTY,
-        }),
+        version: Some(Version::new(0, 1, 0)),
         experimental_features: ExperimentalFeaturesConfig {
             negative_impls: false,
             coupons: false,
@@ -136,13 +151,7 @@ fn build_project_config() -> ProjectConfig {
     let core = CrateSettings {
         edition: Edition::V2024_07,
         cfg_set: None,
-        version: Some(Version {
-            major: 2,
-            minor: 8,
-            patch: 2,
-            pre: Prerelease::EMPTY,
-            build: BuildMetadata::EMPTY,
-        }),
+        version: Some(Version::new(2, 8, 2)),
         experimental_features: ExperimentalFeaturesConfig {
             negative_impls: true,
             coupons: true,
@@ -157,16 +166,22 @@ fn build_project_config() -> ProjectConfig {
 
     let mut crate_roots: OrderedHashMap<SmolStr, PathBuf> =
         OrderedHashMap::default();
-    crate_roots.insert("account".into(), "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852/src".into());
+    crate_roots.insert(
+        "account".into(),
+        "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852/src".into(),
+    );
 
     let crates_config =
         AllCratesConfig { override_map: crates_config, ..Default::default() };
     let content = ProjectConfigContent { crate_roots, crates_config };
 
     ProjectConfig {
-        base_path: "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852".into(),
-        corelib: Some(Directory::Real("/home/ivan/.cache/scarb/registry/std/323ea7e28/core/src".into())),
-        content
+        base_path: "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852"
+            .into(),
+        corelib: Some(Directory::Real(
+            "/home/ivan/.cache/scarb/registry/std/323ea7e28/core/src".into(),
+        )),
+        content,
     }
 }
 
