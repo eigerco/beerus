@@ -1,5 +1,7 @@
 use cairo_lang_compiler::db::RootDatabase;
-use cairo_lang_compiler::project::ProjectConfig;
+use cairo_lang_compiler::project::{
+    AllCratesConfig, ProjectConfig, ProjectConfigContent,
+};
 use cairo_lang_compiler::CompilerConfig;
 use cairo_lang_filesystem::cfg::{Cfg, CfgSet};
 use cairo_lang_filesystem::db::{
@@ -8,8 +10,11 @@ use cairo_lang_filesystem::db::{
 use cairo_lang_starknet::compile::compile_prepared_db;
 use cairo_lang_starknet::contract::ContractDeclaration;
 use cairo_lang_starknet_classes::contract_class::ContractClass;
+use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
 use semver::{BuildMetadata, Prerelease, Version};
+use smol_str::SmolStr;
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
@@ -114,7 +119,7 @@ fn build_project_config() {
     };
 
     let mut deps_core = BTreeMap::new();
-    deps_core.insert("core", DependencySettings { version: None });
+    deps_core.insert("core".to_string(), DependencySettings { version: None });
 
     let core = CrateSettings {
         edition: Edition::V2024_07,
@@ -132,6 +137,19 @@ fn build_project_config() {
         },
         dependencies: deps_core,
     };
+
+    let mut crates_config: OrderedHashMap<SmolStr, CrateSettings> =
+        OrderedHashMap::default();
+    crates_config.insert("account".into(), account);
+    crates_config.insert("core".into(), core);
+
+    let mut crate_roots: OrderedHashMap<SmolStr, PathBuf> =
+        OrderedHashMap::default();
+    crate_roots.insert("account".into(), "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852/src".into());
+
+    let crates_config =
+        AllCratesConfig { override_map: crates_config, ..Default::default() };
+    let content = ProjectConfigContent { crate_roots, crates_config };
 }
 
 #[wasm_bindgen]
