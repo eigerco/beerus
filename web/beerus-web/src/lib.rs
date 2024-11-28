@@ -7,6 +7,7 @@ use cairo_lang_filesystem::cfg::{Cfg, CfgSet};
 use cairo_lang_filesystem::db::{
     CrateSettings, DependencySettings, Edition, ExperimentalFeaturesConfig,
 };
+use cairo_lang_filesystem::ids::Directory;
 use cairo_lang_starknet::compile::compile_prepared_db;
 use cairo_lang_starknet::contract::ContractDeclaration;
 use cairo_lang_starknet_classes::contract_class::ContractClass;
@@ -71,12 +72,13 @@ pub fn declare() -> Result<JsValue, JsValue> {
 
 fn generate_database() -> Result<RootDatabase, JsValue> {
     let mut builder = RootDatabase::builder();
+    builder.with_project_config(build_project_config());
     builder.build().map_err(|e| {
         JsValue::from_str(&format!("Error while building database: {e}"))
     })
 }
 
-fn build_project_config() {
+fn build_project_config() -> ProjectConfig {
     // Differences from scarb binary
     // -----
     // in compiler/db.rs builder.with_plugin_suite() is called
@@ -150,6 +152,12 @@ fn build_project_config() {
     let crates_config =
         AllCratesConfig { override_map: crates_config, ..Default::default() };
     let content = ProjectConfigContent { crate_roots, crates_config };
+
+    ProjectConfig {
+        base_path: "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852".into(),
+        corelib: Some(Directory::Real("/home/ivan/.cache/scarb/registry/std/323ea7e28/core/src".into())),
+        content
+    }
 }
 
 #[wasm_bindgen]
