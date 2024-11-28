@@ -86,6 +86,7 @@ fn generate_database() -> Result<RootDatabase, JsValue> {
     });
     builder.with_cfg(cfg_set);
     builder.with_inlining_strategy(InliningStrategy::Default);
+    builder.with_plugin_suite(cairo_lang_starknet::starknet_plugin_suite());
     builder.build().map_err(|e| {
         JsValue::from_str(&format!("Error while building database: {e}"))
     })
