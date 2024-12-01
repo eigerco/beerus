@@ -23,7 +23,7 @@ tokio = { version = "1", features = ["sync", "macros", "io-util", "rt", "time"] 
 eyre = "0.6.12"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.17"
-thiserror = "1.0.63"
+thiserror = "2.0.3"
 axum = { version = "0.7.7", optional = true }
 iamgroot = { git = "https://github.com/sergey-melnychuk/iamgroot", tag = "v0.2.8" }
 regex = "1.11.1"
