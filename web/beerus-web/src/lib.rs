@@ -69,7 +69,7 @@ pub fn declare() -> Result<JsValue, JsValue> {
     // Return DEPLOYMENT_ADDRESS, ACCOUNT.json and KEY.json
     let db = generate_database()?;
     let contracts = generate_contract_declaration(&db);
-    let compiler_config = CompilerConfig {
+    let mut compiler_config = CompilerConfig {
         // diagnostics_reporter: set to callback of print or print json in
         // scarb/src/compiler/helpers.rs
         // For simplicty, set to default
@@ -80,13 +80,17 @@ pub fn declare() -> Result<JsValue, JsValue> {
         ..CompilerConfig::default()
     };
 
-    let _classes = compile_prepared_db(
+    compiler_config
+        .diagnostics_reporter
+        .ensure(&db)
+        .map_err(|e| JsValue::from_str(&format!("Failed to ensure: {e}")))?;
+    let classes = compile_prepared_db(
         &db,
         &contracts.iter().collect::<Vec<_>>(),
         compiler_config,
     )
-    .unwrap();
-    Ok(JsValue::from_str("Successfully declared!"))
+    .map_err(|e| JsValue::from_str(&format!("Error while compiling: {e}")))?;
+    Ok(JsValue::from_str(&format!("Size of classes: {}", classes.len())))
 }
 
 fn generate_database() -> Result<RootDatabase, JsValue> {
