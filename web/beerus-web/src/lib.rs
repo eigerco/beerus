@@ -1,11 +1,13 @@
 use cairo_lang_compiler::db::RootDatabase;
+use cairo_lang_compiler::diagnostics::DiagnosticsReporter;
 use cairo_lang_compiler::project::{
     AllCratesConfig, ProjectConfig, ProjectConfigContent,
 };
 use cairo_lang_compiler::CompilerConfig;
+use cairo_lang_diagnostics::FormattedDiagnosticEntry;
 use cairo_lang_filesystem::cfg::{Cfg, CfgSet};
 use cairo_lang_filesystem::db::{
-    CrateSettings, DependencySettings, Edition, ExperimentalFeaturesConfig,
+    CrateSettings, Edition, ExperimentalFeaturesConfig,
 };
 use cairo_lang_filesystem::ids::{CrateLongId, Directory};
 use cairo_lang_lowering::utils::InliningStrategy;
@@ -15,7 +17,6 @@ use cairo_lang_starknet::contract::{find_contracts, ContractDeclaration};
 use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
 use semver::Version;
 use smol_str::SmolStr;
-use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -77,9 +78,17 @@ pub fn declare() -> Result<JsValue, JsValue> {
         inlining_strategy: InliningStrategy::Default,
         add_statements_functions: false,
         add_statements_code_locations: false,
+        diagnostics_reporter: DiagnosticsReporter::callback(
+            |entry: FormattedDiagnosticEntry| {
+                let msg = entry
+                    .message()
+                    .strip_suffix('\n')
+                    .unwrap_or(entry.message());
+                web_sys::console::log_1(&msg.into())
+            },
+        ),
         ..CompilerConfig::default()
     };
-
     compiler_config
         .diagnostics_reporter
         .ensure(&db)
@@ -118,26 +127,12 @@ fn generate_contract_declaration(
     db: &dyn SemanticGroup,
 ) -> Vec<ContractDeclaration> {
     let name = "account";
-    let crate_ids = vec![db.intern_crate(CrateLongId::Real {
-        name: name.into(),
-        version: Some(Version::new(0, 1, 0)),
-    })];
+    let crate_ids = vec![db.intern_crate(CrateLongId::Real(name.into()))];
     find_contracts(db, &crate_ids)
 }
 
 fn build_project_config() -> ProjectConfig {
-    let mut cfg = CfgSet::new();
-    cfg.insert(Cfg {
-        key: "target".into(),
-        value: Some("starknet-contract".into()),
-    });
-    let mut deps_account = BTreeMap::new();
-    deps_account.insert(
-        "account".to_string(),
-        DependencySettings { version: Some(Version::new(0, 1, 0)) },
-    );
-    deps_account
-        .insert("core".to_string(), DependencySettings { version: None });
+    let cfg = CfgSet::new();
     let account = CrateSettings {
         edition: Edition::V2023_01,
         cfg_set: Some(cfg),
@@ -146,11 +141,7 @@ fn build_project_config() -> ProjectConfig {
             negative_impls: false,
             coupons: false,
         },
-        dependencies: deps_account,
     };
-
-    let mut deps_core = BTreeMap::new();
-    deps_core.insert("core".to_string(), DependencySettings { version: None });
 
     let core = CrateSettings {
         edition: Edition::V2024_07,
@@ -160,7 +151,6 @@ fn build_project_config() -> ProjectConfig {
             negative_impls: true,
             coupons: true,
         },
-        dependencies: deps_core,
     };
 
     let mut crates_config: OrderedHashMap<SmolStr, CrateSettings> =
@@ -183,7 +173,7 @@ fn build_project_config() -> ProjectConfig {
         base_path: "/home/ivan/Development/rust_projects/beerus/target/account-20241124093852"
             .into(),
         corelib: Some(Directory::Real(
-            "/home/ivan/.cache/scarb/registry/std/323ea7e28/core/src".into(),
+            "/home/ivan/.cache/scarb/registry/std/v2.8.2/core/src".into(),
         )),
         content,
     }

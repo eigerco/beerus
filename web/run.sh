@@ -1,12 +1,12 @@
 #!/bin/sh
-# rm -rf dist/ .parcel-cache/
+rm -rf dist/ .parcel-cache/
 
-# cd beerus-web
-# rm -rf target/ pkg/ 
+cd beerus-web
+rm -rf target/ pkg/ 
 
-# wasm-pack build --target web
+wasm-pack build --target web
 
-# cd .. 
+cd .. 
 
 npx parcel build index.html
 http-server dist/
