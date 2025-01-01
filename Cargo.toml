@@ -74,7 +74,7 @@ anyhow = "1.0.92"
 alloy-primitives = { version = "0.8.5", default-features = false }
 chrono = "0.4.38"
 clap = "4.5.20"
-katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
+katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.9" }
 katana-executor = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-node = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
 katana-primitives = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
