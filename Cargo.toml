@@ -90,4 +90,4 @@ wiremock = "0.6.2"
 starknet-core = { git = "https://github.com/kariy/starknet-rs", branch = "dojo-patch" }
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)', 'cfg(tarpaulin_include)'] }
