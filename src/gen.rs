@@ -2,7 +2,6 @@ pub use gen::*;
 
 // TODO: must be handled in iamgroot
 #[allow(clippy::needless_return)]
-
 // vvv GENERATED CODE BELOW vvv
 #[allow(clippy::module_inception)]
 #[allow(non_snake_case)]
