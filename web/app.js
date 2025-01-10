@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         const config = JSON.stringify({
-            ethereum_url: `http://127.0.0.1:3000/eth-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+            gateway_rpc: 'http://127.0.0.1:3000/alpha-mainnet.starknet.io',
             starknet_url: `http://127.0.0.1:3000/starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${alchemyKey}`
         });
         worker.postMessage(config);
