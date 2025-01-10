@@ -13,6 +13,7 @@ async fn main() -> Result<()> {
         starknet_rpc: format!(
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{api_key}"
         ),
+        gateway_url: None,
         data_dir: "tmp".to_owned(),
     };
 
