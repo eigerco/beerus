@@ -86,7 +86,7 @@ pub async fn get_gateway_url(starknet_rpc: &str) -> Result<&'static str> {
     match chain_id.as_str() {
         MAINNET_STARKNET_CHAINID => Ok("https://alpha-mainnet.starknet.io"),
         SEPOLIA_STARKNET_CHAINID => Ok("https://alpha-sepolia.starknet.io"),
-        _ => eyre::bail!("Unexpected chain id: {}", chain_id)
+        _ => eyre::bail!("Unexpected chain id: {}", chain_id),
     }
 }
 
