@@ -29,6 +29,8 @@ pub struct ServerConfig {
 pub struct Config {
     #[validate(url)]
     pub starknet_rpc: String,
+    #[validate(url)]
+    pub gateway_url: Option<String>,
     #[cfg(not(target_arch = "wasm32"))]
     #[serde(default = "default_data_dir")]
     pub data_dir: String,
@@ -63,6 +65,7 @@ impl ServerConfig {
             client: Config {
                 starknet_rpc: std::env::var("STARKNET_RPC")
                     .context("STARKNET_RPC env var missing")?,
+                gateway_url: std::env::var("GATEWAY_URL").ok(),
                 #[cfg(not(target_arch = "wasm32"))]
                 data_dir: std::env::var("DATA_DIR")
                     .unwrap_or_else(|_| default_data_dir()),
@@ -139,6 +142,7 @@ mod tests {
         let config = ServerConfig {
             client: Config {
                 starknet_rpc: "bar".to_string(),
+                gateway_url: None,
                 data_dir: Default::default(),
             },
             poll_secs: 300,
@@ -155,6 +159,7 @@ mod tests {
         let config = ServerConfig {
             client: Config {
                 starknet_rpc: "bar".to_string(),
+                gateway_url: None,
                 data_dir: Default::default(),
             },
             poll_secs: 9999,

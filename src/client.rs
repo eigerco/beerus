@@ -125,7 +125,11 @@ impl<
         if rpc_spec_version != RPC_SPEC_VERSION {
             eyre::bail!("RPC spec version mismatch: expected {RPC_SPEC_VERSION} but got {rpc_spec_version}");
         }
-        let url = get_gateway_url(&config.starknet_rpc).await?;
+        let url = if let Some(url) = config.gateway_url.as_ref() {
+            url.as_str()
+        } else {
+            get_gateway_url(&config.starknet_rpc).await?
+        };
         let gateway = GatewayClient::new(url)?;
         Ok(Self { starknet, gateway, http })
     }
