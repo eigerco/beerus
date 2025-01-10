@@ -14,9 +14,6 @@ const DEFAULT_POLL_SECS: u64 = 30;
 pub const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 pub const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
 
-#[cfg(feature = "testing")]
-const KATANA_STARKNET_CHAINID: &str = "0x4b4154414e41";
-
 #[derive(Clone, Deserialize, Debug, Validate)]
 pub struct ServerConfig {
     #[serde(flatten)]
