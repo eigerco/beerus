@@ -9,7 +9,7 @@ use validator::Validate;
 
 #[cfg(not(target_arch = "wasm32"))]
 const DEFAULT_DATA_DIR: &str = "tmp";
-const DEFAULT_POLL_SECS: u64 = 5;
+const DEFAULT_POLL_SECS: u64 = 30;
 
 pub const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 pub const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
