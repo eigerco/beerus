@@ -9,7 +9,6 @@ license = "MIT"
 [features]
 default = ["rpc"]
 rpc = ["dep:axum"]
-testing = []
 
 [profile.release]
 lto = true
