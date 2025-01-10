@@ -38,7 +38,7 @@ validator = { version = "0.18.1", features = ["derive"] }
 url = "2.5.1"
 toml = "0.8.19"
 lru = "0.12.5"
-ethers = "2.0.14"
+alloy-primitives = { version = "0.8.5", default-features = false }
 
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -69,7 +69,6 @@ web-time = "1.1.0"
 
 [dev-dependencies]
 anyhow = "1.0.92"
-alloy-primitives = { version = "0.8.5", default-features = false }
 chrono = "0.4.38"
 clap = "4.5.20"
 katana-core = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.9" }
