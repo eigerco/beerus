@@ -17,7 +17,7 @@ async fn main() -> eyre::Result<()> {
     let http = Http::new();
     let beerus = beerus::client::Client::new(&config.client, http).await?;
 
-    let state = beerus.get_l1_state().await?;
+    let state = beerus.get_state().await?;
     tracing::info!(?state, "initialized");
     let state = Arc::new(RwLock::new(state));
 

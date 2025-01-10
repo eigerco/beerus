@@ -11,10 +11,6 @@ async fn main() -> Result<()> {
         .context("ALCHEMY_API_KEY is missing")?;
 
     let config = Config {
-        ethereum_rpc: format!(
-            "https://eth-mainnet.g.alchemy.com/v2/{api_key}"
-        ),
-        gateway_url: "https://alpha-mainnet.starknet.io".to_owned(),
         starknet_rpc: format!(
             "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{api_key}"
         ),
@@ -34,7 +30,7 @@ async fn main() -> Result<()> {
         calldata: vec![],
     };
 
-    let state = beerus.get_l1_state().await?;
+    let state = beerus.get_state().await?;
     let res = beerus.execute(calldata, state)?;
     println!("{:#?}", res);
 

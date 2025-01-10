@@ -4,16 +4,12 @@ use std::path::Path;
 
 use eyre::{eyre, Context, Result};
 
-use helios::config::networks::Network;
 use serde::Deserialize;
 use validator::Validate;
 
 #[cfg(not(target_arch = "wasm32"))]
 const DEFAULT_DATA_DIR: &str = "tmp";
 const DEFAULT_POLL_SECS: u64 = 5;
-
-const MAINNET_ETHEREUM_CHAINID: &str = "0x1";
-const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
 
 pub const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
 pub const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
@@ -34,10 +30,6 @@ pub struct ServerConfig {
 
 #[derive(Clone, Deserialize, Debug, Validate)]
 pub struct Config {
-    #[validate(url)]
-    pub ethereum_rpc: String,
-    #[validate(url)]
-    pub gateway_url: String,
     #[validate(url)]
     pub starknet_rpc: String,
     #[cfg(not(target_arch = "wasm32"))]
@@ -72,10 +64,6 @@ impl ServerConfig {
         };
         Ok(Self {
             client: Config {
-                ethereum_rpc: std::env::var("ETHEREUM_RPC")
-                    .context("ETHEREUM_RPC env var missing")?,
-                gateway_url: std::env::var("GATEWAY_URL")
-                    .context("GATEWAY_URL is missing")?,
                 starknet_rpc: std::env::var("STARKNET_RPC")
                     .context("STARKNET_RPC env var missing")?,
                 #[cfg(not(target_arch = "wasm32"))]
@@ -93,40 +81,13 @@ impl ServerConfig {
     }
 }
 
-pub async fn check_chain_id(
-    ethereum_rpc: &str,
-    starknet_rpc: &str,
-) -> Result<Network> {
-    let ethereum_chain_id = call_method(ethereum_rpc, "eth_chainId").await?;
-    let starknet_chain_id =
-        call_method(starknet_rpc, "starknet_chainId").await?;
-
-    if ethereum_chain_id == MAINNET_ETHEREUM_CHAINID
-        && starknet_chain_id == MAINNET_STARKNET_CHAINID
-    {
-        return Ok(Network::MAINNET);
+pub async fn get_gateway_url(starknet_rpc: &str) -> Result<&'static str> {
+    let chain_id = call_method(starknet_rpc, "starknet_chainId").await?;
+    match chain_id.as_str() {
+        MAINNET_STARKNET_CHAINID => Ok("https://alpha-mainnet.starknet.io"),
+        SEPOLIA_STARKNET_CHAINID => Ok("https://alpha-sepolia.starknet.io"),
+        _ => eyre::bail!("Unexpected chain id: {}", chain_id)
     }
-
-    if ethereum_chain_id == SEPOLIA_ETHEREUM_CHAINID
-        && starknet_chain_id == SEPOLIA_STARKNET_CHAINID
-    {
-        return Ok(Network::SEPOLIA);
-    }
-
-    #[cfg(feature = "testing")]
-    if starknet_chain_id == KATANA_STARKNET_CHAINID {
-        return match ethereum_chain_id.as_str() {
-            MAINNET_ETHEREUM_CHAINID => Ok(Network::MAINNET),
-            SEPOLIA_ETHEREUM_CHAINID => Ok(Network::SEPOLIA),
-            _ => {
-                eyre::bail!(
-                    "Unexpected Ethereum chain_id: {ethereum_chain_id}"
-                );
-            }
-        };
-    }
-
-    eyre::bail!("chain_id mismatch: ethereum={ethereum_chain_id}, starknet={starknet_chain_id}")
 }
 
 pub fn check_data_dir<P: AsRef<Path>>(path: &P) -> Result<()> {
@@ -175,31 +136,11 @@ async fn call_method(url: &str, method: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wiremock::{
-        matchers::body_partial_json, Mock, MockServer, ResponseTemplate,
-    };
-
-    async fn mock(
-        patterns: &[(serde_json::Value, serde_json::Value)],
-    ) -> MockServer {
-        let server = MockServer::start().await;
-        for (request, response) in patterns {
-            Mock::given(body_partial_json(request))
-                .respond_with(
-                    ResponseTemplate::new(200).set_body_json(response),
-                )
-                .mount(&server)
-                .await;
-        }
-        server
-    }
 
     #[tokio::test]
     async fn wrong_urls() {
         let config = ServerConfig {
             client: Config {
-                ethereum_rpc: "foo".to_string(),
-                gateway_url: "baz".to_string(),
                 starknet_rpc: "bar".to_string(),
                 data_dir: Default::default(),
             },
@@ -209,145 +150,13 @@ mod tests {
         let response = config.client.validate();
 
         assert!(response.is_err());
-        assert!(response.unwrap_err().to_string().contains("ethereum_rpc"));
-    }
-
-    #[tokio::test]
-    async fn test_mainnet_detected() {
-        let server = mock(&[
-            (
-                serde_json::json!({
-                    "method": "eth_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": MAINNET_ETHEREUM_CHAINID
-                }),
-            ),
-            (
-                serde_json::json!({
-                    "method": "starknet_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": MAINNET_STARKNET_CHAINID
-                }),
-            ),
-        ])
-        .await;
-
-        let rpc = format!("http://{}/", server.address());
-        let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
-        assert_eq!(network, Network::MAINNET);
-    }
-
-    #[tokio::test]
-    async fn test_testnet_detected() {
-        let server = mock(&[
-            (
-                serde_json::json!({
-                    "method": "eth_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": SEPOLIA_ETHEREUM_CHAINID
-                }),
-            ),
-            (
-                serde_json::json!({
-                    "method": "starknet_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": SEPOLIA_STARKNET_CHAINID
-                }),
-            ),
-        ])
-        .await;
-
-        let rpc = format!("http://{}/", server.address());
-        let network = check_chain_id(&rpc, &rpc).await.expect("check_chain_id");
-        assert_eq!(network, Network::SEPOLIA);
-    }
-
-    #[tokio::test]
-    async fn test_chain_mismatch() {
-        let server = mock(&[
-            (
-                serde_json::json!({
-                    "method": "eth_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": "0xA"
-                }),
-            ),
-            (
-                serde_json::json!({
-                    "method": "starknet_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": "0xB"
-                }),
-            ),
-        ])
-        .await;
-
-        let rpc = format!("http://{}/", server.address());
-        let result = check_chain_id(&rpc, &rpc).await;
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "chain_id mismatch: ethereum=0xA, starknet=0xB"
-        );
-    }
-
-    #[tokio::test]
-    async fn test_chain_error() {
-        let server = mock(&[
-            (
-                serde_json::json!({
-                    "method": "eth_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "result": "0xcafebabe"
-                }),
-            ),
-            (
-                serde_json::json!({
-                    "method": "starknet_chainId"
-                }),
-                serde_json::json!({
-                    "id": 0,
-                    "jsonrpc": "2.0",
-                    "error": "computer says no"
-                }),
-            ),
-        ])
-        .await;
-
-        let rpc = format!("http://{}/", server.address());
-        let result = check_chain_id(&rpc, &rpc).await;
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "rpc error: computer says no"
-        );
+        assert!(response.unwrap_err().to_string().contains("starknet_rpc"));
     }
 
     #[tokio::test]
     async fn wrong_poll_secs() {
         let config = ServerConfig {
             client: Config {
-                ethereum_rpc: "foo".to_string(),
-                gateway_url: "baz".to_string(),
                 starknet_rpc: "bar".to_string(),
                 data_dir: Default::default(),
             },
