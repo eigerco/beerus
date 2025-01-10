@@ -1,5 +1,5 @@
+use alloy_primitives::U256;
 use blockifier::state::state_api::{State as BlockifierState, StateReader};
-use ethers::types::U256;
 use lru::LruCache;
 use starknet_api::{core::ContractAddress, state::StorageKey};
 use starknet_types_core::felt::Felt as StarkFelt;
@@ -37,8 +37,8 @@ mod storage {
     ) -> Key {
         (
             block_hash.as_ref().parse().unwrap(),
-            contract_address.0.key().to_bytes_be().into(),
-            storage_key.0.key().to_bytes_be().into(),
+            U256::from_be_bytes(contract_address.0.key().to_bytes_be()),
+            U256::from_be_bytes(storage_key.0.key().to_bytes_be()),
         )
     }
 }
@@ -71,7 +71,7 @@ mod class_hash {
     ) -> Key {
         (
             block_hash.as_ref().parse().unwrap(),
-            contract_address.0.key().to_bytes_be().into(),
+            U256::from_be_bytes(contract_address.0.key().to_bytes_be()),
         )
     }
 }
@@ -104,7 +104,7 @@ mod contract_class {
     ) -> Key {
         (
             block_hash.as_ref().parse().unwrap(),
-            class_hash.0.to_bytes_be().into(),
+            U256::from_be_bytes(class_hash.0.to_bytes_be()),
         )
     }
 }
