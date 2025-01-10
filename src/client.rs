@@ -2,6 +2,7 @@ use eyre::{Context, Result};
 
 use crate::config::{check_chain_id, Config};
 use crate::eth::{EthereumClient, Helios};
+use crate::feeder::GatewayClient;
 use crate::gen::client::Client as StarknetClient;
 use crate::gen::{gen, Felt, FunctionCall, Rpc};
 
@@ -109,6 +110,7 @@ pub struct Client<
 > {
     starknet: StarknetClient<T>,
     ethereum: EthereumClient,
+    gateway: GatewayClient,
     http: T,
 }
 
@@ -128,7 +130,8 @@ impl<
         let network =
             check_chain_id(&config.ethereum_rpc, &config.starknet_rpc).await?;
         let ethereum = EthereumClient::new(config, network).await?;
-        Ok(Self { starknet, ethereum, http })
+        let gateway = GatewayClient::new(&config.gateway_url)?;
+        Ok(Self { starknet, ethereum, gateway, http })
     }
 
     pub fn ethereum(&self) -> &Helios {
@@ -158,7 +161,7 @@ impl<
             .collect()
     }
 
-    pub async fn get_state(&self) -> Result<State> {
+    pub async fn get_l1_state(&self) -> Result<State> {
         let (block_number, block_hash, state_root) = self
             .ethereum
             .starknet_state()
@@ -170,6 +173,10 @@ impl<
             block_hash: as_felt(block_hash.as_bytes())?,
             root: as_felt(state_root.as_bytes())?,
         })
+    }
+
+    pub async fn get_state(&self) -> Result<State> {
+        self.gateway.get_state().await
     }
 }
 

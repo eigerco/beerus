@@ -37,6 +37,8 @@ pub struct Config {
     #[validate(url)]
     pub ethereum_rpc: String,
     #[validate(url)]
+    pub gateway_url: String,
+    #[validate(url)]
     pub starknet_rpc: String,
     #[cfg(not(target_arch = "wasm32"))]
     #[serde(default = "default_data_dir")]
@@ -72,6 +74,8 @@ impl ServerConfig {
             client: Config {
                 ethereum_rpc: std::env::var("ETHEREUM_RPC")
                     .context("ETHEREUM_RPC env var missing")?,
+                gateway_url: std::env::var("GATEWAY_URL")
+                    .context("GATEWAY_URL is missing")?,
                 starknet_rpc: std::env::var("STARKNET_RPC")
                     .context("STARKNET_RPC env var missing")?,
                 #[cfg(not(target_arch = "wasm32"))]
@@ -195,6 +199,7 @@ mod tests {
         let config = ServerConfig {
             client: Config {
                 ethereum_rpc: "foo".to_string(),
+                gateway_url: "baz".to_string(),
                 starknet_rpc: "bar".to_string(),
                 data_dir: Default::default(),
             },
@@ -342,6 +347,7 @@ mod tests {
         let config = ServerConfig {
             client: Config {
                 ethereum_rpc: "foo".to_string(),
+                gateway_url: "baz".to_string(),
                 starknet_rpc: "bar".to_string(),
                 data_dir: Default::default(),
             },
