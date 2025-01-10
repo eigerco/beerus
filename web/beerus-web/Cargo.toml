@@ -28,3 +28,6 @@ console_error_panic_hook = "0.1.7"
 
 num-traits = "0.2.19"
 num-bigint = "0.4.6"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen_unstable_test_coverage)'] }
