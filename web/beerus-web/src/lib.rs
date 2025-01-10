@@ -1,12 +1,6 @@
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
-const MAINNET_ETHEREUM_CHAINID: &str = "0x1";
-const SEPOLIA_ETHEREUM_CHAINID: &str = "0xaa36a7";
-
-const MAINNET_STARKNET_CHAINID: &str = "0x534e5f4d41494e";
-const SEPOLIA_STARKNET_CHAINID: &str = "0x534e5f5345504f4c4941";
-
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
@@ -19,7 +13,7 @@ pub mod dto {
 
     #[derive(Serialize, Deserialize)]
     pub struct Config {
-        pub ethereum_url: String,
+        pub gateway_url: String,
         pub starknet_url: String,
     }
 }
@@ -116,34 +110,6 @@ async fn post<Q: serde::Serialize, R: serde::de::DeserializeOwned>(
     Ok(response)
 }
 
-async fn call(client: &reqwest::Client, url: &str, method: &str) -> Result<String, JsValue> {
-    let request = serde_json::json!({
-        "jsonrpc": "2.0",
-        "method": method,
-        "params": [],
-        "id": 0
-    });
-    let response: serde_json::Value = post(&client, url, &request).await
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
-    response["result"]
-        .as_str()
-        .map(|result| result.to_owned())
-        .ok_or_else(|| JsValue::from_str(&format!("Result missing for '{method}'.")))
-}
-
-async fn check(config: &dto::Config) -> Result<(), JsValue> {
-    let client = reqwest::Client::new();
-    let ethereum_chain = call(&client, &config.ethereum_url, "eth_chainId").await?;
-    let starknet_chain = call(&client, &config.starknet_url, "starknet_chainId").await?;
-    match (ethereum_chain.as_str(), starknet_chain.as_str()) {
-        (MAINNET_ETHEREUM_CHAINID, MAINNET_STARKNET_CHAINID) => Ok(()),
-        (SEPOLIA_ETHEREUM_CHAINID, SEPOLIA_STARKNET_CHAINID) => Ok(()),
-        _ => {
-            Err(JsValue::from_str(&format!("Chain ID mismatch ethereum={ethereum_chain} starknet={starknet_chain}")))
-        }
-    }
-}
-
 #[wasm_bindgen]
 pub fn set_panic_hook() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -162,10 +128,8 @@ impl Beerus {
     pub async fn new(config_json: &str, f: js_sys::Function) -> Result<Beerus, JsValue> {
         let config: dto::Config = serde_json::from_str(config_json)
             .map_err(|e| JsValue::from_str(&format!("beerus: invalid config JSON: {e:?}")))?;
-        check(&config).await
-            .map_err(|e| JsValue::from_str(&format!("beerus: invalid RPC config: {e:?}")))?;
         let config = beerus::config::Config {
-            ethereum_rpc: config.ethereum_url,
+            gateway_url: Some(config.gateway_url),
             starknet_rpc: config.starknet_url,
         };
         let beerus = beerus::client::Client::new(&config, Http(Rc::new(f)))
