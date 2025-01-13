@@ -1,4 +1,4 @@
-ethereum_rpc = "https://eth-mainnet.g.alchemy.com/v2/<YOUR API KEY>"
+gateway_url = "https://alpha-mainnet.starknet.io"
 starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/<YOUR API KEY>"
 data_dir = "tmp"
 poll_secs = 5
