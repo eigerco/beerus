@@ -542,6 +542,7 @@ async fn account_call() -> Result<(), Error> {
 }
 
 #[tokio::test]
+#[ignore = "Needs to be run explicitly: deploys an account to the testnet"]
 async fn deploy_account_on_sepolia() -> Result<(), Error> {
     let ctx = setup!("sepolia");
 

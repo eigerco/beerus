@@ -1,7 +1,7 @@
 name: account-deployment
 on:
-  schedule:
-    - cron: '0 10 1 * *'
+  ## Run the test manually on demand
+  workflow_dispatch:
 
 env:
   RUSTFLAGS: -D warnings
