@@ -639,7 +639,7 @@ mod tests {
 
     async fn setup_test_env(
         starknet_server: &MockServer,
-        helios_block_num: u64,
+        block_num: u64,
         starknet_response_block_num: u64,
         starknet_response_block_hash: &str,
         expect_request: u64,
@@ -654,7 +654,7 @@ mod tests {
             .expect(expect_request)
             .mount_as_scoped(starknet_server)
             .await;
-        let state = make_state(helios_block_num, "0x27");
+        let state = make_state(block_num, "0x27");
         let context =
             make_context("127.0.0.1:3030", &starknet_server.uri(), state);
 
@@ -663,7 +663,7 @@ mod tests {
 
     async fn resolve_block_by_number_test(
         requested_starknet_block_num: u64,
-        helios_block_num: u64,
+        block_num: u64,
         starknet_response_block_num: u64,
         expect_request: u64,
     ) -> Result<(BlockId, Felt), jsonrpc::Error> {
@@ -673,7 +673,7 @@ mod tests {
 
         let (_mock_guard, context) = setup_test_env(
             &starknet_server,
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             "0x3",
             expect_request,
@@ -686,7 +686,7 @@ mod tests {
 
     async fn resolve_block_by_hash_test(
         requested_starknet_block_hash: &str,
-        helios_block_num: u64,
+        block_num: u64,
         starknet_response_block_hash: &str,
         starknet_response_block_num: u64,
         expect_request: u64,
@@ -697,7 +697,7 @@ mod tests {
 
         let (_mock_guard, context) = setup_test_env(
             &starknet_server,
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expect_request,
@@ -710,7 +710,7 @@ mod tests {
 
     async fn resolve_block_id_test(
         block: BlockId,
-        helios_block_num: u64,
+        block_num: u64,
         starknet_response_block_num: u64,
         starknet_response_block_hash: &str,
         expect_request: u64,
@@ -719,7 +719,7 @@ mod tests {
 
         let (_mock_guard, context) = setup_test_env(
             &starknet_server,
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expect_request,
@@ -732,13 +732,13 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_number_request_lower_success() {
         let requested_starknet_block_num = 3;
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_number = 3;
         let expected_num_request = 1;
 
         let result = resolve_block_by_number_test(
             requested_starknet_block_num,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_number,
             expected_num_request,
         )
@@ -755,13 +755,13 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_number_request_higher_success() {
         let requested_starknet_block_num = 42;
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_number = 42;
         let expected_num_request = 0;
 
         let result = resolve_block_by_number_test(
             requested_starknet_block_num,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_number,
             expected_num_request,
         )
@@ -770,7 +770,7 @@ mod tests {
         assert!(result.is_ok());
         let (returned_block, _) = result.unwrap();
         assert!(eq(
-            &block_from_number(helios_state_block_num),
+            &block_from_number(state_block_num),
             &returned_block
         ));
     }
@@ -778,13 +778,13 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_number_same_success() {
         let requested_starknet_block_num = 27;
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_number = requested_starknet_block_num;
         let expected_num_request = 0;
 
         let result = resolve_block_by_number_test(
             requested_starknet_block_num,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_number,
             expected_num_request,
         )
@@ -801,13 +801,13 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_number_wrong_number_return() {
         let requested_starknet_block_num = 5;
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_number = 999;
         let expected_num_request = 1;
 
         let result = resolve_block_by_number_test(
             requested_starknet_block_num,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_number,
             expected_num_request,
         )
@@ -819,14 +819,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_hash_different_success() {
         let requested_starknet_block_hash = "0x3";
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_hash = requested_starknet_block_hash;
         let starknet_response_block_num = 3;
         let expected_num_request = 1;
 
         let result = resolve_block_by_hash_test(
             requested_starknet_block_hash,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_hash,
             starknet_response_block_num,
             expected_num_request,
@@ -844,14 +844,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_hash_same_success() {
         let requested_starknet_block_hash = "0x27";
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_hash = requested_starknet_block_hash;
         let starknet_response_block_num = 27;
         let expected_num_request = 0;
 
         let result = resolve_block_by_hash_test(
             requested_starknet_block_hash,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_hash,
             starknet_response_block_num,
             expected_num_request,
@@ -869,14 +869,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_hash_wrong_number_return_error() {
         let requested_starknet_block_hash = "0x99";
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_hash = requested_starknet_block_hash;
         let starknet_response_block_num = 27;
         let expected_num_request = 1;
 
         let result = resolve_block_by_hash_test(
             requested_starknet_block_hash,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_hash,
             starknet_response_block_num,
             expected_num_request,
@@ -889,14 +889,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_by_hash_wrong_hash_return_error() {
         let requested_starknet_block_hash = "0x99";
-        let helios_state_block_num = 27;
+        let state_block_num = 27;
         let starknet_response_block_hash = "0xbad";
         let starknet_response_block_num = 3;
         let expected_num_request = 1;
 
         let result = resolve_block_by_hash_test(
             requested_starknet_block_hash,
-            helios_state_block_num,
+            state_block_num,
             starknet_response_block_hash,
             starknet_response_block_num,
             expected_num_request,
@@ -909,14 +909,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_id_number_success() {
         let request_block = block_from_number(3);
-        let helios_block_num = 27;
+        let block_num = 27;
         let starknet_response_block_num = 3;
         let starknet_response_block_hash = "0x3";
         let expected_num_request = 1;
 
         let result = resolve_block_id_test(
             request_block.clone(),
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expected_num_request,
@@ -931,14 +931,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_id_hash_success() {
         let request_block = block_from_hash("0x3");
-        let helios_block_num = 27;
+        let block_num = 27;
         let starknet_response_block_num = 3;
         let starknet_response_block_hash = "0x3";
         let expected_num_request = 1;
 
         let result = resolve_block_id_test(
             request_block.clone(),
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expected_num_request,
@@ -953,14 +953,14 @@ mod tests {
     #[tokio::test]
     async fn resolve_block_id_tag_latest_success() {
         let request_block = block_from_tag("latest");
-        let helios_block_num = 27;
+        let block_num = 27;
         let starknet_response_block_num = 33;
         let starknet_response_block_hash = "0x33";
         let expected_num_request = 0;
 
         let result = resolve_block_id_test(
             request_block.clone(),
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expected_num_request,
@@ -969,20 +969,20 @@ mod tests {
 
         assert!(result.is_ok());
         let (returned_block, _) = result.unwrap();
-        assert!(eq(&block_from_number(helios_block_num), &returned_block));
+        assert!(eq(&block_from_number(block_num), &returned_block));
     }
 
     #[tokio::test]
     async fn resolve_block_id_tag_pending_error() {
         let request_block = block_from_tag("pending");
-        let helios_block_num = 27;
+        let block_num = 27;
         let starknet_response_block_num = 33;
         let starknet_response_block_hash = "0x33";
         let expected_num_request = 0;
 
         let result = resolve_block_id_test(
             request_block.clone(),
-            helios_block_num,
+            block_num,
             starknet_response_block_num,
             starknet_response_block_hash,
             expected_num_request,
