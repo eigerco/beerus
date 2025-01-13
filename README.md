@@ -7,8 +7,7 @@
   </div>
   <h1>Beerus</h1>
 
-  Beerus is a Starknet Light Client inspired by and using
-  [Helios](https://github.com/a16z/helios/).
+  Beerus is a stateless and (soon to be completely) trustless Starknet Light Client.
 </div>
 
 ## Project updates
@@ -128,11 +127,6 @@ We recommend using one of these providers:
 
 More API providers can be found [here](https://docs.starknet.io/documentation/tools/api-services/).
 
-##### Ethereum RPC endpoint
-For the Ethereum RPC provider, there are no special requirements. The provider must support [Ethereum JSON-RPC Specification](https://ethereum.github.io/execution-apis/api-documentation/)
-
-*NOTE: we rely on [helios](https://github.com/a16z/helios) for both valid checkpoint values and consensus rpc urls*
-
 ## Development
 
 #### Build
@@ -144,12 +138,12 @@ cargo build --release
 #### Test
 
 ```bash
-cargo test
+cargo test --skip deploy_account_on_sepolia
 
 ## Run integration tests against live endpoint
 export STARKNET_MAINNET_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
 export STARKNET_SEPOLIA_URL=https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/${ALCHEMY_API_KEY}
-BEERUS_TEST_RUN=1 cargo test
+BEERUS_TEST_RUN=1 cargo test --skip deploy_account_on_sepolia
 ```
 
 #### Docker
@@ -159,7 +153,7 @@ docker build . -t beerus
 ```
 
 ```bash
-docker run -e ETHEREUM_RPC=<arg> -e STARKNET_RPC=<arg> -it beerus
+docker run -e STARKNET_RPC=<arg> -it beerus
 ```
 
 #### Examples
