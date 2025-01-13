@@ -769,10 +769,7 @@ mod tests {
 
         assert!(result.is_ok());
         let (returned_block, _) = result.unwrap();
-        assert!(eq(
-            &block_from_number(state_block_num),
-            &returned_block
-        ));
+        assert!(eq(&block_from_number(state_block_num), &returned_block));
     }
 
     #[tokio::test]
