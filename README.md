@@ -54,28 +54,14 @@ The successful result should look similar to the one below:
 
 | field   | example | description |
 | ----------- | ----------- | ----------- |
-| ethereum_rpc | https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}| untrusted L1 node provider url |
-| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}| untrusted L2 node provider url |
+| starknet_rpc | https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY} | Starknet service provider URL |
+| gateway_url | https://alpha-mainnet.starknet.io | `OPTIONAL` Feeder Gateway base URL |
 | data_dir | tmp | `OPTIONAL` location to store both L1 and L2 data |
 | poll_secs | 5 | `OPTIONAL` seconds to wait for querying sn state, min = 1 and max = 3600 |
 | rpc_addr | 127.0.0.1:3030 | `OPTIONAL` local address to listen for rpc reqs |
 
-When you select a network, check that `ethereum_rpc` and `starknet_rpc` urls also point to their corresponding networks. For example:
-
-MAINNET
-```
-ethereum_rpc = "https://eth-mainnet.g.alchemy.com/v2/{YOUR_API_KEY}"
-starknet_rpc = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
-```
-SEPOLIA
-```
-ethereum_rpc = "https://eth-sepolia.g.alchemy.com/v2/{YOUR_API_KEY}"
-starknet_rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/{YOUR_API_KEY}"
-```
-
-#### RPC providers
-Beerus relies on TWO untrusted RPC endpoints, one for L1 (Ethereum), and one for L2 (Starknet).
-As these are untrusted they will typically not be nodes run on your local host or your local network.
+#### RPC provider
+Beerus relies on Starknet RPC service provider and on Feeder Gateway URL.
 
 ##### Starknet RPC endpoint
 Beerus expects serving the [v0.7.1 of the Starknet OpenRPC specs](https://github.com/starkware-libs/starknet-specs/tree/v0.7.1).
@@ -123,7 +109,6 @@ We recommend using one of these providers:
 - [Alchemy](https://docs.alchemy.com/reference/starknet-api-faq#what-versions-of-starknet-api-are-supported)
 - [Chainstack](https://docs.chainstack.com/docs/starknet-tooling)
 - [Reddio](https://docs.reddio.com/guide/node/starknet.html#grab-starknet-sepolia-endpoint)
-
 
 More API providers can be found [here](https://docs.starknet.io/documentation/tools/api-services/).
 
