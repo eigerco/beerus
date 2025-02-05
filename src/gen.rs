@@ -1002,8 +1002,27 @@ pub mod gen {
                 .expect("Felt: valid regex")
         });
 
+        // The RPC spec regex is not respected anywhere these days,
+        // thus such un-elegant workaround is necessary ¯\_(ツ)_/¯
+        fn fix(value: &str) -> String {
+            let unprefixed = value.strip_prefix("0x").unwrap_or(value);
+            if unprefixed.is_empty() {
+                // '0x'
+                "0x0".to_owned()
+            } else if unprefixed == "0" {
+                value.to_owned()
+            } else if unprefixed.starts_with("0") {
+                // '0x0...'
+                let unzeroed = unprefixed.trim_start_matches('0');
+                format!("0x{unzeroed}")
+            } else {
+                value.to_owned()
+            }
+        }
+
         impl Felt {
             pub fn try_new(value: &str) -> Result<Self, jsonrpc::Error> {
+                let value = &fix(value);
                 if FELT_REGEX.is_match(value) {
                     Ok(Self(value.to_string()))
                 } else {
