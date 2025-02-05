@@ -64,6 +64,26 @@ fn test_call_regular_contract_class() -> Result<(), Error> {
     Ok(())
 }
 
+#[test]
+fn test_issue861() -> Result<(), Error> {
+    let client = client!();
+
+    let json = serde_json::json!({
+        "calldata": [],
+        "contract_address": "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        "entry_point_selector": "0x01557182e4359a1f0c6301278e8f5b35a776ab58d39892581e357578fb287836"
+    });
+    let function_call: FunctionCall = serde_json::from_value(json)?;
+
+    let state = get_latest_state(&client);
+    let call_info = call(client, function_call, state)?;
+
+    assert_eq!(call_info.execution.retdata.0.len(), 2);
+    assert_eq!(call_info.execution.retdata.0[1].to_hex_string(), "0x0");
+
+    Ok(())
+}
+
 fn get_state(client: &Client<Http>, block_id: gen::BlockId) -> State {
     let block = client.getBlockWithTxHashes(block_id).unwrap();
     let gen::GetBlockWithTxHashesResult::BlockWithTxHashes(block) = block
