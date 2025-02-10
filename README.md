@@ -1,3 +1,14 @@
+### UPDATE: 2025-02-07
+
+*Hey everyone,*
+
+*We wanted to share that the team at Eiger will be putting development on Beerus on hold for now.*
+
+*With Starknet’s work on consensus and zk proof verification still in progress, we believe it’s best to pause Beerus until the specs are finalized.
+We’ve truly enjoyed working on Beerus and are incredibly grateful to everyone who’s been part of the journey so far. Thank you for your support, insights, and contributions! We’re excited for what’s ahead.*
+
+---
+
 <div align="center">
   <img src="etc/beerus.png" height="250" />
   <div align="center">
